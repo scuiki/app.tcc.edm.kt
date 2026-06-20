@@ -24,9 +24,20 @@ from edmkt_core.features import extract_paths_javalang, paths_to_tensor
 ASSIGNMENT_ID = 439
 
 _JAVA_OK_A = "public int f(int x) { return x + 1; }"
-_JAVA_OK_B = "public int g(int a, int b) { int s = a + b; return s; }"
-# Structurally distinct snippet used to guarantee a test-only path unseen in train.
-_JAVA_OK_C = "public boolean h(int n) { while (n > 0) { n = n - 1; } return n == 0; }"
+# Six structurally distinct method bodies — one per student — so each student
+# contributes AST paths unique to itself. Whatever the random partition, the test
+# students' snippets yield paths unseen in train (OOV > 0 by construction, not by
+# coupling the test to which SubjectIDs land where).
+_JAVA_PER_STUDENT = [
+    "public int g0(int a, int b) { int s = a + b; return s; }",
+    "public int g1(int a) { for (int i = 0; i < a; i++) { a = a * 2; } return a; }",
+    "public boolean g2(int n) { if (n > 0) { return true; } return false; }",
+    "public int g3(int n) { while (n > 0) { n = n - 1; } return n; }",
+    "public int g4(int[] xs) { int t = 0; for (int x : xs) { t += x; } return t; }",
+    "public String g5(boolean b) { return b ? \"yes\" : \"no\"; }",
+]
+# Held-out snippet whose structure (try/catch) is absent from every student body.
+_JAVA_OK_C = "public int h(int n) { try { return 10 / n; } catch (Exception e) { return -1; } }"
 
 
 def _row(subject, problem, ts, score, code, csid):
@@ -48,9 +59,9 @@ def split_df() -> pd.DataFrame:
     """Synthetic ProgSnap2 subset for the split/vocab contract.
 
     Six eligible students (>= 3 Run.Program attempts each) plus one ineligible
-    student with 2 attempts, so min_attempts filtering is observable. Train and
-    test students use deliberately different Java snippets so the held-out
-    partition contains a path unseen in train (OOV > 0).
+    student with 2 attempts, so min_attempts filtering is observable. Each student
+    owns a structurally distinct snippet, so the held-out (test) partition always
+    contributes a path unseen in train (OOV > 0), independent of the partition draw.
     """
     base = pd.Timestamp("2019-03-01T08:00:00Z")
     rows = []
@@ -58,13 +69,13 @@ def split_df() -> pd.DataFrame:
     def ts(student_offset, step):
         return base + pd.Timedelta(hours=student_offset) + pd.Timedelta(minutes=step)
 
-    # Six eligible students: A/B snippets only (the train-vocab universe).
+    # Six eligible students, each with a unique third snippet (its own AST paths).
     for i in range(6):
         sid = f"S{i}"
         rows += [
             _row(sid, 1, ts(i, 0), 0.0, _JAVA_OK_A, f"{sid}_c0"),
             _row(sid, 1, ts(i, 1), 1.0, _JAVA_OK_A, f"{sid}_c1"),
-            _row(sid, 2, ts(i, 2), 1.0, _JAVA_OK_B, f"{sid}_c2"),
+            _row(sid, 2, ts(i, 2), 1.0, _JAVA_PER_STUDENT[i], f"{sid}_c2"),
         ]
 
     # Ineligible student: only 2 attempts -> dropped by min_attempts=3.
