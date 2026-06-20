@@ -5,9 +5,9 @@
 # load_labels, load_spring2019_split) are intentionally EXCLUDED (D-05); the split
 # logic is extracted to pipeline.py in plan 04.
 #
-# NOTE (CORE-05): truncate_sequences below recomputes is_first_attempt on the
-# truncated window — this is the +13.6pp inflation bug. It is ported VERBATIM here
-# so a characterization test pins current behavior; the fix lands in plan 03.
+# CORE-05: is_first_attempt is derived once in build_sequences on the full ordered
+# sequence and carried immutably through truncate_sequences, which now slices only.
+# (The verbatim port recomputed the flag in-window — the +13.6pp inflation bug; fixed.)
 
 from pathlib import Path  # noqa: F401 — retained from source; harmless, kept for verbatim fidelity
 import pandas as pd
@@ -46,10 +46,9 @@ def truncate_sequences(sequences: list[dict], max_len: int = 50) -> list[dict]:
     for seq in sequences:
         events = seq["events"]
         if len(events) > max_len:
+            # Slice only — is_first_attempt was derived on the full ordered sequence
+            # in build_sequences and must not be recomputed on the window (CORE-05).
             events = events.iloc[-max_len:].copy()
-            events["is_first_attempt"] = ~events.duplicated(
-                subset=["ProblemID"], keep="first"
-            )
             events = events.reset_index(drop=True)
         truncated.append({
             "subject_id": seq["subject_id"],

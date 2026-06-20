@@ -18,13 +18,18 @@ def _events_for(sequences, subject_id):
 
 def test_first_attempt_immutable(a439_mini):
     # S_long problems in order: [1,2,1,3,2,3,1,2]. With max_len=5 the window is the
-    # last 5 events [3,2,3,1,2]; every one of those problems already appeared earlier
-    # (global first OUTSIDE the window), so none is a true first attempt.
+    # last 5 events [3,2,3,1,2] (CodeStateIDs l4..l8). P2 and P1 in the window are
+    # global repeats (their first attempt is OUTSIDE the window) and must stay False;
+    # P3's first global attempt (l4) happens to fall inside the window, so it stays
+    # True. The buggy in-window recompute instead flips l5 (P2) and l7 (P1) to True.
     sequences = build_sequences(a439_mini, 439)
     truncated = truncate_sequences(sequences, max_len=5)
-    window = _events_for(truncated, "S_long")
+    window = _events_for(truncated, "S_long").set_index("CodeStateID")["is_first_attempt"]
     assert len(window) == 5
-    assert window["is_first_attempt"].sum() == 0
+    assert bool(window.loc["l5"]) is False  # P2 global-first (l2) outside window
+    assert bool(window.loc["l7"]) is False  # P1 global-first (l1) outside window
+    assert bool(window.loc["l4"]) is True   # P3 global-first is inside the window
+    assert window.sum() == 1
 
 
 def test_truncated_count_le_full(a439_mini):

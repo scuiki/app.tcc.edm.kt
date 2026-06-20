@@ -35,9 +35,11 @@ def test_truncate_keeps_at_most_max_len_events(a439_mini):
         assert len(seq["events"]) <= 5
 
 
-def test_truncate_baseline_first_attempt_counts(a439_mini):
-    # Capture the CURRENT (pre-fix) truncated first-attempt counts as the baseline.
-    # S_long has 8 events; truncating to 5 recomputes the flag in-window (the bug).
+def test_truncate_first_attempt_counts(a439_mini):
+    # Plan 03 (CORE-05) deliberately replaced the old buggy baseline: the prior
+    # assertion (trunc["S_long"] >= 1) pinned the documented +13.6pp inflation bug,
+    # where the in-window recompute relabeled global 2nd-occurrences as first attempts.
+    # The corrected invariant slices only, so the flag is carried, never recomputed.
     sequences = build_sequences(a439_mini, 439)
     full = {s["subject_id"]: s["events"]["is_first_attempt"].sum() for s in sequences}
     truncated = truncate_sequences(sequences, max_len=5)
@@ -46,6 +48,6 @@ def test_truncate_baseline_first_attempt_counts(a439_mini):
     # Untruncated students keep their counts unchanged.
     assert trunc["S1"] == full["S1"]
     assert trunc["S2"] == full["S2"]
-    # S_long is truncated; the count is whatever the verbatim recompute produces.
-    # Pin it as the regression baseline (plan 03 will change this deliberately).
-    assert trunc["S_long"] >= 1
+    # S_long's last-5 window [3,2,3,1,2]: only P3's global-first (l4) lands inside the
+    # window, so the carried count is 1 — vs the old buggy in-window recompute of 3.
+    assert trunc["S_long"] == 1
