@@ -8,11 +8,34 @@ AUC against it. The real-data fidelity check lives in the golden-run (plan 06, m
 
 from __future__ import annotations
 
+import os
+from pathlib import Path
+
 import pandas as pd
 import pytest
 import torch
 
 ASSIGNMENT_ID = 439
+
+
+def _resolve_csedm_path() -> Path:
+    """Resolve EDMKT_CSEDM_PATH or skip the golden-run with a clear reason (D-07/D-12).
+
+    The real CSEDM is NEVER copied into the repo and NEVER read from ../tcc.edm.kt/data
+    (D-12); the operator points EDMKT_CSEDM_PATH at the provisioned dataset on nitro. When
+    it is unset (or the dir/MainTable is missing) the golden-run skips cleanly rather than
+    erroring, so the default fast suite stays green on machines without the dataset.
+    """
+    raw = os.environ.get("EDMKT_CSEDM_PATH")
+    if not raw:
+        pytest.skip(
+            "EDMKT_CSEDM_PATH unset — golden-run skipped (D-07 fast-by-default). "
+            "Set it to the provisioned CSEDM dir (with MainTable.csv + CodeStates/) to run."
+        )
+    data_dir = Path(raw)
+    if not (data_dir / "MainTable.csv").exists():
+        pytest.skip(f"EDMKT_CSEDM_PATH={data_dir} has no MainTable.csv — golden-run skipped.")
+    return data_dir
 
 # Minimal compilable Java member declarations — javalang.parse_member_declaration
 # parses these and extract_paths_javalang yields >= 1 AST path.
@@ -95,6 +118,42 @@ def a439_mini() -> pd.DataFrame:
     df["AssignmentID"] = df["AssignmentID"].astype("Int64")
     df["ProblemID"] = df["ProblemID"].astype("Int64")
     return df
+
+
+@pytest.fixture
+def csedm_main_table() -> pd.DataFrame:
+    """Real CSEDM Spring 2019 events, shaped for the public train_and_evaluate seam.
+
+    Reads EDMKT_CSEDM_PATH (skip-if-unset, D-07/D-12) and reproduces the TCC 1 Code-DKT
+    input exactly: Run.Program events only (the BKT/DKT filter the Code-DKT golden run
+    consumed — sequences_bkt_dkt.pkl, notebook 06 cell 4 asserts EventType == Run.Program),
+    correct = (Score == 1.0), the per-row Java snapshot joined from CodeStates.csv on
+    CodeStateID, and types normalized like data_loader.load_spring2019_split
+    (ServerTimestamp -> UTC datetime, AssignmentID/ProblemID -> Int64).
+
+    split_by_subject(random_state=1, min_attempts=3) then reproduces the reference
+    partition (Pitfall 3); the Code column flows into _code_states_from_df and `correct`
+    into build_code_input_tensor/predict.
+    """
+    data_dir = _resolve_csedm_path()
+
+    df = pd.read_csv(data_dir / "MainTable.csv")
+    df["ServerTimestamp"] = pd.to_datetime(df["ServerTimestamp"], utc=True, errors="coerce")
+    df["AssignmentID"] = pd.to_numeric(df["AssignmentID"], errors="coerce").astype("Int64")
+    df["ProblemID"] = pd.to_numeric(df["ProblemID"], errors="coerce").astype("Int64")
+
+    # Run.Program only + binary label (data_loader.filter_for_bkt_dkt — the exact filter
+    # behind sequences_bkt_dkt.pkl that the TCC 1 Code-DKT run trained on).
+    df = df[df["EventType"] == "Run.Program"].copy()
+    df["correct"] = (df["Score"] == 1.0).astype(int)
+
+    # Join the Java snapshot per event (CodeStateID -> Code) so the pure-DataFrame seam
+    # (_code_states_from_df) sees inline code without reading a CSEDM path itself (CORE-01).
+    code_states = pd.read_csv(data_dir / "CodeStates" / "CodeStates.csv")
+    code_map = dict(zip(code_states["CodeStateID"].astype(str), code_states["Code"].fillna("")))
+    df["Code"] = df["CodeStateID"].astype(str).map(code_map).fillna("")
+
+    return df.reset_index(drop=True)
 
 
 @pytest.fixture

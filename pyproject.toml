@@ -9,23 +9,24 @@ description = "EDM·KT scientific core: Code-DKT knowledge tracing over ProgSnap
 requires-python = ">=3.10,<3.13"
 
 # Runtime deps inherited from the TCC 1 environment (commit 0e8807c).
-# torch/numpy are intentionally NOT pinned here: the exact line that trained the
-# TCC 1 numbers is not frozen anywhere in TCC 1 (no lockfile). The golden-run
-# (plan 06) is the version oracle — any line keeping A439 first-attempt AUC in
-# [70.27, 76.27] is acceptable.
-# TODO(plan 06): pin torch/numpy to the resolved lockfile line + Docker image tag.
+# Exact versions are frozen in requirements.lock — validated by the golden-run as the
+# version oracle (CORE-03/RESEARCH A2): A439 first-attempt AUC = 0.7608, in band
+# [0.7027, 0.7627]. torch/numpy come from the pinned base image conda env (see Dockerfile,
+# pytorch/pytorch:2.7.1-cuda12.8-cudnn9-runtime); they are listed unversioned here because
+# the image — not PyPI — is the reproducibility anchor (torch==2.7.1+cu128 is not a plain
+# PyPI pin). The lower bounds below match the resolved lock; bump only with a green golden-run.
 dependencies = [
-    "torch",            # TODO(plan 06): pin to TCC 1 line (cu12x; nitro RTX 4050 = sm_89)
-    "numpy",            # TODO(plan 06): pin to TCC 1 line (<2.0 or 2.x — confirm vs numerics)
-    "pandas>=2,<3",
+    "torch",            # base image conda env: torch==2.7.1+cu128 (sm_89, RTX 4050)
+    "numpy",            # base image conda env: numpy==2.2.6
+    "pandas==2.3.3",
     "javalang==0.13.0",
-    "anytree>=2",
-    "scikit-learn>=1.4",
+    "anytree==2.13.0",
+    "scikit-learn==1.9.0",
 ]
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=8",
+    "pytest==9.1.1",
 ]
 
 [tool.setuptools.packages.find]
