@@ -116,6 +116,8 @@ def test_end_to_end_fixture(progsnap_df, cpu_device):
 
 
 def test_metrics_separated(progsnap_df, cpu_device):
+    from edmkt_core.evaluation import compute_auc
+
     set_global_seed(42, strict=True)
     result = train_and_evaluate(
         progsnap_df,
@@ -126,15 +128,22 @@ def test_metrics_separated(progsnap_df, cpu_device):
     first_auc = result["first_auc"]
     all_auc = result["all_auc"]
 
-    # Each is a float or NaN — distinct labeled metrics (CORE-05).
+    # Each is a float (NaN is a float) — distinct labeled metrics (CORE-05).
     for v in (first_auc, all_auc):
         assert isinstance(v, float)
 
-    # On a fixture with both first- and repeat-attempt rows, the first-attempt-only
-    # subset differs from the pooled set, so the two AUCs are not the same value
-    # (unless one degenerates to NaN under the single-class guard).
-    if not (np.isnan(first_auc) or np.isnan(all_auc)):
-        assert first_auc != all_auc
+    # The two metrics are computed via compute_auc with first_attempt_only True/False
+    # over the SAME pred_df: the returned values must match an independent recompute, and
+    # the first-attempt pool is a strict subset of the pooled rows (so they are genuinely
+    # different metrics, not the same number relabeled). On a toy CPU model the float
+    # values can coincide; the subset relationship is the load-bearing CORE-05 guarantee.
+    pred_df = result["pred_df"]
+    np.testing.assert_equal(first_auc, compute_auc(pred_df, first_attempt_only=True))
+    np.testing.assert_equal(all_auc, compute_auc(pred_df, first_attempt_only=False))
+
+    n_first = int(pred_df["is_first_attempt"].sum())
+    n_all = len(pred_df)
+    assert 0 < n_first < n_all  # strict subset -> the two metrics span different rows
 
 
 def test_first_attempt_carried_to_pred_df(progsnap_df, cpu_device):

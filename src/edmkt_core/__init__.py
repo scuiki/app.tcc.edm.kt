@@ -6,7 +6,13 @@ FastAPI app depends inward on.
 """
 
 from edmkt_core.config import FROZEN_CONFIG
+from edmkt_core.pipeline import split_by_subject, train_and_evaluate
 from edmkt_core.seeding import set_global_seed
 
-# train_and_evaluate / split_by_subject become public glue in plans 04/05 (pipeline.py).
-__all__ = ["FROZEN_CONFIG", "set_global_seed"]
+# Public surface = the DIP boundary the FastAPI app depends inward on (D-01, D-03).
+__all__ = [
+    "FROZEN_CONFIG",
+    "set_global_seed",
+    "split_by_subject",
+    "train_and_evaluate",
+]
