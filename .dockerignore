@@ -1,0 +1,11 @@
+.git
+.planning
+.claude
+**/__pycache__
+**/*.pyc
+.pytest_cache
+*.egg-info
+# Large data blobs — fixtures are generated as code, not shipped.
+tests/data/**/*.csv
+tests/data/**/*.parquet
+tests/data/**/*.pkl
