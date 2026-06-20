@@ -1,0 +1,32 @@
+# requirements.lock — edmkt_core dependency pins validated by the golden-run (CORE-03).
+#
+# The golden-run is the version oracle (RESEARCH A2 / D-08): these are the EXACT versions
+# resolved inside the edmkt-core:dev image when tests/test_golden_run.py::test_golden_run_a439
+# reproduced A439 first-attempt AUC = 0.7608 — inside the ±3pp band [0.7027, 0.7627] anchored
+# on the TCC 1 reference 73.2654%. Any version change that moves A439 out of band turns the
+# golden-run red (T-01-08); re-pin here only after the band is green again.
+#
+# REPRODUCIBILITY ANCHOR — the real freeze is the Docker image, not this file:
+#   torch and numpy ship from the conda env of the pinned base image
+#   (pytorch/pytorch:2.7.1-cuda12.8-cudnn9-runtime, see Dockerfile) and are NOT pip-installable
+#   from PyPI as plain `torch==2.7.1+cu128`. To reproduce the numerics, build from that exact
+#   image tag; this lockfile records the resolved versions that tag yields so any drift shows.
+#
+# Validated environment (captured from `docker run edmkt-core:dev python -m pip freeze`,
+# golden-run green on the nitro RTX 4050 / CUDA 12.8 GPU):
+#   Python  3.11.13
+#   CUDA    12.8 (torch.version.cuda)
+
+# --- Provided by the pinned base image conda env (do NOT pip-install over the image) ---
+# torch==2.7.1+cu128      # base image; cu128 wheel, sm_89 (RTX 4050) — the numerics oracle
+# numpy==2.2.6            # base image conda build
+
+# --- Science / data deps (pip-installed in the image RUN layer; pinned exact) ---
+pandas==2.3.3
+javalang==0.13.0
+anytree==2.13.0
+scikit-learn==1.9.0
+scipy==1.17.1
+
+# --- Test runner ---
+pytest==9.1.1
