@@ -1,0 +1,164 @@
+"""RED — orquestração do pipeline KCGen-KT headless `_run_kc_pipeline` (KC-01/KC-04, D-04/D-05).
+
+Espelha test_train_cli.py: chama `_run_kc_pipeline(conn, assignment_id, job_id)` direto sobre
+`tmp_db` + `data_root` herméticos, com o transporte LLM SEMPRE monkeypatchado (nenhum `claude`
+real, nenhuma cota gasta — T-05-01). Pina as transições de estado do job (pending→running→done),
+a aquisição do PipelineLock como 1º ato (holder_pid setado no corpo, liberado ao sair), e o
+hard-fail de conteúdo (D-04): após falha de conteúdo o job marca `failed` e NADA é persistido
+(sem kc/qmatrix parciais). Asserções pinam ESTADO, não numerics.
+
+Wave 0: `edmkt_app.kc_pipeline` ainda não existe → FALHA RED (gate da Wave 1/3).
+"""
+
+from __future__ import annotations
+
+import os
+
+import pandas as pd
+import pytest
+
+# RED: o entrypoint CLI do KC ainda não existe (gate da Wave 1/3).
+from edmkt_app import kc_pipeline  # noqa: E402
+from edmkt_app.persistence import models
+from edmkt_app.persistence import repositories as repos
+
+ASSIGNMENT_ID = 439
+
+_JAVA_BODIES = [
+    "public int g0(int a, int b) { int s = a + b; return s; }",
+    "public boolean g1(int n) { if (n > 0) { return true; } return false; }",
+    "public int g2(int n) { while (n > 0) { n = n - 1; } return n; }",
+]
+
+
+def _row(subject, problem, ts, score, code, csid):
+    return {
+        "SubjectID": subject,
+        "AssignmentID": ASSIGNMENT_ID,
+        "ProblemID": problem,
+        "CodeStateID": csid,
+        "Code": code,
+        "Score": score,
+        "ServerTimestamp": ts,
+        "EventType": "Run.Program",
+        "correct": int(score == 1.0),
+    }
+
+
+def _canonical_df() -> pd.DataFrame:
+    base = pd.Timestamp("2019-03-01T08:00:00Z")
+    rows = []
+    for s, body in enumerate(_JAVA_BODIES):
+        for step, (pid, score) in enumerate([(1, 1.0), (2, 1.0), (3, 1.0)]):
+            ts = base + pd.Timedelta(hours=s) + pd.Timedelta(minutes=step)
+            rows.append(_row(f"S{s}", pid, ts, score, body, f"c{s}_{step}"))
+    df = pd.DataFrame(rows)
+    df["ServerTimestamp"] = pd.to_datetime(df["ServerTimestamp"], utc=True)
+    df["AssignmentID"] = df["AssignmentID"].astype("Int64")
+    df["ProblemID"] = df["ProblemID"].astype("Int64")
+    return df
+
+
+@pytest.fixture
+def data_root(tmp_path, monkeypatch):
+    """Aponta kc_pipeline.DATA_ROOT para tmp_path — FS hermético (sem CSEDM real)."""
+    monkeypatch.setattr(kc_pipeline, "DATA_ROOT", tmp_path)
+    return tmp_path
+
+
+def _seed_kc_ready(conn, data_root) -> tuple[int, int]:
+    """turma + assignment trainable + Parquet canônico + kc_job pending. Devolve (aid, job)."""
+    created = "2026-06-21T00:00:00Z"
+    turma_id = repos.TurmaRepository(conn).insert(
+        models.Turma(id=None, name="Turma X", created_at=created)
+    )
+    assignment_id = repos.AssignmentRepository(conn).insert(
+        models.Assignment(
+            id=None,
+            turma_id=turma_id,
+            name=f"Assignment {ASSIGNMENT_ID}",
+            current_version_id=None,
+            created_at=created,
+            status="trainable",
+        )
+    )
+    clean_dir = data_root / "turma-x" / "clean"
+    clean_dir.mkdir(parents=True, exist_ok=True)
+    _canonical_df().to_parquet(
+        clean_dir / f"assignment_{ASSIGNMENT_ID}.parquet", engine="pyarrow", index=False
+    )
+    job_id = repos.KCJobRepository(conn).insert(
+        models.KCJob(id=None, assignment_id=assignment_id, status="pending", created_at=created)
+    )
+    return assignment_id, job_id
+
+
+def _holder_pid(conn):
+    return conn.execute("SELECT holder_pid FROM pipeline_lock WHERE id=1;").fetchone()["holder_pid"]
+
+
+def _patch_llm_ok(monkeypatch):
+    """Faz toda chamada ao LLM devolver ≥1 KC válido por problema (sem tocar `claude`)."""
+
+    def _fake_generate(*_a, **_k):
+        return {"kcs": [{"name": "laços", "reasoning": "usa for"}]}
+
+    monkeypatch.setattr(kc_pipeline, "_llm_generate", _fake_generate, raising=False)
+
+
+def test_lock_busy_marks_failed_and_does_not_persist(tmp_db, data_root):
+    # Dono vivo (este processo) segura o lock → a aquisição da CLI é negada (D-05).
+    conn = tmp_db
+    assignment_id, job_id = _seed_kc_ready(conn, data_root)
+    conn.execute(
+        "UPDATE pipeline_lock SET holder_pid=?, operation='kc_gen', job_id=99 WHERE id=1;",
+        (os.getpid(),),
+    )
+
+    kc_pipeline._run_kc_pipeline(conn, assignment_id, job_id)
+
+    job = repos.KCJobRepository(conn).get(job_id)
+    assert job.status == "failed"
+    assert "busy" in (job.error_message or "").lower()
+    assert _holder_pid(conn) == os.getpid()  # lock segue do dono vivo
+
+
+def test_content_hard_fail_marks_failed_nothing_persisted(tmp_db, data_root, monkeypatch):
+    # D-04: o LLM devolve 0 KCs → após N tentativas o job inteiro marca failed e NADA é
+    # persistido (nem kc, nem qmatrix, nem flip de status do assignment).
+    conn = tmp_db
+    assignment_id, job_id = _seed_kc_ready(conn, data_root)
+
+    def _empty_generate(*_a, **_k):
+        return {"kcs": []}
+
+    monkeypatch.setattr(kc_pipeline, "_llm_generate", _empty_generate, raising=False)
+
+    kc_pipeline._run_kc_pipeline(conn, assignment_id, job_id)
+
+    job = repos.KCJobRepository(conn).get(job_id)
+    assert job.status == "failed"
+    # Nada persistido (D-04: validar-tudo-depois-persistir; falha ⇒ rollback total).
+    assert conn.execute("SELECT COUNT(*) FROM kc;").fetchone()[0] == 0
+    assert conn.execute("SELECT COUNT(*) FROM qmatrix;").fetchone()[0] == 0
+    asg = repos.AssignmentRepository(conn).get(assignment_id)
+    assert asg.status == "trainable"  # não avançou para kc_draft
+    assert _holder_pid(conn) is None  # lock liberado mesmo na falha (with lock)
+
+
+def test_success_transitions_job_and_acquires_lock(tmp_db, data_root, monkeypatch):
+    # Caminho feliz: lock adquirido como 1º ato, job pending→running→done, status vira kc_draft,
+    # lock liberado ao sair. LLM mockado (nunca chama `claude`).
+    conn = tmp_db
+    assignment_id, job_id = _seed_kc_ready(conn, data_root)
+    _patch_llm_ok(monkeypatch)
+
+    kc_pipeline._run_kc_pipeline(conn, assignment_id, job_id)
+
+    job = repos.KCJobRepository(conn).get(job_id)
+    assert job.status == "done"
+    assert job.started_at is not None  # mark_running aconteceu
+    asg = repos.AssignmentRepository(conn).get(assignment_id)
+    assert asg.status == "kc_draft"  # pipeline conclui em kc_draft (D-06)
+    assert conn.execute("SELECT COUNT(*) FROM kc;").fetchone()[0] >= 1  # KCs persistidos
+    assert _holder_pid(conn) is None  # release garantido
