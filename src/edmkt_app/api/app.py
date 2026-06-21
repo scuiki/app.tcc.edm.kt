@@ -20,7 +20,7 @@ from pathlib import Path
 
 from fastapi import FastAPI
 
-from edmkt_app.api import ingestion, training
+from edmkt_app.api import ingestion, kc, training
 from edmkt_app.persistence import connect, run_migrations
 from edmkt_app.persistence.lock import reclaim_orphan_lock
 
@@ -48,4 +48,5 @@ def create_app() -> FastAPI:
     app = FastAPI(lifespan=lifespan, title="EDM·KT")
     app.include_router(training.router)
     app.include_router(ingestion.router)
+    app.include_router(kc.router)
     return app
