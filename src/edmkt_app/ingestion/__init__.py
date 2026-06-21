@@ -6,12 +6,20 @@ científico (edmkt_core) é framework-free e NUNCA importa daqui. Este pacote é
 de eventos canônico (dedup/binarização/integridade — D-10/D-11/D-12) e de toda a escrita de
 SQLite/Parquet da ingestão.
 
-Por ora a surface expõe só o contrato de relatório (D-07); `service.ingest`/`detect_variants`
-entram no plano 05 e crescem este __all__.
+A surface expõe o contrato de relatório (D-07) e a fronteira impura do orquestrador
+(`service.ingest`/`service.detect_variants`) — os pontos de entrada que a app FastAPI consome.
 """
 
 from __future__ import annotations
 
 from edmkt_app.ingestion.report import AssignmentSummary, IngestReport, ReportItem, Severity
+from edmkt_app.ingestion.service import detect_variants, ingest
 
-__all__ = ["AssignmentSummary", "IngestReport", "ReportItem", "Severity"]
+__all__ = [
+    "AssignmentSummary",
+    "IngestReport",
+    "ReportItem",
+    "Severity",
+    "detect_variants",
+    "ingest",
+]
