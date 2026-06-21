@@ -1,0 +1,186 @@
+"""ArtifactStore write-once + versão monótona + content_hash (MODEL-04 / D-04/D-05).
+
+Cobre o coração do MODEL-04: cada versão grava state_dict + vocab + config num diretório
+v<N> write-once, relê com o contrato de reload correto (sem size mismatch — Pitfall 1),
+atribui version_number monótono por (turma, assignment) na MESMA transação do insert
+(Pitfall 5) e calcula content_hash estável (D-04). Herméticos, CPU-only, sobre as fixtures
+tmp_db/tiny_model/tiny_vocab/tiny_config de 02-01. As asserções pinam invariantes
+(round-trip fiel, monotonia, write-once recusa overwrite, hash estável), não valores mágicos.
+"""
+
+from __future__ import annotations
+
+import json
+import pickle
+
+import pytest
+import torch
+
+from edmkt_app.persistence import models
+from edmkt_app.persistence import repositories as repos
+from edmkt_app.persistence.artifacts import ArtifactStore
+
+
+def _seed_turma_assignment(conn) -> tuple[int, int]:
+    """Insere turma + assignment e devolve (turma_id, assignment_id) — pais para os artefatos."""
+    turma_id = repos.TurmaRepository(conn).insert(
+        models.Turma(id=None, name="Turma A", created_at="2026-06-21T00:00:00Z")
+    )
+    assignment_id = repos.AssignmentRepository(conn).insert(
+        models.Assignment(
+            id=None,
+            turma_id=turma_id,
+            name="A1",
+            current_version_id=None,
+            created_at="2026-06-21T00:00:00Z",
+        )
+    )
+    return turma_id, assignment_id
+
+
+def test_save_then_load_roundtrip(tmp_path, tiny_model, tiny_vocab, tiny_config):
+    # save_version grava v1; load_version reconstrói o modelo com os MESMOS args de
+    # construção e carrega o state_dict sem size mismatch; vocab/config relidos == gravados.
+    store = ArtifactStore(str(tmp_path / "data"))
+    result = store.save_version(
+        turma_id=1,
+        assignment_id=1,
+        version_number=1,
+        model=tiny_model,
+        vocab=tiny_vocab,
+        config=tiny_config,
+    )
+
+    vdir = result["dir"]
+    loaded_model, loaded_vocab, meta = store.load_version(vdir)
+
+    assert loaded_vocab == tiny_vocab
+    # meta carrega TODOS os args de construção (Pitfall 1): config + n_problems + counts.
+    for key in tiny_config:
+        assert meta[key] == tiny_config[key]
+    assert meta["node_count"] == tiny_vocab["node_count"]
+    assert meta["path_count"] == tiny_vocab["path_count"]
+
+    # n_problems derivado do modelo vivo (input_dim / fc.out_features) — Open Q1.
+    assert meta["n_problems"] == tiny_model.input_dim == tiny_model.fc.out_features
+
+    # state_dict relido bate com o gravado (sem size mismatch no load_state_dict).
+    for name, tensor in tiny_model.state_dict().items():
+        assert torch.equal(loaded_model.state_dict()[name], tensor)
+
+
+def test_version_monotonic_per_scope(tmp_db, tmp_path, tiny_model, tiny_vocab, tiny_config):
+    # 3 versões para o mesmo (turma, assignment) geram v1, v2, v3; um SEGUNDO assignment
+    # recomeça em v1 (escopo por turma×assignment). O número é MAX+1 calculado na MESMA
+    # transação do insert (Pitfall 5); UNIQUE(assignment_id, version_number) é a rede.
+    conn = tmp_db
+    store = ArtifactStore(str(tmp_path / "data"))
+    turma_id, assignment_a = _seed_turma_assignment(conn)
+    assignment_b = repos.AssignmentRepository(conn).insert(
+        models.Assignment(
+            id=None,
+            turma_id=turma_id,
+            name="A2",
+            current_version_id=None,
+            created_at="2026-06-21T00:00:00Z",
+        )
+    )
+
+    versions_a = [
+        store.persist(conn, turma_id, assignment_a, tiny_model, tiny_vocab, tiny_config)
+        for _ in range(3)
+    ]
+    assert [v["version_number"] for v in versions_a] == [1, 2, 3]
+
+    # segundo assignment recomeça em v1 — escopo por (turma, assignment).
+    version_b = store.persist(conn, turma_id, assignment_b, tiny_model, tiny_vocab, tiny_config)
+    assert version_b["version_number"] == 1
+
+    # as linhas estão de fato persistidas e ordenáveis pelo version_number.
+    rows = conn.execute(
+        "SELECT version_number FROM model_artifact WHERE assignment_id=? ORDER BY version_number;",
+        (assignment_a,),
+    ).fetchall()
+    assert [r["version_number"] for r in rows] == [1, 2, 3]
+
+
+def test_write_once_refuses_overwrite(tmp_path, tiny_model, tiny_vocab, tiny_config):
+    # Re-gravar uma versão cujo diretório já existe FALHA (mkdir sem exist_ok) — D-05/D-06;
+    # nenhum byte do v<N> anterior é alterado.
+    store = ArtifactStore(str(tmp_path / "data"))
+    first = store.save_version(
+        turma_id=1, assignment_id=1, version_number=1,
+        model=tiny_model, vocab=tiny_vocab, config=tiny_config,
+    )
+    weights_before = (__import__("pathlib").Path(first["dir"]) / "model.pt").read_bytes()
+
+    with pytest.raises(FileExistsError):
+        store.save_version(
+            turma_id=1, assignment_id=1, version_number=1,
+            model=tiny_model, vocab=tiny_vocab, config=tiny_config,
+        )
+
+    # write-once: o blob anterior segue intacto após a tentativa recusada.
+    weights_after = (__import__("pathlib").Path(first["dir"]) / "model.pt").read_bytes()
+    assert weights_after == weights_before
+
+
+def test_content_hash_stable_and_dedup(tmp_path, tiny_model, tiny_vocab, tiny_config):
+    # Dois saves dos MESMOS bytes produzem o mesmo content_hash; a detecção de duplicata
+    # NÃO bloqueia a nova versão (version_number ainda avança — D-05 mantém histórico).
+    store = ArtifactStore(str(tmp_path / "data"))
+    h1 = store.save_version(
+        turma_id=1, assignment_id=1, version_number=1,
+        model=tiny_model, vocab=tiny_vocab, config=tiny_config,
+    )["content_hash"]
+    h2 = store.save_version(
+        turma_id=1, assignment_id=1, version_number=2,
+        model=tiny_model, vocab=tiny_vocab, config=tiny_config,
+    )["content_hash"]
+
+    # mesmos bytes -> mesmo hash, mas v2 foi criada do mesmo jeito (dedup avisa, não bloqueia).
+    assert h1 == h2
+    assert len(h1) == 64  # sha256 hexdigest
+
+
+def test_reload_contract_no_size_mismatch(tmp_path):
+    # Reconstruir um CodeDKTModel real via meta.json (todos os args de construção) e
+    # load_state_dict NÃO levanta RuntimeError de shape (Pitfall 1). Usa o modelo de verdade,
+    # não o tiny_model, para exercitar o contrato completo de reconstrução.
+    from edmkt_core.models.code_dkt import CodeDKTModel
+
+    n_problems = 2  # M=1 -> input_dim=output_dim=2 (2M), mínimo construível
+    model = CodeDKTModel(
+        input_dim=n_problems,
+        hidden_dim=8,
+        output_dim=n_problems,
+        node_count=4,
+        path_count=3,
+        dropout=0.1,
+        R=4,
+        node_embed_dim=6,
+        path_embed_dim=6,
+    )
+    vocab = {"token_to_idx": {}, "path_to_idx": {}, "node_count": 4, "path_count": 3}
+    config = {"hidden_dim": 8, "dropout": 0.1, "R": 4, "node_embed_dim": 6, "path_embed_dim": 6}
+
+    store = ArtifactStore(str(tmp_path / "data"))
+    result = store.save_version(
+        turma_id=1, assignment_id=1, version_number=1,
+        model=model, vocab=vocab, config=config,
+    )
+    # não deve levantar RuntimeError de shape mismatch ao reconstruir + load_state_dict.
+    loaded, _, meta = store.load_version(result["dir"])
+    assert meta["n_problems"] == n_problems
+    assert isinstance(loaded, CodeDKTModel)
+
+
+def test_path_stays_under_base(tmp_path, tiny_model, tiny_vocab, tiny_config):
+    # O path resolvido fica sob base (sem traversal). Componentes vêm de IDs inteiros internos.
+    store = ArtifactStore(str(tmp_path / "data"))
+    result = store.save_version(
+        turma_id=1, assignment_id=1, version_number=1,
+        model=tiny_model, vocab=tiny_vocab, config=tiny_config,
+    )
+    base = (tmp_path / "data").resolve()
+    assert str((base)) in str(__import__("pathlib").Path(result["dir"]).resolve())
