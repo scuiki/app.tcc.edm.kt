@@ -69,7 +69,11 @@ def dispatch_training(
             str(body.assignment_id),
             "--job-id",
             str(job_id),
-        ]
+        ],
+        # IN-03: o filho não herda os fds do web (socket/pipe) — coordenação é só por SQLite/WAL.
+        stdin=subprocess.DEVNULL,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
     )
     return {"job_id": job_id, "status": "pending"}
 
