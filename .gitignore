@@ -7,6 +7,10 @@ __pycache__/
 datasets/
 # Dados de turma do fluxo de ingestão (uploads, clean/, cache/, models/)
 data/
+# Banco SQLite do app (criado no boot pelo lifespan; runtime, nunca versionado)
+app.db
+app.db-shm
+app.db-wal
 # Exceção: fixtures de teste versionadas (pequenas, golden de regressão — NÃO são dados de
 # turma nem o CSEDM grande do D-12). tests/data/ é raiz hermética dos testes.
 !tests/data/
