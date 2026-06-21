@@ -16,7 +16,6 @@ A ordem é load-bearing: blob → INSERTs (espelha CR-01 da Fase 2).
 from __future__ import annotations
 
 import re
-import shutil
 from datetime import datetime, timezone
 from pathlib import Path
 
