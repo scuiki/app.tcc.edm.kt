@@ -39,7 +39,7 @@ def _user_version(conn: sqlite3.Connection) -> int:
 
 
 # Última versão de schema aplicada pelo runner (sobe a cada degrau NNNN_*.sql novo).
-_LATEST_VERSION = 3
+_LATEST_VERSION = 4
 
 # As 6 colunas de progresso por-época que 0003 adiciona ao training_job (D-06).
 _TRAINING_JOB_PROGRESS_COLUMNS = {
@@ -159,6 +159,29 @@ def test_migration_0003_grows_training_job_progress(tmp_path):
     run_migrations(conn)
     assert _user_version(conn) == 3
     assert _TRAINING_JOB_PROGRESS_COLUMNS <= _column_names(conn, "training_job")
+
+
+def test_migration_0004_adds_parse_rate(tmp_path):
+    """0004 é forward-only: bumpa user_version=4 e adiciona a coluna parse_rate ao
+    training_job (D-06 estendido/MODEL-05) — a taxa de parse que o subprocess grava p/ o SC-3."""
+    conn = connect(str(tmp_path / "app.db"))
+    run_migrations(conn)
+    assert _user_version(conn) == 4
+    assert "parse_rate" in _column_names(conn, "training_job")
+
+
+def test_migration_0004_repo_round_trips_parse_rate(tmp_path):
+    """Grava parse_rate via o repo e relê via get() — prova o caminho de persistência."""
+    from edmkt_app.persistence import repositories
+
+    conn = connect(str(tmp_path / "app.db"))
+    run_migrations(conn)
+    repo = repositories.TrainingJobRepository(conn)
+    job_id = _seed_training_job(conn)
+
+    repo.mark_done(job_id, updated_at="2026-01-01T00:10:00Z", parse_rate=0.86)
+    job = repo.get(job_id)
+    assert job.parse_rate == 0.86
 
 
 def _seed_training_job(conn: sqlite3.Connection) -> int:
