@@ -38,9 +38,14 @@ def _seed_turma_assignment(conn) -> tuple[int, int]:
     return turma_id, assignment_id
 
 
-def test_save_then_load_roundtrip(tmp_path, tiny_model, tiny_vocab, tiny_config):
-    # save_version grava v1; load_version reconstrói o modelo com os MESMOS args de
-    # construção e carrega o state_dict sem size mismatch; vocab/config relidos == gravados.
+def test_save_writes_blob_and_sidecars(tmp_path, tiny_model, tiny_vocab, tiny_config):
+    # save_version grava os três arquivos (state_dict + vocab.pkl + config.json) e o meta
+    # carrega TODOS os args de construção (Pitfall 1), derivando input_dim/output_dim do
+    # modelo vivo (Open Q1). O state_dict relido bate byte a byte com o salvo — sem
+    # reconstruir a classe aqui (tiny_model é um stand-in; a reconstrução completa de
+    # CodeDKTModel é exercida em test_reload_contract_no_size_mismatch).
+    import pathlib
+
     store = ArtifactStore(str(tmp_path / "data"))
     result = store.save_version(
         turma_id=1,
@@ -51,22 +56,26 @@ def test_save_then_load_roundtrip(tmp_path, tiny_model, tiny_vocab, tiny_config)
         config=tiny_config,
     )
 
-    vdir = result["dir"]
-    loaded_model, loaded_vocab, meta = store.load_version(vdir)
+    vdir = pathlib.Path(result["dir"])
+    assert (vdir / "model.pt").exists()
+    assert (vdir / "vocab.pkl").exists()
+    assert (vdir / "config.json").exists()
 
-    assert loaded_vocab == tiny_vocab
-    # meta carrega TODOS os args de construção (Pitfall 1): config + n_problems + counts.
+    reloaded_vocab = pickle.loads((vdir / "vocab.pkl").read_bytes())
+    meta = json.loads((vdir / "config.json").read_text())
+    assert reloaded_vocab == tiny_vocab
     for key in tiny_config:
         assert meta[key] == tiny_config[key]
     assert meta["node_count"] == tiny_vocab["node_count"]
     assert meta["path_count"] == tiny_vocab["path_count"]
+    # input_dim/output_dim derivados do objeto vivo — o CodeDKTModel real tem input_dim != output_dim.
+    assert meta["input_dim"] == tiny_model.input_dim
+    assert meta["output_dim"] == tiny_model.fc.out_features == meta["n_problems"]
 
-    # n_problems derivado do modelo vivo (input_dim / fc.out_features) — Open Q1.
-    assert meta["n_problems"] == tiny_model.input_dim == tiny_model.fc.out_features
-
-    # state_dict relido bate com o gravado (sem size mismatch no load_state_dict).
+    # state_dict relido bate com o gravado (só os pesos foram salvos, não o nn.Module).
+    saved_sd = torch.load(vdir / "model.pt", map_location="cpu")
     for name, tensor in tiny_model.state_dict().items():
-        assert torch.equal(loaded_model.state_dict()[name], tensor)
+        assert torch.equal(saved_sd[name], tensor)
 
 
 def test_version_monotonic_per_scope(tmp_db, tmp_path, tiny_model, tiny_vocab, tiny_config):
@@ -149,11 +158,12 @@ def test_reload_contract_no_size_mismatch(tmp_path):
     # não o tiny_model, para exercitar o contrato completo de reconstrução.
     from edmkt_core.models.code_dkt import CodeDKTModel
 
-    n_problems = 2  # M=1 -> input_dim=output_dim=2 (2M), mínimo construível
+    # CodeDKTModel real: input_dim=2M, output_dim=M (code_dkt.py:148,150) — distintos.
+    M = 2  # n_problems = M; input_dim = 2M
     model = CodeDKTModel(
-        input_dim=n_problems,
+        input_dim=2 * M,
         hidden_dim=8,
-        output_dim=n_problems,
+        output_dim=M,
         node_count=4,
         path_count=3,
         dropout=0.1,
@@ -171,8 +181,12 @@ def test_reload_contract_no_size_mismatch(tmp_path):
     )
     # não deve levantar RuntimeError de shape mismatch ao reconstruir + load_state_dict.
     loaded, _, meta = store.load_version(result["dir"])
-    assert meta["n_problems"] == n_problems
+    assert meta["n_problems"] == M
+    assert meta["input_dim"] == 2 * M
     assert isinstance(loaded, CodeDKTModel)
+    # o state_dict reconstruído bate com o original (contrato de reload completo, sem mismatch).
+    for name, tensor in model.state_dict().items():
+        assert torch.equal(loaded.state_dict()[name], tensor)
 
 
 def test_path_stays_under_base(tmp_path, tiny_model, tiny_vocab, tiny_config):
