@@ -160,3 +160,59 @@ def csedm_main_table() -> pd.DataFrame:
 def cpu_device() -> torch.device:
     """Force CPU so unit/characterization tests never touch the GPU (D-02)."""
     return torch.device("cpu")
+
+
+# --- Phase 2 persistence fixtures (shared by the Wave 2 plans) -------------------
+# Synthetic + hermetic, mirroring a439_mini: built in code, never touching the GPU,
+# real CSEDM, or a persistent app.db. Defined here so the parallel Wave 2 plans
+# (repositories/artifacts/lock/flip) consume one conftest instead of racing edits.
+
+
+@pytest.fixture
+def tmp_db(tmp_path):
+    """A migrated app.db on tmp_path: connect() + run_migrations(), schema at user_version=1."""
+    from edmkt_app.persistence import connect, run_migrations
+
+    conn = connect(str(tmp_path / "app.db"))
+    run_migrations(conn)
+    return conn
+
+
+@pytest.fixture
+def tiny_model() -> torch.nn.Module:
+    """A minuscule nn.Module standing in for a trained Code-DKT — NOT trained.
+
+    Carries the two attributes the artifact reload contract derives from the live
+    object (RESEARCH Open Q1 / Pitfall 1): `.input_dim` and `.fc.out_features`.
+    """
+
+    class _TinyModel(torch.nn.Module):
+        def __init__(self, input_dim: int = 3, output_dim: int = 2):
+            super().__init__()
+            self.input_dim = input_dim
+            self.fc = torch.nn.Linear(input_dim, output_dim)
+
+    return _TinyModel()
+
+
+@pytest.fixture
+def tiny_vocab() -> dict:
+    """Synthetic vocab mapping shaped like the train_and_evaluate vocab (node/path maps)."""
+    return {
+        "token_to_idx": {"<PAD>": 0, "<UNK>": 1, "if": 2, "return": 3},
+        "path_to_idx": {"<PAD>": 0, "<UNK>": 1, "a->b": 2},
+        "node_count": 4,
+        "path_count": 3,
+    }
+
+
+@pytest.fixture
+def tiny_config() -> dict:
+    """Flat FROZEN_CONFIG-style mapping with the args the reload reconstructs."""
+    return {
+        "hidden_dim": 8,
+        "dropout": 0.1,
+        "R": 4,
+        "node_embed_dim": 6,
+        "path_embed_dim": 6,
+    }
