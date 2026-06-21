@@ -10,6 +10,8 @@ from __future__ import annotations
 
 import sqlite3
 
+import pytest
+
 from edmkt_app.persistence import connect, run_migrations
 from edmkt_app.persistence.migrations import runner as runner_mod
 
@@ -39,7 +41,7 @@ def _user_version(conn: sqlite3.Connection) -> int:
 
 
 # Última versão de schema aplicada pelo runner (sobe a cada degrau NNNN_*.sql novo).
-_LATEST_VERSION = 5
+_LATEST_VERSION = 6
 
 # As 6 colunas de progresso por-época que 0003 adiciona ao training_job (D-06).
 _TRAINING_JOB_PROGRESS_COLUMNS = {
@@ -176,13 +178,67 @@ def test_migration_0005_adds_kc_index_and_kc_job(tmp_path):
     training_job (estado do pipeline KCGen-KT lido por polling GET, D-05/KC-01)."""
     conn = connect(str(tmp_path / "app.db"))
     run_migrations(conn)
-    assert _user_version(conn) == 5
+    assert _user_version(conn) >= 5
     assert "kc_index" in _column_names(conn, "kc")
     assert "kc_job" in _table_names(conn)
     # A tabela kc_job tem a forma do job de background (espelha training_job): status + estágio.
     assert {"id", "assignment_id", "status", "created_at", "stage", "error_message"} <= (
         _column_names(conn, "kc_job")
     )
+
+
+def test_migration_0006_adds_qmatrix_unique_index(tmp_path):
+    """0006 é forward-only: bumpa user_version=6 e cria o índice UNIQUE que torna o
+    INSERT/UPDATE OR IGNORE de qmatrix real (WR-04)."""
+    conn = connect(str(tmp_path / "app.db"))
+    run_migrations(conn)
+    assert _user_version(conn) == 6
+    indexes = {
+        r["name"]
+        for r in conn.execute(
+            "SELECT name FROM sqlite_master WHERE type='index' AND tbl_name='qmatrix';"
+        )
+    }
+    assert "uq_qmatrix_assignment_kc_problem" in indexes
+
+
+def test_qmatrix_unique_blocks_duplicate_binding(tmp_path):
+    """O trio (assignment_id, kc_id, problem_id) é único: um INSERT direto do mesmo trio levanta
+    IntegrityError, e o INSERT OR IGNORE do repo dedupe de fato (WR-04)."""
+    import sqlite3 as _sqlite3
+
+    from edmkt_app.persistence import models, repositories
+
+    conn = connect(str(tmp_path / "app.db"))
+    run_migrations(conn)
+    turma_id = repositories.TurmaRepository(conn).insert(
+        models.Turma(id=None, name="t", created_at="2026-01-01T00:00:00Z")
+    )
+    aid = repositories.AssignmentRepository(conn).insert(
+        models.Assignment(
+            id=None, turma_id=turma_id, name="a", current_version_id=None,
+            created_at="2026-01-01T00:00:00Z",
+        )
+    )
+    kc_id = repositories.KCRepository(conn).insert(
+        models.KC(id=None, assignment_id=aid, name="k", kc_index=None)
+    )
+    qrepo = repositories.QMatrixRepository(conn)
+    qrepo.insert(models.QMatrix(id=None, assignment_id=aid, kc_id=kc_id, problem_id=7))
+
+    # INSERT direto do mesmo trio viola o UNIQUE.
+    with pytest.raises(_sqlite3.IntegrityError):
+        conn.execute(
+            "INSERT INTO qmatrix (assignment_id, kc_id, problem_id) VALUES (?, ?, ?);",
+            (aid, kc_id, 7),
+        )
+    # O OR IGNORE do bulk-insert dedupe sem estourar: a contagem fica em 1 (sem duplicata).
+    qrepo.insert_bindings(aid, kc_id, [7, 7])
+    n = conn.execute(
+        "SELECT COUNT(*) FROM qmatrix WHERE assignment_id=? AND kc_id=? AND problem_id=7;",
+        (aid, kc_id),
+    ).fetchone()[0]
+    assert n == 1
 
 
 def test_migration_0004_repo_round_trips_parse_rate(tmp_path):
