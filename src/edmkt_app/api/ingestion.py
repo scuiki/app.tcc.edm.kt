@@ -34,6 +34,16 @@ class ProcessRequest(BaseModel):
     main_table: str
 
 
+def _confine(p: Path, root: Path) -> Path:
+    # Resolve-depois-confere: opera no path JÁ resolvido (fecha ../ e symlink) e exige que ele
+    # seja root ou esteja sob ela. Espelha ArtifactStore._version_dir / _safe_csid_name.
+    resolved_root = root.resolve()
+    resolved_p = p.resolve()
+    if not resolved_p.is_relative_to(resolved_root):
+        raise HTTPException(status_code=400, detail="caminho fora da raiz de dados")
+    return resolved_p
+
+
 def _save_upload(upload: UploadFile, dest: Path) -> None:
     # Streaming em blocos contando bytes reais: ler o arquivo inteiro em RAM derrubaria o
     # processo num upload grande; aborta no instante em que o real ultrapassa o teto.
@@ -88,9 +98,12 @@ def process(
     O serviço adquire a trava AQUI e devolve um relatório "busy" (has_fatal) se ocupado — o
     router só repassa o relatório como JSON, sem decidir nada.
     """
-    report = service.ingest(
-        conn, Path(body.raw_dir), body.turma_name, Path(body.main_table)
-    )
+    # Confina ambos os paths do corpo sob a raiz de dados ANTES de qualquer read — sem isso,
+    # main_table="/etc/passwd" vira leitura arbitrária de arquivo via pandas (CR-01). A raiz vem
+    # de service.DATA_ROOT em tempo de chamada (monkeypatchável no teste), não de um literal.
+    confined_raw = _confine(Path(body.raw_dir), service.DATA_ROOT)
+    confined_main = _confine(Path(body.main_table), service.DATA_ROOT)
+    report = service.ingest(conn, confined_raw, body.turma_name, confined_main)
     return {
         "has_fatal": report.has_fatal,
         "items": [
