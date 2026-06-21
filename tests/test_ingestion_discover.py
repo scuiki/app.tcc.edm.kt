@@ -13,6 +13,7 @@ from pathlib import Path
 
 import pytest
 
+from edmkt_app.ingestion import discover as discover_mod
 from edmkt_app.ingestion.discover import (
     detect_variants,
     extract_zip,
@@ -88,6 +89,32 @@ def test_extract_zip_teto_de_membros(tmp_path: Path) -> None:
     dest = tmp_path / "raw"
     with pytest.raises(ValueError):
         extract_zip(src, dest)
+
+
+def test_extract_zip_teto_de_bytes_reais_descomprimidos(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # CR-02: o guarda autoritativo conta bytes DESCOMPRIMIDOS reais via streaming, não o header
+    # atacante-controlado. Em vez de gerar GiB, abaixamos o teto para um valor pequeno e provamos
+    # que conteúdo real acima dele aborta — o pre-check por file_size sozinho não pegaria isto.
+    monkeypatch.setattr(discover_mod, "_MAX_TOTAL_UNCOMPRESSED", 1024)  # 1 KiB
+    monkeypatch.setattr(discover_mod, "_CHUNK", 256)  # força múltiplas leituras por membro
+    src = _make_zip(tmp_path / "bomb.zip", {"big.txt": "A" * 4096})  # 4 KiB reais > 1 KiB
+    dest = tmp_path / "raw"
+    with pytest.raises(ValueError):
+        extract_zip(src, dest)
+
+
+def test_extract_zip_streaming_aceita_membro_dentro_do_teto(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Contraprova: conteúdo abaixo do teto passa pelo caminho de streaming e é escrito íntegro.
+    monkeypatch.setattr(discover_mod, "_CHUNK", 16)  # múltiplos chunks num arquivo pequeno
+    content = "SubjectID\n" + "S1\n" * 50
+    src = _make_zip(tmp_path / "ok.zip", {"All/MainTable.csv": content})
+    dest = tmp_path / "raw"
+    extract_zip(src, dest)
+    assert (dest / "All" / "MainTable.csv").read_text() == content
 
 
 def test_discover_nao_importa_nucleo_nem_trava() -> None:
