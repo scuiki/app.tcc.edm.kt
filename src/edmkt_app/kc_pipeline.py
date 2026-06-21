@@ -35,7 +35,7 @@ from edmkt_core.kc import (
 )
 from edmkt_app.kc_cache import PROMPT_VERSION, cache_get, cache_put, kc_input_hash
 from edmkt_app.llm.claude_cli import ClaudeCLIClient
-from edmkt_app.llm.validation import EmptyContentError, call_with_retry, validate_kc_result
+from edmkt_app.llm.validation import EmptyContentError, call_with_retry
 from edmkt_app.persistence import connect
 from edmkt_app.persistence import models
 from edmkt_app.persistence import repositories as repos
@@ -220,7 +220,7 @@ def _kc_body(conn, assignment_id: int, job_id: int) -> dict:
     return {"n_clusters": n_clusters, "n_problems": len(problem_ids)}
 
 
-def _cluster_and_label(unique_names: list[str], cache_dir: Path) -> tuple[dict, dict, dict]:
+def _cluster_and_label(unique_names: list[str], cache_dir: Path) -> tuple[int, dict, dict]:
     """SBERT-encode → silhouette/HAC → rotula cada cluster pela porta LLM (Etapas 3-4).
 
     SBERT é importado preguiçosamente (não está em todo ambiente de teste): só é tocado quando
