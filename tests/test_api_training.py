@@ -19,7 +19,9 @@ from edmkt_app.persistence import repositories as repos
 _NOW = "2026-06-21T00:00:00Z"
 
 
-def _seed_assignment(conn, status: str = "trainable") -> int:
+# KC-03: o guard de /training agora exige 'kc_approved' (era 'trainable'). O caminho-feliz
+# semeia já-aprovado; os testes de rejeição passam um status explícito não-aprovado.
+def _seed_assignment(conn, status: str = "kc_approved") -> int:
     turma_id = repos.TurmaRepository(conn).insert(
         models.Turma(id=None, name="Turma X", created_at=_NOW)
     )
@@ -78,6 +80,19 @@ def test_dispatch_rejects_not_trainable_409(api_client, monkeypatch):
 
     resp = client.post("/training", json={"assignment_id": aid})
     assert resp.status_code == 409
+
+
+def test_dispatch_blocked_before_approval_then_ok_after(api_client, monkeypatch):
+    # KC-03: o gate humano — kc_draft (não-aprovado) é 409; aprovar destrava o /training.
+    client, conn = api_client
+    aid = _seed_assignment(conn, status="kc_draft")
+    _FakePopen.calls = []
+    monkeypatch.setattr(training.subprocess, "Popen", _FakePopen)
+
+    assert client.post("/training", json={"assignment_id": aid}).status_code == 409
+
+    repos.AssignmentRepository(conn).set_status(aid, "kc_approved")
+    assert client.post("/training", json={"assignment_id": aid}).status_code == 202
 
 
 def test_dispatch_rejects_missing_assignment_409(api_client, monkeypatch):

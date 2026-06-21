@@ -46,9 +46,10 @@ def dispatch_training(
     conn: sqlite3.Connection = Depends(get_conn),
 ) -> dict:
     assignment = repos.AssignmentRepository(conn).get(body.assignment_id)
-    if assignment is None or assignment.status != "trainable":
-        # eda_only / inexistente não pode treinar — gate da Fase 3 (D-03).
-        raise HTTPException(status_code=409, detail="assignment não está trainable")
+    if assignment is None or assignment.status != "kc_approved":
+        # KC-03: o guard exige kc_approved — sem treino antes da aprovação da Q-matrix pelo
+        # professor. O fluxo de estado é trainable → kc_draft → kc_approved → (trained).
+        raise HTTPException(status_code=409, detail="Q-matrix ainda não aprovada pelo professor")
     if _pipeline_busy(conn):
         raise HTTPException(status_code=409, detail="pipeline ocupado; aguarde o treino atual")
 
