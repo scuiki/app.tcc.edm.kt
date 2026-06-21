@@ -303,6 +303,39 @@ def cache_code_states() -> dict[str, str]:
     }
 
 
+# --- Phase 4 FastAPI fixtures (plan 04-04) ----------------------------------------
+# Primeira camada HTTP do projeto: TestClient sobre create_app(), com o app.db em tmp_path
+# e DATA_ROOT redirecionado para o tmp — herméticos, sem rede nem app.db persistente.
+
+
+@pytest.fixture
+def api_client(tmp_path, monkeypatch):
+    """TestClient sobre create_app() com app.db migrado em tmp_path + DATA_ROOT hermético.
+
+    O lifespan resolve o db_path por EDMKT_DB_PATH; apontamos para tmp_path/app.db e
+    redirecionamos service.DATA_ROOT para a mesma raiz tmp. O `with TestClient(...)` dispara
+    startup/shutdown (roda migrations + reclaim no startup). Devolve (client, conn) onde conn
+    é uma conexão de teste separada para o mesmo app.db (caminho de leitura WAL).
+    """
+    from fastapi.testclient import TestClient
+
+    from edmkt_app.api import create_app
+    from edmkt_app.ingestion import service
+    from edmkt_app.persistence import connect
+
+    db_path = tmp_path / "app.db"
+    monkeypatch.setenv("EDMKT_DB_PATH", str(db_path))
+    monkeypatch.setattr(service, "DATA_ROOT", tmp_path)
+
+    app = create_app()
+    with TestClient(app) as client:
+        conn = connect(str(db_path))
+        try:
+            yield client, conn
+        finally:
+            conn.close()
+
+
 @pytest.fixture
 def ingest_layout_dir(tmp_path) -> Path:
     """Árvore com CodeStates em LinkTables/ (variante CodeWorkout/golden — D-02) + múltiplas
