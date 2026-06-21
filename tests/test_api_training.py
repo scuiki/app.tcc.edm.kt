@@ -123,6 +123,35 @@ def test_poll_returns_progress_fields(api_client, monkeypatch):
     assert body["train_loss"] == 0.42
 
 
+def test_poll_returns_parse_rate(api_client, monkeypatch):
+    """GET /training/{job_id} expõe parse_rate ao professor (SC-3) com o valor gravado."""
+    client, conn = api_client
+    aid = _seed_assignment(conn)
+    _FakePopen.calls = []
+    monkeypatch.setattr(training.subprocess, "Popen", _FakePopen)
+    job_id = client.post("/training", json={"assignment_id": aid}).json()["job_id"]
+
+    # Simula o subprocess concluindo com a taxa de parse gravada (conexão de teste separada).
+    repos.TrainingJobRepository(conn).mark_done(job_id, updated_at=_NOW, parse_rate=0.86)
+
+    resp = client.get(f"/training/{job_id}")
+    assert resp.status_code == 200
+    assert resp.json()["parse_rate"] == 0.86
+
+
+def test_poll_parse_rate_null_when_unset(api_client, monkeypatch):
+    """Job ainda em andamento (sem parse_rate gravado) → GET devolve parse_rate null sem erro."""
+    client, conn = api_client
+    aid = _seed_assignment(conn)
+    _FakePopen.calls = []
+    monkeypatch.setattr(training.subprocess, "Popen", _FakePopen)
+    job_id = client.post("/training", json={"assignment_id": aid}).json()["job_id"]
+
+    resp = client.get(f"/training/{job_id}")
+    assert resp.status_code == 200
+    assert resp.json()["parse_rate"] is None
+
+
 def test_poll_missing_job_404(api_client):
     client, _ = api_client
     resp = client.get("/training/9999")
