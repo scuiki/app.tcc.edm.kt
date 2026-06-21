@@ -336,6 +336,111 @@ def api_client(tmp_path, monkeypatch):
             conn.close()
 
 
+# --- Phase 6 mastery fixtures (plan 06-01) ----------------------------------------
+# Cross-cutting Wave 0 dependency: o fixture trained_artifact persiste um CodeDKTModel
+# MINÚSCULO via ArtifactStore (não o tiny_model stand-in — load_version reconstrói um
+# CodeDKTModel de verdade), semeia uma Q-matrix determinística (problem→KC) + KCs, e
+# expõe tudo que os planos de mastery-core/API precisam p/ uma matriz aluno×KC
+# determinística. Sintético/hermético: CPU-only, sob tmp_path, NUNCA o CSEDM real.
+
+
+@pytest.fixture
+def trained_artifact(tmp_db, tmp_path, tiny_vocab, tiny_config):
+    """Artefato Code-DKT minúsculo persistido + Q-matrix/KC determinísticos (DASH-01/02/03/05).
+
+    NÃO é treinado: os pesos vêm de seed fixa (set_global_seed), não de um treino real — a
+    matriz aluno×KC daqui é determinística e reproduzível, não um AUC realista (o golden-run
+    é o oráculo de numerics). Persiste via ArtifactStore.persist para que load_version
+    (artifacts.py:142) reconstrua o CodeDKTModel com weights_only=True. Q-matrix: 3 problemas
+    (1,2,3) → 2 KCs, com o problema 3 ligado a ambos os KCs, exercitando a média problem→KC.
+
+    Devolve um namespace com: conn (DB migrado), turma_id, assignment_id (id DB), artifact_id,
+    version_number, artifact_dir, kcs (list[KC] com ids DB), qmatrix (list[QMatrix]) e o store.
+    """
+    from edmkt_app.persistence import models
+    from edmkt_app.persistence import repositories as repos
+    from edmkt_app.persistence.artifacts import ArtifactStore
+    from edmkt_core.models.code_dkt import CodeDKTModel
+    from edmkt_core.seeding import set_global_seed
+
+    conn = tmp_db
+    now = "2026-06-21T00:00:00Z"
+
+    turma_id = repos.TurmaRepository(conn).insert(
+        models.Turma(id=None, name="Turma 6", created_at=now)
+    )
+    assignment_id = repos.AssignmentRepository(conn).insert(
+        models.Assignment(
+            id=None,
+            turma_id=turma_id,
+            name="A439",
+            current_version_id=None,
+            created_at=now,
+            status="kc_approved",
+        )
+    )
+
+    # CodeDKTModel real, dims minúsculas — n_problems(M)=3, input_dim=2M (code_dkt.py:148,150),
+    # embeddings/hidden pequenos p/ rodar instantâneo na CPU. Pesos de seed fixa, não treinados.
+    set_global_seed(42, strict=False)
+    M = 3
+    model = CodeDKTModel(
+        input_dim=2 * M,
+        hidden_dim=tiny_config["hidden_dim"],
+        output_dim=M,
+        node_count=tiny_vocab["node_count"],
+        path_count=tiny_vocab["path_count"],
+        dropout=tiny_config["dropout"],
+        R=tiny_config["R"],
+        node_embed_dim=tiny_config["node_embed_dim"],
+        path_embed_dim=tiny_config["path_embed_dim"],
+    )
+
+    store = ArtifactStore(str(tmp_path / "data"))
+    persisted = store.persist(conn, turma_id, assignment_id, model, tiny_vocab, tiny_config)
+    artifact_id = persisted["artifact_id"]
+    # Publica o ponteiro current_version_id — o caminho de leitura do dashboard segue daqui
+    # (assignment.current_version_id → model_artifact → artifact_dir → load_version).
+    from edmkt_app.persistence.artifacts import flip_current
+
+    flip_current(conn, assignment_id, artifact_id)
+
+    # Q-matrix determinística: problemas 1,2,3 → KC1/KC2; o problema 3 liga AMBOS os KCs,
+    # forçando a média problem→KC (Pitfall 2: KC-mastery = mean sobre os problemas do KC).
+    kc_repo = repos.KCRepository(conn)
+    kc1 = kc_repo.insert(models.KC(id=None, assignment_id=assignment_id, name="Laços", kc_index=0))
+    kc2 = kc_repo.insert(
+        models.KC(id=None, assignment_id=assignment_id, name="Condicionais", kc_index=1)
+    )
+    qm_repo = repos.QMatrixRepository(conn)
+    bindings = [(kc1, 1), (kc1, 3), (kc2, 2), (kc2, 3)]
+    for kc_id, problem_id in bindings:
+        qm_repo.insert(
+            models.QMatrix(id=None, assignment_id=assignment_id, kc_id=kc_id, problem_id=problem_id)
+        )
+
+    kcs = kc_repo.list_by_assignment(assignment_id)
+    qmatrix = qm_repo.list_by_assignment(assignment_id)
+
+    class _TrainedArtifact:
+        pass
+
+    ns = _TrainedArtifact()
+    ns.conn = conn
+    ns.turma_id = turma_id
+    ns.assignment_id = assignment_id
+    ns.artifact_id = artifact_id
+    ns.version_number = persisted["version_number"]
+    ns.artifact_dir = persisted["dir"]
+    ns.kcs = kcs
+    ns.qmatrix = qmatrix
+    ns.store = store
+    ns.model = model
+    ns.vocab = tiny_vocab
+    ns.config = tiny_config
+    return ns
+
+
 # --- Phase 5 KC pipeline fixtures (plan 05-01) ------------------------------------
 # Golden de regressão do KCGen-KT: os artefatos REAIS do TCC 1 (A439) copiados de
 # ../tcc.edm.kt/results/ para tests/data/kc/. Nenhum teste chama o `claude` real — o
