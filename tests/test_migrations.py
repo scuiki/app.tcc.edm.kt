@@ -147,7 +147,7 @@ def test_migration_0002_grows_assignment_and_submission(tmp_path):
     de estado do assignment (status) + event_type do stream canônico na submission (D-05/D-13)."""
     conn = connect(str(tmp_path / "app.db"))
     run_migrations(conn)
-    assert _user_version(conn) == 2
+    assert _user_version(conn) >= 2
     assert "status" in _column_names(conn, "assignment")
     assert "event_type" in _column_names(conn, "submission")
 

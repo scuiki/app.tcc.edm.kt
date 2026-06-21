@@ -245,7 +245,8 @@ class TrainingJobRepository:
 
     def get(self, job_id: int) -> Optional[models.TrainingJob]:
         row = self._conn.execute(
-            "SELECT id, assignment_id, status, created_at FROM training_job WHERE id = ?;",
+            "SELECT id, assignment_id, status, created_at, current_epoch, total_epochs, "
+            "train_loss, started_at, updated_at, error_message FROM training_job WHERE id = ?;",
             (job_id,),
         ).fetchone()
         if row is None:
@@ -255,4 +256,36 @@ class TrainingJobRepository:
             assignment_id=row["assignment_id"],
             status=row["status"],
             created_at=row["created_at"],
+            current_epoch=row["current_epoch"],
+            total_epochs=row["total_epochs"],
+            train_loss=row["train_loss"],
+            started_at=row["started_at"],
+            updated_at=row["updated_at"],
+            error_message=row["error_message"],
+        )
+
+    def update_progress(
+        self, job_id: int, current_epoch: int, train_loss: float, updated_at: str
+    ) -> None:
+        self._conn.execute(
+            "UPDATE training_job SET current_epoch = ?, train_loss = ?, updated_at = ? WHERE id = ?;",
+            (current_epoch, train_loss, updated_at, job_id),
+        )
+
+    def mark_running(self, job_id: int, total_epochs: int, started_at: str) -> None:
+        self._conn.execute(
+            "UPDATE training_job SET status = 'running', total_epochs = ?, started_at = ? WHERE id = ?;",
+            (total_epochs, started_at, job_id),
+        )
+
+    def mark_done(self, job_id: int, updated_at: str) -> None:
+        self._conn.execute(
+            "UPDATE training_job SET status = 'done', updated_at = ? WHERE id = ?;",
+            (updated_at, job_id),
+        )
+
+    def mark_failed(self, job_id: int, error_message: str) -> None:
+        self._conn.execute(
+            "UPDATE training_job SET status = 'failed', error_message = ? WHERE id = ?;",
+            (error_message, job_id),
         )
