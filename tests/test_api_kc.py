@@ -164,6 +164,57 @@ def test_remove_that_empties_a_problem_is_blocked(api_client):
     assert conn.execute("SELECT COUNT(*) FROM qmatrix WHERE kc_id=?;", (only_kc,)).fetchone()[0] == 1
 
 
+def test_merge_rejects_cross_assignment_kc(api_client):
+    # CR-02: kc_drop pertence a OUTRO assignment → merge rejeitado (sem delete cross-assignment).
+    client, conn = api_client
+    aid_a = _seed_assignment(conn, status="kc_draft")
+    aid_b = _seed_assignment(conn, status="kc_draft")
+    keep = _seed_kc(conn, aid_a, "keep")
+    _bind(conn, aid_a, keep, problem_id=1)
+    # KC de OUTRO assignment — não pode ser tocado por um merge sobre aid_a.
+    foreign = _seed_kc(conn, aid_b, "foreign")
+    _bind(conn, aid_b, foreign, problem_id=1)
+
+    resp = client.post(
+        "/kc/merge", json={"assignment_id": aid_a, "kc_keep": keep, "kc_drop": foreign}
+    )
+    assert resp.status_code in (403, 409)
+
+    # O KC alheio (e seu binding) seguem intactos — nenhuma FK pendurada.
+    assert repos.KCRepository(conn).get(foreign) is not None
+    assert (
+        conn.execute("SELECT COUNT(*) FROM qmatrix WHERE kc_id=?;", (foreign,)).fetchone()[0] == 1
+    )
+
+
+def test_merge_rejects_keep_from_other_assignment(api_client):
+    # CR-02: kc_keep alheio também é rejeitado (qualquer um dos dois fora do assignment falha).
+    client, conn = api_client
+    aid_a = _seed_assignment(conn, status="kc_draft")
+    aid_b = _seed_assignment(conn, status="kc_draft")
+    drop = _seed_kc(conn, aid_a, "drop")
+    _bind(conn, aid_a, drop, problem_id=1)
+    foreign_keep = _seed_kc(conn, aid_b, "foreign-keep")
+
+    resp = client.post(
+        "/kc/merge", json={"assignment_id": aid_a, "kc_keep": foreign_keep, "kc_drop": drop}
+    )
+    assert resp.status_code in (403, 409)
+    assert repos.KCRepository(conn).get(drop) is not None  # nada deletado
+
+
+def test_merge_self_merge_rejected(api_client):
+    # CR-02: mesclar um KC consigo mesmo é uma operação sem sentido → 409 claro.
+    client, conn = api_client
+    aid = _seed_assignment(conn, status="kc_draft")
+    kc_id = _seed_kc(conn, aid, "x")
+    _bind(conn, aid, kc_id, problem_id=1)
+
+    resp = client.post("/kc/merge", json={"assignment_id": aid, "kc_keep": kc_id, "kc_drop": kc_id})
+    assert resp.status_code == 409
+    assert repos.KCRepository(conn).get(kc_id) is not None  # não se autodeletou
+
+
 # --- gate de aprovação (KC-03, D-06) ----------------------------------------------
 
 
