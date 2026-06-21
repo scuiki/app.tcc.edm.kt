@@ -92,3 +92,6 @@ class TrainingJob:
     started_at: Optional[str] = None
     updated_at: Optional[str] = None
     error_message: Optional[str] = None
+    # Taxa de parse javalang por-assignment (D-06 estendido/MODEL-05): nasce None; o subprocess
+    # de treino grava no sucesso. Sobrevive ao término do processo filho (SC-3).
+    parse_rate: Optional[float] = None

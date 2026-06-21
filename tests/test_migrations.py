@@ -157,7 +157,7 @@ def test_migration_0003_grows_training_job_progress(tmp_path):
     por-época do training_job (D-06) — o que a CLI da plan 03 escreve durante o treino."""
     conn = connect(str(tmp_path / "app.db"))
     run_migrations(conn)
-    assert _user_version(conn) == 3
+    assert _user_version(conn) >= 3
     assert _TRAINING_JOB_PROGRESS_COLUMNS <= _column_names(conn, "training_job")
 
 
