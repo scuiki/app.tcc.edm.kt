@@ -38,11 +38,15 @@ def _user_version(conn: sqlite3.Connection) -> int:
     return conn.execute("PRAGMA user_version;").fetchone()[0]
 
 
+# Última versão de schema aplicada pelo runner (sobe a cada degrau NNNN_*.sql novo).
+_LATEST_VERSION = 2
+
+
 def test_runner_applies_in_order(tmp_path):
     conn = connect(str(tmp_path / "app.db"))
     assert _user_version(conn) == 0
     run_migrations(conn)
-    assert _user_version(conn) == 1
+    assert _user_version(conn) == _LATEST_VERSION
     assert _ALL_TABLES <= _table_names(conn)
 
 
@@ -51,7 +55,7 @@ def test_runner_idempotent(tmp_path):
     run_migrations(conn)
     # Second pass must not re-execute the DDL ("table already exists") nor bump again.
     run_migrations(conn)
-    assert _user_version(conn) == 1
+    assert _user_version(conn) == _LATEST_VERSION
 
 
 def test_runner_bumps_atomically(tmp_path):
@@ -119,6 +123,32 @@ def test_default_migrations_dir_is_package_local(tmp_path):
     """run_migrations() with no dir argument resolves the package's own migrations/."""
     conn = connect(str(tmp_path / "app.db"))
     run_migrations(conn)  # uses the default dir
-    assert _user_version(conn) == 1
+    assert _user_version(conn) == _LATEST_VERSION
     # The default dir is the package's migrations folder (sanity on the resolution).
     assert runner_mod._default_migrations_dir().name == "migrations"
+
+
+def _column_names(conn: sqlite3.Connection, table: str) -> set[str]:
+    return {r["name"] for r in conn.execute(f"PRAGMA table_info({table});")}
+
+
+def test_migration_0002_grows_assignment_and_submission(tmp_path):
+    """0002 é forward-only: aplica sobre o 0001, bumpa user_version=2 e adiciona as colunas
+    de estado do assignment (status) + event_type do stream canônico na submission (D-05/D-13)."""
+    conn = connect(str(tmp_path / "app.db"))
+    run_migrations(conn)
+    assert _user_version(conn) == 2
+    assert "status" in _column_names(conn, "assignment")
+    assert "event_type" in _column_names(conn, "submission")
+
+
+def test_pyarrow_parquet_roundtrip(tmp_path):
+    """Guarda de regressão do checkpoint manual do Task 1: o engine pyarrow do to_parquet
+    está instalado e faz round-trip no container (sem ele a ingestão D-13 falha)."""
+    import pandas as pd
+
+    df = pd.DataFrame({"a": [1, 2], "b": ["x", "y"]})
+    path = tmp_path / "t.parquet"
+    df.to_parquet(path, engine="pyarrow", index=False)
+    back = pd.read_parquet(path)
+    assert back.equals(df)

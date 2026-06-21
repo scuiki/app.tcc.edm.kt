@@ -30,6 +30,7 @@ class Assignment:
     name: str
     current_version_id: Optional[int]  # ponteiro para o ModelArtifact publicado; nasce None (D-06)
     created_at: str
+    status: Optional[str] = None  # estado de 1ª classe (D-05/D-08): 'eda_only' | 'trainable'
 
 
 @dataclass
@@ -41,6 +42,7 @@ class Submission:
     problem_id: Optional[int]
     score: Optional[float]
     created_at: str
+    event_type: Optional[str] = None  # tipo do evento do stream canônico (D-13): Run.Program | Compile.Error
 
 
 @dataclass

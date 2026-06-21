@@ -43,20 +43,21 @@ class AssignmentRepository:
 
     def insert(self, assignment: models.Assignment) -> int:
         cur = self._conn.execute(
-            "INSERT INTO assignment (turma_id, name, current_version_id, created_at) "
-            "VALUES (?, ?, ?, ?);",
+            "INSERT INTO assignment (turma_id, name, current_version_id, created_at, status) "
+            "VALUES (?, ?, ?, ?, ?);",
             (
                 assignment.turma_id,
                 assignment.name,
                 assignment.current_version_id,
                 assignment.created_at,
+                assignment.status,
             ),
         )
         return cur.lastrowid
 
     def get(self, assignment_id: int) -> Optional[models.Assignment]:
         row = self._conn.execute(
-            "SELECT id, turma_id, name, current_version_id, created_at "
+            "SELECT id, turma_id, name, current_version_id, created_at, status "
             "FROM assignment WHERE id = ?;",
             (assignment_id,),
         ).fetchone()
@@ -68,6 +69,7 @@ class AssignmentRepository:
             name=row["name"],
             current_version_id=row["current_version_id"],
             created_at=row["created_at"],
+            status=row["status"],
         )
 
 
@@ -78,8 +80,8 @@ class SubmissionRepository:
     def insert(self, submission: models.Submission) -> int:
         cur = self._conn.execute(
             "INSERT INTO submission "
-            "(assignment_id, code_state_id, subject_id, problem_id, score, created_at) "
-            "VALUES (?, ?, ?, ?, ?, ?);",
+            "(assignment_id, code_state_id, subject_id, problem_id, score, created_at, event_type) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?);",
             (
                 submission.assignment_id,
                 submission.code_state_id,
@@ -87,13 +89,15 @@ class SubmissionRepository:
                 submission.problem_id,
                 submission.score,
                 submission.created_at,
+                submission.event_type,
             ),
         )
         return cur.lastrowid
 
     def get(self, submission_id: int) -> Optional[models.Submission]:
         row = self._conn.execute(
-            "SELECT id, assignment_id, code_state_id, subject_id, problem_id, score, created_at "
+            "SELECT id, assignment_id, code_state_id, subject_id, problem_id, score, "
+            "created_at, event_type "
             "FROM submission WHERE id = ?;",
             (submission_id,),
         ).fetchone()
@@ -107,6 +111,7 @@ class SubmissionRepository:
             problem_id=row["problem_id"],
             score=row["score"],
             created_at=row["created_at"],
+            event_type=row["event_type"],
         )
 
 
