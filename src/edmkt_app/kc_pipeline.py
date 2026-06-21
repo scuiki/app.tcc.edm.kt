@@ -213,8 +213,10 @@ def _kc_body(conn, assignment_id: int, job_id: int) -> dict:
         conn.execute(
             "UPDATE assignment SET status='kc_draft' WHERE id=?;", (assignment_id,)
         )
+        # WR-01: mark_done DENTRO da txn — o flip de status e a conclusão do job são atômicos.
+        # Fora dela, uma falha de mark_done deixaria assignment 'kc_draft' + job 'failed'.
+        job_repo.mark_done(job_id, updated_at=_now_iso())
 
-    job_repo.mark_done(job_id, updated_at=_now_iso())
     return {"n_clusters": n_clusters, "n_problems": len(problem_ids)}
 
 
