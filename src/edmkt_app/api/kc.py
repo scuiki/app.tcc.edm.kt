@@ -212,8 +212,21 @@ def merge_kc(
 ) -> dict:
     kc_repo = repos.KCRepository(conn)
     qmatrix_repo = repos.QMatrixRepository(conn)
-    if kc_repo.get(body.kc_keep) is None or kc_repo.get(body.kc_drop) is None:
+    if body.kc_keep == body.kc_drop:
+        # CR-02: auto-merge não faz sentido — 409 explícito em vez de depender do rollback D-07.
+        raise HTTPException(status_code=409, detail="kc_keep e kc_drop são o mesmo KC")
+    kc_keep_obj = kc_repo.get(body.kc_keep)
+    kc_drop_obj = kc_repo.get(body.kc_drop)
+    if kc_keep_obj is None or kc_drop_obj is None:
         raise HTTPException(status_code=404, detail="KC inexistente")
+    # CR-02 (autorização): AMBOS os KCs precisam pertencer a body.assignment_id antes de qualquer
+    # mutação. Sem este guard, kc_repo.delete(kc_drop) apagaria um KC de OUTRO assignment (DELETE
+    # sem filtro de assignment), deixando FK pendurada na qmatrix alheia.
+    if (
+        kc_keep_obj.assignment_id != body.assignment_id
+        or kc_drop_obj.assignment_id != body.assignment_id
+    ):
+        raise HTTPException(status_code=409, detail="KC não pertence ao assignment")
     # merge = união de bindings (kc_drop → kc_keep); os problemas de kc_drop é que poderiam zerar.
     affected = qmatrix_repo.problems_of_kc(body.kc_drop)
     try:
