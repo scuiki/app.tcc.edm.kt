@@ -6,7 +6,7 @@ port and never imports edmkt_app, anthropic, subprocess, or the filesystem — t
 is injected by the app layer.
 """
 
-from edmkt_core.kc.clustering import select_best_n_clusters
+from edmkt_core.kc.clustering import CANDIDATE_N_CLUSTERS, select_best_n_clusters
 from edmkt_core.kc.generation import KC_SCHEMA, EmptyKCError, generate_kcs_for_problem
 from edmkt_core.kc.labeling import label_cluster
 from edmkt_core.kc.ports import LLMClient
@@ -14,6 +14,7 @@ from edmkt_core.kc.qmatrix import build_qmatrix
 from edmkt_core.kc.sampling import diversity_sample
 
 __all__ = [
+    "CANDIDATE_N_CLUSTERS",
     "KC_SCHEMA",
     "EmptyKCError",
     "LLMClient",
