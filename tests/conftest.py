@@ -44,6 +44,10 @@ _JAVA_OK_B = "public int g(int a, int b) { int s = a + b; return s; }"
 _JAVA_OK_C = "public boolean h(int n) { if (n > 0) { return true; } return false; }"
 # Deliberately malformed Java — exercises the try/except DoS guard (returns []).
 _JAVA_BAD = "public int oops( { return ;;; }"
+# Parses (parse_member_declaration accepts it) but has no leaf pairs, so
+# extract_paths_javalang returns [] WITHOUT raising — the parsed_sem_paths case
+# that the 3-way classifier must separate from parse_failed (D-09).
+_JAVA_EMPTY_CLASS = "class C {}"
 
 
 def _row(subject, problem, ts, event, score, code, csid):
@@ -271,6 +275,32 @@ def ingest_bom_csv(tmp_path) -> Path:
         encoding="utf-8-sig",  # prefixa o BOM (﻿) no arquivo
     )
     return main
+
+
+# --- Phase 4 feature-cache fixtures (plan 04-02) ----------------------------------
+# Synthetic + hermetic like a439_mini: code-built snippets keyed by CodeStateID, never
+# the real CSEDM. The cache wrapper namespaces files per turma and skips re-extraction
+# on a hit; these feed the incremental-skip / namespace / no-leak / traversal tests.
+
+
+@pytest.fixture
+def cache_config() -> dict:
+    """FROZEN_CONFIG-shaped path-extraction args the cache wrapper forwards to build_cache
+    (Shi et al. 2022 reproducibility: R=50, max_path_length=8, max_path_width=2, seed=42)."""
+    return {"max_path_length": 8, "max_path_width": 2, "R": 50, "seed": 42}
+
+
+@pytest.fixture
+def cache_code_states() -> dict[str, str]:
+    """{CodeStateID: Java} mixing every parse class so one fixture drives all cache tests:
+    com_paths (c_ok*), parsed_sem_paths (c_empty), parse_failed (c_bad), no_code (c_blank)."""
+    return {
+        "c_ok1": _JAVA_OK_A,
+        "c_ok2": _JAVA_OK_B,
+        "c_empty": _JAVA_EMPTY_CLASS,
+        "c_bad": _JAVA_BAD,
+        "c_blank": "   ",
+    }
 
 
 @pytest.fixture
