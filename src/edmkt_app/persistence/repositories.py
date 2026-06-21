@@ -72,6 +72,12 @@ class AssignmentRepository:
             status=row["status"],
         )
 
+    def set_status(self, assignment_id: int, status: str) -> None:
+        # status é dado de borda (kc_draft/kc_approved/...) — parametrizado, nunca interpolado.
+        self._conn.execute(
+            "UPDATE assignment SET status = ? WHERE id = ?;", (status, assignment_id)
+        )
+
 
 class SubmissionRepository:
     def __init__(self, conn: sqlite3.Connection) -> None:
@@ -139,6 +145,28 @@ class KCRepository:
             kc_index=row["kc_index"],
         )
 
+    def list_by_assignment(self, assignment_id: int) -> list[models.KC]:
+        rows = self._conn.execute(
+            "SELECT id, assignment_id, name, kc_index FROM kc WHERE assignment_id = ?;",
+            (assignment_id,),
+        ).fetchall()
+        return [
+            models.KC(
+                id=r["id"],
+                assignment_id=r["assignment_id"],
+                name=r["name"],
+                kc_index=r["kc_index"],
+            )
+            for r in rows
+        ]
+
+    def rename(self, kc_id: int, name: str) -> None:
+        # name é dado do professor (KC-02): parametrizado `?`, nunca interpolado (V5/T-05-11).
+        self._conn.execute("UPDATE kc SET name = ? WHERE id = ?;", (name, kc_id))
+
+    def delete(self, kc_id: int) -> None:
+        self._conn.execute("DELETE FROM kc WHERE id = ?;", (kc_id,))
+
 
 class QMatrixRepository:
     def __init__(self, conn: sqlite3.Connection) -> None:
@@ -164,6 +192,81 @@ class QMatrixRepository:
             kc_id=row["kc_id"],
             problem_id=row["problem_id"],
         )
+
+    def list_by_assignment(self, assignment_id: int) -> list[models.QMatrix]:
+        rows = self._conn.execute(
+            "SELECT id, assignment_id, kc_id, problem_id FROM qmatrix WHERE assignment_id = ?;",
+            (assignment_id,),
+        ).fetchall()
+        return [
+            models.QMatrix(
+                id=r["id"],
+                assignment_id=r["assignment_id"],
+                kc_id=r["kc_id"],
+                problem_id=r["problem_id"],
+            )
+            for r in rows
+        ]
+
+    def list_by_problem(self, assignment_id: int, problem_id: int) -> list[models.QMatrix]:
+        rows = self._conn.execute(
+            "SELECT id, assignment_id, kc_id, problem_id FROM qmatrix "
+            "WHERE assignment_id = ? AND problem_id = ?;",
+            (assignment_id, problem_id),
+        ).fetchall()
+        return [
+            models.QMatrix(
+                id=r["id"],
+                assignment_id=r["assignment_id"],
+                kc_id=r["kc_id"],
+                problem_id=r["problem_id"],
+            )
+            for r in rows
+        ]
+
+    def insert_bindings(
+        self, assignment_id: int, kc_id: int, problem_ids: list[int]
+    ) -> None:
+        # Bulk-insert no shape de _persist_atomic: loop de insert dentro da txn do caller
+        # (não abre txn própria). OR IGNORE evita duplicar o par (problem, kc) já ligado.
+        for problem_id in problem_ids:
+            self._conn.execute(
+                "INSERT OR IGNORE INTO qmatrix (assignment_id, kc_id, problem_id) "
+                "VALUES (?, ?, ?);",
+                (assignment_id, kc_id, problem_id),
+            )
+
+    def repoint_bindings(self, assignment_id: int, kc_keep: int, kc_drop: int) -> None:
+        # merge = união de bindings: cada linha de kc_drop vira binding de kc_keep
+        # (UPDATE OR IGNORE descarta o par (problem, kc_keep) que já existe), depois somem as
+        # linhas de kc_drop. Sem abrir txn — roda dentro do `with transaction` do caller.
+        self._conn.execute(
+            "UPDATE OR IGNORE qmatrix SET kc_id = ? WHERE kc_id = ? AND assignment_id = ?;",
+            (kc_keep, kc_drop, assignment_id),
+        )
+        self._conn.execute(
+            "DELETE FROM qmatrix WHERE kc_id = ? AND assignment_id = ?;",
+            (kc_drop, assignment_id),
+        )
+
+    def delete_by_kc(self, kc_id: int) -> None:
+        self._conn.execute("DELETE FROM qmatrix WHERE kc_id = ?;", (kc_id,))
+
+    def problems_of_kc(self, kc_id: int) -> list[int]:
+        # Os problemas que ESTE KC liga — colhidos ANTES de remover/mesclar para sabermos quais
+        # checar contra a invariante 0-KC depois (D-07): só esses problemas podem zerar.
+        rows = self._conn.execute(
+            "SELECT DISTINCT problem_id FROM qmatrix WHERE kc_id = ? AND problem_id IS NOT NULL;",
+            (kc_id,),
+        ).fetchall()
+        return [r["problem_id"] for r in rows]
+
+    def kc_count_for_problem(self, assignment_id: int, problem_id: int) -> int:
+        row = self._conn.execute(
+            "SELECT COUNT(*) AS n FROM qmatrix WHERE assignment_id = ? AND problem_id = ?;",
+            (assignment_id, problem_id),
+        ).fetchone()
+        return row["n"]
 
 
 class ModelArtifactRepository:
