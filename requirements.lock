@@ -29,5 +29,11 @@ scikit-learn==1.9.0
 scipy==1.17.1
 pyarrow==24.0.0          # engine de Parquet do stream canônico (D-13); resolvido no container (cp311)
 
+# --- HTTP/I/O stack (camada de transporte; não toca a numérica do golden-run) ---
+fastapi==0.138.0
+uvicorn[standard]==0.49.0
+python-multipart==0.0.32
+
 # --- Test runner ---
 pytest==9.1.1
+httpx==0.28.1            # transport do TestClient (dev)
