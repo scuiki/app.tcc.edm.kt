@@ -53,6 +53,10 @@ def call_with_retry(
     que dreceria a cota, D-04). O sleep é `time.sleep` referenciado em runtime para o teste poder
     monkeypatchá-lo a no-op.
     """
+    # WR-03: retries<1 deixaria o loop sem rodar e `raise last_exc` viraria `raise None`
+    # (TypeError opaco). Guard explícito antes de tentar.
+    if retries < 1:
+        raise ValueError(f"retries must be >= 1, got {retries}")
     last_exc: TransientLLMError | None = None
     for attempt in range(retries):
         try:

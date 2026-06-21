@@ -80,6 +80,13 @@ def test_transient_then_success(monkeypatch):
     assert out == {"kcs": [{"name": "ok"}]}
 
 
+def test_retries_below_one_raises_value_error():
+    # WR-03: retries=0 → range(0) vazio, last_exc fica None, e `raise None` daria TypeError opaco.
+    # Guard explícito: ValueError claro antes de tentar.
+    with pytest.raises(ValueError):
+        call_with_retry(lambda: {"kcs": [{"name": "x"}]}, retries=0)
+
+
 def test_empty_content_is_not_retried(monkeypatch):
     # Conteúdo-vazio NÃO é transiente: re-chamar não ajuda → propaga sem retry inútil (D-04).
     calls = {"n": 0}
