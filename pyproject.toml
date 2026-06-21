@@ -22,6 +22,11 @@ dependencies = [
     "javalang==0.13.0",
     "anytree==2.13.0",
     "scikit-learn==1.9.0",
+    # SBERT (KCGen-KT Etapa 3): única dependência nova da Fase 5. Pin = versão do TCC 1
+    # (notebook de pesquisa: s-transformers = 5.4.1), não a latest — fidelidade do silhouette/
+    # embeddings com results/kc_clusters_A*.json (Open Q1, KC-01). Transporte/embeddings, NÃO
+    # toca a numérica de treino do Code-DKT (não afeta a banda ±3pp do golden-run).
+    "sentence-transformers==5.4.1",
     "pyarrow==24.0.0",  # engine de DataFrame.to_parquet — stream canônico em Parquet (D-13)
     # HTTP/I/O stack (waves 2-3): camada de transporte, NÃO toca a numérica de treino —
     # a banda ±3pp segue ancorada na tag fixa da imagem torch, não nestes pins.
