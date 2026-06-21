@@ -18,6 +18,23 @@ def _default_migrations_dir() -> pathlib.Path:
     return pathlib.Path(__file__).resolve().parent
 
 
+def _strip_line_comment(line: str) -> str:
+    """Remove o comentário `--` inline, preservando `--` dentro de string literal.
+
+    Varre a linha alternando in_string em cada `'`: o primeiro `--` FORA de string encerra
+    a linha; um `--` dentro de aspas simples (ex.: o literal 'a--b') é preservado."""
+    in_string = False
+    i = 0
+    while i < len(line):
+        c = line[i]
+        if c == "'":
+            in_string = not in_string
+        elif c == "-" and not in_string and i + 1 < len(line) and line[i + 1] == "-":
+            return line[:i]
+        i += 1
+    return line
+
+
 def _split_statements(sql: str) -> list[str]:
     """Split a migration script into individual statements.
 
@@ -25,11 +42,9 @@ def _split_statements(sql: str) -> list[str]:
     DDL+bump (Open Question 2). So we run statements one at a time inside our own BEGIN
     and reserve the user_version bump for the end before COMMIT.
     """
-    # Strip `--` line comments BEFORE splitting on `;` — a `;` inside a comment would
-    # otherwise break the split and glue a comment fragment onto the next statement.
-    no_comments = "\n".join(
-        ln for ln in sql.splitlines() if not ln.strip().startswith("--")
-    )
+    # Remove o comentário `--` inline ANTES do split por `;` — um `;` dentro do comentário
+    # racharia o split e grudaria um fragmento inválido no próximo statement (WR-02).
+    no_comments = "\n".join(_strip_line_comment(ln) for ln in sql.splitlines())
     return [stmt.strip() for stmt in no_comments.split(";") if stmt.strip()]
 
 
