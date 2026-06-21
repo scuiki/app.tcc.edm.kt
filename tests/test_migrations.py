@@ -92,6 +92,29 @@ def test_pipeline_lock_seeded(tmp_path):
     assert rows[0]["holder_pid"] is None
 
 
+def test_inline_comment_does_not_break_split(tmp_path):
+    """Um statement com `-- comentário` inline aplica sem OperationalError mesmo quando o
+    comentário contém um `;` (que, sem strip do comentário, racha o split e gruda um
+    fragmento inválido no próximo statement); e `--` dentro de string literal NÃO é
+    truncado (WR-02)."""
+    migrations_dir = tmp_path / "migs"
+    migrations_dir.mkdir()
+    (migrations_dir / "0001_inline_comments.sql").write_text(
+        # o `;` dentro do comentário inline é o gatilho real do bug do split.
+        "CREATE TABLE foo (id INTEGER PRIMARY KEY, label TEXT);  -- nota; com ponto-e-vírgula\n"
+        "INSERT INTO foo (id, label) VALUES (1, 'a--b');  -- o -- na string não pode sumir\n"
+        "SELECT 1;\n"
+    )
+    conn = connect(str(tmp_path / "app.db"))
+    run_migrations(conn, migrations_dir=migrations_dir)
+
+    assert _user_version(conn) == 1
+    assert "foo" in _table_names(conn)
+    # `--` dentro da string literal foi preservado (não truncado pelo strip de comentário).
+    row = conn.execute("SELECT label FROM foo WHERE id=1;").fetchone()
+    assert row["label"] == "a--b"
+
+
 def test_default_migrations_dir_is_package_local(tmp_path):
     """run_migrations() with no dir argument resolves the package's own migrations/."""
     conn = connect(str(tmp_path / "app.db"))
