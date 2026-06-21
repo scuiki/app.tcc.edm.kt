@@ -21,6 +21,20 @@ from edmkt_app.ingestion.report import ReportItem
 # manter só {Run.Program, Compile.Error} descarta o plain e resolve o empate — não é loop O(n²).
 ALLOWED_EVENTS = {"Run.Program", "Compile.Error"}
 
+# Contrato de colunas do seam: exatamente o que build_sequences/train_and_evaluate consomem
+# (verificado em edmkt_core/sequences.py:16 e pipeline.py:84-130). A ordem é estável p/ o Parquet.
+CANONICAL_COLUMNS = [
+    "SubjectID",
+    "AssignmentID",
+    "ProblemID",
+    "CodeStateID",
+    "Code",
+    "Score",
+    "ServerTimestamp",
+    "EventType",
+    "correct",
+]
+
 
 def clean_event_stream(
     raw: pd.DataFrame, code_states: dict[str, str]
@@ -52,4 +66,26 @@ def clean_event_stream(
         (df["EventType"] == "Run.Program") & (df["Score"] == 1.0)
     ).astype(int)
 
-    return df, items
+    # Integridade referencial (D-11): evento cujo CodeStateID não existe em code_states não tem
+    # snapshot para o núcleo extrair AST — é dropado e contado. Warning, não fatal: dado real tem
+    # ruído e descartar < N eventos órfãos não invalida a turma. Só a contagem entra no ReportItem;
+    # o `Code` cru do aluno NUNCA vai pra log/mensagem (Information Disclosure, T-03-09).
+    known = set(code_states)
+    mask_orphan = ~df["CodeStateID"].astype(str).isin(known)
+    n_orphan = int(mask_orphan.sum())
+    if n_orphan:
+        df = df[~mask_orphan].copy()
+        items.append(
+            ReportItem(
+                check="orphan_codestate",
+                severity="warning",
+                message=f"{n_orphan} evento(s) com CodeStateID órfão descartado(s) — sem snapshot em CodeStates (D-11).",
+                count=n_orphan,
+            )
+        )
+
+    # Join do snapshot por CodeStateID (análogo code_features.load_code_states): após o drop de
+    # órfãos todo CodeStateID remanescente existe em code_states, então o map nunca produz NaN.
+    df["Code"] = df["CodeStateID"].astype(str).map(code_states)
+
+    return df[CANONICAL_COLUMNS].reset_index(drop=True), items
