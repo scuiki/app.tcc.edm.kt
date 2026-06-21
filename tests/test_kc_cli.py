@@ -146,6 +146,32 @@ def test_content_hard_fail_marks_failed_nothing_persisted(tmp_db, data_root, mon
     assert _holder_pid(conn) is None  # lock liberado mesmo na falha (with lock)
 
 
+def test_small_dataset_skips_clustering_no_crash(tmp_db, data_root, monkeypatch):
+    # CR-01: 2..10 nomes únicos de KC — abaixo do menor candidato {10,12,15}. O caminho real
+    # é NÃO clusterizar (cada nome único = seu próprio cluster), sem tocar SBERT/silhouette.
+    # Antes do fix: select_best_n_clusters estourava ValueError em max() de dict vazio → job failed.
+    conn = tmp_db
+    assignment_id, job_id = _seed_kc_ready(conn, data_root)
+
+    # 3 problemas, cada um com um nome de KC DISTINTO → 3 nomes únicos (2 <= n_unique < 10).
+    names = iter(["laços", "condicionais", "aritmética"])
+
+    def _distinct_generate(*_a, **_k):
+        return {"kcs": [{"name": next(names), "reasoning": "x"}]}
+
+    monkeypatch.setattr(kc_pipeline, "_llm_generate", _distinct_generate, raising=False)
+
+    kc_pipeline._run_kc_pipeline(conn, assignment_id, job_id)
+
+    job = repos.KCJobRepository(conn).get(job_id)
+    assert job.status == "done"  # não falhou (sem crash de clustering)
+    asg = repos.AssignmentRepository(conn).get(assignment_id)
+    assert asg.status == "kc_draft"
+    # 3 nomes únicos → 3 KCs (um cluster por nome, sem labeling LLM).
+    assert conn.execute("SELECT COUNT(*) FROM kc;").fetchone()[0] == 3
+    assert _holder_pid(conn) is None
+
+
 def test_success_transitions_job_and_acquires_lock(tmp_db, data_root, monkeypatch):
     # Caminho feliz: lock adquirido como 1º ato, job pending→running→done, status vira kc_draft,
     # lock liberado ao sair. LLM mockado (nunca chama `claude`).

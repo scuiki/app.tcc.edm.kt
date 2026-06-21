@@ -26,6 +26,7 @@ from pathlib import Path
 import pandas as pd
 
 from edmkt_core.kc import (
+    CANDIDATE_N_CLUSTERS,
     build_qmatrix,
     diversity_sample,
     generate_kcs_for_problem,
@@ -151,9 +152,10 @@ def _kc_body(conn, assignment_id: int, job_id: int) -> dict:
         code_samples = [s["code"] for s in samples]
         kc_raw[pid] = generate_kcs_for_problem(int(pid), code_samples, gen_llm)
 
-    # Etapa 3-4: nomes únicos de KC → clusters. Com <2 nomes únicos o silhouette/HAC não se
-    # aplica (Pitfall 5 estendido): cada nome único vira seu próprio cluster, sem SBERT nem
-    # chamada de labeling — caminho real para turmas pequenas.
+    # Etapa 3-4: nomes únicos de KC → clusters. Com menos nomes únicos que o MENOR candidato
+    # {10,12,15} o silhouette/HAC não se aplica (CR-01, Pitfall 5 estendido): cada nome único
+    # vira seu próprio cluster, sem SBERT nem chamada de labeling — caminho real p/ turmas pequenas.
+    # Este guard é o DONO da fronteira; select_best_n_clusters só roda quando há candidato viável.
     unique_names: list[str] = []
     for pid in problem_ids:
         for kc in kc_raw[pid]["kcs"]:
@@ -161,7 +163,7 @@ def _kc_body(conn, assignment_id: int, job_id: int) -> dict:
                 unique_names.append(kc["name"])
 
     job_repo.update_stage(job_id, stage="cluster", updated_at=_now_iso())
-    if len(unique_names) < 2:
+    if len(unique_names) < min(CANDIDATE_N_CLUSTERS):
         kc_to_cluster = {name: i for i, name in enumerate(unique_names)}
         cluster_names = {i: name for i, name in enumerate(unique_names)}
         n_clusters = len(unique_names)
