@@ -39,7 +39,7 @@ def _user_version(conn: sqlite3.Connection) -> int:
 
 
 # Última versão de schema aplicada pelo runner (sobe a cada degrau NNNN_*.sql novo).
-_LATEST_VERSION = 4
+_LATEST_VERSION = 5
 
 # As 6 colunas de progresso por-época que 0003 adiciona ao training_job (D-06).
 _TRAINING_JOB_PROGRESS_COLUMNS = {
@@ -162,12 +162,27 @@ def test_migration_0003_grows_training_job_progress(tmp_path):
 
 
 def test_migration_0004_adds_parse_rate(tmp_path):
-    """0004 é forward-only: bumpa user_version=4 e adiciona a coluna parse_rate ao
+    """0004 é forward-only: bumpa user_version>=4 e adiciona a coluna parse_rate ao
     training_job (D-06 estendido/MODEL-05) — a taxa de parse que o subprocess grava p/ o SC-3."""
     conn = connect(str(tmp_path / "app.db"))
     run_migrations(conn)
-    assert _user_version(conn) == 4
+    assert _user_version(conn) >= 4
     assert "parse_rate" in _column_names(conn, "training_job")
+
+
+def test_migration_0005_adds_kc_index_and_kc_job(tmp_path):
+    """0005 é forward-only: bumpa user_version=5, adiciona a coluna kc.kc_index (id de cluster
+    0..N, fidelidade c/ artefatos TCC, D-06/Open Q2) e cria a tabela kc_job que espelha
+    training_job (estado do pipeline KCGen-KT lido por polling GET, D-05/KC-01)."""
+    conn = connect(str(tmp_path / "app.db"))
+    run_migrations(conn)
+    assert _user_version(conn) == 5
+    assert "kc_index" in _column_names(conn, "kc")
+    assert "kc_job" in _table_names(conn)
+    # A tabela kc_job tem a forma do job de background (espelha training_job): status + estágio.
+    assert {"id", "assignment_id", "status", "created_at", "stage", "error_message"} <= (
+        _column_names(conn, "kc_job")
+    )
 
 
 def test_migration_0004_repo_round_trips_parse_rate(tmp_path):

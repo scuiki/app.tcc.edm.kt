@@ -1,0 +1,284 @@
+{
+  "1": {
+    "problem_description": "Given two integers, return 20 if their sum is between 10 and 19 (inclusive), otherwise return the sum itself.",
+    "kcs": [
+      {
+        "name": "Compound boolean condition with AND operator",
+        "reasoning": "All solutions use && to combine two numeric comparisons into a single range check (a + b >= 10 && a + b <= 19)."
+      },
+      {
+        "name": "Numeric comparison for range validation",
+        "reasoning": "Each solution compares the sum against boundary values (10 and 19) using >= and <= operators to determine if it falls within a target range."
+      },
+      {
+        "name": "Conditional return in if-else statement",
+        "reasoning": "All solutions use return statements inside if/else blocks to conditionally return different integer values based on the range check."
+      },
+      {
+        "name": "Arithmetic expression evaluation in conditionals",
+        "reasoning": "Every solution evaluates a + b directly within the conditional expression without storing it in an intermediate variable first."
+      },
+      {
+        "name": "Method parameter usage in computation",
+        "reasoning": "All solutions accept two integer parameters and perform arithmetic operations on them to compute the result."
+      }
+    ]
+  },
+  "3": {
+    "problem_description": "Determine whether an integer falls within or outside the range [1, 10] based on a mode parameter, returning true if the condition matches the mode.",
+    "kcs": [
+      {
+        "name": "Boolean parameter conditional branching",
+        "reasoning": "All solutions use the outsideMode parameter to branch into two distinct logical paths with different range check semantics."
+      },
+      {
+        "name": "Range boundary checking with relational operators",
+        "reasoning": "Every solution compares n against fixed boundaries (1 and 10) using >=, <=, >, or < operators to determine range membership."
+      },
+      {
+        "name": "Logical AND for range inclusion",
+        "reasoning": "Solutions check if n is within [1, 10] by combining two comparisons with && (n>=1 && n<=10)."
+      },
+      {
+        "name": "Logical OR for range exclusion",
+        "reasoning": "Solutions check if n is outside [1, 10] by testing if n<=1 or n>=10 using the || operator."
+      },
+      {
+        "name": "Boolean negation operator",
+        "reasoning": "Solutions 2 and 5 use the ! operator to negate the outsideMode boolean for conditional logic."
+      },
+      {
+        "name": "Compound boolean expressions",
+        "reasoning": "Solution 5 combines multiple boolean conditions with && and || into a single expression, requiring understanding of operator precedence and associativity."
+      }
+    ]
+  },
+  "5": {
+    "problem_description": "Determine whether to answer a phone call based on three boolean flags: asleep status, whether caller is mom, and whether it is morning.",
+    "kcs": [
+      {
+        "name": "Boolean parameter use in conditionals",
+        "reasoning": "All solutions test boolean parameters directly in if conditions to control program flow based on their true/false values."
+      },
+      {
+        "name": "Logical AND operator for compound conditions",
+        "reasoning": "Solutions 3, 4, and 5 use && to require multiple boolean conditions to be simultaneously true (e.g., isMorning && isMom)."
+      },
+      {
+        "name": "Logical OR operator for alternative conditions",
+        "reasoning": "Solution 5 uses || to combine disjunctive boolean conditions, allowing multiple independent paths to return true."
+      },
+      {
+        "name": "Logical NOT operator for negation",
+        "reasoning": "Solutions 1, 3, and 5 use ! to invert boolean conditions (e.g., !isMorning, !isMom, !isAsleep)."
+      },
+      {
+        "name": "Multi-branch conditional decision structure",
+        "reasoning": "All solutions use nested if/else-if chains to partition the boolean input space and return different results for each case."
+      },
+      {
+        "name": "Boolean return type from method",
+        "reasoning": "All solutions return a boolean value (true or false) from a method with boolean return type declaration."
+      }
+    ]
+  },
+  "12": {
+    "problem_description": "Determine whether a squirrel will play based on temperature and season using nested conditionals and compound boolean logic.",
+    "kcs": [
+      {
+        "name": "Boolean parameter usage and testing",
+        "reasoning": "All solutions accept a boolean parameter and branch logic based on its true/false value to select different temperature thresholds."
+      },
+      {
+        "name": "Compound conditions with logical AND",
+        "reasoning": "Every solution combines temperature range checks and season conditions using && to ensure both criteria are satisfied simultaneously."
+      },
+      {
+        "name": "Range checking with comparison operators",
+        "reasoning": "All solutions test that temperature falls within inclusive bounds using >= and <= operators for lower and upper limits."
+      },
+      {
+        "name": "Boolean negation with NOT operator",
+        "reasoning": "Solutions 1 and 3 use !isSummer to explicitly negate the boolean, testing the condition when summer is false."
+      },
+      {
+        "name": "Nested conditional branching structure",
+        "reasoning": "Solutions 1, 3, and 4 use nested if/else blocks to first test season, then apply the appropriate temperature range for that season."
+      },
+      {
+        "name": "Boolean method return type",
+        "reasoning": "The method must return a boolean primitive type with true/false values, not a String or other type."
+      }
+    ]
+  },
+  "13": {
+    "problem_description": "Determine a speeding fine level (0, 1, or 2) based on speed and whether the driver has a birthday, where birthday status adjusts the speed threshold.",
+    "kcs": [
+      {
+        "name": "Boolean parameter conditional branching",
+        "reasoning": "All solutions use the isBirthday boolean to conditionally modify speed or branch into different threshold checks."
+      },
+      {
+        "name": "Numeric threshold comparison with operators",
+        "reasoning": "All solutions partition speed into three tiers using <=, >=, && operators against fixed boundary values (60/80 or 65/85)."
+      },
+      {
+        "name": "Multi-branch conditional chaining",
+        "reasoning": "Solutions use if/else-if chains (or sequential ifs) to test multiple thresholds and return the appropriate fine level."
+      },
+      {
+        "name": "Integer return type from method",
+        "reasoning": "The method must return an int (0, 1, or 2) based on classification, requiring correct non-void method signature and return statements."
+      },
+      {
+        "name": "Nested vs. flat conditional structures",
+        "reasoning": "Some solutions nest conditions inside the boolean check; others flatten the logic by adjusting speed first—both correctly implement the logic flow."
+      }
+    ]
+  },
+  "232": {
+    "problem_description": "Determine the alarm clock time based on whether it is a vacation day and what day of the week it is, returning different times for weekdays versus weekends under vacation and non-vacation conditions.",
+    "kcs": [
+      {
+        "name": "Nested conditional logic for multiple conditions",
+        "reasoning": "All solutions nest if statements to test vacation status first, then check the day type within each branch, demonstrating layered decision-making."
+      },
+      {
+        "name": "Boolean parameter direct evaluation",
+        "reasoning": "Solutions use the vacation parameter directly in conditionals (if(vacation)), showing understanding that booleans don't require explicit == true comparisons."
+      },
+      {
+        "name": "Logical OR operator for set membership",
+        "reasoning": "Multiple solutions use day == 0 || day == 6 to test if day is a weekend, demonstrating the OR operator for checking multiple alternative values."
+      },
+      {
+        "name": "Logical AND operator for range checking",
+        "reasoning": "Solutions use day >= 1 && day <= 5 to identify weekdays, showing use of AND to combine boundary conditions into a range test."
+      },
+      {
+        "name": "String return values from conditionals",
+        "reasoning": "Each branch returns a distinct string literal representing an alarm time, requiring proper string handling across multiple return paths."
+      },
+      {
+        "name": "Early return within nested blocks",
+        "reasoning": "Solutions terminate execution immediately upon meeting a condition rather than storing intermediate results, demonstrating method control flow with early returns."
+      }
+    ]
+  },
+  "233": {
+    "problem_description": "Determine if two integers satisfy a 'love 6' relationship by checking if either equals 6, their sum equals 6, or their absolute difference equals 6.",
+    "kcs": [
+      {
+        "name": "Logical OR operator for multiple conditions",
+        "reasoning": "All solutions combine multiple boolean expressions with || to check if any of the three conditions is true."
+      },
+      {
+        "name": "Equality comparison with integers",
+        "reasoning": "Every solution tests a == 6 or b == 6 as the primary condition using the == operator."
+      },
+      {
+        "name": "Arithmetic operations in conditionals",
+        "reasoning": "Solutions check a + b == 6 and a - b == 6 (or its absolute value) within boolean expressions."
+      },
+      {
+        "name": "Absolute value function for bidirectional comparison",
+        "reasoning": "Solutions 1, 2, 3, and 5 use Math.abs(a - b) to elegantly handle both positive and negative differences without separate cases."
+      },
+      {
+        "name": "Boolean method return type",
+        "reasoning": "The method signature requires a boolean return type, and all solutions correctly return true or false based on condition evaluation."
+      },
+      {
+        "name": "Early return pattern in conditional logic",
+        "reasoning": "Solutions 3, 4, and 5 demonstrate returning immediately when a condition is met, optimizing control flow."
+      }
+    ]
+  },
+  "234": {
+    "problem_description": "Determine if a cigar party can proceed based on cigar count and whether it is a weekend, applying different quantity rules for weekdays versus weekends.",
+    "kcs": [
+      {
+        "name": "Boolean parameter conditional branching",
+        "reasoning": "All solutions use the isWeekend boolean parameter to distinguish between two different rule sets via if statements."
+      },
+      {
+        "name": "Numeric range validation with operators",
+        "reasoning": "Solutions test numeric boundaries (cigars >= 40 and cigars <= 60) to validate whether counts satisfy party requirements."
+      },
+      {
+        "name": "Logical AND operator for compound conditions",
+        "reasoning": "All solutions combine multiple boolean or numeric tests using && to enforce simultaneous constraints."
+      },
+      {
+        "name": "Logical NOT operator for negation",
+        "reasoning": "Several solutions use !isWeekend to invert the boolean flag and express the alternative weekday case concisely."
+      },
+      {
+        "name": "Boolean return type and literals",
+        "reasoning": "Method signature declares boolean return type; all solutions return true or false literals to satisfy the contract."
+      },
+      {
+        "name": "Conditional early return pattern",
+        "reasoning": "Most solutions use early return statements within if blocks to exit immediately when conditions are satisfied."
+      }
+    ]
+  },
+  "235": {
+    "problem_description": "Determine date compatibility (return 0=no, 1=maybe, 2=yes) based on fashion ratings for two people, where either person being poorly dressed (≤2) means no, either being highly fashionable (≥8) means yes, and in-between means maybe.",
+    "kcs": [
+      {
+        "name": "Multi-branch conditional with logical operators",
+        "reasoning": "All solutions use if/else-if chains with compound boolean conditions (OR/AND) to partition three distinct outcomes based on fashion rating thresholds."
+      },
+      {
+        "name": "Logical OR for disjunctive threshold checking",
+        "reasoning": "Solutions 1, 2, 5 use || to express 'either parameter violates the threshold,' capturing that one poor rating makes return 0 inevitable."
+      },
+      {
+        "name": "Logical AND for conjunctive constraints",
+        "reasoning": "Solutions 3, 4 use && to require multiple conditions simultaneously, testing that both parameters must satisfy bounds before assigning intermediate values."
+      },
+      {
+        "name": "Early return with short-circuit logic",
+        "reasoning": "Solutions 1, 2, 5 return immediately upon matching a condition, avoiding further evaluation and simplifying nested control flow."
+      },
+      {
+        "name": "Integer return value with discrete states",
+        "reasoning": "Each solution returns one of three distinct integers (0, 1, 2) representing different date outcomes, requiring type consistency and value mapping."
+      },
+      {
+        "name": "Default case residual handling",
+        "reasoning": "All solutions correctly assign a default middle value (1) when neither extreme condition is met, either explicitly or implicitly."
+      }
+    ]
+  },
+  "236": {
+    "problem_description": "Determine a ticket score based on how many of three integers match: 20 points if all three are equal, 10 if exactly two match, 0 if all differ.",
+    "kcs": [
+      {
+        "name": "Equality comparison of numeric values",
+        "reasoning": "All solutions use == to test whether pairs or all three parameters are equal, which is the core matching logic."
+      },
+      {
+        "name": "Logical AND for compound conditions",
+        "reasoning": "Solutions combine equality tests with && to check multiple conditions simultaneously (e.g., a == b && a == c for all three equal)."
+      },
+      {
+        "name": "Logical OR for disjunctive matching",
+        "reasoning": "Solutions use || to check if any pair among the three values match, condensing the partial-equality case."
+      },
+      {
+        "name": "Multi-branch conditional chaining",
+        "reasoning": "All solutions use if/else-if/else chains to partition the input space into three distinct scoring buckets with different return values."
+      },
+      {
+        "name": "Early return from method control flow",
+        "reasoning": "Multiple solutions return immediately upon satisfying a condition, avoiding unnecessary subsequent checks and improving readability."
+      },
+      {
+        "name": "Inequality operators for negative conditions",
+        "reasoning": "Solutions 3, 4, and 5 demonstrate using != as an alternative way to express the all-different case without relying solely on positive equality checks."
+      }
+    ]
+  }
+}

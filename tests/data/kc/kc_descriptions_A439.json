@@ -1,0 +1,77 @@
+[
+  {
+    "kc_id": 0,
+    "name": "Range validation with logical operators",
+    "reasoning": "This label captures the core concept that all KCs share: using comparison and logical operators together to check if values fall within specified numeric ranges."
+  },
+  {
+    "kc_id": 1,
+    "name": "Numeric threshold comparison with operators",
+    "reasoning": "This KC already clearly and specifically captures the concept of using comparison operators to evaluate numeric values against threshold limits."
+  },
+  {
+    "kc_id": 2,
+    "name": "Equality comparison of numeric values",
+    "reasoning": "This label subsumes the more specific 'integers' case and generalizes to all numeric types (int, double, float, long), making it the most comprehensive representation of the cluster."
+  },
+  {
+    "kc_id": 3,
+    "name": "Absolute value for comparison operations",
+    "reasoning": "This label clarifies that absolute value is used as a computational tool for performing comparisons rather than just calculating magnitude."
+  },
+  {
+    "kc_id": 4,
+    "name": "Boolean negation with NOT operator",
+    "reasoning": "This label most comprehensively captures the cluster by naming both the concept (Boolean negation) and the specific operator (!), avoiding redundancy while remaining concise."
+  },
+  {
+    "kc_id": 5,
+    "name": "Inequality operators for negative conditions",
+    "reasoning": "This KC is the only item in the cluster and already provides a specific, teachable label for the concept of using inequality operators (!=, <, >, <=, >=) to express negation or opposite conditions."
+  },
+  {
+    "kc_id": 6,
+    "name": "Conditional branching with multiple paths",
+    "reasoning": "This label captures the shared concept of using conditionals to handle multiple decision branches, whether through nesting, chaining, or logical operators."
+  },
+  {
+    "kc_id": 7,
+    "name": "Using arithmetic operations in conditionals",
+    "reasoning": "This label captures both the evaluation of arithmetic expressions and their use within conditional statements as a unified concept."
+  },
+  {
+    "kc_id": 8,
+    "name": "Compound boolean expressions with logical operators",
+    "reasoning": "This label captures the core concept encompassing both AND and OR logical operators used to combine multiple conditions in boolean expressions, which is the common thread across all cluster items."
+  },
+  {
+    "kc_id": 9,
+    "name": "Returning values from conditional statements",
+    "reasoning": "This label captures the common concept of using return statements within if-else blocks to output different values based on conditions, encompassing both the control flow and value-return aspects."
+  },
+  {
+    "kc_id": 10,
+    "name": "Early return pattern in control flow",
+    "reasoning": "This label captures the common concept of using early returns to exit methods based on conditional logic, encompassing nested blocks, short-circuiting, and method control flow without being unnecessarily specific."
+  },
+  {
+    "kc_id": 11,
+    "name": "Method return types and values",
+    "reasoning": "This label captures the common concept of understanding different data types (boolean, integer) that methods can return and work with."
+  },
+  {
+    "kc_id": 12,
+    "name": "Integer return value with discrete states",
+    "reasoning": "This single KC already captures the specific concept of using integer return values to represent distinct program states or conditions, making it a sufficient label for the cluster."
+  },
+  {
+    "kc_id": 13,
+    "name": "Method parameter usage in computation",
+    "reasoning": "This single KC already precisely captures the concept of using method parameters within computational logic and operations."
+  },
+  {
+    "kc_id": 14,
+    "name": "Default case residual handling",
+    "reasoning": "This single KC already precisely describes the concept of handling remaining cases in switch statements when default case is used, making it an adequate cluster label."
+  }
+]

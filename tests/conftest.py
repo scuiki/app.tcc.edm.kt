@@ -336,6 +336,38 @@ def api_client(tmp_path, monkeypatch):
             conn.close()
 
 
+# --- Phase 5 KC pipeline fixtures (plan 05-01) ------------------------------------
+# Golden de regressão do KCGen-KT: os artefatos REAIS do TCC 1 (A439) copiados de
+# ../tcc.edm.kt/results/ para tests/data/kc/. Nenhum teste chama o `claude` real — o
+# transporte é sempre monkeypatchado (subprocess.run/Popen). `fake_claude_envelope` constrói
+# o envelope JSON verificado ao vivo no host (05-RESEARCH §Pattern 1) para esses mocks.
+
+
+@pytest.fixture
+def kc_golden_dir() -> Path:
+    """Path para tests/data/kc — os 4 artefatos golden do TCC (kc_raw/kc_clusters/
+    kc_descriptions/qmatrix _A439), usados pelo golden-replay do pipeline puro (KC-01)."""
+    return Path(__file__).resolve().parent / "data" / "kc"
+
+
+@pytest.fixture
+def fake_claude_envelope():
+    """Constrói o envelope JSON que `claude -p --output-format json` devolve (verificado ao
+    vivo, 05-RESEARCH §Pattern 1). Os testes monkeypatcham subprocess.run para devolver
+    json.dumps(envelope) no stdout, sem nunca chamar o binário real nem gastar cota."""
+
+    def _build(structured_output, result: str = "") -> dict:
+        return {
+            "type": "result",
+            "subtype": "success",
+            "is_error": False,
+            "result": result,
+            "structured_output": structured_output,
+        }
+
+    return _build
+
+
 @pytest.fixture
 def ingest_layout_dir(tmp_path) -> Path:
     """Árvore com CodeStates em LinkTables/ (variante CodeWorkout/golden — D-02) + múltiplas
