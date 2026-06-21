@@ -243,3 +243,16 @@ def test_parse_rate_is_recorded(tmp_db, data_root, fast_config):
     assert "parse_rate" in result
     # Todos os snapshots do fixture parseiam e têm paths ⇒ taxa = 1.0.
     assert result["parse_rate"] == pytest.approx(1.0)
+
+
+def test_parse_rate_is_persisted(tmp_db, data_root, fast_config):
+    """A taxa não pode viver só no dict de retorno (descartado com o subprocess): tem de
+    sobreviver na linha do training_job (SC-3). Relê via get() após _run_training."""
+    conn = tmp_db
+    assignment_id, job_id = _seed_trainable(conn, data_root)
+
+    train._run_training(conn, assignment_id, job_id)
+
+    job = repos.TrainingJobRepository(conn).get(job_id)
+    assert job is not None
+    assert job.parse_rate == pytest.approx(1.0)
