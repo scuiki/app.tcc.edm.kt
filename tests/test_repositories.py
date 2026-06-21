@@ -159,6 +159,45 @@ def test_fk_enforced(tmp_db):
         repos.SubmissionRepository(conn).insert(orphan)
 
 
+def test_assignment_status_roundtrip(tmp_db):
+    # status é estado de primeira classe (D-05/D-08): 'eda_only' | 'trainable' fazem
+    # round-trip fiel pelo insert→get (a ingestão sempre grava explícito).
+    conn = tmp_db
+    turma_id = repos.TurmaRepository(conn).insert(
+        models.Turma(id=None, name="Turma A", created_at="2026-06-21T00:00:00Z")
+    )
+    for status in ("eda_only", "trainable"):
+        aid = repos.AssignmentRepository(conn).insert(
+            models.Assignment(
+                id=None,
+                turma_id=turma_id,
+                name=f"A-{status}",
+                current_version_id=None,
+                created_at="2026-06-21T00:00:00Z",
+                status=status,
+            )
+        )
+        assert repos.AssignmentRepository(conn).get(aid).status == status
+
+
+def test_submission_event_type_roundtrip(tmp_db):
+    # event_type vem do filtro do stream canônico (D-10/D-13): Run.Program | Compile.Error.
+    conn = tmp_db
+    _, assignment_id = _seed_turma_assignment(conn)
+    sub = models.Submission(
+        id=None,
+        assignment_id=assignment_id,
+        code_state_id="cs1",
+        subject_id="S1",
+        problem_id=1,
+        score=1.0,
+        created_at="2026-06-21T00:00:00Z",
+        event_type="Run.Program",
+    )
+    sub_id = repos.SubmissionRepository(conn).insert(sub)
+    assert repos.SubmissionRepository(conn).get(sub_id).event_type == "Run.Program"
+
+
 def test_sql_is_parametrized(tmp_db):
     # Valor malicioso é gravado como dado literal, não executado (placeholders ?).
     conn = tmp_db
