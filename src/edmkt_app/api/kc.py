@@ -251,6 +251,16 @@ def approve_kc(
     assignment = arepo.get(body.assignment_id)
     if assignment is None:
         raise HTTPException(status_code=404, detail="assignment inexistente")
+    # WR-02: só se aprova um rascunho de fato. Aprovar fora de kc_draft (ex.: 'trainable', sem
+    # KC-gen) deixaria dispatch_training rodar sobre uma Q-matrix inexistente, burlando o gate.
+    if assignment.status != "kc_draft":
+        raise HTTPException(
+            status_code=409,
+            detail=f"assignment não está em kc_draft (status atual: {assignment.status})",
+        )
+    # E o rascunho precisa ter ≥1 KC — um kc_draft vazio não tem Q-matrix a treinar (KC-04).
+    if not repos.KCRepository(conn).list_by_assignment(body.assignment_id):
+        raise HTTPException(status_code=409, detail="assignment não tem nenhum KC para aprovar")
     with transaction(conn):
         arepo.set_status(body.assignment_id, "kc_approved")
     return {"assignment_id": body.assignment_id, "status": "kc_approved"}
