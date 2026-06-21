@@ -26,7 +26,7 @@ A banda de ±3pp absorve a variação de seed (std ≈ 1.34pp no TCC 1) e a dife
 ### Pré-requisito: `EDMKT_CSEDM_PATH`
 
 O golden-run lê o dataset CSEDM real a partir da variável de ambiente `EDMKT_CSEDM_PATH`,
-que aponta para o diretório provisionado no nitro (nunca copiado para o repositório):
+que aponta para o dataset provisionado em `datasets/CSEDM/` (gitignored — nunca versionado, D-12):
 
 ```
 $EDMKT_CSEDM_PATH/
@@ -58,7 +58,7 @@ O `addopts = -m 'not golden'` (em `pyproject.toml`) desmarca o golden-run por pa
 ```bash
 docker run --rm --gpus all --security-opt label=disable \
   -v "$PWD":/app -w /app \
-  -v /srv/dev/datasets/CSEDM:/data/CSEDM:ro \
+  -v "$PWD/datasets/CSEDM":/data/CSEDM:ro \
   -e EDMKT_CSEDM_PATH=/data/CSEDM \
   edmkt-core:dev python -m pytest tests/test_golden_run.py -m golden -q -s
 ```

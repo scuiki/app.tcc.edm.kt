@@ -2,3 +2,8 @@
 __pycache__/
 *.py[cod]
 .pytest_cache/
+
+# Datasets provisionados no nitro (golden-run CSEDM etc.) — grandes, nunca versionados (D-12)
+datasets/
+# Dados de turma do fluxo de ingestão (uploads, clean/, cache/, models/)
+data/
