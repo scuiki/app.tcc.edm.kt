@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import json
 import pickle
+import sqlite3
 
 import pytest
 import torch
@@ -187,6 +188,59 @@ def test_reload_contract_no_size_mismatch(tmp_path):
     # o state_dict reconstruído bate com o original (contrato de reload completo, sem mismatch).
     for name, tensor in model.state_dict().items():
         assert torch.equal(loaded.state_dict()[name], tensor)
+
+
+def test_persist_failure_does_not_block_next_version(
+    tmp_db, tmp_path, tiny_model, tiny_vocab, tiny_config
+):
+    # CR-01: se o INSERT falha DEPOIS do blob escrito, o ROLLBACK limpa o banco mas o
+    # diretório v<N> não pode ficar órfão — senão a próxima persist() recalcula o mesmo
+    # N e save_version() bate em FileExistsError, bloqueando o slot permanentemente.
+    import pathlib
+
+    conn = tmp_db
+    store = ArtifactStore(str(tmp_path / "data"))
+    turma_id, assignment_id = _seed_turma_assignment(conn)
+
+    # sqlite3.Connection.execute é read-only (objeto C) — então embrulhamos a conn num proxy
+    # que delega tudo à conn real e intercepta só o INSERT do model_artifact, falhando uma
+    # única vez (deixa BEGIN/SELECT/ROLLBACK/COMMIT passarem). persist() recebe conn por
+    # parâmetro, então o proxy chega lá no lugar da conexão real.
+    class _FailOnceInsertProxy:
+        def __init__(self, real):
+            self._real = real
+            self._armed = True
+
+        def execute(self, sql, *args, **kwargs):
+            if self._armed and sql.lstrip().upper().startswith("INSERT INTO MODEL_ARTIFACT"):
+                self._armed = False  # só falha uma vez
+                raise sqlite3.OperationalError("disk full at INSERT (simulado)")
+            return self._real.execute(sql, *args, **kwargs)
+
+        def __getattr__(self, name):
+            return getattr(self._real, name)
+
+    proxy = _FailOnceInsertProxy(conn)
+
+    # (a) a 1ª persist() propaga a exceção do INSERT.
+    with pytest.raises(sqlite3.OperationalError):
+        store.persist(proxy, turma_id, assignment_id, tiny_model, tiny_vocab, tiny_config)
+
+    # (b) nenhum diretório v1 órfão sobra no FS (rmtree desfez o blob do passo 1).
+    v1 = pathlib.Path(str(tmp_path / "data")) / str(turma_id) / str(assignment_id) / "models" / "v1"
+    assert not v1.exists()
+
+    # (c) a 2ª persist() (execute já restaurado) SUCEDE e devolve version_number == 1 — o slot
+    # foi liberado, não ficou travado por dir órfão.
+    result = store.persist(conn, turma_id, assignment_id, tiny_model, tiny_vocab, tiny_config)
+    assert result["version_number"] == 1
+
+    # (d) a única linha persistida tem version_number == 1.
+    rows = conn.execute(
+        "SELECT version_number FROM model_artifact WHERE assignment_id=? ORDER BY version_number;",
+        (assignment_id,),
+    ).fetchall()
+    assert [r["version_number"] for r in rows] == [1]
 
 
 def test_path_stays_under_base(tmp_path, tiny_model, tiny_vocab, tiny_config):
