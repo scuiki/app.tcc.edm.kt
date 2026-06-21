@@ -17,6 +17,7 @@ from __future__ import annotations
 import hashlib
 import json
 import pickle
+import shutil
 import sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
@@ -176,15 +177,22 @@ class ArtifactStore:
     ) -> dict:
         """Grava o blob write-once e insere a linha ModelArtifact — passos (1) e (2) da ordem.
 
-        A versão monótona e o INSERT acontecem na MESMA transação (Pitfall 5). NÃO faz o flip:
-        o ponteiro current só é trocado por flip_current depois (passo (3), Pitfall 2). Devolve
-        version_number, artifact_id, dir e content_hash."""
+        O blob é gravado FORA da transação (CR-01): se save_version ficasse dentro do BEGIN
+        IMMEDIATE, uma falha do INSERT/COMMIT desfaria o banco mas deixaria o diretório v<N>
+        órfão no FS — e a próxima persist() recalcularia o mesmo N e bateria em FileExistsError,
+        travando o slot. A versão é calculada fora da txn sem corrida porque a trava global
+        (PipelineLock, D-07) garante um único writer por vez; UNIQUE(assignment_id,
+        version_number) segue como rede. A txn cobre só o INSERT; em qualquer falha, o
+        ROLLBACK limpa o banco e o rmtree desfaz o blob recém-escrito, liberando o slot. NÃO
+        faz o flip: o ponteiro current só é trocado por flip_current depois (passo (3),
+        Pitfall 2). Devolve version_number, artifact_id, dir e content_hash."""
+        version_number = next_version_number(conn, assignment_id)
+        saved = self.save_version(
+            turma_id, assignment_id, version_number, model, vocab, config
+        )
+
         conn.execute("BEGIN IMMEDIATE;")
         try:
-            version_number = next_version_number(conn, assignment_id)
-            saved = self.save_version(
-                turma_id, assignment_id, version_number, model, vocab, config
-            )
             cur = conn.execute(
                 "INSERT INTO model_artifact "
                 "(assignment_id, version_number, content_hash, artifact_dir, created_at) "
@@ -201,6 +209,10 @@ class ArtifactStore:
             conn.execute("COMMIT;")
         except BaseException:
             conn.execute("ROLLBACK;")
+            # Desfaz o blob do passo 1 para o slot de versão não ficar bloqueado (CR-01).
+            vdir = Path(saved["dir"])
+            if vdir.exists():
+                shutil.rmtree(vdir)
             raise
         return {
             "version_number": version_number,
