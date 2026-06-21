@@ -216,3 +216,77 @@ def tiny_config() -> dict:
         "node_embed_dim": 6,
         "path_embed_dim": 6,
     }
+
+
+# --- Phase 3 ingestion fixtures (shared by the Wave 2 pure-logic plans) -----------
+# Synthetic + hermetic like a439_mini — NEVER the real CSEDM (Pitfall 2). Each fixture
+# exercises an edge case that has ZERO coverage in the golden dataset (orphan CodeStateID,
+# single-class assignment, BOM, tolerant layout), so the discover/validate/clean/viability
+# plans can pin those behaviors without the real data.
+
+
+@pytest.fixture
+def ingest_orphan_df() -> tuple[pd.DataFrame, dict[str, str]]:
+    """Stream cru + code_states com ≥1 CodeStateID órfão (D-11): um evento aponta para um
+    CodeStateID ausente em CodeStates, exercitando o descarte+contagem do clean (0 cobertura
+    no golden). Devolve (df, code_states) — o clean faz o join Code via code_states."""
+    code_states = {"c1": _JAVA_OK_A, "c2": _JAVA_OK_B}  # "c_orphan" deliberadamente AUSENTE
+    rows = [
+        _row("S1", 1, "2019-03-01T08:00:00Z", "Run.Program", 1.0, _JAVA_OK_A, "c1"),
+        _row("S1", 2, "2019-03-01T08:01:00Z", "Run.Program", 0.0, _JAVA_OK_B, "c2"),
+        _row("S2", 1, "2019-03-01T08:02:00Z", "Run.Program", 1.0, "", "c_orphan"),  # órfão
+    ]
+    df = pd.DataFrame(rows)
+    df["ServerTimestamp"] = pd.to_datetime(df["ServerTimestamp"], utc=True)
+    df["AssignmentID"] = df["AssignmentID"].astype("Int64")
+    df["ProblemID"] = df["ProblemID"].astype("Int64")
+    return df, code_states
+
+
+@pytest.fixture
+def ingest_single_class_df() -> pd.DataFrame:
+    """Assignment cujos first-attempts têm UMA classe só (todos Score==1.0) → AUC indefinido
+    → bloqueio duro de viabilidade (D-09, único bloqueio científico). Sem a outra classe,
+    both_classes_present é False."""
+    rows = [
+        _row("S1", 1, "2019-03-01T08:00:00Z", "Run.Program", 1.0, _JAVA_OK_A, "c1"),
+        _row("S2", 1, "2019-03-01T08:01:00Z", "Run.Program", 1.0, _JAVA_OK_A, "c2"),
+        _row("S3", 2, "2019-03-01T08:02:00Z", "Run.Program", 1.0, _JAVA_OK_B, "c3"),
+    ]
+    df = pd.DataFrame(rows)
+    df["ServerTimestamp"] = pd.to_datetime(df["ServerTimestamp"], utc=True)
+    df["AssignmentID"] = df["AssignmentID"].astype("Int64")
+    df["ProblemID"] = df["ProblemID"].astype("Int64")
+    return df
+
+
+@pytest.fixture
+def ingest_bom_csv(tmp_path) -> Path:
+    """MainTable.csv gravado com BOM UTF-8 (encoding='utf-8-sig'): o validate lê com
+    utf-8-sig (BOM consumido transparente → warning, NÃO fatal — D-05 nível 2)."""
+    main = tmp_path / "MainTable.csv"
+    main.write_text(
+        "SubjectID,AssignmentID,ProblemID,CodeStateID,EventType,Score,ServerTimestamp\n"
+        "S1,439,1,c1,Run.Program,1.0,2019-03-01T08:00:00Z\n",
+        encoding="utf-8-sig",  # prefixa o BOM (﻿) no arquivo
+    )
+    return main
+
+
+@pytest.fixture
+def ingest_layout_dir(tmp_path) -> Path:
+    """Árvore com CodeStates em LinkTables/ (variante CodeWorkout/golden — D-02) + múltiplas
+    MainTable (All/ e Train/ — D-03 → professor escolhe). Exercita o glob tolerante do
+    discover sem reorganização manual."""
+    (tmp_path / "LinkTables").mkdir()
+    (tmp_path / "LinkTables" / "CodeStates.csv").write_text(
+        "CodeStateID,Code\nc1,\"public int f(){return 1;}\"\n", encoding="utf-8"
+    )
+    for variant in ("All", "Train"):
+        (tmp_path / variant).mkdir()
+        (tmp_path / variant / "MainTable.csv").write_text(
+            "SubjectID,AssignmentID,ProblemID,CodeStateID,EventType,Score,ServerTimestamp\n"
+            "S1,439,1,c1,Run.Program,1.0,2019-03-01T08:00:00Z\n",
+            encoding="utf-8",
+        )
+    return tmp_path
