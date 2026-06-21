@@ -10,6 +10,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pandas as pd
+
 from edmkt_app.ingestion.validate import validate
 
 _HEADER = "SubjectID,AssignmentID,ProblemID,CodeStateID,EventType,Score,ServerTimestamp"
@@ -81,6 +83,62 @@ def test_mensagem_fatal_nao_vaza_codigo_do_aluno(tmp_path: Path) -> None:
     for item in items:
         assert secret not in item.message
         assert secret not in (item.location or "")
+
+
+def test_score_string_e_coagido_a_numerico(tmp_path: Path) -> None:
+    # CR-01: ProgSnap2 real traz Score como string. Um token que o pandas NÃO reconhece como NaN
+    # nativo (ex.: "erro") força a coluna inteira a object — aí `Score == 1.0` falha p/ toda linha
+    # (binarização D-12 zera em silêncio) e `float(row.Score)` estoura no persist.
+    main = tmp_path / "MainTable.csv"
+    rows = [
+        "S1,439,1,c1,Run.Program,1.0,2019-03-01T08:00:00Z",  # acerto
+        "S2,439,1,c2,Run.Program,0,2019-03-01T08:01:00Z",  # erro
+        "S3,439,1,c3,Run.Program,erro,2019-03-01T08:02:00Z",  # lixo não-NaN-nativo → object
+        'S4,439,1,c4,Run.Program,,2019-03-01T08:03:00Z',  # vazio → já NaN no read_csv
+    ]
+    main.write_text(f"{_HEADER}\n" + "\n".join(rows) + "\n", encoding="utf-8")
+
+    df, items = validate(main)
+
+    assert df is not None
+    assert not _has_fatal(items)
+    # Coluna numérica (não object): pré-condição para `Score == 1.0` e `float(row.Score)`.
+    assert pd.api.types.is_numeric_dtype(df["Score"])
+    # Binarização correta sobre o tipo coagido: só o "1.0" vira correct=1.
+    correct = ((df["EventType"] == "Run.Program") & (df["Score"] == 1.0)).astype(int)
+    assert correct.tolist() == [1, 0, 0, 0]
+    # "erro" e vazio viram NaN → pd.isna verdadeiro (persist null-ifica em vez de estourar float).
+    assert df["Score"].isna().tolist() == [False, False, True, True]
+
+
+def test_score_nao_numerico_emite_warning_graduado(tmp_path: Path) -> None:
+    # O warning conta SÓ coerções que falharam de verdade: valores que tinham conteúdo mas não
+    # eram numéricos ("erro"). Vazio/"N/A" já chegam NaN do read_csv, então não são "falha de
+    # coerção" — são ausência, contada pelo persist/viability, não aqui.
+    main = tmp_path / "MainTable.csv"
+    rows = [
+        "S1,439,1,c1,Run.Program,1.0,2019-03-01T08:00:00Z",
+        "S2,439,1,c2,Run.Program,erro,2019-03-01T08:01:00Z",  # falha de coerção real
+        "S3,439,1,c3,Run.Program,N/A,2019-03-01T08:02:00Z",  # já NaN no read_csv (não conta)
+        'S4,439,1,c4,Run.Program,,2019-03-01T08:03:00Z',  # já NaN no read_csv (não conta)
+    ]
+    main.write_text(f"{_HEADER}\n" + "\n".join(rows) + "\n", encoding="utf-8")
+
+    _df, items = validate(main)
+
+    warns = [i for i in items if i.check == "score_coercion"]
+    assert len(warns) == 1
+    assert warns[0].severity == "warning"
+    assert warns[0].count == 1  # só o "erro"
+
+
+def test_score_todo_numerico_sem_warning(tmp_path: Path) -> None:
+    main = tmp_path / "MainTable.csv"
+    main.write_text(f"{_HEADER}\n{_ROW}\n", encoding="utf-8")
+
+    _df, items = validate(main)
+
+    assert not any(i.check == "score_coercion" for i in items)
 
 
 def test_validate_nao_importa_nucleo_nem_persistence() -> None:

@@ -72,4 +72,23 @@ def validate(main_path: Path) -> tuple[pd.DataFrame | None, list[ReportItem]]:
     df["AssignmentID"] = pd.to_numeric(df["AssignmentID"], errors="coerce").astype("Int64")
     df["ProblemID"] = pd.to_numeric(df["ProblemID"], errors="coerce").astype("Int64")
 
+    # Score CONTÍNUO mas tipado (D-12 / Pitfall 1+4): num ProgSnap2 real ele chega como string
+    # ("1.0"), vazio ou "N/A". Sem esta coerção a coluna fica object, `Score == 1.0` (clean.py)
+    # é False p/ toda linha — a binarização zera em silêncio e a turma inteira vira EDA-only —,
+    # e `float(row.Score)` estoura no persist. data_loader.load_main_table NÃO coage Score
+    # (CSEDM é bem-comportado); aqui é a fronteira que paga a tolerância do dado real.
+    n_before_nan = int(df["Score"].isna().sum())
+    df["Score"] = pd.to_numeric(df["Score"], errors="coerce")
+    n_coerce_failed = int(df["Score"].isna().sum()) - n_before_nan
+    if n_coerce_failed > 0:
+        # Graduado, não fatal: NaN vira null no persist (pd.isna) e fica fora da binarização.
+        items.append(
+            ReportItem(
+                check="score_coercion",
+                severity="warning",
+                message=f"{n_coerce_failed} valor(es) de Score não numérico(s) coagido(s) a vazio.",
+                count=n_coerce_failed,
+            )
+        )
+
     return df, items
