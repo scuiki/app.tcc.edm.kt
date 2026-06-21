@@ -172,6 +172,30 @@ def test_small_dataset_skips_clustering_no_crash(tmp_db, data_root, monkeypatch)
     assert _holder_pid(conn) is None
 
 
+def test_mark_done_failure_is_atomic_with_persist(tmp_db, data_root, monkeypatch):
+    # WR-01: se mark_done falhar, a flip para kc_draft NÃO pode persistir sozinha. Com mark_done
+    # DENTRO da txn, o raise dá ROLLBACK do flip também → assignment segue 'trainable', job 'failed'
+    # (estado consistente). Antes do fix: assignment 'kc_draft' + job 'failed' (inconsistente).
+    conn = tmp_db
+    assignment_id, job_id = _seed_kc_ready(conn, data_root)
+    _patch_llm_ok(monkeypatch)
+
+    def _boom(self, *_a, **_k):
+        raise RuntimeError("sqlite busy on mark_done")
+
+    monkeypatch.setattr(repos.KCJobRepository, "mark_done", _boom, raising=True)
+
+    kc_pipeline._run_kc_pipeline(conn, assignment_id, job_id)
+
+    asg = repos.AssignmentRepository(conn).get(assignment_id)
+    job = repos.KCJobRepository(conn).get(job_id)
+    # Sem inconsistência: ou tudo persiste com job done, ou nada (aqui: rollback → trainable+failed).
+    assert not (asg.status == "kc_draft" and job.status == "failed")
+    assert asg.status == "trainable"
+    assert conn.execute("SELECT COUNT(*) FROM kc;").fetchone()[0] == 0
+    assert _holder_pid(conn) is None
+
+
 def test_success_transitions_job_and_acquires_lock(tmp_db, data_root, monkeypatch):
     # Caminho feliz: lock adquirido como 1º ato, job pending→running→done, status vira kc_draft,
     # lock liberado ao sair. LLM mockado (nunca chama `claude`).
