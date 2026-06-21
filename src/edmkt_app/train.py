@@ -120,7 +120,9 @@ def _train_body(conn, assignment_id: int, job_id: int) -> dict:
     conn.execute(
         "UPDATE assignment SET status='trained' WHERE id=?;", (assignment_id,)
     )  # D-03: assignment flipa só no fim
-    job_repo.mark_done(job_id, updated_at=_now_iso())
+    # O dict de retorno some com o subprocess fire-and-forget; a linha SQLite é a ponte que
+    # sobrevive ao término do filho — sem isto a taxa nunca chega ao GET (SC-3/MODEL-05).
+    job_repo.mark_done(job_id, updated_at=_now_iso(), parse_rate=rate)
 
     return {
         "parse_rate": rate,

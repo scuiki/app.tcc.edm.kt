@@ -90,4 +90,5 @@ def poll_training(
         "total_epochs": job.total_epochs,
         "train_loss": job.train_loss,
         "error_message": job.error_message,
+        "parse_rate": job.parse_rate,  # cobertura de parse javalang surfaced ao professor (SC-3)
     }
