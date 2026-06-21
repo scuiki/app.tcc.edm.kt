@@ -225,3 +225,19 @@ def merge_kc(
     except _EmptyProblemError as exc:
         raise HTTPException(status_code=409, detail=str(exc))
     return {"kc_keep": body.kc_keep, "kc_drop": body.kc_drop}
+
+
+@router.post("/kc/approve")
+def approve_kc(
+    body: KCApproveRequest,
+    conn: sqlite3.Connection = Depends(get_conn),
+) -> dict:
+    # KC-03: aprovar fecha o gate humano — o fluxo de estado é trainable → kc_draft → kc_approved
+    # (RESEARCH §Pattern 5). É o único caminho que destrava o /training (D-06).
+    arepo = repos.AssignmentRepository(conn)
+    assignment = arepo.get(body.assignment_id)
+    if assignment is None:
+        raise HTTPException(status_code=404, detail="assignment inexistente")
+    with transaction(conn):
+        arepo.set_status(body.assignment_id, "kc_approved")
+    return {"assignment_id": body.assignment_id, "status": "kc_approved"}
