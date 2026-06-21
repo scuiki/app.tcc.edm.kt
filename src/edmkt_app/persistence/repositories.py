@@ -246,7 +246,8 @@ class TrainingJobRepository:
     def get(self, job_id: int) -> Optional[models.TrainingJob]:
         row = self._conn.execute(
             "SELECT id, assignment_id, status, created_at, current_epoch, total_epochs, "
-            "train_loss, started_at, updated_at, error_message FROM training_job WHERE id = ?;",
+            "train_loss, started_at, updated_at, error_message, parse_rate "
+            "FROM training_job WHERE id = ?;",
             (job_id,),
         ).fetchone()
         if row is None:
@@ -262,6 +263,7 @@ class TrainingJobRepository:
             started_at=row["started_at"],
             updated_at=row["updated_at"],
             error_message=row["error_message"],
+            parse_rate=row["parse_rate"],
         )
 
     def update_progress(
@@ -278,11 +280,21 @@ class TrainingJobRepository:
             (total_epochs, started_at, job_id),
         )
 
-    def mark_done(self, job_id: int, updated_at: str) -> None:
-        self._conn.execute(
-            "UPDATE training_job SET status = 'done', updated_at = ? WHERE id = ?;",
-            (updated_at, job_id),
-        )
+    def mark_done(
+        self, job_id: int, updated_at: str, parse_rate: Optional[float] = None
+    ) -> None:
+        # parse_rate default None preserva os callers existentes; quando o subprocess o fornece,
+        # grava na mesma transição de sucesso (D-06 estendido/MODEL-05). SQL parametrizado (T-04-04).
+        if parse_rate is None:
+            self._conn.execute(
+                "UPDATE training_job SET status = 'done', updated_at = ? WHERE id = ?;",
+                (updated_at, job_id),
+            )
+        else:
+            self._conn.execute(
+                "UPDATE training_job SET status = 'done', updated_at = ?, parse_rate = ? WHERE id = ?;",
+                (updated_at, parse_rate, job_id),
+            )
 
     def mark_failed(self, job_id: int, error_message: str) -> None:
         self._conn.execute(
