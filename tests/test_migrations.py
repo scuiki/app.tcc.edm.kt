@@ -39,7 +39,17 @@ def _user_version(conn: sqlite3.Connection) -> int:
 
 
 # Última versão de schema aplicada pelo runner (sobe a cada degrau NNNN_*.sql novo).
-_LATEST_VERSION = 2
+_LATEST_VERSION = 3
+
+# As 6 colunas de progresso por-época que 0003 adiciona ao training_job (D-06).
+_TRAINING_JOB_PROGRESS_COLUMNS = {
+    "current_epoch",
+    "total_epochs",
+    "train_loss",
+    "started_at",
+    "updated_at",
+    "error_message",
+}
 
 
 def test_runner_applies_in_order(tmp_path):
@@ -140,6 +150,97 @@ def test_migration_0002_grows_assignment_and_submission(tmp_path):
     assert _user_version(conn) == 2
     assert "status" in _column_names(conn, "assignment")
     assert "event_type" in _column_names(conn, "submission")
+
+
+def test_migration_0003_grows_training_job_progress(tmp_path):
+    """0003 é forward-only: bumpa user_version=3 e adiciona as 6 colunas de progresso
+    por-época do training_job (D-06) — o que a CLI da plan 03 escreve durante o treino."""
+    conn = connect(str(tmp_path / "app.db"))
+    run_migrations(conn)
+    assert _user_version(conn) == 3
+    assert _TRAINING_JOB_PROGRESS_COLUMNS <= _column_names(conn, "training_job")
+
+
+def _seed_training_job(conn: sqlite3.Connection) -> int:
+    """turma → assignment → training_job; devolve o job_id (FK exige a cadeia)."""
+    from edmkt_app.persistence import models, repositories
+
+    turma_id = repositories.TurmaRepository(conn).insert(
+        models.Turma(id=None, name="t", created_at="2026-01-01T00:00:00Z")
+    )
+    assignment_id = repositories.AssignmentRepository(conn).insert(
+        models.Assignment(
+            id=None,
+            turma_id=turma_id,
+            name="a",
+            current_version_id=None,
+            created_at="2026-01-01T00:00:00Z",
+        )
+    )
+    return repositories.TrainingJobRepository(conn).insert(
+        models.TrainingJob(
+            id=None, assignment_id=assignment_id, status="queued", created_at="2026-01-01T00:00:00Z"
+        )
+    )
+
+
+def test_training_job_born_null_progress(tmp_path):
+    """Uma linha criada antes de qualquer escrita de progresso lê as 6 colunas novas como
+    None (nascem NULL nas linhas pré-progresso)."""
+    from edmkt_app.persistence import repositories
+
+    conn = connect(str(tmp_path / "app.db"))
+    run_migrations(conn)
+    job_id = _seed_training_job(conn)
+
+    job = repositories.TrainingJobRepository(conn).get(job_id)
+    assert job is not None
+    assert job.current_epoch is None
+    assert job.total_epochs is None
+    assert job.train_loss is None
+    assert job.started_at is None
+    assert job.updated_at is None
+    assert job.error_message is None
+
+
+def test_training_job_update_progress_roundtrip(tmp_path):
+    from edmkt_app.persistence import repositories
+
+    conn = connect(str(tmp_path / "app.db"))
+    run_migrations(conn)
+    repo = repositories.TrainingJobRepository(conn)
+    job_id = _seed_training_job(conn)
+
+    repo.update_progress(job_id, current_epoch=5, train_loss=0.42, updated_at="2026-01-01T00:05:00Z")
+    job = repo.get(job_id)
+    assert job.current_epoch == 5
+    assert job.train_loss == 0.42
+    assert job.updated_at == "2026-01-01T00:05:00Z"
+
+
+def test_training_job_mark_transitions(tmp_path):
+    from edmkt_app.persistence import repositories
+
+    conn = connect(str(tmp_path / "app.db"))
+    run_migrations(conn)
+    repo = repositories.TrainingJobRepository(conn)
+    job_id = _seed_training_job(conn)
+
+    repo.mark_running(job_id, total_epochs=40, started_at="2026-01-01T00:00:01Z")
+    job = repo.get(job_id)
+    assert job.status == "running"
+    assert job.total_epochs == 40
+    assert job.started_at == "2026-01-01T00:00:01Z"
+
+    repo.mark_done(job_id, updated_at="2026-01-01T00:10:00Z")
+    job = repo.get(job_id)
+    assert job.status == "done"
+    assert job.updated_at == "2026-01-01T00:10:00Z"
+
+    repo.mark_failed(job_id, "boom")
+    job = repo.get(job_id)
+    assert job.status == "failed"
+    assert job.error_message == "boom"
 
 
 def test_pyarrow_parquet_roundtrip(tmp_path):
