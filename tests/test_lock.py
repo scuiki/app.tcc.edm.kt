@@ -44,16 +44,16 @@ def test_pid_alive():
 
 def test_acquire_blocks_when_held(tmp_db):
     conn = tmp_db
-    # 1ª aquisição: a trava está livre, deve tomar.
-    assert PipelineLock(conn).acquire("train", job_id=1) is True
+    # 1ª aquisição: a trava está livre, deve tomar (handle avalia truthy).
+    assert PipelineLock(conn).acquire("train", job_id=1)
     # holder_pid agora é este processo (vivo), então uma 2ª aquisição é negada.
     assert _holder_pid(conn) == os.getpid()
-    assert PipelineLock(conn).acquire("upload", job_id=2) is False
+    assert not PipelineLock(conn).acquire("upload", job_id=2)
 
 
 def test_busy_state_observable(tmp_db):
     conn = tmp_db
-    assert PipelineLock(conn).acquire("train", job_id=7) is True
+    assert PipelineLock(conn).acquire("train", job_id=7)
     # Estado bloqueado é visível por SELECT: holder_pid não-nulo + operation gravada.
     row = conn.execute(
         "SELECT holder_pid, operation, job_id FROM pipeline_lock WHERE id=1;"
@@ -90,7 +90,7 @@ def test_acquire_steals_dead_holder(tmp_db):
         (dead, "train", 99),
     )
     # Dono morto = trava stale; acquire consegue tomar.
-    assert PipelineLock(conn).acquire("upload", job_id=2) is True
+    assert PipelineLock(conn).acquire("upload", job_id=2)
     assert _holder_pid(conn) == os.getpid()
 
 
