@@ -27,6 +27,7 @@ javalang==0.13.0
 anytree==2.13.0
 scikit-learn==1.9.0
 scipy==1.17.1
+pyarrow==24.0.0          # engine de Parquet do stream canônico (D-13); resolvido no container (cp311)
 
 # --- Test runner ---
 pytest==9.1.1
