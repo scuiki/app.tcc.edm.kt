@@ -162,7 +162,11 @@ class ArtifactStore:
             node_embed_dim=meta["node_embed_dim"],
             path_embed_dim=meta["path_embed_dim"],
         )
-        model.load_state_dict(torch.load(path / "model.pt", map_location="cpu"))
+        # weights_only=True restringe a desserialização a tensores (sem pickle irrestrito);
+        # o state_dict é dict[str, Tensor], totalmente suportado nesse modo (WR-01).
+        model.load_state_dict(
+            torch.load(path / "model.pt", map_location="cpu", weights_only=True)
+        )
         model.eval()
         return model, vocab, meta
 
