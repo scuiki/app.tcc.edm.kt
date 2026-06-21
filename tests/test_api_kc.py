@@ -230,6 +230,27 @@ def test_approve_sets_kc_approved(api_client):
     assert repos.AssignmentRepository(conn).get(aid).status == "kc_approved"
 
 
+def test_approve_rejects_non_draft_assignment(api_client):
+    # WR-02: aprovar um assignment ainda 'trainable' (sem KC-gen) burlaria o gate humano →
+    # dispatch_training rodaria sobre uma Q-matrix inexistente. Deve ser rejeitado (409).
+    client, conn = api_client
+    aid = _seed_assignment(conn, status="trainable")
+
+    resp = client.post("/kc/approve", json={"assignment_id": aid})
+    assert resp.status_code == 409
+    assert repos.AssignmentRepository(conn).get(aid).status == "trainable"  # não avançou
+
+
+def test_approve_rejects_draft_without_kcs(api_client):
+    # WR-02: kc_draft mas SEM nenhum KC não pode ser aprovado (não há Q-matrix a treinar).
+    client, conn = api_client
+    aid = _seed_assignment(conn, status="kc_draft")  # nenhum KC inserido
+
+    resp = client.post("/kc/approve", json={"assignment_id": aid})
+    assert resp.status_code == 409
+    assert repos.AssignmentRepository(conn).get(aid).status == "kc_draft"
+
+
 def test_editing_after_approval_reverts_status(api_client):
     # D-06: editar um KC após aprovar reverte kc_approved → kc_draft (re-aprovação necessária).
     client, conn = api_client
