@@ -121,18 +121,23 @@ class KCRepository:
 
     def insert(self, kc: models.KC) -> int:
         cur = self._conn.execute(
-            "INSERT INTO kc (assignment_id, name) VALUES (?, ?);",
-            (kc.assignment_id, kc.name),
+            "INSERT INTO kc (assignment_id, name, kc_index) VALUES (?, ?, ?);",
+            (kc.assignment_id, kc.name, kc.kc_index),
         )
         return cur.lastrowid
 
     def get(self, kc_id: int) -> Optional[models.KC]:
         row = self._conn.execute(
-            "SELECT id, assignment_id, name FROM kc WHERE id = ?;", (kc_id,)
+            "SELECT id, assignment_id, name, kc_index FROM kc WHERE id = ?;", (kc_id,)
         ).fetchone()
         if row is None:
             return None
-        return models.KC(id=row["id"], assignment_id=row["assignment_id"], name=row["name"])
+        return models.KC(
+            id=row["id"],
+            assignment_id=row["assignment_id"],
+            name=row["name"],
+            kc_index=row["kc_index"],
+        )
 
 
 class QMatrixRepository:
@@ -299,5 +304,65 @@ class TrainingJobRepository:
     def mark_failed(self, job_id: int, error_message: str) -> None:
         self._conn.execute(
             "UPDATE training_job SET status = 'failed', error_message = ? WHERE id = ?;",
+            (error_message, job_id),
+        )
+
+
+class KCJobRepository:
+    """Linha de estado do job KCGen-KT (D-05) — espelha TrainingJobRepository, mas o progresso
+    é um 'stage' textual (sample/generate/cluster/label/qmatrix) em vez de épocas numéricas.
+    Round-trip à mão; todo SQL parametrizado com `?` (V5/T-05-02). insert via lastrowid (Pitfall 7).
+    """
+
+    def __init__(self, conn: sqlite3.Connection) -> None:
+        self._conn = conn
+
+    def insert(self, job: models.KCJob) -> int:
+        cur = self._conn.execute(
+            "INSERT INTO kc_job (assignment_id, status, created_at) VALUES (?, ?, ?);",
+            (job.assignment_id, job.status, job.created_at),
+        )
+        return cur.lastrowid
+
+    def get(self, job_id: int) -> Optional[models.KCJob]:
+        row = self._conn.execute(
+            "SELECT id, assignment_id, status, created_at, stage, started_at, "
+            "updated_at, error_message FROM kc_job WHERE id = ?;",
+            (job_id,),
+        ).fetchone()
+        if row is None:
+            return None
+        return models.KCJob(
+            id=row["id"],
+            assignment_id=row["assignment_id"],
+            status=row["status"],
+            created_at=row["created_at"],
+            stage=row["stage"],
+            started_at=row["started_at"],
+            updated_at=row["updated_at"],
+            error_message=row["error_message"],
+        )
+
+    def mark_running(self, job_id: int, started_at: str) -> None:
+        self._conn.execute(
+            "UPDATE kc_job SET status = 'running', started_at = ? WHERE id = ?;",
+            (started_at, job_id),
+        )
+
+    def update_stage(self, job_id: int, stage: str, updated_at: str) -> None:
+        self._conn.execute(
+            "UPDATE kc_job SET stage = ?, updated_at = ? WHERE id = ?;",
+            (stage, updated_at, job_id),
+        )
+
+    def mark_done(self, job_id: int, updated_at: str) -> None:
+        self._conn.execute(
+            "UPDATE kc_job SET status = 'done', updated_at = ? WHERE id = ?;",
+            (updated_at, job_id),
+        )
+
+    def mark_failed(self, job_id: int, error_message: str) -> None:
+        self._conn.execute(
+            "UPDATE kc_job SET status = 'failed', error_message = ? WHERE id = ?;",
             (error_message, job_id),
         )
