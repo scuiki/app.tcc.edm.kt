@@ -1,0 +1,147 @@
+{
+  "assignment_id": "A439",
+  "n_clusters_selected": 15,
+  "silhouette_scores": {
+    "10": 0.297947,
+    "12": 0.308072,
+    "15": 0.323346
+  },
+  "kc_to_cluster": {
+    "Compound boolean condition with AND operator": 8,
+    "Numeric comparison for range validation": 0,
+    "Conditional return in if-else statement": 9,
+    "Arithmetic expression evaluation in conditionals": 7,
+    "Method parameter usage in computation": 13,
+    "Boolean parameter conditional branching": 6,
+    "Range boundary checking with relational operators": 0,
+    "Logical AND for range inclusion": 0,
+    "Logical OR for range exclusion": 0,
+    "Boolean negation operator": 4,
+    "Compound boolean expressions": 8,
+    "Boolean parameter use in conditionals": 8,
+    "Logical AND operator for compound conditions": 8,
+    "Logical OR operator for alternative conditions": 8,
+    "Logical NOT operator for negation": 4,
+    "Multi-branch conditional decision structure": 6,
+    "Boolean return type from method": 11,
+    "Boolean parameter usage and testing": 8,
+    "Compound conditions with logical AND": 8,
+    "Range checking with comparison operators": 0,
+    "Boolean negation with NOT operator": 4,
+    "Nested conditional branching structure": 6,
+    "Boolean method return type": 11,
+    "Numeric threshold comparison with operators": 1,
+    "Multi-branch conditional chaining": 6,
+    "Integer return type from method": 11,
+    "Nested vs. flat conditional structures": 6,
+    "Nested conditional logic for multiple conditions": 6,
+    "Boolean parameter direct evaluation": 8,
+    "Logical OR operator for set membership": 8,
+    "Logical AND operator for range checking": 0,
+    "String return values from conditionals": 9,
+    "Early return within nested blocks": 10,
+    "Logical OR operator for multiple conditions": 8,
+    "Equality comparison with integers": 2,
+    "Arithmetic operations in conditionals": 7,
+    "Absolute value function for bidirectional comparison": 3,
+    "Early return pattern in conditional logic": 10,
+    "Numeric range validation with operators": 0,
+    "Boolean return type and literals": 11,
+    "Conditional early return pattern": 10,
+    "Multi-branch conditional with logical operators": 6,
+    "Logical OR for disjunctive threshold checking": 8,
+    "Logical AND for conjunctive constraints": 8,
+    "Early return with short-circuit logic": 10,
+    "Integer return value with discrete states": 12,
+    "Default case residual handling": 14,
+    "Equality comparison of numeric values": 2,
+    "Logical AND for compound conditions": 8,
+    "Logical OR for disjunctive matching": 8,
+    "Early return from method control flow": 10,
+    "Inequality operators for negative conditions": 5
+  },
+  "clusters": {
+    "0": [
+      "Numeric comparison for range validation",
+      "Range boundary checking with relational operators",
+      "Logical AND for range inclusion",
+      "Logical OR for range exclusion",
+      "Range checking with comparison operators",
+      "Logical AND operator for range checking",
+      "Numeric range validation with operators"
+    ],
+    "1": [
+      "Numeric threshold comparison with operators"
+    ],
+    "2": [
+      "Equality comparison with integers",
+      "Equality comparison of numeric values"
+    ],
+    "3": [
+      "Absolute value function for bidirectional comparison"
+    ],
+    "4": [
+      "Boolean negation operator",
+      "Logical NOT operator for negation",
+      "Boolean negation with NOT operator"
+    ],
+    "5": [
+      "Inequality operators for negative conditions"
+    ],
+    "6": [
+      "Boolean parameter conditional branching",
+      "Multi-branch conditional decision structure",
+      "Nested conditional branching structure",
+      "Multi-branch conditional chaining",
+      "Nested vs. flat conditional structures",
+      "Nested conditional logic for multiple conditions",
+      "Multi-branch conditional with logical operators"
+    ],
+    "7": [
+      "Arithmetic expression evaluation in conditionals",
+      "Arithmetic operations in conditionals"
+    ],
+    "8": [
+      "Compound boolean condition with AND operator",
+      "Compound boolean expressions",
+      "Boolean parameter use in conditionals",
+      "Logical AND operator for compound conditions",
+      "Logical OR operator for alternative conditions",
+      "Boolean parameter usage and testing",
+      "Compound conditions with logical AND",
+      "Boolean parameter direct evaluation",
+      "Logical OR operator for set membership",
+      "Logical OR operator for multiple conditions",
+      "Logical OR for disjunctive threshold checking",
+      "Logical AND for conjunctive constraints",
+      "Logical AND for compound conditions",
+      "Logical OR for disjunctive matching"
+    ],
+    "9": [
+      "Conditional return in if-else statement",
+      "String return values from conditionals"
+    ],
+    "10": [
+      "Early return within nested blocks",
+      "Early return pattern in conditional logic",
+      "Conditional early return pattern",
+      "Early return with short-circuit logic",
+      "Early return from method control flow"
+    ],
+    "11": [
+      "Boolean return type from method",
+      "Boolean method return type",
+      "Integer return type from method",
+      "Boolean return type and literals"
+    ],
+    "12": [
+      "Integer return value with discrete states"
+    ],
+    "13": [
+      "Method parameter usage in computation"
+    ],
+    "14": [
+      "Default case residual handling"
+    ]
+  }
+}
