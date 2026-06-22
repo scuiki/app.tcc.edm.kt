@@ -342,6 +342,32 @@ class MasteryPredictionRepository:
             mastery=row["mastery"],
         )
 
+    def count_by_artifact(self, model_artifact_id: int) -> int:
+        # Compute-once (T-06-11): o serviço de mastery checa se a matriz já foi materializada
+        # para este artefato antes de re-inferir; >0 significa servir do SQLite, não recomputar.
+        row = self._conn.execute(
+            "SELECT COUNT(*) AS n FROM mastery_prediction WHERE model_artifact_id = ?;",
+            (model_artifact_id,),
+        ).fetchone()
+        return row["n"]
+
+    def list_by_artifact(self, model_artifact_id: int) -> list[models.MasteryPrediction]:
+        rows = self._conn.execute(
+            "SELECT id, model_artifact_id, subject_id, kc_id, mastery "
+            "FROM mastery_prediction WHERE model_artifact_id = ?;",
+            (model_artifact_id,),
+        ).fetchall()
+        return [
+            models.MasteryPrediction(
+                id=r["id"],
+                model_artifact_id=r["model_artifact_id"],
+                subject_id=r["subject_id"],
+                kc_id=r["kc_id"],
+                mastery=r["mastery"],
+            )
+            for r in rows
+        ]
+
 
 class TrainingJobRepository:
     def __init__(self, conn: sqlite3.Connection) -> None:
