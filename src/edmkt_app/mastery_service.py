@@ -77,7 +77,11 @@ def _resolve_current_artifact(
     return asg, artifact
 
 
-def infer_predictions(conn: sqlite3.Connection, assignment_id: int) -> pd.DataFrame:
+def infer_predictions(
+    conn: sqlite3.Connection,
+    assignment_id: int,
+    artifact: models.ModelArtifact | None = None,
+) -> pd.DataFrame:
     """Carrega o artefato current + roda predict_code_dkt sobre as sequências da turma.
 
     Recarrega o modelo E o vocab via `load_version` (weights_only=True) — o vocab NUNCA é
@@ -85,8 +89,18 @@ def infer_predictions(conn: sqlite3.Connection, assignment_id: int) -> pd.DataFr
     inferência são montadas na mesma ordem de pipeline.train_and_evaluate: build_sequences →
     build_cache (paths crus) → build_problem_index. Devolve o pred_df cru (user_id, skill_name,
     correct, is_first_attempt, correct_predictions) — sem tocar o banco.
+
+    WR-02: aceita um `artifact` já resolvido. compute_mastery resolve UMA vez e o thread aqui,
+    de modo que as linhas persistidas (keyed ao artifact.id) e o modelo carregado são sempre a
+    MESMA versão mesmo que um flip_current concorrente troque current_version_id entre as leituras
+    (a conn está em autocommit). Sem ele, este método re-resolveria e poderia pegar outra versão.
     """
-    asg, artifact = _resolve_current_artifact(conn, assignment_id)
+    if artifact is None:
+        asg, artifact = _resolve_current_artifact(conn, assignment_id)
+    else:
+        asg = repos.AssignmentRepository(conn).get(assignment_id)
+        if asg is None:
+            raise ValueError(f"assignment {assignment_id} inexistente")
     turma = repos.TurmaRepository(conn).get(asg.turma_id)
     turma_slug = _slug(turma.name)
     progsnap_aid = _progsnap_aid(asg.name)
@@ -158,7 +172,9 @@ def compute_mastery(
     if pred_repo.count_by_artifact(artifact.id) > 0:
         return _matrix_from_persisted(conn, artifact.id)
 
-    pred_df = infer_predictions(conn, assignment_id)
+    # WR-02: passa o artefato já resolvido (linha 155) em vez de deixar infer_predictions
+    # re-resolver — garante que as linhas keyed ao artifact.id e o modelo são a MESMA versão.
+    pred_df = infer_predictions(conn, assignment_id, artifact=artifact)
     qdict = _qmatrix_dict(conn, assignment_id)
     matrix = build_mastery_matrix(pred_df, qdict)  # agregação no core puro (DIP)
 
