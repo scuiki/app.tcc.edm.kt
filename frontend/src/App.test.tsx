@@ -134,6 +134,14 @@ describe('App shell', () => {
     ).toBeInTheDocument()
   })
 
+  it('prompts to select an assignment when the list is populated but none is chosen', async () => {
+    renderApp()
+    // The rail has rows but nothing is selected yet → the main region invites a pick, it does NOT
+    // claim there are no assignments.
+    expect(await screen.findByText('Selecione um assignment')).toBeInTheDocument()
+    expect(screen.queryByText('Nenhum assignment disponível')).not.toBeInTheDocument()
+  })
+
   it('shows the no-assignments empty-state when the list is empty', async () => {
     stubFetch({ assignmentsBody: { assignments: [] } })
     renderApp()
