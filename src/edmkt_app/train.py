@@ -114,7 +114,8 @@ def _train_body(conn, assignment_id: int, job_id: int) -> dict:
     # Ordem load-bearing blob→INSERT→flip (Pitfall 2 artifacts): persist grava o v<N> e a
     # linha; flip_current só então aponta o ponteiro para um artefato já completo.
     persisted = ArtifactStore(str(DATA_ROOT / turma_slug / "models")).persist(
-        conn, asg.turma_id, assignment_id, result["model"], result["vocab"], config
+        conn, asg.turma_id, assignment_id, result["model"], result["vocab"], config,
+        first_auc=result["first_auc"],  # DASH-05: o AUC sobrevive ao subprocess via a linha (D-05)
     )
     flip_current(conn, assignment_id, persisted["artifact_id"])
     conn.execute(

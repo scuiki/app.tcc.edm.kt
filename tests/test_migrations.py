@@ -41,7 +41,7 @@ def _user_version(conn: sqlite3.Connection) -> int:
 
 
 # Última versão de schema aplicada pelo runner (sobe a cada degrau NNNN_*.sql novo).
-_LATEST_VERSION = 6
+_LATEST_VERSION = 7
 
 # As 6 colunas de progresso por-época que 0003 adiciona ao training_job (D-06).
 _TRAINING_JOB_PROGRESS_COLUMNS = {
@@ -192,7 +192,7 @@ def test_migration_0006_adds_qmatrix_unique_index(tmp_path):
     INSERT/UPDATE OR IGNORE de qmatrix real (WR-04)."""
     conn = connect(str(tmp_path / "app.db"))
     run_migrations(conn)
-    assert _user_version(conn) == 6
+    assert _user_version(conn) >= 6
     indexes = {
         r["name"]
         for r in conn.execute(
@@ -200,6 +200,51 @@ def test_migration_0006_adds_qmatrix_unique_index(tmp_path):
         )
     }
     assert "uq_qmatrix_assignment_kc_problem" in indexes
+
+
+def test_migration_0007_adds_first_auc(tmp_path):
+    """0007 é forward-only: bumpa user_version>=7 e adiciona a coluna first_auc ao
+    model_artifact (DASH-05/D-05) — o AUC que train.py já computa e hoje some com o subprocess."""
+    conn = connect(str(tmp_path / "app.db"))
+    run_migrations(conn)
+    assert _user_version(conn) >= 7
+    assert "first_auc" in _column_names(conn, "model_artifact")
+
+
+def test_migration_0007_repo_round_trips_first_auc(tmp_path):
+    """Grava first_auc via o ModelArtifactRepository e relê via get() — prova o caminho de
+    persistência; nasce NULL quando não informado (artefatos pré-0007)."""
+    from edmkt_app.persistence import models, repositories
+
+    conn = connect(str(tmp_path / "app.db"))
+    run_migrations(conn)
+    turma_id = repositories.TurmaRepository(conn).insert(
+        models.Turma(id=None, name="t", created_at="2026-01-01T00:00:00Z")
+    )
+    aid = repositories.AssignmentRepository(conn).insert(
+        models.Assignment(
+            id=None, turma_id=turma_id, name="a", current_version_id=None,
+            created_at="2026-01-01T00:00:00Z",
+        )
+    )
+    repo = repositories.ModelArtifactRepository(conn)
+
+    with_auc = repo.insert(
+        models.ModelArtifact(
+            id=None, assignment_id=aid, version_number=1, content_hash="h1",
+            artifact_dir="v1", created_at="2026-01-01T00:00:00Z", first_auc=0.73,
+        )
+    )
+    assert repo.get(with_auc).first_auc == 0.73
+
+    # Sem first_auc informado, a coluna nasce NULL (artefato pré-0007 / persist sem AUC).
+    without_auc = repo.insert(
+        models.ModelArtifact(
+            id=None, assignment_id=aid, version_number=2, content_hash="h2",
+            artifact_dir="v2", created_at="2026-01-01T00:00:00Z",
+        )
+    )
+    assert repo.get(without_auc).first_auc is None
 
 
 def test_qmatrix_unique_blocks_duplicate_binding(tmp_path):
