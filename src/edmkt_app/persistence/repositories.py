@@ -276,21 +276,23 @@ class ModelArtifactRepository:
     def insert(self, artifact: models.ModelArtifact) -> int:
         cur = self._conn.execute(
             "INSERT INTO model_artifact "
-            "(assignment_id, version_number, content_hash, artifact_dir, created_at) "
-            "VALUES (?, ?, ?, ?, ?);",
+            "(assignment_id, version_number, content_hash, artifact_dir, created_at, first_auc) "
+            "VALUES (?, ?, ?, ?, ?, ?);",
             (
                 artifact.assignment_id,
                 artifact.version_number,
                 artifact.content_hash,
                 artifact.artifact_dir,
                 artifact.created_at,
+                artifact.first_auc,
             ),
         )
         return cur.lastrowid
 
     def get(self, artifact_id: int) -> Optional[models.ModelArtifact]:
         row = self._conn.execute(
-            "SELECT id, assignment_id, version_number, content_hash, artifact_dir, created_at "
+            "SELECT id, assignment_id, version_number, content_hash, artifact_dir, created_at, "
+            "first_auc "
             "FROM model_artifact WHERE id = ?;",
             (artifact_id,),
         ).fetchone()
@@ -303,6 +305,7 @@ class ModelArtifactRepository:
             content_hash=row["content_hash"],
             artifact_dir=row["artifact_dir"],
             created_at=row["created_at"],
+            first_auc=row["first_auc"],
         )
 
 

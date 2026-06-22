@@ -21,6 +21,7 @@ import shutil
 import sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Optional
 
 import torch
 
@@ -178,6 +179,7 @@ class ArtifactStore:
         model: torch.nn.Module,
         vocab: dict,
         config: dict,
+        first_auc: Optional[float] = None,
     ) -> dict:
         """Grava o blob write-once e insere a linha ModelArtifact — passos (1) e (2) da ordem.
 
@@ -199,14 +201,16 @@ class ArtifactStore:
         try:
             cur = conn.execute(
                 "INSERT INTO model_artifact "
-                "(assignment_id, version_number, content_hash, artifact_dir, created_at) "
-                "VALUES (?, ?, ?, ?, ?);",
+                "(assignment_id, version_number, content_hash, artifact_dir, created_at, "
+                "first_auc) "
+                "VALUES (?, ?, ?, ?, ?, ?);",
                 (
                     assignment_id,
                     version_number,
                     saved["content_hash"],
                     saved["dir"],
                     _now_iso(),
+                    first_auc,  # DASH-05: o AUC do treino entra na linha junto do blob (D-05)
                 ),
             )
             artifact_id = cur.lastrowid
