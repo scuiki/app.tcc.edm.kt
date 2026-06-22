@@ -191,3 +191,51 @@ def test_service_persists_compute_once(trained_artifact, tmp_path, monkeypatch):
     again = mastery_service.compute_mastery(conn, trained_artifact.assignment_id)
     assert _row_count() == after_first  # 2ª chamada não duplica
     assert again == pytest.approx(matrix)  # serve o mesmo resultado
+
+
+def test_persist_failure_leaves_no_partial_cache(trained_artifact, tmp_path, monkeypatch):
+    # CR-01: a conn está em autocommit (db.py:21). Sem uma transação explícita, cada INSERT do
+    # loop commitaria sozinho e uma falha no meio deixaria um cache PARCIAL que o guard
+    # compute-once (count_by_artifact > 0) serviria para sempre como se fosse a matriz completa.
+    # Falhamos o insert DEPOIS da 1ª linha: com a transação, o ROLLBACK desfaz tudo (0 linhas);
+    # sem ela, a 1ª linha já commitou e fica órfã (>=1 linha) — este teste RED pega exatamente isso.
+    from edmkt_app import mastery_service
+    from edmkt_app.persistence import repositories as repos
+
+    monkeypatch.setattr(mastery_service, "DATA_ROOT", tmp_path)
+    _seed_clean_parquet(trained_artifact, tmp_path)
+    conn = trained_artifact.conn
+    artifact_id = trained_artifact.artifact_id
+
+    real_insert = repos.MasteryPredictionRepository.insert
+    state = {"n": 0}
+
+    def _fail_after_first(self, pred):
+        state["n"] += 1
+        if state["n"] > 1:
+            raise RuntimeError("disk full no insert da mastery (simulado)")
+        return real_insert(self, pred)
+
+    monkeypatch.setattr(repos.MasteryPredictionRepository, "insert", _fail_after_first)
+
+    with pytest.raises(RuntimeError):
+        mastery_service.compute_mastery(conn, trained_artifact.assignment_id)
+
+    n = conn.execute(
+        "SELECT COUNT(*) AS n FROM mastery_prediction WHERE model_artifact_id = ?;",
+        (artifact_id,),
+    ).fetchone()["n"]
+    assert n == 0  # atômico: o write parcial foi revertido, sem cache truncado
+
+    # E o guard compute-once NÃO foi envenenado: uma chamada limpa (sem falha) recomputa
+    # a matriz inteira em vez de servir o cache parcial.
+    monkeypatch.setattr(repos.MasteryPredictionRepository, "insert", real_insert)
+    matrix = mastery_service.compute_mastery(conn, trained_artifact.assignment_id)
+    assert matrix
+    assert (
+        conn.execute(
+            "SELECT COUNT(*) AS n FROM mastery_prediction WHERE model_artifact_id = ?;",
+            (artifact_id,),
+        ).fetchone()["n"]
+        == len(matrix)
+    )

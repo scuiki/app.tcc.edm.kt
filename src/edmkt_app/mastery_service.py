@@ -34,7 +34,7 @@ from edmkt_core.mastery import build_mastery_matrix
 from edmkt_core.models.code_dkt import predict_code_dkt
 from edmkt_core.sequences import build_sequences
 
-from edmkt_app.persistence import models
+from edmkt_app.persistence import models, transaction
 from edmkt_app.persistence import repositories as repos
 from edmkt_app.persistence.artifacts import ArtifactStore
 
@@ -162,15 +162,19 @@ def compute_mastery(
     qdict = _qmatrix_dict(conn, assignment_id)
     matrix = build_mastery_matrix(pred_df, qdict)  # agregação no core puro (DIP)
 
-    for (subject_id, kc_id), mastery in matrix.items():
-        pred_repo.insert(
-            models.MasteryPrediction(
-                id=None,
-                model_artifact_id=artifact.id,
-                subject_id=subject_id,
-                kc_id=kc_id,
-                mastery=float(mastery),
+    # CR-01: a conn está em autocommit (isolation_level=None, db.py); sem uma transação
+    # explícita CADA insert commitaria sozinho e uma falha no meio do loop deixaria um cache
+    # parcial que o guard compute-once serviria para sempre como se fosse a matriz completa.
+    # transaction() (BEGIN IMMEDIATE/COMMIT, rollback em qualquer exceção) torna o write atômico.
+    with transaction(conn):
+        for (subject_id, kc_id), mastery in matrix.items():
+            pred_repo.insert(
+                models.MasteryPrediction(
+                    id=None,
+                    model_artifact_id=artifact.id,
+                    subject_id=subject_id,
+                    kc_id=kc_id,
+                    mastery=float(mastery),
+                )
             )
-        )
-    conn.commit()
     return matrix
