@@ -18,8 +18,9 @@ describe('CriticalKCList', () => {
 
     const items = screen.getAllByRole('listitem')
     expect(items).toHaveLength(2)
-    expect(within(items[0]).getByText(/7/)).toBeInTheDocument()
-    expect(within(items[1]).getByText(/3/)).toBeInTheDocument()
+    // Exact match: the kc_id span is its own node, so "3" must not collide with the "35%" mastery.
+    expect(within(items[0]).getByText('7', { exact: true })).toBeInTheDocument()
+    expect(within(items[1]).getByText('3', { exact: true })).toBeInTheDocument()
   })
 
   it('shows mean_mastery as a percent', () => {
