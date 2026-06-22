@@ -16,11 +16,11 @@ from pathlib import Path
 
 import pandas as pd
 
-# Só o contrato do stream canônico é importado de outro módulo do app. EDA NÃO importa
-# train.py/persistence: aquele lado puxa torch + ArtifactStore e quebraria a invariante
-# "EDA roda sem modelo" (D-06). _slug/_progsnap_aid são triviais e reproduzidos aqui.
-from edmkt_app.ingestion.clean import ALLOWED_EVENTS  # noqa: F401  (documenta o contrato do stream)
-
+# EDA NÃO importa train.py/persistence: aquele lado puxa torch + ArtifactStore e quebraria a
+# invariante "EDA roda sem modelo" (D-06). _slug/_progsnap_aid são triviais e reproduzidos aqui.
+# IN-02: o stream canônico (clean.py ALLOWED_EVENTS) contém exatamente {Run.Program, Compile.Error};
+# esses dois tipos são os únicos consumidos abaixo (RUN_EVENT/COMPILE_ERROR_EVENT) — sem precisar
+# importar ALLOWED_EVENTS só para documentar, o que acoplava a EDA a ingestion.clean no import.
 RUN_EVENT = "Run.Program"
 COMPILE_ERROR_EVENT = "Compile.Error"
 
