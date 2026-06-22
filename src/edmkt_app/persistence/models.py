@@ -69,6 +69,9 @@ class ModelArtifact:
     content_hash: Optional[str]  # SHA-256 dos bytes: integridade/dedup, não identidade (D-04)
     artifact_dir: str  # caminho do blob no FS; NUNCA os bytes (CLAUDE.md §Persistência)
     created_at: str
+    # first-attempt AUC do treino (DASH-05/D-05): nasce None nos artefatos pré-0007; train.py
+    # grava no persist. É o valor que train.py já computa e hoje some com o subprocess.
+    first_auc: Optional[float] = None
 
 
 @dataclass
