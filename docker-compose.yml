@@ -1,0 +1,22 @@
+# EDM·KT container toolchain.
+# nitro-env: never publish a bare port — every published port MUST bind an explicit IP
+# (127.0.0.1 = local only, 100.96.0.53 = tailnet). The gate service below publishes nothing;
+# the dashboard dev-server (added in plan 05) binds 127.0.0.1 explicitly.
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.frontend
+    image: edmkt-frontend:dev
+    working_dir: /app/frontend
+    # Bind the repo so edited source is visible inside the container; mask node_modules with a
+    # named volume seeded from the image layer so dependencies NEVER touch the host tree.
+    volumes:
+      - ./:/app
+      - edmkt_frontend_node_modules:/app/frontend/node_modules
+    # Required to read /srv bind mounts under SELinux (mirrors deploy/run-app.sh).
+    security_opt:
+      - label=disable
+
+volumes:
+  edmkt_frontend_node_modules:
