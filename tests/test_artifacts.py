@@ -252,3 +252,35 @@ def test_path_stays_under_base(tmp_path, tiny_model, tiny_vocab, tiny_config):
     )
     base = (tmp_path / "data").resolve()
     assert str((base)) in str(__import__("pathlib").Path(result["dir"]).resolve())
+
+
+def test_load_version_refuses_dir_outside_base(tmp_path):
+    # CR-02: load_version desserializa vocab.pkl com pickle IRRESTRITO. Se o artifact_dir
+    # (DB-owned) for adulterado para fora de base, um vocab.pkl atacante seria executado (RCE).
+    # A guarda resolve-depois-confere deve recusar o diretório fora da árvore ANTES de abrir o
+    # .pkl — provamos que o pickle malicioso NUNCA é carregado.
+    import pathlib
+
+    base = tmp_path / "data"
+    base.mkdir()
+    store = ArtifactStore(str(base))
+
+    # Diretório de artefato FORA de base, com um vocab.pkl cujo unpickle tem efeito colateral
+    # observável (escreve um arquivo-sentinela) — o equivalente benigno de uma RCE.
+    evil_dir = tmp_path / "evil"
+    evil_dir.mkdir()
+    sentinel = tmp_path / "PWNED"
+
+    class _Payload:
+        def __reduce__(self):
+            return (pathlib.Path(str(sentinel)).touch, ())
+
+    (evil_dir / "config.json").write_text("{}")
+    with open(evil_dir / "vocab.pkl", "wb") as f:
+        pickle.dump(_Payload(), f)
+
+    with pytest.raises(ValueError, match="path traversal"):
+        store.load_version(str(evil_dir))
+
+    # O efeito colateral do pickle NÃO ocorreu: a guarda barrou antes de qualquer pickle.load.
+    assert not sentinel.exists()

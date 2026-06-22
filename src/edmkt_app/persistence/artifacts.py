@@ -145,7 +145,14 @@ class ArtifactStore:
 
         map_location='cpu' (a suíte é CPU-only) e model.eval() (inferência). Devolve
         (model, vocab, meta)."""
-        path = Path(vdir)
+        # CR-02: vdir vem de model_artifact.artifact_dir (DB-owned), mas o vocab.pkl é lido com
+        # pickle.load IRRESTRITO (≠ torch.load weights_only=True do .pt). Um artifact_dir
+        # adulterado/fora-da-árvore apontaria a desserialização para um .pkl arbitrário ⇒ RCE.
+        # Mesma guarda resolve-depois-confere de _version_dir/save_version ANTES de abrir o .pkl.
+        base = self._base.resolve()
+        path = Path(vdir).resolve()
+        if base not in path.parents and path != base:
+            raise ValueError(f"path traversal: {path} fora de {base}")
         meta = json.loads((path / "config.json").read_text())
         with open(path / "vocab.pkl", "rb") as f:
             vocab = pickle.load(f)
