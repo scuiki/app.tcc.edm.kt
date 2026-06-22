@@ -76,8 +76,14 @@ def _learning_curve(df: pd.DataFrame) -> dict[int, float]:
 
 
 def _compile_error_rate_by_assignment(df: pd.DataFrame) -> dict[int, float]:
-    is_ce = df["EventType"] == COMPILE_ERROR_EVENT
-    rate = is_ce.groupby(df["AssignmentID"]).mean()
+    # WR-03: a taxa é CE_count / Run_count (compile-errors POR tentativa de execução), não
+    # CE_count / (CE+Run). A média sobre TODOS os eventos misturava os dois tipos e variava
+    # com quantos Run.Program o aluno teve, tornando a métrica incomparável com a convenção.
+    runs = df[df["EventType"] == RUN_EVENT]
+    ce = df[df["EventType"] == COMPILE_ERROR_EVENT]
+    run_counts = runs.groupby("AssignmentID").size()
+    ce_counts = ce.groupby("AssignmentID").size().reindex(run_counts.index, fill_value=0)
+    rate = (ce_counts / run_counts).fillna(0.0)
     return {int(aid): float(v) for aid, v in rate.items()}
 
 
@@ -95,7 +101,7 @@ def learning_curve(pq: Path | str) -> dict[int, float]:
 
 
 def compile_error_rate_by_assignment(pq: Path | str) -> dict[int, float]:
-    """Taxa de compile-error por AssignmentID = fração de eventos Compile.Error."""
+    """Taxa de compile-error por AssignmentID = Compile.Error por tentativa (CE_count/Run_count)."""
     return _compile_error_rate_by_assignment(_read_canonical(pq))
 
 
