@@ -239,3 +239,65 @@ def test_persist_failure_leaves_no_partial_cache(trained_artifact, tmp_path, mon
         ).fetchone()["n"]
         == len(matrix)
     )
+
+
+def test_compute_mastery_resolves_artifact_once(trained_artifact, tmp_path, monkeypatch):
+    # WR-02: compute_mastery resolve o artefato UMA vez e o thread em infer_predictions, em vez
+    # de deixar infer_predictions re-resolver current_version_id. Se um flip_current concorrente
+    # trocasse a versão entre as duas leituras (conn em autocommit), as linhas seriam keyed ao
+    # artefato A mas o modelo carregado viria de B — um mismatch silencioso. Simulamos isso
+    # fazendo _resolve_current_artifact devolver um artefato DIFERENTE na 2ª chamada e exigimos
+    # que o modelo carregado (via load_version) seja o MESMO que keya as linhas persistidas.
+    from edmkt_app import mastery_service
+    from edmkt_app.persistence import models
+    from edmkt_app.persistence.artifacts import ArtifactStore
+
+    monkeypatch.setattr(mastery_service, "DATA_ROOT", tmp_path)
+    _seed_clean_parquet(trained_artifact, tmp_path)
+    conn = trained_artifact.conn
+
+    real_resolve = mastery_service._resolve_current_artifact
+    asg, artifact_a = real_resolve(conn, trained_artifact.assignment_id)
+
+    # Um 2º artefato "concorrente" com um artifact_dir distinto e inexistente — se alguém
+    # re-resolver e carregar ESTE, load_version vai apontar para um dir que não existe.
+    artifact_b = models.ModelArtifact(
+        id=artifact_a.id + 999,
+        assignment_id=artifact_a.assignment_id,
+        version_number=artifact_a.version_number + 1,
+        content_hash=artifact_a.content_hash,
+        artifact_dir=str(tmp_path / "nonexistent_v999"),
+        created_at=artifact_a.created_at,
+        first_auc=artifact_a.first_auc,
+    )
+
+    calls = {"n": 0}
+
+    def _flipping_resolve(c, aid):
+        calls["n"] += 1
+        if calls["n"] == 1:
+            return asg, artifact_a
+        return asg, artifact_b  # "flip" concorrente na 2ª resolução
+
+    monkeypatch.setattr(mastery_service, "_resolve_current_artifact", _flipping_resolve)
+
+    loaded_dirs: list[str] = []
+    real_load = ArtifactStore.load_version
+
+    def _spy_load(self, vdir):
+        loaded_dirs.append(vdir)
+        return real_load(self, vdir)
+
+    monkeypatch.setattr(ArtifactStore, "load_version", _spy_load)
+
+    matrix = mastery_service.compute_mastery(conn, trained_artifact.assignment_id)
+
+    # O modelo carregado tem de ser o artefato A (resolvido uma vez e threaded), NÃO o B do
+    # "flip" — senão load_version teria recebido o dir inexistente de B.
+    assert loaded_dirs == [artifact_a.artifact_dir]
+    # E as linhas persistidas são keyed a A — consistente com o modelo de fato carregado.
+    n_a = conn.execute(
+        "SELECT COUNT(*) AS n FROM mastery_prediction WHERE model_artifact_id = ?;",
+        (artifact_a.id,),
+    ).fetchone()["n"]
+    assert n_a == len(matrix)
