@@ -10,7 +10,14 @@ interface Props {
 }
 
 export function UncertaintyFrame({ firstAuc, trainedAt }: Props) {
-  return <div role="note">{firstAuc == null ? <Untrained /> : <Trained firstAuc={firstAuc} trainedAt={trainedAt} />}</div>
+  // Tinted info banner (not a thick one-side border): trained carries a faint accent tint, untrained a
+  // neutral muted tone. The role and copy are unchanged.
+  const tone = firstAuc == null ? 'uframe uframe--untrained' : 'uframe uframe--trained'
+  return (
+    <div role="note" className={tone}>
+      {firstAuc == null ? <Untrained /> : <Trained firstAuc={firstAuc} trainedAt={trainedAt} />}
+    </div>
+  )
 }
 
 function Trained({ firstAuc, trainedAt }: { firstAuc: number; trainedAt: string | null }) {

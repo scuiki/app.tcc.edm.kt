@@ -14,7 +14,7 @@ export function RecommendationList({
   if (recommendations.length === 0) {
     return (
       <section>
-        <h3>Recomendações de reforço</h3>
+        <h3 className="t-heading">Recomendações de reforço</h3>
         <EmptyState kind="recs-untrained" />
       </section>
     )
@@ -22,11 +22,13 @@ export function RecommendationList({
 
   return (
     <section>
-      <h3>Recomendações de reforço</h3>
-      <ul>
+      <h3 className="t-heading">Recomendações de reforço</h3>
+      <ul className="rec-list">
         {recommendations.map((rec) => (
           // text shown verbatim; never reconstructed from kc_name/guidance/mean_mastery client-side.
-          <li key={rec.kc_id}>{rec.text}</li>
+          <li key={rec.kc_id} className="rec-list__item">
+            {rec.text}
+          </li>
         ))}
       </ul>
     </section>
