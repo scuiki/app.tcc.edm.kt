@@ -4,17 +4,15 @@
 import type { CriticalKC } from '../api/schema'
 import { formatPercent } from '../lib/format'
 
-const MONO = 'ui-monospace, "SF Mono", "Cascadia Code", monospace'
-
 export function CriticalKCList({ criticalKcs }: { criticalKcs: CriticalKC[] }) {
   return (
     <section>
-      <h3>KCs críticos da turma</h3>
-      <ul>
+      <h3 className="t-heading">KCs críticos da turma</h3>
+      <ul className="data-list">
         {criticalKcs.map((kc) => (
-          <li key={kc.kc_id}>
-            <span style={{ fontFamily: MONO }}>{kc.kc_id}</span>{' '}
-            <span style={{ fontFamily: MONO }}>{formatPercent(kc.mean_mastery)}</span>
+          <li key={kc.kc_id} className="data-list__row">
+            <span className="data-list__label mono">{kc.kc_id}</span>
+            <span className="data-list__value mono">{formatPercent(kc.mean_mastery)}</span>
           </li>
         ))}
       </ul>
