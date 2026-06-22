@@ -15,8 +15,6 @@ const BAND_WORD: Record<Band, string> = { low: 'Baixo', medium: 'Médio', high: 
 
 const LEGEND = 'Baixo (<40%) · Médio (40–70%) · Alto (>70%)'
 
-const MONO = 'ui-monospace, "SF Mono", "Cascadia Code", monospace'
-
 interface Props {
   matrix: MasteryCell[]
   firstAuc: number | null
@@ -35,7 +33,7 @@ export function HeatmapGrid({ matrix, firstAuc }: Props) {
   const cellAt = new Map(matrix.map((c) => [`${c.subject_id}:${c.kc_id}`, c]))
 
   return (
-    <div>
+    <div className="stack-lg">
       <Grid subjects={subjects} kcs={kcs} cellAt={cellAt} />
       <Legend />
     </div>
@@ -62,7 +60,7 @@ function Grid({
     >
       <span role="columnheader" />
       {kcs.map((kc) => (
-        <span key={`h-${kc}`} role="columnheader" style={{ fontFamily: MONO }}>
+        <span key={`h-${kc}`} role="columnheader" className="mono">
           {kc}
         </span>
       ))}
@@ -84,7 +82,7 @@ function Row({
 }) {
   return (
     <>
-      <span role="rowheader" style={{ fontFamily: MONO }}>
+      <span role="rowheader" className="mono">
         {subject}
       </span>
       {kcs.map((kc) => {
@@ -110,5 +108,5 @@ function Row({
 }
 
 function Legend() {
-  return <p>{LEGEND}</p>
+  return <p className="t-label" style={{ color: 'var(--color-text-muted)', margin: 0 }}>{LEGEND}</p>
 }

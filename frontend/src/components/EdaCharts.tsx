@@ -86,11 +86,17 @@ function CompileErrorRatePanel({ agg }: { agg: EdaAggregate }) {
 
 export function EdaCharts({ eda }: { eda: EdaResponse }) {
   return (
-    <section>
-      <h3>Análise exploratória (EDA)</h3>
-      <SuccessRatePanel agg={eda.success_rate} />
-      <LearningCurvePanel agg={eda.learning_curve} />
-      <CompileErrorRatePanel agg={eda.compile_error_rate} />
+    <section className="stack-lg">
+      <h3 className="t-heading">Análise exploratória (EDA)</h3>
+      <div className="panel">
+        <SuccessRatePanel agg={eda.success_rate} />
+      </div>
+      <div className="panel">
+        <LearningCurvePanel agg={eda.learning_curve} />
+      </div>
+      <div className="panel">
+        <CompileErrorRatePanel agg={eda.compile_error_rate} />
+      </div>
     </section>
   )
 }
