@@ -1,0 +1,39 @@
+/* Facens brand tokens (D-05). Light brand: white-dominant surfaces, navy as a dark structural
+ * neutral, a single interactive blue accent, cyan confined to the logo. The yellow rule (locked):
+ * no warm/yellow UI chrome — warm color in this interface means the mastery medium band ONLY, never
+ * a button/chip/link/decoration. See 06.1-FACENS-BRAND.md / 06.1-UI-SPEC.md. */
+
+:root {
+  /* --- Brand & surfaces --- */
+  --color-brand-navy: #004479; /* header, headings, structural emphasis (dark neutral) */
+  --color-accent: #0a5cff; /* single interactive accent: active tab/assignment, focus ring, links */
+  --color-emblem-cyan: #009bdb; /* logo emblem ONLY — not a second accent */
+
+  --color-surface: #ffffff; /* primary surface / cards */
+  --color-surface-muted: #f4f7fb; /* page background */
+  --color-border: #e2e8f0; /* slate-200 card/rail borders */
+
+  --color-text: #0f172a; /* slate-900 body/headings */
+  --color-text-muted: #64748b; /* slate-500 labels, captions, "dados de" timestamp */
+
+  /* --- Mastery band fills (data semantics from edmkt_core.mastery — the only warm color in the UI) ---
+   * cutoffs: low < 0.40, medium [0.40, 0.70], high > 0.70 */
+  --band-low: #dc2626; /* red-600 */
+  --band-medium: #f59e0b; /* amber-500 */
+  --band-high: #16a34a; /* green-600 */
+
+  /* --- Typography --- */
+  /* Open Sans via Google Fonts with a system fallback (Pitfall 5: CDN may be unreachable on Tailscale) */
+  --font-sans: 'Open Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  /* Mono stack for AUC / % / IDs — Open Sans has no mono cut (Pitfall 4: proportional digits drift) */
+  --font-mono: ui-monospace, 'SF Mono', 'Cascadia Code', monospace;
+
+  /* --- Spacing scale (multiples of 4) --- */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+}
