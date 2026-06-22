@@ -102,6 +102,8 @@ def infer_predictions(
         if asg is None:
             raise ValueError(f"assignment {assignment_id} inexistente")
     turma = repos.TurmaRepository(conn).get(asg.turma_id)
+    if turma is None:  # WR-01: turma órfã → ValueError claro, não AttributeError em turma.name
+        raise ValueError(f"turma {asg.turma_id} inexistente")
     turma_slug = _slug(turma.name)
     progsnap_aid = _progsnap_aid(asg.name)
 

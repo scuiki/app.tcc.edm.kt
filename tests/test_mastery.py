@@ -301,3 +301,21 @@ def test_compute_mastery_resolves_artifact_once(trained_artifact, tmp_path, monk
         (artifact_a.id,),
     ).fetchone()["n"]
     assert n_a == len(matrix)
+
+
+def test_infer_predictions_orphan_turma_raises_valueerror(trained_artifact, tmp_path, monkeypatch):
+    # WR-01: se a turma do assignment sumiu, infer_predictions chamava turma.name e explodia em
+    # AttributeError opaco. A guarda levanta um ValueError claro ("turma N inexistente").
+    from edmkt_app import mastery_service
+
+    monkeypatch.setattr(mastery_service, "DATA_ROOT", tmp_path)
+    _seed_clean_parquet(trained_artifact, tmp_path)
+    conn = trained_artifact.conn
+
+    # Remove a turma (FK desligada só p/ o DELETE: o órfão surge de uma conexão sem enforcement).
+    conn.execute("PRAGMA foreign_keys=OFF;")
+    conn.execute("DELETE FROM turma WHERE id = ?;", (trained_artifact.turma_id,))
+    conn.execute("PRAGMA foreign_keys=ON;")
+
+    with pytest.raises(ValueError, match="turma .* inexistente"):
+        mastery_service.infer_predictions(conn, trained_artifact.assignment_id)
