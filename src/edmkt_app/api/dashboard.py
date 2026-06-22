@@ -99,6 +99,11 @@ def get_eda(
     # não existe (turma sem ingestão concluída), degrada para agregados vazios em vez de 500.
     assignment = _require_assignment(conn, assignment_id)
     turma = repos.TurmaRepository(conn).get(assignment.turma_id)
+    # WR-01: a turma pode estar ausente (FK não-cascade por-conexão; turma removida sob um
+    # assignment órfão). Sem a guarda, turma.name explodia em AttributeError → 500 cru. 404
+    # explícito, no mesmo espírito de _require_assignment.
+    if turma is None:
+        raise HTTPException(status_code=404, detail="turma inexistente")
     pq = eda_module.canonical_parquet_path(turma.name, assignment.name)
 
     if not pq.exists():

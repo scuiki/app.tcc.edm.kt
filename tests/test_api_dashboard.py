@@ -108,3 +108,20 @@ def test_mastery_unknown_assignment_404(api_client):
     client, _ = api_client
     resp = client.get("/dashboard/mastery/999999")
     assert resp.status_code == 404
+
+
+def test_eda_orphan_turma_404_not_500(api_client):
+    # WR-01: um assignment cuja turma sumiu (linha removida sob um assignment órfão) fazia
+    # turma.name explodir em AttributeError → 500 cru. A guarda devolve 404 limpo, não 500.
+    client, conn = api_client
+    aid = _seed_assignment(conn, status="eda_only")
+    turma_id = repos.AssignmentRepository(conn).get(aid).turma_id
+    # A FK assignment.turma_id→turma é enforced POR-CONEXÃO (PRAGMA foreign_keys=ON em db.py);
+    # um assignment órfão surge quando uma conexão SEM enforcement removeu a turma. Reproduzimos
+    # isso desligando o pragma só para o DELETE — o estado órfão que a guarda WR-01 cobre.
+    conn.execute("PRAGMA foreign_keys=OFF;")
+    conn.execute("DELETE FROM turma WHERE id = ?;", (turma_id,))
+    conn.execute("PRAGMA foreign_keys=ON;")
+
+    resp = client.get(f"/dashboard/eda/{aid}")
+    assert resp.status_code == 404  # NÃO 500
