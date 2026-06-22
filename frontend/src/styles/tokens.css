@@ -36,4 +36,365 @@
   --space-xl: 32px;
   --space-2xl: 48px;
   --space-3xl: 64px;
+
+  /* Accent at low alpha for tinted banners/active fills — color-mix keeps it derived from --color-accent
+   * so the single-accent rule holds even for the tints. */
+  --accent-tint: color-mix(in srgb, var(--color-accent) 8%, transparent);
+  --navy-tint: color-mix(in srgb, var(--color-brand-navy) 6%, transparent);
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+
+  /* One restrained elevation token (not a generic drop-shadow on every card) — used only for the header
+   * separation and never stacked. */
+  --shadow-header: 0 1px 0 rgba(15, 23, 42, 0.06), 0 2px 8px rgba(0, 68, 121, 0.06);
+
+  --content-max: 1180px;
+}
+
+/* --- Base layer ---------------------------------------------------------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  background: var(--color-surface-muted);
+  color: var(--color-text);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Typography roles (UI-SPEC: 4 sizes, 2 weights). Display carries a mild clamp so it breathes on wide
+ * viewports without exceeding the 28px tier on the low end. */
+.t-display {
+  font-size: clamp(24px, 1.4vw + 18px, 28px);
+  font-weight: 600;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.t-heading {
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.t-body {
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.t-label {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+/* Functional digit alignment for AUC / % / IDs (UI-SPEC Pitfall 4) — not a "technical vibe". */
+.mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Shell --------------------------------------------------------------- */
+
+.app-shell {
+  min-height: 100vh;
+  background: var(--color-surface-muted);
+  color: var(--color-text);
+}
+
+.app-header {
+  background: var(--color-brand-navy);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md) var(--space-xl);
+  box-shadow: var(--shadow-header);
+}
+
+.app-header__logo {
+  height: 40px;
+  width: auto;
+  display: block;
+}
+
+.app-header__title {
+  color: #fff;
+}
+
+.app-body {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+}
+
+.app-main {
+  flex: 1;
+  min-width: 0;
+  max-width: var(--content-max);
+  margin: 0 auto;
+  width: 100%;
+  padding: var(--space-xl) var(--space-xl) var(--space-3xl);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .app-main {
+    animation: app-fade-in 320ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  @keyframes app-fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
+
+/* --- Rail (assignment picker) ------------------------------------------- */
+
+.rail {
+  width: 260px;
+  flex: none;
+  min-height: calc(100vh - 72px);
+  background: var(--color-surface);
+  border-right: 1px solid var(--color-border);
+  padding: var(--space-lg) var(--space-md);
+}
+
+.rail__label {
+  color: var(--color-text-muted);
+  margin: 0 0 var(--space-md);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 12px;
+}
+
+.rail__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rail__item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  min-height: 40px;
+  padding: var(--space-sm) var(--space-md);
+  border: none;
+  cursor: pointer;
+  background: transparent;
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 400;
+  border-radius: var(--radius-sm);
+  transition: background-color 120ms ease-out, color 120ms ease-out;
+}
+
+.rail__item:hover {
+  background: var(--accent-tint);
+}
+
+.rail__item[aria-current='true'] {
+  background: var(--color-accent);
+  color: #fff;
+  font-weight: 600;
+}
+
+.rail__item[aria-current='true']:hover {
+  background: var(--color-accent);
+}
+
+/* --- Tabs ---------------------------------------------------------------- */
+
+.tabs {
+  display: flex;
+  gap: var(--space-sm);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.tabs__tab {
+  min-height: 40px;
+  padding: var(--space-sm) var(--space-md);
+  border: none;
+  cursor: pointer;
+  background: transparent;
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 400;
+  border-bottom: 2px solid transparent;
+  transition: color 120ms ease-out, border-color 120ms ease-out;
+}
+
+.tabs__tab:hover {
+  color: var(--color-accent);
+}
+
+.tabs__tab[aria-selected='true'] {
+  color: var(--color-accent);
+  font-weight: 600;
+  border-bottom-color: var(--color-accent);
+}
+
+/* --- Content rhythm ------------------------------------------------------ */
+
+.content {
+  margin-top: var(--space-xl);
+}
+
+/* Vertical rhythm for the mastery sub-views — generous separation between distinct regions. */
+.stack-xl > * + * {
+  margin-top: var(--space-2xl);
+}
+
+.stack-lg > * + * {
+  margin-top: var(--space-lg);
+}
+
+/* A selective surface for grouped data (heatmap, lists) — flat, hairline border, no drop-shadow,
+ * never nested inside another .panel (no card-in-card). */
+.panel {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+}
+
+.panel__title {
+  margin: 0 0 var(--space-md);
+}
+
+/* --- Uncertainty frame (tinted info banner — NOT a thick one-side border) --- */
+
+.uframe {
+  border-radius: var(--radius-md);
+  padding: var(--space-md) var(--space-lg);
+  border: 1px solid var(--color-border);
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.uframe--trained {
+  background: var(--accent-tint);
+  border-color: color-mix(in srgb, var(--color-accent) 24%, var(--color-border));
+}
+
+.uframe--untrained {
+  background: var(--color-surface-muted);
+  color: var(--color-text-muted);
+}
+
+.uframe p {
+  margin: 0;
+}
+
+/* --- State blocks (empty / loading / error) — left-aligned, not viewport-centered --- */
+
+.state {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-sm);
+  padding: var(--space-lg) 0;
+  max-width: 56ch;
+}
+
+.state__icon {
+  flex: none;
+  margin-top: 2px;
+  color: var(--color-text-muted);
+}
+
+.state__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.state__heading {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.state__text {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.state--error {
+  color: var(--color-text);
+}
+
+.state--error .state__icon {
+  color: var(--band-low);
+}
+
+/* --- Data lists (critical KCs, at-risk, recommendations) ----------------- */
+
+.data-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.data-list__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding: var(--space-sm) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.data-list__row:last-child {
+  border-bottom: none;
+}
+
+.data-list__label {
+  min-width: 0;
+}
+
+.data-list__value {
+  text-align: right;
+  white-space: nowrap;
+  color: var(--color-text-muted);
+}
+
+/* Recommendations read as comfortable prose rows, not dense table lines. */
+.rec-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.rec-list__item {
+  font-size: 16px;
+  line-height: 1.55;
+  padding-left: var(--space-md);
+  border-left: 2px solid var(--color-border);
 }
