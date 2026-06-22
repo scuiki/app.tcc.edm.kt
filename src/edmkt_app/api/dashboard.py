@@ -25,6 +25,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from edmkt_core.mastery import at_risk_students, critical_kcs
 from edmkt_app import eda as eda_module
 from edmkt_app import mastery_service
+from edmkt_app import utils
 from edmkt_app.api.deps import get_conn
 from edmkt_app.persistence import models
 from edmkt_app.persistence import repositories as repos
@@ -145,7 +146,9 @@ def list_assignments(conn: sqlite3.Connection = Depends(get_conn)) -> dict:
     items = []
     for asg in repos.AssignmentRepository(conn).list_all():
         try:
-            progsnap_id = mastery_service._progsnap_aid(asg.name)
+            # IN-01: util PÚBLICO compartilhado em vez do _progsnap_aid privado de outro módulo
+            # (cruzar a fronteira do underscore quebraria silenciosamente se ele fosse renomeado).
+            progsnap_id = utils.progsnap_aid(asg.name)
         except ValueError:
             progsnap_id = None  # nome sem sufixo numérico: id ProgSnap2 indisponível, não quebra a lista
         items.append(
