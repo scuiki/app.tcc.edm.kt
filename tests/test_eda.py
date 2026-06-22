@@ -64,8 +64,9 @@ def test_learning_curve_mean_correct_by_attempt(canonical_parquet):
 
 
 def test_compile_error_rate_by_assignment(canonical_parquet):
-    # DASH-04: taxa de compile-error = fração de eventos Compile.Error por AssignmentID. O
-    # stream canônico preserva Compile.Error (clean.py:22); a439_mini tem >=1 (S2 c4).
+    # DASH-04 + WR-03: taxa de compile-error = Compile.Error POR tentativa de execução
+    # (CE_count / Run_count), NÃO a fração sobre todos os eventos (CE/(CE+Run)). O stream
+    # canônico preserva Compile.Error (clean.py:22); a439_mini tem >=1 (S2 c4).
     from edmkt_app.eda import compile_error_rate_by_assignment
 
     ce = compile_error_rate_by_assignment(canonical_parquet)
@@ -73,5 +74,10 @@ def test_compile_error_rate_by_assignment(canonical_parquet):
     assert 439 in ce
     assert ce[439] > 0.0  # o fixture tem ao menos um Compile.Error
     df = pd.read_parquet(canonical_parquet)
-    expected = (df["EventType"] == "Compile.Error").mean()
+    ce_count = (df["EventType"] == "Compile.Error").sum()
+    run_count = (df["EventType"] == "Run.Program").sum()
+    expected = ce_count / run_count  # WR-03: denominador são SÓ os Run.Program
     assert ce[439] == pytest.approx(expected)
+    # E a métrica corrigida NÃO coincide com a fórmula antiga (mistura de tipos): prova o fix.
+    old_formula = (df["EventType"] == "Compile.Error").mean()
+    assert ce[439] != pytest.approx(old_formula)
