@@ -33,12 +33,7 @@ const TABS: { id: Tab; label: string }[] = [
   { id: 'recs', label: 'Recomendações de reforço' },
 ]
 
-const NAVY = '#004479'
 const ACCENT = '#0a5cff'
-const SURFACE = '#ffffff'
-const SURFACE_MUTED = '#f4f7fb'
-const BORDER = '#e2e8f0'
-const TEXT_MUTED = '#64748b'
 
 // Shared focus ring so every interactive control shows the accent outline (UI-SPEC: never outline:none
 // without a replacement). Applied via onFocus/onBlur to keep it inline without a CSS file.
@@ -59,19 +54,19 @@ function App() {
   const assignmentsQuery = useAssignments()
 
   return (
-    <div style={{ minHeight: '100vh', background: SURFACE_MUTED, color: '#0f172a' }}>
+    <div className="app-shell">
       <Header />
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0' }}>
+      <div className="app-body">
         <Rail
           query={assignmentsQuery}
           selectedId={assignmentId}
           onSelect={(id) => setAssignmentId(id)}
         />
-        <main style={{ flex: 1, padding: '24px' }}>
+        <main className="app-main">
           <TabSwitch active={tab} onChange={setTab} />
-          <section style={{ marginTop: '24px' }}>
+          <section className="content">
             {assignmentId == null ? (
-              <EmptyState kind="no-assignments" />
+              <NothingSelected query={assignmentsQuery} />
             ) : tab === 'mastery' ? (
               <MasteryTab assignmentId={assignmentId} />
             ) : tab === 'eda' ? (
@@ -86,23 +81,20 @@ function App() {
   )
 }
 
+// Defect fix: with nothing selected, the main region must distinguish two cases the old code conflated.
+// A populated list → "pick one". The empty-list / pending / error states are already surfaced by the
+// rail, so the main region stays quiet to avoid repeating the same message in two places.
+function NothingSelected({ query }: { query: ReturnType<typeof useAssignments> }) {
+  if (query.isPending || query.isError) return null
+  if (query.data.assignments.length === 0) return null
+  return <EmptyState kind="select-assignment" />
+}
+
 function Header() {
   return (
-    <header
-      role="banner"
-      style={{
-        background: NAVY,
-        color: '#fff',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '16px',
-        padding: '16px 24px',
-      }}
-    >
-      <img src={FACENS_LOGO} alt="uniFacens" height={40} />
-      <h1 style={{ fontSize: '20px', fontWeight: 600, margin: 0 }}>
-        Dashboard de Domínio da Turma
-      </h1>
+    <header role="banner" className="app-header">
+      <img className="app-header__logo" src={FACENS_LOGO} alt="uniFacens" height={40} />
+      <h1 className="app-header__title t-display">Dashboard de Domínio da Turma</h1>
     </header>
   )
 }
@@ -117,17 +109,8 @@ function Rail({
   onSelect: (id: number) => void
 }) {
   return (
-    <nav
-      aria-label="Turma / Assignment"
-      style={{
-        width: '260px',
-        minHeight: 'calc(100vh - 72px)',
-        background: SURFACE,
-        borderRight: `1px solid ${BORDER}`,
-        padding: '16px',
-      }}
-    >
-      <p style={{ color: TEXT_MUTED, fontSize: '14px', margin: '0 0 8px' }}>Turma / Assignment</p>
+    <nav aria-label="Turma / Assignment" className="rail">
+      <p className="rail__label">Turma / Assignment</p>
       {query.isPending ? (
         <Loading />
       ) : query.isError ? (
@@ -135,29 +118,17 @@ function Rail({
       ) : query.data.assignments.length === 0 ? (
         <EmptyState kind="no-assignments" />
       ) : (
-        <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+        <ul className="rail__list">
           {query.data.assignments.map((a) => {
             const active = a.id === selectedId
             return (
               <li key={a.id}>
                 <button
                   type="button"
+                  className="rail__item"
                   onClick={() => onSelect(a.id)}
                   aria-current={active ? 'true' : undefined}
                   {...focusRing}
-                  style={{
-                    display: 'block',
-                    width: '100%',
-                    textAlign: 'left',
-                    minHeight: '40px',
-                    padding: '8px 12px',
-                    border: 'none',
-                    cursor: 'pointer',
-                    background: active ? ACCENT : 'transparent',
-                    color: active ? '#fff' : '#0f172a',
-                    fontWeight: active ? 600 : 400,
-                    borderRadius: '6px',
-                  }}
                 >
                   {a.name}
                 </button>
@@ -172,7 +143,7 @@ function Rail({
 
 function TabSwitch({ active, onChange }: { active: Tab; onChange: (t: Tab) => void }) {
   return (
-    <div role="tablist" style={{ display: 'flex', gap: '8px', borderBottom: `1px solid ${BORDER}` }}>
+    <div role="tablist" className="tabs">
       {TABS.map((t) => {
         const selected = t.id === active
         return (
@@ -180,19 +151,10 @@ function TabSwitch({ active, onChange }: { active: Tab; onChange: (t: Tab) => vo
             key={t.id}
             type="button"
             role="tab"
+            className="tabs__tab"
             aria-selected={selected}
             onClick={() => onChange(t.id)}
             {...focusRing}
-            style={{
-              minHeight: '40px',
-              padding: '8px 16px',
-              border: 'none',
-              cursor: 'pointer',
-              background: 'transparent',
-              color: selected ? ACCENT : '#0f172a',
-              fontWeight: selected ? 600 : 400,
-              borderBottom: selected ? `2px solid ${ACCENT}` : '2px solid transparent',
-            }}
           >
             {t.label}
           </button>
@@ -207,10 +169,14 @@ function MasteryTab({ assignmentId }: { assignmentId: number }) {
   if (isPending) return <Loading />
   if (isError) return <ErrorState />
   return (
-    <div>
+    // Rhythm: uncertainty banner on top, then the heatmap, then the two lists — each its own region with
+    // generous separation. Surfaces are selective (the grid + lists sit on panels; the banner does not).
+    <div className="stack-xl">
       {/* DASH-05: the uncertainty frame is ALWAYS rendered above the grid — never suppressed. */}
       <UncertaintyFrame firstAuc={data.first_auc} trainedAt={data.trained_at} />
-      <HeatmapGrid matrix={data.matrix} firstAuc={data.first_auc} />
+      <div className="panel">
+        <HeatmapGrid matrix={data.matrix} firstAuc={data.first_auc} />
+      </div>
       <CriticalKCList criticalKcs={data.critical_kcs} />
       <AtRiskList atRiskStudents={data.at_risk_students} />
     </div>
