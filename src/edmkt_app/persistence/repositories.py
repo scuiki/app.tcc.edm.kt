@@ -78,6 +78,25 @@ class AssignmentRepository:
             "UPDATE assignment SET status = ? WHERE id = ?;", (status, assignment_id)
         )
 
+    def list_all(self) -> list[models.Assignment]:
+        # Listagem completa (BACKLOG 999.2): mesma forma de KCRepository.list_by_assignment, sem
+        # filtro. Ordena por id para um payload determinístico. SQL sem parâmetros de entrada.
+        rows = self._conn.execute(
+            "SELECT id, turma_id, name, current_version_id, created_at, status "
+            "FROM assignment ORDER BY id;"
+        ).fetchall()
+        return [
+            models.Assignment(
+                id=r["id"],
+                turma_id=r["turma_id"],
+                name=r["name"],
+                current_version_id=r["current_version_id"],
+                created_at=r["created_at"],
+                status=r["status"],
+            )
+            for r in rows
+        ]
+
 
 class SubmissionRepository:
     def __init__(self, conn: sqlite3.Connection) -> None:
