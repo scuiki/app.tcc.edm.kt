@@ -64,4 +64,14 @@ describe('EmptyState', () => {
       ),
     ).toBeInTheDocument()
   })
+
+  it('renders the select-assignment heading and body', () => {
+    render(<EmptyState kind="select-assignment" />)
+    expect(screen.getByText('Selecione um assignment')).toBeInTheDocument()
+    expect(
+      screen.getByText(
+        'Escolha uma turma na lista à esquerda para ver domínio, análise exploratória e recomendações.',
+      ),
+    ).toBeInTheDocument()
+  })
 })
