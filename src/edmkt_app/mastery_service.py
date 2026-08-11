@@ -34,6 +34,7 @@ from edmkt_core.mastery import build_mastery_matrix
 from edmkt_core.models.code_dkt import predict_code_dkt
 from edmkt_core.sequences import build_sequences
 
+from edmkt_app import utils
 from edmkt_app.persistence import models, transaction
 from edmkt_app.persistence import repositories as repos
 from edmkt_app.persistence.artifacts import ArtifactStore
@@ -108,7 +109,10 @@ def infer_predictions(
     progsnap_aid = _progsnap_aid(asg.name)
 
     pq = DATA_ROOT / turma_slug / "clean" / f"assignment_{progsnap_aid}.parquet"
-    df = pd.read_parquet(pq, engine="pyarrow")
+    # Mesmo recorte do treino (train.py): inferir sobre o stream misto alimentaria o modelo com
+    # eventos que ele nunca viu, e a matriz do dashboard sairia de outra distribuição que o AUC
+    # exibido na moldura de incerteza.
+    df = utils.run_program_only(pd.read_parquet(pq, engine="pyarrow"))
 
     # artifact_dir é DB-owned (reconstruído do valor gravado, nunca de caminho de cliente);
     # load_version desserializa com weights_only=True (artifacts.py) — sem reload solto (T-06-09).

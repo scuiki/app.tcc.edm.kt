@@ -30,6 +30,7 @@ from edmkt_core.config import FROZEN_CONFIG
 from edmkt_core.pipeline import split_by_subject, train_and_evaluate
 from edmkt_core.seeding import set_global_seed
 
+from edmkt_app import utils
 from edmkt_app.features_cache import build_cache_on_disk, parse_rate
 from edmkt_app.persistence import connect
 from edmkt_app.persistence import repositories as repos
@@ -87,7 +88,9 @@ def _train_body(conn, assignment_id: int, job_id: int) -> dict:
     job_repo.mark_running(job_id, total_epochs=total_epochs, started_at=_now_iso())
 
     pq = DATA_ROOT / turma_slug / "clean" / f"assignment_{progsnap_aid}.parquet"
-    df = pd.read_parquet(pq, engine="pyarrow")
+    # Recorta ANTES de qualquer consumo: o split, o cache de features e a taxa de parse abaixo
+    # têm de enxergar o mesmo stream que o golden-run usa como oráculo (utils.run_program_only).
+    df = utils.run_program_only(pd.read_parquet(pq, engine="pyarrow"))
 
     train_df, test_df = split_by_subject(df)
     config = dict(FROZEN_CONFIG)

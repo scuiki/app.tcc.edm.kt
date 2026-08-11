@@ -96,7 +96,7 @@ def test_at_risk_students_below_low_band(trained_artifact):
 # pred_df que ele mesmo inferiu) e o COMPUTE-ONCE (a 2ª chamada não recomputa nem duplica linhas).
 
 
-def _seed_clean_parquet(ns, data_root):
+def _seed_clean_parquet(ns, data_root, with_compile_errors: bool = False):
     # Monta o Parquet canônico da Fase 3 no caminho que o serviço deriva (_slug(turma)/clean/
     # assignment_<progsnap_aid>.parquet). turma="Turma 6" → "turma-6"; assignment="A439" → 439.
     # Problemas 1/2/3 batem com a Q-matrix do fixture (problema 3 liga ambos os KCs).
@@ -126,6 +126,14 @@ def _seed_clean_parquet(ns, data_root):
                 (1, 1.0, java_a, "x3"), (3, 0.0, java_c, "x4")]
         for step, (pid, score, code, csid) in enumerate(plan):
             rows.append(_row(subj, pid, si * 10 + step, score, code, f"c{si}_{step}"))
+        if with_compile_errors:
+            # Como o canônico da Fase 3 grava de fato (ALLOWED_EVENTS, D-10): Compile.Error com
+            # Java quebrado convive com os Run.Program no MESMO Parquet.
+            broken = _row(subj, 1, si * 10 + 5, 0.0, "public int oops( { return ;;; }", "")
+            broken["CodeStateID"] = f"e{si}"
+            broken["EventType"] = "Compile.Error"
+            broken["correct"] = 0
+            rows.append(broken)
     df = pd.DataFrame(rows)
     df["ServerTimestamp"] = pd.to_datetime(df["ServerTimestamp"], utc=True)
     df["AssignmentID"] = df["AssignmentID"].astype("Int64")
@@ -319,3 +327,29 @@ def test_infer_predictions_orphan_turma_raises_valueerror(trained_artifact, tmp_
 
     with pytest.raises(ValueError, match="turma .* inexistente"):
         mastery_service.infer_predictions(conn, trained_artifact.assignment_id)
+
+
+def test_inference_stream_excludes_compile_errors(trained_artifact, tmp_path, monkeypatch):
+    """A inferência lê o MESMO Parquet canônico do treino — e precisa do MESMO filtro.
+
+    Espelha test_train_cli.test_compile_errors_never_reach_the_training_stream do lado da
+    leitura: treinar só com Run.Program e depois inferir sobre o stream misto alimentaria o
+    modelo com eventos que ele nunca viu no treino, e a matriz aluno×KC do dashboard sairia
+    de uma distribuição diferente da que produziu o AUC exibido na moldura de incerteza.
+    """
+    from edmkt_app import mastery_service
+
+    monkeypatch.setattr(mastery_service, "DATA_ROOT", tmp_path)
+    _seed_clean_parquet(trained_artifact, tmp_path, with_compile_errors=True)
+
+    seen = {}
+    real_build_sequences = mastery_service.build_sequences
+
+    def _spy(df, progsnap_aid, *args, **kwargs):
+        seen["event_types"] = set(df["EventType"].unique())
+        return real_build_sequences(df, progsnap_aid, *args, **kwargs)
+
+    monkeypatch.setattr(mastery_service, "build_sequences", _spy)
+    mastery_service.infer_predictions(trained_artifact.conn, trained_artifact.assignment_id)
+
+    assert seen["event_types"] == {"Run.Program"}

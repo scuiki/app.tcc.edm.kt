@@ -91,7 +91,32 @@ def fast_config(monkeypatch):
     return fast
 
 
-def _seed_trainable(conn, data_root) -> tuple[int, int]:
+def _canonical_df_with_compile_errors() -> pd.DataFrame:
+    """Stream canônico realista: Run.Program parseável + Compile.Error com Java QUEBRADO.
+
+    É a forma que `clean.clean_event_stream` grava de verdade (ALLOWED_EVENTS = os dois tipos,
+    D-10) e que o CSEDM real exibe — no A439, 57,6% das linhas são Compile.Error. O Java
+    malformado é o que torna o teste discriminante: se esses eventos chegarem à extração de
+    features, a taxa de parse cai abaixo de 1.0.
+    """
+    df = _canonical_df()
+    base = pd.Timestamp("2019-03-01T08:00:00Z")
+    broken = []
+    for s in range(8):
+        for step in range(3):
+            ts = base + pd.Timedelta(hours=s) + pd.Timedelta(minutes=30 + step)
+            row = _row(f"S{s}", 1, ts, 0.0, "public int oops( { return ;;; }", f"e{s}_{step}")
+            row["EventType"] = "Compile.Error"
+            row["correct"] = 0  # clean.py: correct exige Run.Program AND Score == 1.0
+            broken.append(row)
+    out = pd.concat([df, pd.DataFrame(broken)], ignore_index=True)
+    out["ServerTimestamp"] = pd.to_datetime(out["ServerTimestamp"], utc=True)
+    out["AssignmentID"] = out["AssignmentID"].astype("Int64")
+    out["ProblemID"] = out["ProblemID"].astype("Int64")
+    return out.sort_values(["SubjectID", "ServerTimestamp"]).reset_index(drop=True)
+
+
+def _seed_trainable(conn, data_root, df: pd.DataFrame | None = None) -> tuple[int, int]:
     """Monta turma + assignment trainable + Parquet canônico + job pending. Devolve (aid, job)."""
     created = "2019-03-01T00:00:00+00:00"
     turma_id = repos.TurmaRepository(conn).insert(
@@ -109,7 +134,7 @@ def _seed_trainable(conn, data_root) -> tuple[int, int]:
     )
     clean_dir = data_root / "turma-x" / "clean"
     clean_dir.mkdir(parents=True, exist_ok=True)
-    _canonical_df().to_parquet(
+    (_canonical_df() if df is None else df).to_parquet(
         clean_dir / f"assignment_{ASSIGNMENT_ID}.parquet", engine="pyarrow", index=False
     )
     job_id = repos.TrainingJobRepository(conn).insert(
@@ -256,3 +281,30 @@ def test_parse_rate_is_persisted(tmp_db, data_root, fast_config):
     job = repos.TrainingJobRepository(conn).get(job_id)
     assert job is not None
     assert job.parse_rate == pytest.approx(1.0)
+
+
+# --- caso 7: o stream de treino é só Run.Program (fidelidade a Shi et al. 2022) ---
+
+
+def test_compile_errors_never_reach_the_training_stream(tmp_db, data_root, fast_config):
+    """Compile.Error vive no Parquet canônico (a EDA precisa dele), mas NÃO se treina com ele.
+
+    O TCC 1 treinou o Code-DKT só sobre Run.Program (data_loader.filter_for_bkt_dkt, o filtro
+    por trás de sequences_bkt_dkt.pkl); o golden-run reproduz aquele número porque o fixture
+    csedm_main_table já chega filtrado. Sem o mesmo filtro AQUI, a aplicação treina sobre outro
+    dado que o oráculo — no CSEDM real isso derrubou o first-attempt AUC para 0,6959, fora da
+    banda ±3pp, e a taxa de parse para 78,58%.
+
+    O fixture carrega Compile.Error com Java sintaticamente quebrado: se algum deles alcançar a
+    extração de features, a taxa de parse cai abaixo de 1.0. A asserção é essa — comportamento
+    observável pelo contrato público de _run_training, não espionagem de chamada interna.
+    """
+    conn = tmp_db
+    assignment_id, job_id = _seed_trainable(
+        conn, data_root, df=_canonical_df_with_compile_errors()
+    )
+
+    result = train._run_training(conn, assignment_id, job_id)
+
+    assert result is not None
+    assert result["parse_rate"] == pytest.approx(1.0)
