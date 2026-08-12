@@ -1,16 +1,4 @@
-"""ArtifactStore write-once + versão monótona + content_hash + flip atômico (MODEL-04).
-
-Coração do MODEL-04 (D-04/D-05/D-06). Cada versão de modelo é um diretório `v<N>`
-write-once sob `base/<turma>/<assignment>/models/`, guardando os pesos (`state_dict`,
-NUNCA o nn.Module — Anti-Pattern RESEARCH/CLAUDE.md §What NOT to Use), o `vocab.pkl` e um
-`config.json` que carrega TODOS os args de construção do CodeDKTModel (Pitfall 1: sem eles o
-`.pt` é irrecuperável por size mismatch no reload). O `version_number` é monótono por
-(turma, assignment) e calculado na MESMA transação do insert (Pitfall 5); o `content_hash`
-(SHA-256 dos três arquivos) é metadado de integridade/dedup, não identidade (D-04). O flip
-do ponteiro `current_version_id` é o ÚLTIMO passo, um UPDATE atômico — a ordem load-bearing
-blob→INSERT→flip garante que um leitor nunca siga o ponteiro para um artefato truncado
-(Pitfall 2). Este módulo é o primeiro I/O de filesystem write-once do projeto.
-"""
+"""ArtifactStore: o blob write-once de cada versão de modelo, e seu reload confinado."""
 
 from __future__ import annotations
 
@@ -27,40 +15,7 @@ import torch
 
 from edmkt_core.models.code_dkt import CodeDKTModel
 
-
-def _now_iso() -> str:
-    return datetime.now(timezone.utc).isoformat()
-
-
-def next_version_number(conn: sqlite3.Connection, assignment_id: int) -> int:
-    """Próxima versão = MAX(version_number)+1 dentro do escopo (assignment). Pattern 2.
-
-    Deve rodar na MESMA transação do INSERT do artefato (Pitfall 5), senão dois inserts
-    concorrentes calculam o mesmo número; UNIQUE(assignment_id, version_number) é a rede."""
-    row = conn.execute(
-        "SELECT COALESCE(MAX(version_number), 0) + 1 AS next FROM model_artifact "
-        "WHERE assignment_id = ?;",
-        (assignment_id,),
-    ).fetchone()
-    return int(row["next"])
-
-
-def flip_current(conn: sqlite3.Connection, assignment_id: int, new_version_id: int) -> None:
-    """Troca Assignment.current_version_id por um UPDATE atômico (Pattern 5 / D-06).
-
-    O flip é o ÚLTIMO passo da ordem load-bearing (blob write-once → INSERT → flip): só
-    aqui um leitor passa a enxergar a nova versão, e sempre uma já completa (Pitfall 2). O
-    ponteiro no DB é a fonte única — este UPDATE nunca toca o diretório do artefato."""
-    conn.execute("BEGIN IMMEDIATE;")
-    try:
-        conn.execute(
-            "UPDATE assignment SET current_version_id=? WHERE id=?;",
-            (new_version_id, assignment_id),
-        )
-        conn.execute("COMMIT;")
-    except BaseException:
-        conn.execute("ROLLBACK;")
-        raise
+from edmkt_app.persistence.artifacts.versioning import _now_iso, next_version_number
 
 
 class ArtifactStore:

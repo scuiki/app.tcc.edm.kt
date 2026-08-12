@@ -228,7 +228,9 @@ def test_persist_failure_does_not_block_next_version(
         store.persist(proxy, turma_id, assignment_id, tiny_model, tiny_vocab, tiny_config)
 
     # (b) nenhum diretório v1 órfão sobra no FS (rmtree desfez o blob do passo 1).
-    v1 = pathlib.Path(str(tmp_path / "data")) / str(turma_id) / str(assignment_id) / "models" / "v1"
+    # Layout pós-B5: <base>/<assignment_id>/v<N>. Antes esta linha apontava para o caminho
+    # aninhado antigo e passava por vacuidade — checava um diretório que nunca existiria.
+    v1 = pathlib.Path(str(tmp_path / "data")) / str(assignment_id) / "v1"
     assert not v1.exists()
 
     # (c) a 2ª persist() (execute já restaurado) SUCEDE e devolve version_number == 1 — o slot

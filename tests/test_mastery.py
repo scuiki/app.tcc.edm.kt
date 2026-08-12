@@ -151,9 +151,11 @@ def test_service_matrix_equals_pure_seam(trained_artifact, tmp_path, monkeypatch
     # build_mastery_matrix sobre o pred_df que o próprio serviço inferiu + a Q-matrix aprovada —
     # o serviço orquestra, não re-implementa a agregação.
     from edmkt_app import mastery_service
+    from edmkt_app.mastery_service import inference
+    from edmkt_app.mastery_service import settings as mastery_settings
     from edmkt_core.mastery import build_mastery_matrix
 
-    monkeypatch.setattr(mastery_service, "DATA_ROOT", tmp_path)
+    monkeypatch.setattr(mastery_settings, "DATA_ROOT", tmp_path)
     _seed_clean_parquet(trained_artifact, tmp_path)
     conn = trained_artifact.conn
 
@@ -179,8 +181,10 @@ def test_service_persists_compute_once(trained_artifact, tmp_path, monkeypatch):
     # COMPUTE-ONCE (T-06-11 DoS + correção): a 1ª chamada persiste uma linha por (subject, kc)
     # na mastery_prediction keyed ao artifact; a 2ª chamada NÃO recomputa nem duplica.
     from edmkt_app import mastery_service
+    from edmkt_app.mastery_service import inference
+    from edmkt_app.mastery_service import settings as mastery_settings
 
-    monkeypatch.setattr(mastery_service, "DATA_ROOT", tmp_path)
+    monkeypatch.setattr(mastery_settings, "DATA_ROOT", tmp_path)
     _seed_clean_parquet(trained_artifact, tmp_path)
     conn = trained_artifact.conn
     artifact_id = trained_artifact.artifact_id
@@ -208,9 +212,11 @@ def test_persist_failure_leaves_no_partial_cache(trained_artifact, tmp_path, mon
     # Falhamos o insert DEPOIS da 1ª linha: com a transação, o ROLLBACK desfaz tudo (0 linhas);
     # sem ela, a 1ª linha já commitou e fica órfã (>=1 linha) — este teste RED pega exatamente isso.
     from edmkt_app import mastery_service
+    from edmkt_app.mastery_service import inference
+    from edmkt_app.mastery_service import settings as mastery_settings
     from edmkt_app.persistence import repositories as repos
 
-    monkeypatch.setattr(mastery_service, "DATA_ROOT", tmp_path)
+    monkeypatch.setattr(mastery_settings, "DATA_ROOT", tmp_path)
     _seed_clean_parquet(trained_artifact, tmp_path)
     conn = trained_artifact.conn
     artifact_id = trained_artifact.artifact_id
@@ -257,14 +263,16 @@ def test_compute_mastery_resolves_artifact_once(trained_artifact, tmp_path, monk
     # fazendo _resolve_current_artifact devolver um artefato DIFERENTE na 2ª chamada e exigimos
     # que o modelo carregado (via load_version) seja o MESMO que keya as linhas persistidas.
     from edmkt_app import mastery_service
+    from edmkt_app.mastery_service import inference
+    from edmkt_app.mastery_service import settings as mastery_settings
     from edmkt_app.persistence import models
     from edmkt_app.persistence.artifacts import ArtifactStore
 
-    monkeypatch.setattr(mastery_service, "DATA_ROOT", tmp_path)
+    monkeypatch.setattr(mastery_settings, "DATA_ROOT", tmp_path)
     _seed_clean_parquet(trained_artifact, tmp_path)
     conn = trained_artifact.conn
 
-    real_resolve = mastery_service._resolve_current_artifact
+    real_resolve = inference._resolve_current_artifact
     asg, artifact_a = real_resolve(conn, trained_artifact.assignment_id)
 
     # Um 2º artefato "concorrente" com um artifact_dir distinto e inexistente — se alguém
@@ -287,7 +295,7 @@ def test_compute_mastery_resolves_artifact_once(trained_artifact, tmp_path, monk
             return asg, artifact_a
         return asg, artifact_b  # "flip" concorrente na 2ª resolução
 
-    monkeypatch.setattr(mastery_service, "_resolve_current_artifact", _flipping_resolve)
+    monkeypatch.setattr(inference, "_resolve_current_artifact", _flipping_resolve)
 
     loaded_dirs: list[str] = []
     real_load = ArtifactStore.load_version
@@ -315,8 +323,10 @@ def test_infer_predictions_orphan_turma_raises_valueerror(trained_artifact, tmp_
     # WR-01: se a turma do assignment sumiu, infer_predictions chamava turma.name e explodia em
     # AttributeError opaco. A guarda levanta um ValueError claro ("turma N inexistente").
     from edmkt_app import mastery_service
+    from edmkt_app.mastery_service import inference
+    from edmkt_app.mastery_service import settings as mastery_settings
 
-    monkeypatch.setattr(mastery_service, "DATA_ROOT", tmp_path)
+    monkeypatch.setattr(mastery_settings, "DATA_ROOT", tmp_path)
     _seed_clean_parquet(trained_artifact, tmp_path)
     conn = trained_artifact.conn
 
@@ -338,18 +348,20 @@ def test_inference_stream_excludes_compile_errors(trained_artifact, tmp_path, mo
     de uma distribuição diferente da que produziu o AUC exibido na moldura de incerteza.
     """
     from edmkt_app import mastery_service
+    from edmkt_app.mastery_service import inference
+    from edmkt_app.mastery_service import settings as mastery_settings
 
-    monkeypatch.setattr(mastery_service, "DATA_ROOT", tmp_path)
+    monkeypatch.setattr(mastery_settings, "DATA_ROOT", tmp_path)
     _seed_clean_parquet(trained_artifact, tmp_path, with_compile_errors=True)
 
     seen = {}
-    real_build_sequences = mastery_service.build_sequences
+    real_build_sequences = inference.build_sequences
 
     def _spy(df, progsnap_aid, *args, **kwargs):
         seen["event_types"] = set(df["EventType"].unique())
         return real_build_sequences(df, progsnap_aid, *args, **kwargs)
 
-    monkeypatch.setattr(mastery_service, "build_sequences", _spy)
+    monkeypatch.setattr(inference, "build_sequences", _spy)
     mastery_service.infer_predictions(trained_artifact.conn, trained_artifact.assignment_id)
 
     assert seen["event_types"] == {"Run.Program"}
