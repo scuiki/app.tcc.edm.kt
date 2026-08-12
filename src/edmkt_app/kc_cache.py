@@ -26,13 +26,31 @@ PROMPT_VERSION = "kcgen-v1"
 _CACHE_FILENAME = "kc_cache.json"
 
 
-def kc_input_hash(model_id: str, prompt_version: str, payload: str) -> str:
-    """sha256 hex de (model_id, prompt_version, payload) separados por NUL.
+def kc_input_hash(
+    model_id: str,
+    prompt_version: str,
+    payload: str,
+    system: str = "",
+    schema: dict | None = None,
+) -> str:
+    """sha256 hex de TUDO que determina a resposta, separado por NUL.
+
+    O `system` e o `schema` entram na chave porque determinam a saída tanto quanto o payload —
+    e o system é justamente onde moram as INSTRUÇÕES, a parte que mais muda. Sem eles, editar o
+    prompt de sistema devolvia, em silêncio, a resposta gerada pelo prompt antigo; mudar o
+    schema devolvia um parse que não batia com ele. A rede era lembrar de incrementar
+    PROMPT_VERSION à mão — uma constante que depende de memória.
 
     O NUL separa as partes para que ("a","b") e ("ab","") não colidam. É identidade/dedup, não
     um segredo (V6 n/a) — só decide hit vs miss."""
+    schema_repr = "" if schema is None else json.dumps(schema, sort_keys=True, ensure_ascii=False)
     h = hashlib.sha256()
-    h.update(b"\x00".join(p.encode("utf-8") for p in (model_id, prompt_version, payload)))
+    h.update(
+        b"\x00".join(
+            part.encode("utf-8")
+            for part in (model_id, prompt_version, system, schema_repr, payload)
+        )
+    )
     return h.hexdigest()
 
 

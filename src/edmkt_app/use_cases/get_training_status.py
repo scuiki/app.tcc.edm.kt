@@ -16,12 +16,15 @@ class GetTrainingStatusUseCase:
         job = repos.TrainingJobRepository(self._conn).get(job_id)
         if job is None:
             raise NotFound("job inexistente")
+        # current_epoch/train_loss são DERIVADOS da última métrica, não campos mutáveis mantidos
+        # em paralelo: as colunas homônimas em training_job ficaram como resíduo da 0008.
+        last = repos.TrainingMetricRepository(self._conn).last(job_id)
         return {
             "job_id": job.id,
             "status": job.status,
-            "current_epoch": job.current_epoch,
+            "current_epoch": None if last is None else last["epoch"],
             "total_epochs": job.total_epochs,
-            "train_loss": job.train_loss,
+            "train_loss": None if last is None else last["train_loss"],
             "error_message": job.error_message,
             "parse_rate": job.parse_rate,  # cobertura de parse javalang, exposta ao professor
         }

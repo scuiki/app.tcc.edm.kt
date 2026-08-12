@@ -188,6 +188,8 @@ class ArtifactStore:
         vocab: dict,
         config: dict,
         first_auc: Optional[float] = None,
+        git_commit: Optional[str] = None,
+        data_hash: Optional[str] = None,
     ) -> dict:
         """Grava o blob write-once e insere a linha ModelArtifact — passos (1) e (2) da ordem.
 
@@ -210,8 +212,8 @@ class ArtifactStore:
             cur = conn.execute(
                 "INSERT INTO model_artifact "
                 "(assignment_id, version_number, content_hash, artifact_dir, created_at, "
-                "first_auc) "
-                "VALUES (?, ?, ?, ?, ?, ?);",
+                "first_auc, git_commit, data_hash) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?);",
                 (
                     assignment_id,
                     version_number,
@@ -219,6 +221,9 @@ class ArtifactStore:
                     saved["dir"],
                     _now_iso(),
                     first_auc,  # DASH-05: o AUC do treino entra na linha junto do blob (D-05)
+                    # Proveniência (0008): qual código e qual dado produziram esta versão.
+                    git_commit,
+                    data_hash,
                 ),
             )
             artifact_id = cur.lastrowid

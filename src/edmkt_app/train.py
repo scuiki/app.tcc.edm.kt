@@ -29,6 +29,7 @@ from edmkt_core.config import FROZEN_CONFIG
 from edmkt_core.pipeline import split_by_subject, train_and_evaluate
 from edmkt_core.seeding import set_global_seed
 
+from edmkt_app import modeling_frame, provenance
 from edmkt_app.features_cache import build_cache_on_disk, parse_rate
 from edmkt_app.modeling_frame import load_modeling_frame
 from edmkt_app.persistence import connect
@@ -48,9 +49,10 @@ def _now_iso() -> str:
 
 def _make_epoch_writer(conn, job_id: int):
     def on_epoch(epoch: int, avg_loss: float) -> None:
+        # Append, não UPDATE: sobrescrever destruía a curva a cada época (migração 0008).
         # Escrita curta sob WAL — o GET poll (D-04) lê concorrentemente sem bloquear.
-        repos.TrainingJobRepository(conn).update_progress(
-            job_id, current_epoch=epoch, train_loss=float(avg_loss), updated_at=_now_iso()
+        repos.TrainingMetricRepository(conn).append(
+            job_id, epoch=epoch, train_loss=float(avg_loss), recorded_at=_now_iso()
         )
 
     return on_epoch
@@ -94,6 +96,10 @@ def _train_body(conn, assignment_id: int, job_id: int) -> dict:
     persisted = ArtifactStore(str(DATA_ROOT / turma_slug / "models")).persist(
         conn, frame.turma_id, assignment_id, result["model"], result["vocab"], config,
         first_auc=result["first_auc"],  # DASH-05: o AUC sobrevive ao subprocess via a linha (D-05)
+        git_commit=provenance.git_commit(Path.cwd()),
+        data_hash=provenance.file_hash(
+            modeling_frame.canonical_parquet_path(DATA_ROOT, turma_slug, progsnap_aid)
+        ),
     )
     flip_current(conn, assignment_id, persisted["artifact_id"])
     conn.execute(

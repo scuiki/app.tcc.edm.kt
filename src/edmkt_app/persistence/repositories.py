@@ -301,8 +301,9 @@ class ModelArtifactRepository:
     def insert(self, artifact: models.ModelArtifact) -> int:
         cur = self._conn.execute(
             "INSERT INTO model_artifact "
-            "(assignment_id, version_number, content_hash, artifact_dir, created_at, first_auc) "
-            "VALUES (?, ?, ?, ?, ?, ?);",
+            "(assignment_id, version_number, content_hash, artifact_dir, created_at, first_auc, "
+            "git_commit, data_hash) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?);",
             (
                 artifact.assignment_id,
                 artifact.version_number,
@@ -310,6 +311,8 @@ class ModelArtifactRepository:
                 artifact.artifact_dir,
                 artifact.created_at,
                 artifact.first_auc,
+                artifact.git_commit,
+                artifact.data_hash,
             ),
         )
         return cur.lastrowid
@@ -317,7 +320,7 @@ class ModelArtifactRepository:
     def get(self, artifact_id: int) -> Optional[models.ModelArtifact]:
         row = self._conn.execute(
             "SELECT id, assignment_id, version_number, content_hash, artifact_dir, created_at, "
-            "first_auc "
+            "first_auc, git_commit, data_hash "
             "FROM model_artifact WHERE id = ?;",
             (artifact_id,),
         ).fetchone()
@@ -331,6 +334,8 @@ class ModelArtifactRepository:
             artifact_dir=row["artifact_dir"],
             created_at=row["created_at"],
             first_auc=row["first_auc"],
+            git_commit=row["git_commit"],
+            data_hash=row["data_hash"],
         )
 
 
@@ -523,3 +528,43 @@ class KCJobRepository:
             "UPDATE kc_job SET status = 'failed', error_message = ? WHERE id = ?;",
             (error_message, job_id),
         )
+
+
+class TrainingMetricRepository:
+    """Série append-only de (época, loss) por job — a curva de treino.
+
+    Substitui o UPDATE que sobrescrevia training_job.train_loss a cada época: o progresso
+    corrente passa a ser DERIVADO da última linha, em vez de um campo mutável mantido em
+    paralelo. As colunas training_job.current_epoch/train_loss ficam como resíduo da migração
+    0008 e não são mais a fonte.
+    """
+
+    def __init__(self, conn: sqlite3.Connection) -> None:
+        self._conn = conn
+
+    def append(self, job_id: int, epoch: int, train_loss: float, recorded_at: str) -> None:
+        # INSERT OR REPLACE: um re-treino que reaproveite o mesmo job_id sobrescreve a época em
+        # vez de violar o UNIQUE(job_id, epoch).
+        self._conn.execute(
+            "INSERT OR REPLACE INTO training_metric (job_id, epoch, train_loss, recorded_at) "
+            "VALUES (?, ?, ?, ?);",
+            (job_id, epoch, train_loss, recorded_at),
+        )
+
+    def list_by_job(self, job_id: int) -> list[dict]:
+        return [
+            {"epoch": r["epoch"], "train_loss": r["train_loss"], "recorded_at": r["recorded_at"]}
+            for r in self._conn.execute(
+                "SELECT epoch, train_loss, recorded_at FROM training_metric "
+                "WHERE job_id = ? ORDER BY epoch;",
+                (job_id,),
+            )
+        ]
+
+    def last(self, job_id: int) -> Optional[dict]:
+        row = self._conn.execute(
+            "SELECT epoch, train_loss FROM training_metric WHERE job_id = ? "
+            "ORDER BY epoch DESC LIMIT 1;",
+            (job_id,),
+        ).fetchone()
+        return None if row is None else {"epoch": row["epoch"], "train_loss": row["train_loss"]}

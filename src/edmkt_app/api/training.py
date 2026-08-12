@@ -9,7 +9,12 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Depends
 
-from edmkt_app.api.deps import get_training_status_uc, start_training_uc
+from edmkt_app.api.deps import (
+    get_training_history_uc,
+    get_training_status_uc,
+    start_training_uc,
+)
+from edmkt_app.use_cases.get_training_history import GetTrainingHistoryUseCase
 from edmkt_app.use_cases.get_training_status import GetTrainingStatusUseCase
 from edmkt_app.use_cases.start_training import StartTrainingDto, StartTrainingUseCase
 
@@ -29,4 +34,13 @@ def poll_training(
     job_id: int,
     uc: GetTrainingStatusUseCase = Depends(get_training_status_uc),
 ) -> dict:
+    return uc.execute(job_id)
+
+
+@router.get("/training/{job_id}/metrics")
+def training_metrics(
+    job_id: int,
+    uc: GetTrainingHistoryUseCase = Depends(get_training_history_uc),
+) -> dict:
+    """Curva de loss por época. Rota ADITIVA: nenhum contrato existente muda."""
     return uc.execute(job_id)

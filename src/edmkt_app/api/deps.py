@@ -29,6 +29,7 @@ from edmkt_app.use_cases.get_eda import GetEdaUseCase
 from edmkt_app.use_cases.get_kc_job_status import GetKCJobStatusUseCase
 from edmkt_app.use_cases.get_mastery import GetMasteryUseCase
 from edmkt_app.use_cases.get_recommendations import GetRecommendationsUseCase
+from edmkt_app.use_cases.get_training_history import GetTrainingHistoryUseCase
 from edmkt_app.use_cases.get_training_status import GetTrainingStatusUseCase
 from edmkt_app.use_cases.list_assignments import ListAssignmentsUseCase
 from edmkt_app.use_cases.merge_kc import MergeKCUseCase
@@ -114,3 +115,9 @@ def get_kc_job_status_uc(
     conn: sqlite3.Connection = Depends(get_conn),
 ) -> GetKCJobStatusUseCase:
     return GetKCJobStatusUseCase(conn)
+
+
+def get_training_history_uc(
+    conn: sqlite3.Connection = Depends(get_conn),
+) -> GetTrainingHistoryUseCase:
+    return GetTrainingHistoryUseCase(conn)

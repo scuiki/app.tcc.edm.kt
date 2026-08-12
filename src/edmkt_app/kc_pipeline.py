@@ -76,11 +76,26 @@ class _CachedLLM:
         self._stage = stage
 
     def generate(self, system: str, prompt: str, schema: dict) -> dict:
-        key = kc_input_hash(MODEL_ID, PROMPT_VERSION, prompt)
+        key = kc_input_hash(MODEL_ID, PROMPT_VERSION, prompt, system=system, schema=schema)
         cache_id = f"{self._stage}:{key}"
         cached = cache_get(self._cache_dir, problem_id=cache_id, key=key)
         if cached is not None:
             return cached["parsed"]
+
+        # Migração-por-leitura das entradas gravadas antes de system/schema entrarem na chave:
+        # elas foram geradas com ESTE mesmo system/schema (o prompt não mudou desde então), então
+        # reaproveitá-las é correto e evita re-gastar cota da assinatura. Remover quando não
+        # houver mais cache antigo em disco.
+        legacy_key = kc_input_hash(MODEL_ID, PROMPT_VERSION, prompt)
+        legacy = cache_get(self._cache_dir, problem_id=f"{self._stage}:{legacy_key}", key=legacy_key)
+        if legacy is not None:
+            cache_put(
+                self._cache_dir,
+                problem_id=cache_id,
+                key=key,
+                record={"model_id": MODEL_ID, "prompt_version": PROMPT_VERSION, "parsed": legacy["parsed"]},
+            )
+            return legacy["parsed"]
 
         # Resolve _llm_generate no módulo em tempo de chamada — o teste o monkeypatcha (raising
         # False), e um default ligado em def-time ignoraria o patch.
