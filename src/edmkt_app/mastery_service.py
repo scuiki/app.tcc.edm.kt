@@ -91,7 +91,8 @@ def infer_predictions(
 
     # artifact_dir é DB-owned (reconstruído do valor gravado, nunca de caminho de cliente);
     # load_version desserializa com weights_only=True (artifacts.py) — sem reload solto (T-06-09).
-    model, vocab, meta = ArtifactStore(str(DATA_ROOT)).load_version(artifact.artifact_dir)
+    store = ArtifactStore(str(DATA_ROOT / frame.turma_slug / "models"))
+    model, vocab, meta = store.load_version(artifact.artifact_dir)
 
     max_len = meta.get("max_len", 50)
     R = meta.get("R", 50)

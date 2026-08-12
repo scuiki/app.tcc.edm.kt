@@ -11,6 +11,7 @@ tmp_db/tiny_model/tiny_vocab/tiny_config de 02-01. As asserções pinam invarian
 from __future__ import annotations
 
 import json
+from pathlib import Path
 import pickle
 import sqlite3
 
@@ -284,3 +285,61 @@ def test_load_version_refuses_dir_outside_base(tmp_path):
 
     # O efeito colateral do pickle NÃO ocorreu: a guarda barrou antes de qualquer pickle.load.
     assert not sentinel.exists()
+
+
+# --- B5/999.1: uma raiz só para o store, sem segmento "models" repetido --------------
+
+
+def test_version_dir_has_no_repeated_models_segment(tmp_db, tmp_path, tiny_model, tiny_vocab, tiny_config):
+    """A raiz era passada de dois jeitos: train.py com `.../models` no fim e mastery_service
+    com DATA_ROOT cru. Como _version_dir também acrescentava "models", o caminho real virava
+    `data/<turma>/models/1/1/models/v1` (999.1) — e a guarda de traversal que protege o
+    `pickle.load` do vocab.pkl valia sobre a árvore `data/` inteira no caminho de leitura,
+    inclusive sobre `data/<turma>/raw/`, onde aterrissa o conteúdo do zip do professor.
+    """
+    store = ArtifactStore(str(tmp_path / "turma-x" / "models"))
+    turma_id, assignment_id = _seed_turma_assignment(tmp_db)
+
+    persisted = store.persist(
+        tmp_db, turma_id, assignment_id, tiny_model, tiny_vocab, tiny_config
+    )
+
+    vdir = Path(persisted["dir"])
+    assert [p for p in vdir.parts if p == "models"] == ["models"]
+    assert vdir == tmp_path / "turma-x" / "models" / str(assignment_id) / "v1"
+
+
+def test_reader_and_writer_agree_on_the_root(tmp_path):
+    """O leitor tem de confinar sob a MESMA raiz do escritor.
+
+    mastery_service abria o store em DATA_ROOT enquanto train.py escrevia em
+    DATA_ROOT/<turma>/models. Como load_version desserializa o vocab.pkl com pickle IRRESTRITO,
+    a guarda passava a valer sobre a árvore data/ inteira — inclusive data/<turma>/raw/, que é
+    onde o conteúdo do zip do professor é extraído.
+    """
+    from edmkt_core.models.code_dkt import CodeDKTModel
+
+    M = 2
+    model = CodeDKTModel(
+        input_dim=2 * M, hidden_dim=8, output_dim=M, node_count=4, path_count=3,
+        dropout=0.1, R=4, node_embed_dim=6, path_embed_dim=6,
+    )
+    vocab = {"token_to_idx": {}, "path_to_idx": {}, "node_count": 4, "path_count": 3}
+    config = {"hidden_dim": 8, "dropout": 0.1, "R": 4, "node_embed_dim": 6, "path_embed_dim": 6}
+
+    data_root = tmp_path / "data"
+    base = data_root / "turma-x" / "models"
+    written = ArtifactStore(str(base)).save_version(
+        turma_id=1, assignment_id=1, version_number=1, model=model, vocab=vocab, config=config
+    )
+
+    # Mesma raiz: aceita.
+    _loaded, reloaded_vocab, _meta = ArtifactStore(str(base)).load_version(written["dir"])
+    assert reloaded_vocab == vocab
+
+    # Raiz LARGA (o defeito): um artifact_dir apontando para dentro de raw/ passaria pela
+    # guarda. Provamos que a raiz certa o recusa.
+    raw_dir = data_root / "turma-x" / "raw" / "forjado"
+    raw_dir.mkdir(parents=True)
+    with pytest.raises(ValueError, match="traversal"):
+        ArtifactStore(str(base)).load_version(str(raw_dir))

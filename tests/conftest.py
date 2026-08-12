@@ -396,7 +396,9 @@ def trained_artifact(tmp_db, tmp_path, tiny_vocab, tiny_config):
         path_embed_dim=tiny_config["path_embed_dim"],
     )
 
-    store = ArtifactStore(str(tmp_path / "data"))
+    # Mesma raiz que train.py/mastery_service montam: DATA_ROOT/<turma_slug>/models. Os testes
+    # apontam DATA_ROOT para tmp_path, e a turma "Turma 6" vira o slug "turma-6".
+    store = ArtifactStore(str(tmp_path / "turma-6" / "models"))
     persisted = store.persist(conn, turma_id, assignment_id, model, tiny_vocab, tiny_config)
     artifact_id = persisted["artifact_id"]
     # Publica o ponteiro current_version_id — o caminho de leitura do dashboard segue daqui

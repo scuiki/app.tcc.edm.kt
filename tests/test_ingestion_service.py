@@ -231,3 +231,33 @@ def test_lock_released_after_successful_ingest(tmp_db, data_root):
     raw, main = _make_raw(data_root)
     service.ingest(conn, raw, "Turma X", main)
     assert _holder_pid(conn) is None
+
+
+# --- B2: um re-ingest que falha não pode destruir o Parquet que estava lá ------------
+
+
+def test_failed_reingest_preserves_the_previous_parquet(tmp_db, data_root, monkeypatch):
+    """`to_parquet` sobrescreve. Se a persistência falhar depois disso, o rollback antigo dava
+    `unlink` no arquivo — que já havia substituído o bom. A turma ficava SEM Parquet nenhum.
+
+    A nota de projeto dizia que usar unlink em vez de rmtree "preserva datasets de uploads
+    anteriores": preserva os de OUTROS assignments, não o que está sendo sobrescrito.
+    """
+    conn = tmp_db
+    raw, main = _make_raw(data_root)
+    service.ingest(conn, raw, "Turma X", main)
+
+    pq = data_root / "turma-x" / "clean" / "assignment_439.parquet"
+    original = pq.read_bytes()
+
+    # Segunda ingestão que estoura DEPOIS do blob, durante os INSERTs.
+    def _boom(self, submission):
+        raise RuntimeError("falha simulada no meio da persistência")
+
+    monkeypatch.setattr(repos.SubmissionRepository, "insert", _boom)
+    with pytest.raises(RuntimeError):
+        service.ingest(conn, raw, "Turma X", main)
+
+    assert pq.exists(), "o Parquet anterior foi destruído por um re-ingest que falhou"
+    assert pq.read_bytes() == original
+    assert not list(pq.parent.glob("*.tmp")), "restou temporário do write interrompido"

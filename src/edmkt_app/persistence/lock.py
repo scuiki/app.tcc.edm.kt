@@ -49,11 +49,21 @@ def _now_iso() -> str:
 def reclaim_orphan_lock(conn: sqlite3.Connection) -> None:
     """No startup, libera qualquer trava remanescente (holder_pid → NULL). Idempotente.
 
-    Instância única ⇒ nenhum pipeline pode estar legitimamente vivo logo após um restart,
-    então qualquer trava presente é órfã (D-08). O critério é a ausência de vida do dono
-    (PID morto), nunca a passagem do tempo desde a aquisição (rejeitado D-08 / Pitfall 6)."""
+    O critério é a ausência de vida do dono (PID morto), nunca a passagem do tempo desde a
+    aquisição (rejeitado D-08 / Pitfall 6) — e nunca "reiniciou, logo está órfã": o subprocess
+    de treino não é filho do ciclo de vida do web. Hoje o uvicorn é PID 1 no container e um
+    restart mata o treino junto, mas isso é acidente de deploy, não garantia: com --reload em
+    desenvolvimento o web reinicia sozinho e um treino vivo perderia a trava, abrindo espaço
+    para um segundo treino na mesma GPU.
+
+    A cláusula de PID no UPDATE mantém a operação atômica: nada de ler-depois-escrever."""
     conn.execute("BEGIN IMMEDIATE;")
     try:
+        row = conn.execute("SELECT holder_pid FROM pipeline_lock WHERE id=1;").fetchone()
+        holder = None if row is None else row["holder_pid"]
+        if holder is not None and pid_alive(holder):
+            conn.execute("COMMIT;")  # dono vivo: a trava é legítima, não órfã
+            return
         conn.execute(
             "UPDATE pipeline_lock SET holder_pid=NULL, operation=NULL, "
             "job_id=NULL, acquired_at=NULL WHERE id=1;"
@@ -106,13 +116,19 @@ class PipelineLock:
         return self
 
     def release(self) -> None:
-        """Zera a linha da trava (holder_pid → NULL). Idempotente."""
+        """Zera a linha da trava, SE ela for nossa. Idempotente.
+
+        O `WHERE holder_pid=?` é a guarda de posse: sem ela, um release tardio (deste objeto,
+        de uma trava que já foi roubada por estar stale) zeraria a trava de OUTRO pipeline em
+        andamento. A condição no próprio UPDATE mantém a operação atômica.
+        """
         conn = self._conn
         conn.execute("BEGIN IMMEDIATE;")
         try:
             conn.execute(
                 "UPDATE pipeline_lock SET holder_pid=NULL, operation=NULL, "
-                "job_id=NULL, acquired_at=NULL WHERE id=1;"
+                "job_id=NULL, acquired_at=NULL WHERE id=1 AND holder_pid=?;",
+                (os.getpid(),),
             )
             conn.execute("COMMIT;")
         except BaseException:

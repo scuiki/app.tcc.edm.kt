@@ -74,14 +74,15 @@ class ArtifactStore:
     def __init__(self, base_path: str) -> None:
         self._base = Path(base_path)
 
-    def _version_dir(self, turma_id: int, assignment_id: int, version_number: int) -> Path:
+    def _version_dir(self, assignment_id: int, version_number: int) -> Path:
         # Componentes derivados de IDs inteiros internos (nunca de nomes de upload). Resolve
         # e valida que o diretório fica sob base — defesa contra traversal (RESEARCH §Security).
+        #
+        # A base JÁ termina em .../<turma_slug>/models (é assim que os dois chamadores a
+        # constroem), então aqui não se acrescenta nem a turma nem outro "models": era essa
+        # dupla contagem que produzia `data/<turma>/models/1/1/models/v1` (999.1).
         base = self._base.resolve()
-        vdir = (
-            base / str(int(turma_id)) / str(int(assignment_id)) / "models"
-            / f"v{int(version_number)}"
-        )
+        vdir = base / str(int(assignment_id)) / f"v{int(version_number)}"
         resolved = (base / vdir.relative_to(base)).resolve()
         if base not in resolved.parents and resolved != base:
             raise ValueError(f"path traversal: {resolved} fora de {base}")
@@ -101,7 +102,7 @@ class ArtifactStore:
         n_problems é derivado do modelo vivo (model.input_dim / model.fc.out_features — Open
         Q1), evitando alterar o edmkt_core. O diretório é criado SEM exist_ok: re-gravar uma
         versão existente levanta FileExistsError (write-once, D-05/D-06)."""
-        vdir = self._version_dir(turma_id, assignment_id, version_number)
+        vdir = self._version_dir(assignment_id, version_number)
         # parents=True cria a árvore-pai que falte (turma/assignment/models) sem falhar se já
         # existe; SEM exist_ok o v<N> final é write-once — FileExistsError se já existir (D-05/D-06).
         vdir.mkdir(parents=True)
