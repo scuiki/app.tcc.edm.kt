@@ -18,7 +18,7 @@ import pandas as pd
 import pytest
 
 # RED: o entrypoint CLI do KC ainda não existe (gate da Wave 1/3).
-from edmkt_app import kc_pipeline  # noqa: E402
+from edmkt_app.kc_pipeline import runner, settings, transport  # noqa: E402
 from edmkt_app.persistence import models
 from edmkt_app.persistence import repositories as repos
 
@@ -61,8 +61,8 @@ def _canonical_df() -> pd.DataFrame:
 
 @pytest.fixture
 def data_root(tmp_path, monkeypatch):
-    """Aponta kc_pipeline.DATA_ROOT para tmp_path — FS hermético (sem CSEDM real)."""
-    monkeypatch.setattr(kc_pipeline, "DATA_ROOT", tmp_path)
+    """Aponta a raiz de dados do KC-gen para tmp_path — FS hermético (sem CSEDM real)."""
+    monkeypatch.setattr(settings, "DATA_ROOT", tmp_path)
     return tmp_path
 
 
@@ -103,7 +103,7 @@ def _patch_llm_ok(monkeypatch):
     def _fake_generate(*_a, **_k):
         return {"kcs": [{"name": "laços", "reasoning": "usa for"}]}
 
-    monkeypatch.setattr(kc_pipeline, "_llm_generate", _fake_generate, raising=False)
+    monkeypatch.setattr(transport, "_llm_generate", _fake_generate, raising=False)
 
 
 def test_lock_busy_marks_failed_and_does_not_persist(tmp_db, data_root):
@@ -115,7 +115,7 @@ def test_lock_busy_marks_failed_and_does_not_persist(tmp_db, data_root):
         (os.getpid(),),
     )
 
-    kc_pipeline._run_kc_pipeline(conn, assignment_id, job_id)
+    runner._run_kc_pipeline(conn, assignment_id, job_id)
 
     job = repos.KCJobRepository(conn).get(job_id)
     assert job.status == "failed"
@@ -132,9 +132,9 @@ def test_content_hard_fail_marks_failed_nothing_persisted(tmp_db, data_root, mon
     def _empty_generate(*_a, **_k):
         return {"kcs": []}
 
-    monkeypatch.setattr(kc_pipeline, "_llm_generate", _empty_generate, raising=False)
+    monkeypatch.setattr(transport, "_llm_generate", _empty_generate, raising=False)
 
-    kc_pipeline._run_kc_pipeline(conn, assignment_id, job_id)
+    runner._run_kc_pipeline(conn, assignment_id, job_id)
 
     job = repos.KCJobRepository(conn).get(job_id)
     assert job.status == "failed"
@@ -159,9 +159,9 @@ def test_small_dataset_skips_clustering_no_crash(tmp_db, data_root, monkeypatch)
     def _distinct_generate(*_a, **_k):
         return {"kcs": [{"name": next(names), "reasoning": "x"}]}
 
-    monkeypatch.setattr(kc_pipeline, "_llm_generate", _distinct_generate, raising=False)
+    monkeypatch.setattr(transport, "_llm_generate", _distinct_generate, raising=False)
 
-    kc_pipeline._run_kc_pipeline(conn, assignment_id, job_id)
+    runner._run_kc_pipeline(conn, assignment_id, job_id)
 
     job = repos.KCJobRepository(conn).get(job_id)
     assert job.status == "done"  # não falhou (sem crash de clustering)
@@ -185,7 +185,7 @@ def test_mark_done_failure_is_atomic_with_persist(tmp_db, data_root, monkeypatch
 
     monkeypatch.setattr(repos.KCJobRepository, "mark_done", _boom, raising=True)
 
-    kc_pipeline._run_kc_pipeline(conn, assignment_id, job_id)
+    runner._run_kc_pipeline(conn, assignment_id, job_id)
 
     asg = repos.AssignmentRepository(conn).get(assignment_id)
     job = repos.KCJobRepository(conn).get(job_id)
@@ -203,7 +203,7 @@ def test_success_transitions_job_and_acquires_lock(tmp_db, data_root, monkeypatc
     assignment_id, job_id = _seed_kc_ready(conn, data_root)
     _patch_llm_ok(monkeypatch)
 
-    kc_pipeline._run_kc_pipeline(conn, assignment_id, job_id)
+    runner._run_kc_pipeline(conn, assignment_id, job_id)
 
     job = repos.KCJobRepository(conn).get(job_id)
     assert job.status == "done"
