@@ -25,7 +25,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from edmkt_core.mastery import at_risk_students, critical_kcs
 from edmkt_app import eda as eda_module
 from edmkt_app import mastery_service
-from edmkt_app import utils
+from edmkt_app.values import ProgSnapAssignmentId
 from edmkt_app.api.deps import get_conn
 from edmkt_app.persistence import models
 from edmkt_app.persistence import repositories as repos
@@ -146,9 +146,8 @@ def list_assignments(conn: sqlite3.Connection = Depends(get_conn)) -> dict:
     items = []
     for asg in repos.AssignmentRepository(conn).list_all():
         try:
-            # IN-01: util PÚBLICO compartilhado em vez do _progsnap_aid privado de outro módulo
-            # (cruzar a fronteira do underscore quebraria silenciosamente se ele fosse renomeado).
-            progsnap_id = utils.progsnap_aid(asg.name)
+            # 999.2: o id do ProgSnap2 é um id-space distinto do id do banco; o tipo diz isso.
+            progsnap_id = ProgSnapAssignmentId.from_name(asg.name).value
         except ValueError:
             progsnap_id = None  # nome sem sufixo numérico: id ProgSnap2 indisponível, não quebra a lista
         items.append(

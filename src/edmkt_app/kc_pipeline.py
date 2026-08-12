@@ -18,7 +18,6 @@ from __future__ import annotations
 
 import argparse
 import os
-import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -41,6 +40,7 @@ from edmkt_app.persistence import models
 from edmkt_app.persistence import repositories as repos
 from edmkt_app.persistence.db import transaction
 from edmkt_app.persistence.lock import PipelineLock
+from edmkt_app.values import ProgSnapAssignmentId, TurmaSlug
 
 # Raiz do FS de dados; resolvida em path absoluto no main() para não depender do cwd herdado do
 # web (Pitfall 2). Override por teste.
@@ -53,22 +53,6 @@ MODEL_ID = "claude-haiku-4-5-20251001"
 
 def _now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
-
-
-def _slug(name: str) -> str:
-    # Mesma forma de service._slug / train._slug: o diretório da turma vem do slug interno,
-    # nunca de nome de upload.
-    s = re.sub(r"[^a-z0-9]+", "-", name.strip().lower()).strip("-")
-    return s or "turma"
-
-
-def _progsnap_aid(assignment_name: str) -> int:
-    # Parquet name = AssignmentID do ProgSnap2 (sufixo de "Assignment <N>"), NÃO assignment.id
-    # do banco (Pitfall 3). build_sequences/service._persist_atomic usam o mesmo id.
-    m = re.search(r"(\d+)", assignment_name)
-    if m is None:
-        raise ValueError(f"AssignmentID não derivável do nome: {assignment_name!r}")
-    return int(m.group(1))
 
 
 def _llm_generate(system: str, prompt: str, schema: dict) -> dict:
@@ -112,7 +96,7 @@ class _CachedLLM:
         return parsed
 
 
-def _kc_cache_dir(turma_slug: str, progsnap_aid: int) -> Path:
+def _kc_cache_dir(turma_slug: TurmaSlug, progsnap_aid: ProgSnapAssignmentId) -> Path:
     # Diretório de cache derivado do slug interno + aid (nunca input de usuário) — sem traversal
     # (KC-04). Espelha data/<slug>/kc/ dos artefatos do TCC.
     return DATA_ROOT / turma_slug / "kc" / f"assignment_{progsnap_aid}"
@@ -126,8 +110,8 @@ def _kc_body(conn, assignment_id: int, job_id: int) -> dict:
     if asg is None:
         raise ValueError(f"assignment {assignment_id} inexistente")
     turma = repos.TurmaRepository(conn).get(asg.turma_id)
-    turma_slug = _slug(turma.name)
-    progsnap_aid = _progsnap_aid(asg.name)
+    turma_slug = TurmaSlug.from_name(turma.name)
+    progsnap_aid = ProgSnapAssignmentId.from_name(asg.name)
 
     job_repo.mark_running(job_id, started_at=_now_iso())
 

@@ -9,7 +9,6 @@ Análogo de `ingestion/service.py` (app embrulha core puro) + `persistence/artif
 from __future__ import annotations
 
 import pickle
-import re
 from pathlib import Path
 from typing import Optional
 
@@ -17,25 +16,10 @@ import javalang
 
 from edmkt_core.features import build_cache, extract_paths_javalang
 
+from edmkt_app.values import CodeStateId, TurmaSlug
+
 # Raiz do FS de dados. Override por teste/deploy; default relativo ao cwd (data/<turma>/...).
 DATA_ROOT = Path("data")
-
-
-def _slug(name: str) -> str:
-    # Componente de caminho da turma derivado de nome arbitrário — mesma forma de
-    # service._slug (T-04-SLUG): minúsculas, só [a-z0-9], resto colapsado em "-".
-    s = re.sub(r"[^a-z0-9]+", "-", name.strip().lower()).strip("-")
-    return s or "turma"
-
-
-def _safe_csid_name(csid: str) -> str:
-    # O CodeStateID vem do ProgSnap2 do professor e vira nome de arquivo — vetor de
-    # traversal sem precedente no repo (T-04-CSID, _slug cobre só a turma). Aceita apenas
-    # CSIDs alfanuméricos (+ . _ -) e sem segmento "..", rejeitando qualquer coisa que
-    # escaparia o diretório de cache ANTES de montar o path.
-    if not csid or ".." in csid or not re.fullmatch(r"[A-Za-z0-9._-]+", csid):
-        raise ValueError(f"CodeStateID inseguro para nome de arquivo: {csid!r}")
-    return csid
 
 
 def _extract(code: str, config: dict) -> list[tuple[str, str, str]]:
@@ -49,7 +33,7 @@ def _extract(code: str, config: dict) -> list[tuple[str, str, str]]:
 
 
 def build_cache_on_disk(
-    turma_slug: str,
+    turma_slug: TurmaSlug,
     all_csids: list[str],
     code_states: dict[str, str],
     config: dict,
@@ -63,13 +47,13 @@ def build_cache_on_disk(
     `cache_raw` combinado alimenta `build_train_vocab(cache_raw, train_csids)` — o filtro
     train-only acontece DEPOIS, então cachear todos os CSIDs globalmente NÃO vaza (CORE-04).
     """
-    cache_dir = DATA_ROOT / _slug(turma_slug) / "cache" / "paths"
+    cache_dir = DATA_ROOT / turma_slug / "cache" / "paths"
     cache_dir.mkdir(parents=True, exist_ok=True)
 
     cache_raw: dict[str, list[tuple[str, str, str]]] = {}
     missing: list[str] = []
     for csid in all_csids:
-        safe = _safe_csid_name(csid)
+        safe = CodeStateId(csid)
         pkl = cache_dir / f"{safe}.pkl"
         if pkl.exists():
             cache_raw[csid] = pickle.loads(pkl.read_bytes())
@@ -87,7 +71,7 @@ def build_cache_on_disk(
             n_workers=n_workers,
         )
         for csid, paths in fresh.items():
-            safe = _safe_csid_name(csid)
+            safe = CodeStateId(csid)
             tmp = cache_dir / f"{safe}.pkl.tmp"
             tmp.write_bytes(pickle.dumps(paths))
             tmp.rename(cache_dir / f"{safe}.pkl")

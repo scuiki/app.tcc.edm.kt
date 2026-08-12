@@ -11,10 +11,11 @@ funções públicas que recebem o caminho do Parquet.
 
 from __future__ import annotations
 
-import re
 from pathlib import Path
 
 import pandas as pd
+
+from edmkt_app.values import ProgSnapAssignmentId, TurmaSlug
 
 # EDA NÃO importa train.py/persistence: aquele lado puxa torch + ArtifactStore e quebraria a
 # invariante "EDA roda sem modelo" (D-06). _slug/_progsnap_aid são triviais e reproduzidos aqui.
@@ -32,20 +33,6 @@ DATA_ROOT = Path("data")
 SEED = 42
 
 
-def _slug(name: str) -> str:
-    # Mesma forma de train._slug: o diretório da turma vem do slug interno, nunca de upload.
-    s = re.sub(r"[^a-z0-9]+", "-", name.strip().lower()).strip("-")
-    return s or "turma"
-
-
-def _progsnap_aid(assignment_name: str) -> int:
-    # AssignmentID do ProgSnap2 (sufixo de "Assignment <N>"), igual a train._progsnap_aid.
-    m = re.search(r"(\d+)", assignment_name)
-    if m is None:
-        raise ValueError(f"AssignmentID não derivável do nome: {assignment_name!r}")
-    return int(m.group(1))
-
-
 def _read_canonical(pq: Path | str) -> pd.DataFrame:
     # Único ponto de I/O do módulo (T-06-05): o caminho vem de IDs int + _slug/_progsnap_aid
     # internos, NUNCA de caminho de cliente; o read não carrega artefato de modelo (D-06).
@@ -55,7 +42,10 @@ def _read_canonical(pq: Path | str) -> pd.DataFrame:
 def canonical_parquet_path(turma_name: str, assignment_name: str) -> Path:
     """Deriva o caminho do Parquet canônico igual a `train.py:89` — a partir de nomes internos."""
     return (
-        DATA_ROOT / _slug(turma_name) / "clean" / f"assignment_{_progsnap_aid(assignment_name)}.parquet"
+        DATA_ROOT
+        / TurmaSlug.from_name(turma_name)
+        / "clean"
+        / f"assignment_{ProgSnapAssignmentId.from_name(assignment_name)}.parquet"
     )
 
 
