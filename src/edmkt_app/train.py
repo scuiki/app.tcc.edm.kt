@@ -3,7 +3,8 @@
 `python -m edmkt_app.train --assignment N --job-id J` é o processo OS que o handler FastAPI
 (plano 04-04) dispara. Adquire a `PipelineLock` como PRIMEIRO ato (D-02) para que o
 PID-liveness da Fase 2 recupere a trava se o treino morrer — o `holder_pid` precisa apontar
-para o PID que realmente faz o trabalho, não para o web. Lê o Parquet canônico da Fase 3,
+para o PID que realmente faz o trabalho, não para o web. Toma o quadro de modelagem pronto de
+`modeling_frame` (nunca o Parquet cru — training-serving skew),
 aquece o cache de paths em disco (plano 02), treina pelo seam congelado `train_and_evaluate`
 injetando um `on_epoch` que grava progresso por-época, persiste o artefato versionado e flipa
 `assignment.status` trainable→trained. Em falha o assignment segue `trainable`, o job marca
@@ -22,16 +23,14 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-import pandas as pd
 import torch
 
 from edmkt_core.config import FROZEN_CONFIG
 from edmkt_core.pipeline import split_by_subject, train_and_evaluate
 from edmkt_core.seeding import set_global_seed
 
-from edmkt_app import utils
 from edmkt_app.features_cache import build_cache_on_disk, parse_rate
-from edmkt_app.values import ProgSnapAssignmentId, TurmaSlug
+from edmkt_app.modeling_frame import load_modeling_frame
 from edmkt_app.persistence import connect
 from edmkt_app.persistence import repositories as repos
 from edmkt_app.persistence.artifacts import ArtifactStore, flip_current
@@ -59,22 +58,12 @@ def _make_epoch_writer(conn, job_id: int):
 
 def _train_body(conn, assignment_id: int, job_id: int) -> dict:
     job_repo = repos.TrainingJobRepository(conn)
-    asg_repo = repos.AssignmentRepository(conn)
-
-    asg = asg_repo.get(assignment_id)
-    if asg is None:
-        raise ValueError(f"assignment {assignment_id} inexistente")
-    turma = repos.TurmaRepository(conn).get(asg.turma_id)
-    turma_slug = TurmaSlug.from_name(turma.name)
-    progsnap_aid = ProgSnapAssignmentId.from_name(asg.name)
 
     total_epochs = FROZEN_CONFIG["epochs"]
     job_repo.mark_running(job_id, total_epochs=total_epochs, started_at=_now_iso())
 
-    pq = DATA_ROOT / turma_slug / "clean" / f"assignment_{progsnap_aid}.parquet"
-    # Recorta ANTES de qualquer consumo: o split, o cache de features e a taxa de parse abaixo
-    # têm de enxergar o mesmo stream que o golden-run usa como oráculo (utils.run_program_only).
-    df = utils.run_program_only(pd.read_parquet(pq, engine="pyarrow"))
+    frame = load_modeling_frame(conn, assignment_id, data_root=DATA_ROOT)
+    df, turma_slug, progsnap_aid = frame.events, frame.turma_slug, frame.assignment_id
 
     train_df, test_df = split_by_subject(df)
     config = dict(FROZEN_CONFIG)
@@ -103,7 +92,7 @@ def _train_body(conn, assignment_id: int, job_id: int) -> dict:
     # Ordem load-bearing blob→INSERT→flip (Pitfall 2 artifacts): persist grava o v<N> e a
     # linha; flip_current só então aponta o ponteiro para um artefato já completo.
     persisted = ArtifactStore(str(DATA_ROOT / turma_slug / "models")).persist(
-        conn, asg.turma_id, assignment_id, result["model"], result["vocab"], config,
+        conn, frame.turma_id, assignment_id, result["model"], result["vocab"], config,
         first_auc=result["first_auc"],  # DASH-05: o AUC sobrevive ao subprocess via a linha (D-05)
     )
     flip_current(conn, assignment_id, persisted["artifact_id"])
