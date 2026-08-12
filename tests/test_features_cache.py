@@ -11,7 +11,7 @@ from pathlib import Path
 
 import pytest
 
-from edmkt_app import features_cache
+from edmkt_app import features_cache, settings
 from edmkt_core.pipeline import build_train_vocab
 
 from tests.conftest import _JAVA_BAD, _JAVA_EMPTY_CLASS, _JAVA_OK_A
@@ -20,7 +20,7 @@ from tests.conftest import _JAVA_BAD, _JAVA_EMPTY_CLASS, _JAVA_OK_A
 @pytest.fixture
 def data_root(tmp_path, monkeypatch):
     """Point features_cache.DATA_ROOT at tmp_path so .pkl writes stay hermetic."""
-    monkeypatch.setattr(features_cache, "DATA_ROOT", tmp_path)
+    monkeypatch.setattr(settings, "DATA_ROOT", tmp_path)
     return tmp_path
 
 

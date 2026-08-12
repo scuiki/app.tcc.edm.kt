@@ -17,6 +17,7 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
+from edmkt_app import settings
 from edmkt_app.ingestion import clean, service
 from edmkt_app.persistence import repositories as repos
 
@@ -54,7 +55,7 @@ def _make_raw(root: Path, main_table: str = _MAIN_TABLE) -> tuple[Path, Path]:
 @pytest.fixture
 def data_root(tmp_path, monkeypatch):
     """Aponta service.DATA_ROOT para tmp_path — escrita de Parquet/raw fica hermética."""
-    monkeypatch.setattr(service, "DATA_ROOT", tmp_path)
+    monkeypatch.setattr(settings, "DATA_ROOT", tmp_path)
     return tmp_path
 
 

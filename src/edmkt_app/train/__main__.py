@@ -7,8 +7,8 @@ import os
 import sys
 from pathlib import Path
 
+from edmkt_app import settings
 from edmkt_app.persistence import connect
-from edmkt_app.train import settings
 from edmkt_app.train.runner import _run_training
 
 

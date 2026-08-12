@@ -7,8 +7,8 @@ import os
 import sys
 from pathlib import Path
 
-from edmkt_app.kc_pipeline import settings
 from edmkt_app.kc_pipeline.runner import _run_kc_pipeline
+from edmkt_app import settings
 from edmkt_app.persistence import connect
 
 

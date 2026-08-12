@@ -18,6 +18,7 @@ from pydantic import BaseModel
 
 from edmkt_app.api.deps import get_conn
 from edmkt_app.api.deps import process_ingestion_uc
+from edmkt_app import settings
 from edmkt_app.ingestion import service
 from edmkt_app.use_cases.process_ingestion import ProcessIngestionDto, ProcessIngestionUseCase
 from edmkt_app.values import ConfinedPath, TurmaSlug
@@ -95,12 +96,12 @@ def process(
 
     Confina os DOIS caminhos sob a raiz de dados ANTES de qualquer leitura — sem isso,
     main_table="/etc/passwd" viraria leitura arbitrária de arquivo via pandas (CR-01). A raiz vem
-    de service.DATA_ROOT em tempo de chamada (monkeypatchável no teste), não de um literal.
+    de settings.DATA_ROOT em tempo de chamada (monkeypatchável no teste), não de um literal.
     """
     confined = ProcessIngestionDto(
         turma_name=body.turma_name,
-        raw_dir=_confine(Path(body.raw_dir), service.DATA_ROOT),
-        main_table=_confine(Path(body.main_table), service.DATA_ROOT),
+        raw_dir=_confine(Path(body.raw_dir), settings.DATA_ROOT),
+        main_table=_confine(Path(body.main_table), settings.DATA_ROOT),
     )
     report = uc.execute(confined)
     return {

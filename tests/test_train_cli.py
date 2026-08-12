@@ -17,7 +17,8 @@ import pandas as pd
 import pytest
 import torch
 
-from edmkt_app.train import runner, settings as train_settings, stages
+from edmkt_app import settings
+from edmkt_app.train import runner, stages
 from edmkt_app.persistence import models
 from edmkt_app.persistence import repositories as repos
 
@@ -73,11 +74,10 @@ def _canonical_df() -> pd.DataFrame:
 
 @pytest.fixture
 def data_root(tmp_path, monkeypatch):
-    """Aponta a raiz de dados do treino e do cache para tmp_path — FS hermético."""
-    from edmkt_app import features_cache
+    """Aponta a raiz de dados compartilhada para tmp_path — FS hermético."""
 
-    monkeypatch.setattr(train_settings, "DATA_ROOT", tmp_path)
-    monkeypatch.setattr(features_cache, "DATA_ROOT", tmp_path)
+    # Uma raiz só: este único patch redireciona treino, cache de features e tudo mais.
+    monkeypatch.setattr(settings, "DATA_ROOT", tmp_path)
     return tmp_path
 
 

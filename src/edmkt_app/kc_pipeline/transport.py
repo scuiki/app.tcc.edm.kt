@@ -9,7 +9,8 @@ from __future__ import annotations
 from pathlib import Path
 
 from edmkt_app.kc_cache import PROMPT_VERSION, cache_get, cache_put, kc_input_hash
-from edmkt_app.kc_pipeline import settings
+from edmkt_app import settings
+from edmkt_app.kc_pipeline.settings import MODEL_ID
 from edmkt_app.llm.claude_cli import ClaudeCLIClient
 from edmkt_app.llm.validation import call_with_retry
 from edmkt_app.values import ProgSnapAssignmentId, TurmaSlug
@@ -20,7 +21,7 @@ def _llm_generate(system: str, prompt: str, schema: dict) -> dict:
 
     É o seam que a orquestração injeta como LLMClient e que os testes monkeypatcham — nenhum
     teste cruza para o binário real (T-05-01). cwd neutro corta o contexto CLAUDE.md (Pitfall 1)."""
-    return ClaudeCLIClient(model=settings.MODEL_ID).generate(system, prompt, schema)
+    return ClaudeCLIClient(model=MODEL_ID).generate(system, prompt, schema)
 
 
 class _CachedLLM:
@@ -36,7 +37,7 @@ class _CachedLLM:
         self._stage = stage
 
     def generate(self, system: str, prompt: str, schema: dict) -> dict:
-        key = kc_input_hash(settings.MODEL_ID, PROMPT_VERSION, prompt, system=system, schema=schema)
+        key = kc_input_hash(MODEL_ID, PROMPT_VERSION, prompt, system=system, schema=schema)
         cache_id = f"{self._stage}:{key}"
         cached = cache_get(self._cache_dir, problem_id=cache_id, key=key)
         if cached is not None:
@@ -46,14 +47,14 @@ class _CachedLLM:
         # elas foram geradas com ESTE mesmo system/schema (o prompt não mudou desde então), então
         # reaproveitá-las é correto e evita re-gastar cota da assinatura. Remover quando não
         # houver mais cache antigo em disco.
-        legacy_key = kc_input_hash(settings.MODEL_ID, PROMPT_VERSION, prompt)
+        legacy_key = kc_input_hash(MODEL_ID, PROMPT_VERSION, prompt)
         legacy = cache_get(self._cache_dir, problem_id=f"{self._stage}:{legacy_key}", key=legacy_key)
         if legacy is not None:
             cache_put(
                 self._cache_dir,
                 problem_id=cache_id,
                 key=key,
-                record={"model_id": settings.MODEL_ID, "prompt_version": PROMPT_VERSION, "parsed": legacy["parsed"]},
+                record={"model_id": MODEL_ID, "prompt_version": PROMPT_VERSION, "parsed": legacy["parsed"]},
             )
             return legacy["parsed"]
 
@@ -66,7 +67,7 @@ class _CachedLLM:
             self._cache_dir,
             problem_id=cache_id,
             key=key,
-            record={"model_id": settings.MODEL_ID, "prompt_version": PROMPT_VERSION, "parsed": parsed},
+            record={"model_id": MODEL_ID, "prompt_version": PROMPT_VERSION, "parsed": parsed},
         )
         return parsed
 

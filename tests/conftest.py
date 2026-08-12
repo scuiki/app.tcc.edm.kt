@@ -175,6 +175,7 @@ def cpu_device() -> torch.device:
 @pytest.fixture
 def tmp_db(tmp_path):
     """A migrated app.db on tmp_path: connect() + run_migrations(), schema at user_version=1."""
+    from edmkt_app import settings
     from edmkt_app.persistence import connect, run_migrations
 
     conn = connect(str(tmp_path / "app.db"))
@@ -320,12 +321,12 @@ def api_client(tmp_path, monkeypatch):
     from fastapi.testclient import TestClient
 
     from edmkt_app.api import create_app
-    from edmkt_app.ingestion import service
+    from edmkt_app import settings
     from edmkt_app.persistence import connect
 
     db_path = tmp_path / "app.db"
     monkeypatch.setenv("EDMKT_DB_PATH", str(db_path))
-    monkeypatch.setattr(service, "DATA_ROOT", tmp_path)
+    monkeypatch.setattr(settings, "DATA_ROOT", tmp_path)
 
     app = create_app()
     with TestClient(app) as client:
