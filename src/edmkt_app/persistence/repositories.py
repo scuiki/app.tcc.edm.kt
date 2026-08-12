@@ -36,6 +36,12 @@ class TurmaRepository:
             return None
         return models.Turma(id=row["id"], name=row["name"], created_at=row["created_at"])
 
+    def list_all(self) -> list[models.Turma]:
+        return [
+            models.Turma(id=r["id"], name=r["name"], created_at=r["created_at"])
+            for r in self._conn.execute("SELECT id, name, created_at FROM turma ORDER BY id;")
+        ]
+
 
 class AssignmentRepository:
     def __init__(self, conn: sqlite3.Connection) -> None:

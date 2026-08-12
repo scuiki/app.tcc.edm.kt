@@ -6,6 +6,7 @@ from pathlib import Path
 
 from pydantic import BaseModel
 
+from edmkt_app import specs
 from edmkt_app.ingestion import service
 from edmkt_app.ingestion.report import IngestReport
 from edmkt_app.use_cases.base import BaseWriteUseCase
@@ -18,6 +19,8 @@ class ProcessIngestionDto(BaseModel):
 
 
 class ProcessIngestionUseCase(BaseWriteUseCase):
+    specs = [specs.TurmaNotDuplicated()]
+
     def _run(self, dto: ProcessIngestionDto) -> IngestReport:
         # O serviço segue dono da trava, do commit atômico e do rollback do blob — este use case
         # é a costura, não uma segunda implementação da ingestão.
