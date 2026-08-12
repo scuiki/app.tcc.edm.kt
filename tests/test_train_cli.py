@@ -17,7 +17,7 @@ import pandas as pd
 import pytest
 import torch
 
-from edmkt_app import train
+from edmkt_app.train import runner, settings as train_settings, stages
 from edmkt_app.persistence import models
 from edmkt_app.persistence import repositories as repos
 
@@ -73,10 +73,10 @@ def _canonical_df() -> pd.DataFrame:
 
 @pytest.fixture
 def data_root(tmp_path, monkeypatch):
-    """Aponta train.DATA_ROOT e features_cache.DATA_ROOT para tmp_path — FS hermético."""
+    """Aponta a raiz de dados do treino e do cache para tmp_path — FS hermético."""
     from edmkt_app import features_cache
 
-    monkeypatch.setattr(train, "DATA_ROOT", tmp_path)
+    monkeypatch.setattr(train_settings, "DATA_ROOT", tmp_path)
     monkeypatch.setattr(features_cache, "DATA_ROOT", tmp_path)
     return tmp_path
 
@@ -87,7 +87,7 @@ def fast_config(monkeypatch):
     from edmkt_core.config import FROZEN_CONFIG
 
     fast = {**FROZEN_CONFIG, "epochs": _FAST_EPOCHS}
-    monkeypatch.setattr(train, "FROZEN_CONFIG", fast)
+    monkeypatch.setattr(stages, "FROZEN_CONFIG", fast)
     return fast
 
 
@@ -159,7 +159,7 @@ def test_end_to_end_trains_persists_and_flips_status(tmp_db, data_root, fast_con
     conn = tmp_db
     assignment_id, job_id = _seed_trainable(conn, data_root)
 
-    train._run_training(conn, assignment_id, job_id)
+    runner._run_training(conn, assignment_id, job_id)
 
     asg = repos.AssignmentRepository(conn).get(assignment_id)
     assert asg.status == "trained"
@@ -183,7 +183,7 @@ def test_lock_busy_marks_failed_and_does_not_train(tmp_db, data_root, fast_confi
         (os.getpid(),),
     )
 
-    train._run_training(conn, assignment_id, job_id)
+    runner._run_training(conn, assignment_id, job_id)
 
     job = repos.TrainingJobRepository(conn).get(job_id)
     assert job.status == "failed"
@@ -201,7 +201,7 @@ def test_epoch_callback_writes_progress(tmp_db, data_root, fast_config):
     conn = tmp_db
     assignment_id, job_id = _seed_trainable(conn, data_root)
 
-    train._run_training(conn, assignment_id, job_id)
+    runner._run_training(conn, assignment_id, job_id)
 
     job = repos.TrainingJobRepository(conn).get(job_id)
     assert job.total_epochs == _FAST_EPOCHS
@@ -224,9 +224,9 @@ def test_training_failure_releases_lock_and_keeps_trainable(tmp_db, data_root, f
     def _boom(*args, **kwargs):
         raise RuntimeError("treino explodiu")
 
-    monkeypatch.setattr(train, "train_and_evaluate", _boom)
+    monkeypatch.setattr(stages, "train_and_evaluate", _boom)
 
-    train._run_training(conn, assignment_id, job_id)
+    runner._run_training(conn, assignment_id, job_id)
 
     job = repos.TrainingJobRepository(conn).get(job_id)
     assert job.status == "failed"
@@ -247,9 +247,9 @@ def test_cuda_oom_fails_gracefully(tmp_db, data_root, fast_config, monkeypatch):
     def _oom(*args, **kwargs):
         raise torch.cuda.OutOfMemoryError("CUDA out of memory")
 
-    monkeypatch.setattr(train, "train_and_evaluate", _oom)
+    monkeypatch.setattr(stages, "train_and_evaluate", _oom)
 
-    train._run_training(conn, assignment_id, job_id)
+    runner._run_training(conn, assignment_id, job_id)
 
     job = repos.TrainingJobRepository(conn).get(job_id)
     assert job.status == "failed"
@@ -266,7 +266,7 @@ def test_parse_rate_is_recorded(tmp_db, data_root, fast_config):
     conn = tmp_db
     assignment_id, job_id = _seed_trainable(conn, data_root)
 
-    result = train._run_training(conn, assignment_id, job_id)
+    result = runner._run_training(conn, assignment_id, job_id)
 
     assert result is not None
     assert "parse_rate" in result
@@ -280,7 +280,7 @@ def test_parse_rate_is_persisted(tmp_db, data_root, fast_config):
     conn = tmp_db
     assignment_id, job_id = _seed_trainable(conn, data_root)
 
-    train._run_training(conn, assignment_id, job_id)
+    runner._run_training(conn, assignment_id, job_id)
 
     job = repos.TrainingJobRepository(conn).get(job_id)
     assert job is not None
@@ -308,7 +308,7 @@ def test_compile_errors_never_reach_the_training_stream(tmp_db, data_root, fast_
         conn, data_root, df=_canonical_df_with_compile_errors()
     )
 
-    result = train._run_training(conn, assignment_id, job_id)
+    result = runner._run_training(conn, assignment_id, job_id)
 
     assert result is not None
     assert result["parse_rate"] == pytest.approx(1.0)
