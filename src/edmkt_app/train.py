@@ -18,7 +18,6 @@ from __future__ import annotations
 
 import argparse
 import os
-import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -32,6 +31,7 @@ from edmkt_core.seeding import set_global_seed
 
 from edmkt_app import utils
 from edmkt_app.features_cache import build_cache_on_disk, parse_rate
+from edmkt_app.values import ProgSnapAssignmentId, TurmaSlug
 from edmkt_app.persistence import connect
 from edmkt_app.persistence import repositories as repos
 from edmkt_app.persistence.artifacts import ArtifactStore, flip_current
@@ -45,22 +45,6 @@ DB_PATH = "app.db"
 
 def _now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
-
-
-def _slug(name: str) -> str:
-    # Mesma forma de service._slug / features_cache._slug: o diretório da turma vem do slug
-    # interno, nunca de nome de upload.
-    s = re.sub(r"[^a-z0-9]+", "-", name.strip().lower()).strip("-")
-    return s or "turma"
-
-
-def _progsnap_aid(assignment_name: str) -> int:
-    # O AssignmentID do ProgSnap2 (nome do Parquet) é o sufixo de "Assignment <N>" gravado
-    # por service._persist_atomic. build_sequences também o consome.
-    m = re.search(r"(\d+)", assignment_name)
-    if m is None:
-        raise ValueError(f"AssignmentID não derivável do nome: {assignment_name!r}")
-    return int(m.group(1))
 
 
 def _make_epoch_writer(conn, job_id: int):
@@ -81,8 +65,8 @@ def _train_body(conn, assignment_id: int, job_id: int) -> dict:
     if asg is None:
         raise ValueError(f"assignment {assignment_id} inexistente")
     turma = repos.TurmaRepository(conn).get(asg.turma_id)
-    turma_slug = _slug(turma.name)
-    progsnap_aid = _progsnap_aid(asg.name)
+    turma_slug = TurmaSlug.from_name(turma.name)
+    progsnap_aid = ProgSnapAssignmentId.from_name(asg.name)
 
     total_epochs = FROZEN_CONFIG["epochs"]
     job_repo.mark_running(job_id, total_epochs=total_epochs, started_at=_now_iso())
@@ -108,7 +92,9 @@ def _train_body(conn, assignment_id: int, job_id: int) -> dict:
         train_df,
         config=config,
         test_df=test_df,
-        assignment_id=progsnap_aid,
+        # Desembrulhado para int: edmkt_core é a camada congelada e compara com df["AssignmentID"]
+        # — um VO aqui casaria com zero linhas em silêncio.
+        assignment_id=progsnap_aid.value,
         device=device,
         on_epoch=_make_epoch_writer(conn, job_id),
         n_workers=None,

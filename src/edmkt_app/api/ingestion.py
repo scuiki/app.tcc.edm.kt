@@ -18,6 +18,7 @@ from pydantic import BaseModel
 
 from edmkt_app.api.deps import get_conn
 from edmkt_app.ingestion import service
+from edmkt_app.values import ConfinedPath, TurmaSlug
 
 router = APIRouter(tags=["ingestion"])
 
@@ -35,13 +36,12 @@ class ProcessRequest(BaseModel):
 
 
 def _confine(p: Path, root: Path) -> Path:
-    # Resolve-depois-confere: opera no path JÁ resolvido (fecha ../ e symlink) e exige que ele
-    # seja root ou esteja sob ela. Espelha ArtifactStore._version_dir / _safe_csid_name.
-    resolved_root = root.resolve()
-    resolved_p = p.resolve()
-    if not resolved_p.is_relative_to(resolved_root):
-        raise HTTPException(status_code=400, detail="caminho fora da raiz de dados")
-    return resolved_p
+    # A prova de confinamento é do ConfinedPath; aqui só se traduz a recusa dele para HTTP —
+    # o value object não conhece status code.
+    try:
+        return Path(ConfinedPath(p, root=root))
+    except ValueError:
+        raise HTTPException(status_code=400, detail="caminho fora da raiz de dados") from None
 
 
 def _save_upload(upload: UploadFile, dest: Path) -> None:
@@ -71,7 +71,7 @@ def upload_and_detect(
 
     READ-ONLY do estado compartilhado: detect_variants não toca a trava (Lock Timing).
     """
-    slug = service._slug(turma)
+    slug = TurmaSlug.from_name(turma)
     with tempfile.NamedTemporaryFile(suffix=".zip", delete=False) as tmp:
         tmp_path = Path(tmp.name)
     try:
@@ -81,7 +81,9 @@ def upload_and_detect(
         tmp_path.unlink(missing_ok=True)
 
     return {
-        "turma_slug": slug,
+        # str(): o value object é interno. Serializado cru, o FastAPI emitiria {"value": ...} e
+        # quebraria o contrato — mesma fronteira do desembrulho antes do edmkt_core.
+        "turma_slug": str(slug),
         "raw_dir": str(variants["raw_dir"]),
         "main_tables": [str(p) for p in variants["main_tables"]],
         "code_states": str(variants["code_states"]) if variants["code_states"] else None,

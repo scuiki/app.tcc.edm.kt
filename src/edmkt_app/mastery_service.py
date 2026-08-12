@@ -22,7 +22,6 @@ torch; o caminho do Parquet sai de int IDs + `_slug` interno, nunca de caminho d
 
 from __future__ import annotations
 
-import re
 import sqlite3
 from pathlib import Path
 
@@ -36,27 +35,12 @@ from edmkt_core.sequences import build_sequences
 
 from edmkt_app import utils
 from edmkt_app.persistence import models, transaction
+from edmkt_app.values import ProgSnapAssignmentId, TurmaSlug
 from edmkt_app.persistence import repositories as repos
 from edmkt_app.persistence.artifacts import ArtifactStore
 
 # Raiz do FS de dados; override por teste/deploy (mesma convenção de train.DATA_ROOT).
 DATA_ROOT = Path("data")
-
-
-def _slug(name: str) -> str:
-    # Mesma forma de train._slug / features_cache._slug: o diretório da turma vem do slug
-    # interno, nunca de nome de upload.
-    s = re.sub(r"[^a-z0-9]+", "-", name.strip().lower()).strip("-")
-    return s or "turma"
-
-
-def _progsnap_aid(assignment_name: str) -> int:
-    # O AssignmentID do ProgSnap2 (nome do Parquet) é o sufixo numérico do nome do assignment,
-    # igual a train._progsnap_aid; build_sequences também o consome.
-    m = re.search(r"(\d+)", assignment_name)
-    if m is None:
-        raise ValueError(f"AssignmentID não derivável do nome: {assignment_name!r}")
-    return int(m.group(1))
 
 
 def _resolve_current_artifact(
@@ -105,8 +89,8 @@ def infer_predictions(
     turma = repos.TurmaRepository(conn).get(asg.turma_id)
     if turma is None:  # WR-01: turma órfã → ValueError claro, não AttributeError em turma.name
         raise ValueError(f"turma {asg.turma_id} inexistente")
-    turma_slug = _slug(turma.name)
-    progsnap_aid = _progsnap_aid(asg.name)
+    turma_slug = TurmaSlug.from_name(turma.name)
+    progsnap_aid = ProgSnapAssignmentId.from_name(asg.name)
 
     pq = DATA_ROOT / turma_slug / "clean" / f"assignment_{progsnap_aid}.parquet"
     # Mesmo recorte do treino (train.py): inferir sobre o stream misto alimentaria o modelo com
@@ -123,7 +107,8 @@ def infer_predictions(
 
     # Mesma montagem de pipeline.py: sequências completas → cache de paths crus → índice de
     # problemas global. O vocab vem do artefato (meta/vocab), nunca reconstruído (CORE-04).
-    sequences = build_sequences(df, progsnap_aid)
+    # .value: build_sequences é do core congelado e filtra df["AssignmentID"] pelo int.
+    sequences = build_sequences(df, progsnap_aid.value)
     code_states = dict(zip(df["CodeStateID"].astype(str), df["Code"].fillna("")))
     all_csids: set[str] = set()
     for seq in sequences:

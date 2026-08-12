@@ -15,7 +15,6 @@ A ordem é load-bearing: blob → INSERTs (espelha CR-01 da Fase 2).
 
 from __future__ import annotations
 
-import re
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -26,6 +25,7 @@ from edmkt_app.ingestion.report import IngestReport, ReportItem
 from edmkt_app.persistence import models, transaction
 from edmkt_app.persistence import repositories as repos
 from edmkt_app.persistence.lock import PipelineLock
+from edmkt_app.values import TurmaSlug
 
 # Raiz do FS de dados. Override por teste/deploy; default relativo ao cwd (data/<turma>/...).
 DATA_ROOT = Path("data")
@@ -33,14 +33,6 @@ DATA_ROOT = Path("data")
 
 def _now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
-
-
-def _slug(name: str) -> str:
-    # Componente de caminho derivado de um nome arbitrário do professor: minúsculas, só
-    # [a-z0-9_-], colapsando o resto em "-". NUNCA usar o nome de membro do zip como caminho
-    # (Security T-03-15); o slug interno é a única fonte do diretório da turma.
-    s = re.sub(r"[^a-z0-9]+", "-", name.strip().lower()).strip("-")
-    return s or "turma"
 
 
 def _empty_report(items: list[ReportItem]) -> IngestReport:
@@ -169,8 +161,7 @@ def _persist_atomic(
     escrito — sem dataset meio-gravado. O Parquet fica fora da txn porque um blob de FS não
     participa do ROLLBACK do SQLite; escrevê-lo dentro deixaria-o órfão num INSERT que falha.
     """
-    slug = _slug(turma_name)
-    clean_dir = DATA_ROOT / slug / "clean"
+    clean_dir = DATA_ROOT / TurmaSlug.from_name(turma_name) / "clean"
     created_at = _now_iso()
 
     # 1. Blob (Parquet) FORA da txn — um arquivo por AssignmentID, colunas do seam (D-13).
