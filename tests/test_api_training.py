@@ -9,6 +9,8 @@ pela conexão de teste. NUNCA spawna treino real.
 
 from __future__ import annotations
 
+import subprocess
+
 import os
 import sys
 
@@ -50,7 +52,7 @@ def test_dispatch_returns_job_id_immediately(api_client, monkeypatch):
     client, conn = api_client
     aid = _seed_assignment(conn)
     _FakePopen.calls = []
-    monkeypatch.setattr(training.subprocess, "Popen", _FakePopen)
+    monkeypatch.setattr(subprocess, "Popen", _FakePopen)
 
     resp = client.post("/training", json={"assignment_id": aid})
 
@@ -76,7 +78,7 @@ def test_dispatch_returns_job_id_immediately(api_client, monkeypatch):
 def test_dispatch_rejects_not_trainable_409(api_client, monkeypatch):
     client, conn = api_client
     aid = _seed_assignment(conn, status="eda_only")
-    monkeypatch.setattr(training.subprocess, "Popen", _FakePopen)
+    monkeypatch.setattr(subprocess, "Popen", _FakePopen)
 
     resp = client.post("/training", json={"assignment_id": aid})
     assert resp.status_code == 409
@@ -87,7 +89,7 @@ def test_dispatch_blocked_before_approval_then_ok_after(api_client, monkeypatch)
     client, conn = api_client
     aid = _seed_assignment(conn, status="kc_draft")
     _FakePopen.calls = []
-    monkeypatch.setattr(training.subprocess, "Popen", _FakePopen)
+    monkeypatch.setattr(subprocess, "Popen", _FakePopen)
 
     assert client.post("/training", json={"assignment_id": aid}).status_code == 409
 
@@ -97,7 +99,7 @@ def test_dispatch_blocked_before_approval_then_ok_after(api_client, monkeypatch)
 
 def test_dispatch_rejects_missing_assignment_409(api_client, monkeypatch):
     client, _ = api_client
-    monkeypatch.setattr(training.subprocess, "Popen", _FakePopen)
+    monkeypatch.setattr(subprocess, "Popen", _FakePopen)
     resp = client.post("/training", json={"assignment_id": 9999})
     assert resp.status_code == 409
 
@@ -110,7 +112,7 @@ def test_dispatch_rejects_busy_pipeline_409(api_client, monkeypatch):
         "UPDATE pipeline_lock SET holder_pid=?, operation='training', acquired_at=? WHERE id=1;",
         (os.getpid(), _NOW),
     )
-    monkeypatch.setattr(training.subprocess, "Popen", _FakePopen)
+    monkeypatch.setattr(subprocess, "Popen", _FakePopen)
 
     resp = client.post("/training", json={"assignment_id": aid})
     assert resp.status_code == 409
@@ -120,7 +122,7 @@ def test_poll_returns_progress_fields(api_client, monkeypatch):
     client, conn = api_client
     aid = _seed_assignment(conn)
     _FakePopen.calls = []
-    monkeypatch.setattr(training.subprocess, "Popen", _FakePopen)
+    monkeypatch.setattr(subprocess, "Popen", _FakePopen)
     job_id = client.post("/training", json={"assignment_id": aid}).json()["job_id"]
 
     # Simula o subprocess escrevendo progresso por-época sob WAL (conexão de teste separada).
@@ -143,7 +145,7 @@ def test_poll_returns_parse_rate(api_client, monkeypatch):
     client, conn = api_client
     aid = _seed_assignment(conn)
     _FakePopen.calls = []
-    monkeypatch.setattr(training.subprocess, "Popen", _FakePopen)
+    monkeypatch.setattr(subprocess, "Popen", _FakePopen)
     job_id = client.post("/training", json={"assignment_id": aid}).json()["job_id"]
 
     # Simula o subprocess concluindo com a taxa de parse gravada (conexão de teste separada).
@@ -159,7 +161,7 @@ def test_poll_parse_rate_null_when_unset(api_client, monkeypatch):
     client, conn = api_client
     aid = _seed_assignment(conn)
     _FakePopen.calls = []
-    monkeypatch.setattr(training.subprocess, "Popen", _FakePopen)
+    monkeypatch.setattr(subprocess, "Popen", _FakePopen)
     job_id = client.post("/training", json={"assignment_id": aid}).json()["job_id"]
 
     resp = client.get(f"/training/{job_id}")
