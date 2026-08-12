@@ -165,14 +165,19 @@ def _persist_atomic(
     created_at = _now_iso()
 
     # 1. Blob (Parquet) FORA da txn — um arquivo por AssignmentID, colunas do seam (D-13).
+    #    Escrito em `.tmp` e só renomeado DEPOIS do COMMIT: `to_parquet` sobrescreve, então
+    #    gravar direto no destino já destrói o Parquet anterior antes de saber se a transação
+    #    vai passar, e o rollback (unlink) apagava o que sobrou — a turma ficava sem nada.
+    #    Assim nenhum caminho de falha é destrutivo: no pior caso sobra o arquivo antigo.
     clean_dir.mkdir(parents=True, exist_ok=True)
-    parquet_written: list[Path] = []
+    staged: list[tuple[Path, Path]] = []  # (tmp, destino final)
     try:
         for aid, group in canonical.groupby("AssignmentID", sort=True):
             pq_path = clean_dir / f"assignment_{int(aid)}.parquet"
+            tmp_path = pq_path.with_suffix(".parquet.tmp")
             # to_parquet via pyarrow; index=False mantém só as colunas canônicas no arquivo.
-            group[clean.CANONICAL_COLUMNS].to_parquet(pq_path, engine="pyarrow", index=False)
-            parquet_written.append(pq_path)
+            group[clean.CANONICAL_COLUMNS].to_parquet(tmp_path, engine="pyarrow", index=False)
+            staged.append((tmp_path, pq_path))
 
         # 2. INSERTs dentro de BEGIN IMMEDIATE/COMMIT (ROLLBACK-on-exception via db.transaction).
         with transaction(conn):
@@ -211,9 +216,15 @@ def _persist_atomic(
                         )
                     )
     except BaseException:
-        # ROLLBACK já desfez o SQLite; aqui desfazemos o blob recém-escrito (rmtree do clean/),
-        # espelhando o rmtree do rollback de artifacts.persist — sem resto parcial (D-06).
-        for pq in parquet_written:
-            if pq.exists():
-                pq.unlink()
+        # ROLLBACK já desfez o SQLite; aqui só descartamos os temporários. Os Parquet que já
+        # estavam no lugar nunca foram tocados — é o ponto do staging (D-06).
+        for tmp_path, _dest in staged:
+            tmp_path.unlink(missing_ok=True)
         raise
+
+    # 3. Publicação: rename é atômico por arquivo e só acontece com a transação já commitada.
+    #    Uma queda entre o COMMIT e o rename deixa o banco novo com o Parquet antigo — estado
+    #    inconsistente, mas NÃO destrutivo, que é a troca certa quando o FS não participa da
+    #    transação do SQLite. Um re-ingest reconstrói; um arquivo perdido, não.
+    for tmp_path, dest in staged:
+        tmp_path.replace(dest)

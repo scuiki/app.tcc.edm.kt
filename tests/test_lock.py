@@ -96,14 +96,65 @@ def test_acquire_steals_dead_holder(tmp_db):
 
 def test_startup_reclaims_orphan(tmp_db):
     conn = tmp_db
-    # Trava tomada (holder_pid qualquer — aqui um PID vivo: este processo).
+    # Trava de um dono MORTO — o que "órfã" quer dizer. Este teste antes usava os.getpid() (um
+    # dono VIVO) e esperava a limpeza: fixava o bug, sob a premissa "instância única ⇒ nada pode
+    # estar vivo no startup". O subprocess de treino não segue o ciclo de vida do web.
     conn.execute(
         "UPDATE pipeline_lock SET holder_pid=?, operation=?, job_id=? WHERE id=1;",
-        (os.getpid(), "train", 5),
+        (_dead_pid(), "train", 5),
     )
-    # No startup, instância única ⇒ nada pode estar vivo: reclaim libera a órfã.
     reclaim_orphan_lock(conn)
     assert _holder_pid(conn) is None
     # Idempotente: reclamar de novo sobre trava já livre não quebra.
     reclaim_orphan_lock(conn)
     assert _holder_pid(conn) is None
+
+
+# --- B3/B4: recuperar só o que está órfão de fato, liberar só o que é seu -------------
+
+
+def test_reclaim_leaves_a_live_holder_alone(tmp_db):
+    """O docstring de reclaim_orphan_lock sempre prometeu "critério = PID morto"; o código
+    limpava incondicionalmente.
+
+    Hoje isso é inofensivo por um acidente de deploy: o uvicorn é PID 1 no container, então
+    reiniciar o container mata o subprocess de treino junto. Com --reload em desenvolvimento o
+    acidente acaba — o uvicorn reinicia, o treino sobrevive, a trava é limpa, e um segundo
+    treino entra na MESMA GPU de 6 GB.
+    """
+    conn = tmp_db
+    conn.execute(
+        "UPDATE pipeline_lock SET holder_pid=?, operation='training', job_id=7 WHERE id=1;",
+        (os.getpid(),),  # dono VIVO: este processo
+    )
+
+    reclaim_orphan_lock(conn)
+
+    assert _holder_pid(conn) == os.getpid()  # intocado
+
+
+def test_reclaim_frees_a_dead_holder(tmp_db):
+    conn = tmp_db
+    conn.execute(
+        "UPDATE pipeline_lock SET holder_pid=?, operation='training', job_id=7 WHERE id=1;",
+        (_dead_pid(),),
+    )
+
+    reclaim_orphan_lock(conn)
+
+    assert _holder_pid(conn) is None
+
+
+def test_release_does_not_clear_a_lock_owned_by_someone_else(tmp_db):
+    # Sem a guarda de posse, um release tardio zeraria a trava de OUTRO pipeline em andamento.
+    conn = tmp_db
+    alheio = _dead_pid()  # capturado UMA vez: _dead_pid() varre PIDs livres e não é determinístico
+    lock = PipelineLock(conn)
+    conn.execute(
+        "UPDATE pipeline_lock SET holder_pid=?, operation='training', job_id=99 WHERE id=1;",
+        (alheio,),
+    )
+
+    lock.release()  # este objeto nunca adquiriu nada
+
+    assert _holder_pid(conn) == alheio
