@@ -1,8 +1,8 @@
 """Orquestração impura do mastery (D-04): load → infer → aggregate → persist.
 
 Camada DIP que liga o modelo Code-DKT treinado + a Q-matrix aprovada ao seam PURO
-`edmkt_core.mastery`. Espelha a forma de `train.py:_train_body` (resolve nomes→ids → lê o
-Parquet canônico da Fase 3 → recarrega o artefato via `ArtifactStore.load_version` →
+`edmkt_core.mastery`. Espelha a forma de `train.py:_train_body` (toma o quadro de modelagem
+pronto de `modeling_frame` → recarrega o artefato via `ArtifactStore.load_version` →
 reconstrói as entradas de inferência do MESMO jeito que `pipeline.py` → chama
 `predict_code_dkt` → mapeia ProblemID→KC pela Q-matrix → constrói a matriz aluno×KC pelo
 seam puro → persiste em `mastery_prediction`). TODO I/O de FS/SQLite/torch vive aqui; toda
@@ -16,7 +16,7 @@ primeira leitura do dashboard (D-65), o que mantém `train.py` intocado.
 Segurança: o vocab da inferência é SEMPRE o recarregado do artefato (nunca reconstruído —
 sem vazamento de partição); o reload passa SÓ por `load_version` (que desserializa com
 weights_only=True em artifacts.py) — este módulo nunca chama a desserialização solta do
-torch; o caminho do Parquet sai de int IDs + `_slug` interno, nunca de caminho de cliente
+torch; o caminho do Parquet sai de int IDs + slug interno (modeling_frame), nunca de cliente
 (T-06-09/T-06-10).
 """
 
@@ -33,9 +33,8 @@ from edmkt_core.mastery import build_mastery_matrix
 from edmkt_core.models.code_dkt import predict_code_dkt
 from edmkt_core.sequences import build_sequences
 
-from edmkt_app import utils
+from edmkt_app.modeling_frame import load_modeling_frame
 from edmkt_app.persistence import models, transaction
-from edmkt_app.values import ProgSnapAssignmentId, TurmaSlug
 from edmkt_app.persistence import repositories as repos
 from edmkt_app.persistence.artifacts import ArtifactStore
 
@@ -81,22 +80,14 @@ def infer_predictions(
     (a conn está em autocommit). Sem ele, este método re-resolveria e poderia pegar outra versão.
     """
     if artifact is None:
-        asg, artifact = _resolve_current_artifact(conn, assignment_id)
-    else:
-        asg = repos.AssignmentRepository(conn).get(assignment_id)
-        if asg is None:
-            raise ValueError(f"assignment {assignment_id} inexistente")
-    turma = repos.TurmaRepository(conn).get(asg.turma_id)
-    if turma is None:  # WR-01: turma órfã → ValueError claro, não AttributeError em turma.name
-        raise ValueError(f"turma {asg.turma_id} inexistente")
-    turma_slug = TurmaSlug.from_name(turma.name)
-    progsnap_aid = ProgSnapAssignmentId.from_name(asg.name)
+        _asg, artifact = _resolve_current_artifact(conn, assignment_id)
 
-    pq = DATA_ROOT / turma_slug / "clean" / f"assignment_{progsnap_aid}.parquet"
-    # Mesmo recorte do treino (train.py): inferir sobre o stream misto alimentaria o modelo com
-    # eventos que ele nunca viu, e a matriz do dashboard sairia de outra distribuição que o AUC
-    # exibido na moldura de incerteza.
-    df = utils.run_program_only(pd.read_parquet(pq, engine="pyarrow"))
+    # Mesmíssima porta do treino: inferir sobre o stream misto alimentaria o modelo com eventos
+    # que ele nunca viu, e a matriz do dashboard sairia de outra distribuição que o AUC exibido
+    # na moldura de incerteza. A resolução nome→caminho e as guardas de assignment/turma
+    # inexistentes vivem lá (modeling_frame), não duplicadas aqui.
+    frame = load_modeling_frame(conn, assignment_id, data_root=DATA_ROOT)
+    df, progsnap_aid = frame.events, frame.assignment_id
 
     # artifact_dir é DB-owned (reconstruído do valor gravado, nunca de caminho de cliente);
     # load_version desserializa com weights_only=True (artifacts.py) — sem reload solto (T-06-09).
