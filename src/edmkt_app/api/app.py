@@ -18,11 +18,14 @@ import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 
 from edmkt_app.api import dashboard, ingestion, kc, training
 from edmkt_app.persistence import connect, run_migrations
 from edmkt_app.persistence.lock import reclaim_orphan_lock
+from edmkt_app.use_cases.base import NotFound, PipelineBusy, ValidationFailed
+from edmkt_app.use_cases.kc_rules import EmptyProblemError
 
 
 def _resolve_db_path() -> str:
@@ -44,8 +47,37 @@ async def lifespan(app: FastAPI):
     yield
 
 
+def _install_error_handlers(app: FastAPI) -> None:
+    """Traduz as recusas da app layer para HTTP num lugar só.
+
+    Sem isto cada rota repetiria o mesmo try/except, e a tradução voltaria a ser copiada. As
+    categorias vêm de use_cases.base e não conhecem HTTP; o mapeamento para status code é desta
+    camada. O corpo é `{"detail": ...}` — a mesma forma que HTTPException produzia, porque o
+    texto e o formato do erro são contrato.
+    """
+
+    @app.exception_handler(NotFound)
+    def _not_found(_request: Request, exc: NotFound) -> JSONResponse:
+        return JSONResponse(status_code=404, content={"detail": str(exc)})
+
+    @app.exception_handler(ValidationFailed)
+    def _validation_failed(_request: Request, exc: ValidationFailed) -> JSONResponse:
+        # join: com uma mensagem o texto é idêntico ao de antes; o acúmulo só aparece quando um
+        # use case tem de fato várias specs recusando o mesmo payload.
+        return JSONResponse(status_code=409, content={"detail": "; ".join(exc.messages)})
+
+    @app.exception_handler(PipelineBusy)
+    def _pipeline_busy(_request: Request, exc: PipelineBusy) -> JSONResponse:
+        return JSONResponse(status_code=409, content={"detail": str(exc)})
+
+    @app.exception_handler(EmptyProblemError)
+    def _empty_problem(_request: Request, exc: EmptyProblemError) -> JSONResponse:
+        return JSONResponse(status_code=409, content={"detail": str(exc)})
+
+
 def create_app() -> FastAPI:
     app = FastAPI(lifespan=lifespan, title="EDM·KT")
+    _install_error_handlers(app)
     app.include_router(training.router)
     app.include_router(ingestion.router)
     app.include_router(kc.router)

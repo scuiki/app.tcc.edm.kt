@@ -17,7 +17,9 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from pydantic import BaseModel
 
 from edmkt_app.api.deps import get_conn
+from edmkt_app.api.deps import process_ingestion_uc
 from edmkt_app.ingestion import service
+from edmkt_app.use_cases.process_ingestion import ProcessIngestionDto, ProcessIngestionUseCase
 from edmkt_app.values import ConfinedPath, TurmaSlug
 
 router = APIRouter(tags=["ingestion"])
@@ -27,12 +29,6 @@ router = APIRouter(tags=["ingestion"])
 # de exaurir disco. O zip-bomb DESCOMPRIMIDO já tem teto próprio em discover.extract_zip.
 _MAX_UPLOAD_BYTES = 512 * 1024 * 1024  # 512 MiB
 _UPLOAD_CHUNK = 1024 * 1024
-
-
-class ProcessRequest(BaseModel):
-    turma_name: str
-    raw_dir: str
-    main_table: str
 
 
 def _confine(p: Path, root: Path) -> Path:
@@ -92,20 +88,21 @@ def upload_and_detect(
 
 @router.post("/ingest/process", status_code=200)
 def process(
-    body: ProcessRequest,
-    conn: sqlite3.Connection = Depends(get_conn),
+    body: ProcessIngestionDto,
+    uc: ProcessIngestionUseCase = Depends(process_ingestion_uc),
 ) -> dict:
     """Processa a variante escolhida (D-03 passo 3): valida→limpa→viabilidade→persiste atômico.
 
-    O serviço adquire a trava AQUI e devolve um relatório "busy" (has_fatal) se ocupado — o
-    router só repassa o relatório como JSON, sem decidir nada.
+    Confina os DOIS caminhos sob a raiz de dados ANTES de qualquer leitura — sem isso,
+    main_table="/etc/passwd" viraria leitura arbitrária de arquivo via pandas (CR-01). A raiz vem
+    de service.DATA_ROOT em tempo de chamada (monkeypatchável no teste), não de um literal.
     """
-    # Confina ambos os paths do corpo sob a raiz de dados ANTES de qualquer read — sem isso,
-    # main_table="/etc/passwd" vira leitura arbitrária de arquivo via pandas (CR-01). A raiz vem
-    # de service.DATA_ROOT em tempo de chamada (monkeypatchável no teste), não de um literal.
-    confined_raw = _confine(Path(body.raw_dir), service.DATA_ROOT)
-    confined_main = _confine(Path(body.main_table), service.DATA_ROOT)
-    report = service.ingest(conn, confined_raw, body.turma_name, confined_main)
+    confined = ProcessIngestionDto(
+        turma_name=body.turma_name,
+        raw_dir=_confine(Path(body.raw_dir), service.DATA_ROOT),
+        main_table=_confine(Path(body.main_table), service.DATA_ROOT),
+    )
+    report = uc.execute(confined)
     return {
         "has_fatal": report.has_fatal,
         "items": [

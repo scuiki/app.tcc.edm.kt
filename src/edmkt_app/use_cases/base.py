@@ -39,6 +39,12 @@ class ValidationFailed(Exception):
         super().__init__("; ".join(messages))
 
 
+class PipelineBusy(Exception):
+    """Já há um pipeline pesado rodando. NÃO é uma specification: é corrida, não regra do
+    payload — o gate autoritativo é o acquire da trava dentro do subprocess, e tratá-la como
+    spec convidaria alguém a concluir que o gate está aqui e apagar aquele acquire."""
+
+
 class BaseWriteUseCase:
     """Use case que MUDA estado (create/update/delete). Leitura não estende esta base.
 

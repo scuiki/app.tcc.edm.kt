@@ -31,6 +31,17 @@ def pid_alive(pid: int) -> bool:
     return True
 
 
+def pipeline_busy(conn: sqlite3.Connection) -> bool:
+    """Pré-check BARATO e NÃO-autoritativo: lê o dono sem adquirir (D-02/D-05).
+
+    O acquire autoritativo é do subprocess, como 1º ato. Isto aqui só rejeita cedo o "ocupado
+    óbvio" para dar uma mensagem melhor; se dois POSTs correrem, o segundo perde o acquire LÁ e
+    marca o próprio job como failed. NUNCA tratar como o gate — o gate é o acquire.
+    """
+    row = conn.execute("SELECT holder_pid FROM pipeline_lock WHERE id=1;").fetchone()
+    return row is not None and row["holder_pid"] is not None and pid_alive(row["holder_pid"])
+
+
 def _now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
 

@@ -12,6 +12,8 @@ Wave 0: `edmkt_app.api.kc` ainda não existe → FALHA RED (gate da Wave 3).
 
 from __future__ import annotations
 
+import subprocess
+
 import sys
 
 # RED: o router /kc ainda não existe (gate da Wave 3).
@@ -66,7 +68,7 @@ def test_generate_dispatches_list_form_and_returns_job_id(api_client, monkeypatc
     client, conn = api_client
     aid = _seed_assignment(conn)
     _FakePopen.calls = []
-    monkeypatch.setattr(kc.subprocess, "Popen", _FakePopen)
+    monkeypatch.setattr(subprocess, "Popen", _FakePopen)
 
     resp = client.post("/kc/generate", json={"assignment_id": aid})
 
@@ -91,7 +93,7 @@ def test_poll_returns_job_fields(api_client, monkeypatch):
     client, conn = api_client
     aid = _seed_assignment(conn)
     _FakePopen.calls = []
-    monkeypatch.setattr(kc.subprocess, "Popen", _FakePopen)
+    monkeypatch.setattr(subprocess, "Popen", _FakePopen)
     job_id = client.post("/kc/generate", json={"assignment_id": aid}).json()["job_id"]
 
     # Simula o subprocess marcando running + estágio sob WAL (conexão de teste separada).
