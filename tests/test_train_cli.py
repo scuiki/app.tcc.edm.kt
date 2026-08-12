@@ -204,10 +204,14 @@ def test_epoch_callback_writes_progress(tmp_db, data_root, fast_config):
     train._run_training(conn, assignment_id, job_id)
 
     job = repos.TrainingJobRepository(conn).get(job_id)
-    assert job.current_epoch == _FAST_EPOCHS  # avançou até a última época
     assert job.total_epochs == _FAST_EPOCHS
-    assert job.train_loss is not None
     assert job.started_at is not None
+
+    # A curva agora é append-only (migração 0008): UMA linha por época, todas preservadas. Antes
+    # o UPDATE sobrescrevia e sobrava só o último número, então não havia curva a plotar.
+    serie = repos.TrainingMetricRepository(conn).list_by_job(job_id)
+    assert [m["epoch"] for m in serie] == list(range(1, _FAST_EPOCHS + 1))
+    assert all(m["train_loss"] is not None for m in serie)
 
 
 # --- caso 4: train_and_evaluate levanta -> assignment trainable, job failed, lock liberado ---

@@ -72,6 +72,8 @@ class ModelArtifact:
     # first-attempt AUC do treino (DASH-05/D-05): nasce None nos artefatos pré-0007; train.py
     # grava no persist. É o valor que train.py já computa e hoje some com o subprocess.
     first_auc: Optional[float] = None
+    git_commit: Optional[str] = None
+    data_hash: Optional[str] = None
 
 
 @dataclass

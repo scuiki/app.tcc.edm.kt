@@ -128,7 +128,8 @@ def test_poll_returns_progress_fields(api_client, monkeypatch):
     # Simula o subprocess escrevendo progresso por-época sob WAL (conexão de teste separada).
     job_repo = repos.TrainingJobRepository(conn)
     job_repo.mark_running(job_id, total_epochs=40, started_at=_NOW)
-    job_repo.update_progress(job_id, current_epoch=7, train_loss=0.42, updated_at=_NOW)
+    # O progresso corrente é DERIVADO da série append-only (0008), não de um campo mutável.
+    repos.TrainingMetricRepository(conn).append(job_id, epoch=7, train_loss=0.42, recorded_at=_NOW)
 
     resp = client.get(f"/training/{job_id}")
     assert resp.status_code == 200

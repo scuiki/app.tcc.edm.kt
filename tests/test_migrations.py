@@ -9,6 +9,7 @@ entities + the single pipeline_lock row). Hermetic and CPU-only — no GPU, no r
 from __future__ import annotations
 
 import sqlite3
+from pathlib import Path
 
 import pytest
 
@@ -41,7 +42,14 @@ def _user_version(conn: sqlite3.Connection) -> int:
 
 
 # Última versão de schema aplicada pelo runner (sobe a cada degrau NNNN_*.sql novo).
-_LATEST_VERSION = 7
+# Derivada dos arquivos, não um literal: cada migration nova quebrava estes testes por
+# envelhecimento, não por defeito.
+_LATEST_VERSION = max(
+    int(f.name[:4])
+    for f in (Path(__file__).resolve().parents[1] / "src/edmkt_app/persistence/migrations").glob(
+        "[0-9][0-9][0-9][0-9]_*.sql"
+    )
+)
 
 # As 6 colunas de progresso por-época que 0003 adiciona ao training_job (D-06).
 _TRAINING_JOB_PROGRESS_COLUMNS = {
@@ -207,7 +215,7 @@ def test_migration_0007_adds_first_auc(tmp_path):
     model_artifact (DASH-05/D-05) — o AUC que train.py já computa e hoje some com o subprocess."""
     conn = connect(str(tmp_path / "app.db"))
     run_migrations(conn)
-    assert _user_version(conn) >= 7
+    assert _user_version(conn) >= _LATEST_VERSION
     assert "first_auc" in _column_names(conn, "model_artifact")
 
 
