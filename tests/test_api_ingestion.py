@@ -97,7 +97,7 @@ def test_process_rejects_path_outside_data_root(api_client, monkeypatch):
     # main_table apontando para /etc/passwd: primitiva de leitura arbitrária se não confinada.
     resp = client.post(
         "/ingest/process",
-        json={"turma_name": "X", "raw_dir": str(ingestion.service.DATA_ROOT / "raw"),
+        json={"turma_name": "X", "raw_dir": str(ingestion.settings.DATA_ROOT / "raw"),
               "main_table": "/etc/passwd"},
     )
     assert resp.status_code == 400
@@ -107,16 +107,16 @@ def test_process_rejects_path_outside_data_root(api_client, monkeypatch):
     resp = client.post(
         "/ingest/process",
         json={"turma_name": "X", "raw_dir": "/etc",
-              "main_table": str(ingestion.service.DATA_ROOT / "raw" / "MainTable.csv")},
+              "main_table": str(ingestion.settings.DATA_ROOT / "raw" / "MainTable.csv")},
     )
     assert resp.status_code == 400
     assert calls == []
 
     # `..` que normaliza para fora da raiz: a guarda resolve ANTES de conferir (não confia na string crua).
-    escaping = str(ingestion.service.DATA_ROOT / "raw" / ".." / ".." / "etc" / "passwd")
+    escaping = str(ingestion.settings.DATA_ROOT / "raw" / ".." / ".." / "etc" / "passwd")
     resp = client.post(
         "/ingest/process",
-        json={"turma_name": "X", "raw_dir": str(ingestion.service.DATA_ROOT / "raw"),
+        json={"turma_name": "X", "raw_dir": str(ingestion.settings.DATA_ROOT / "raw"),
               "main_table": escaping},
     )
     assert resp.status_code == 400

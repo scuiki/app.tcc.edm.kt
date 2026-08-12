@@ -17,15 +17,12 @@ from pathlib import Path
 
 import pandas as pd
 
+from edmkt_app import settings
 from edmkt_app.ingestion import clean, discover, summary, validate, viability
 from edmkt_app.ingestion.persist import _persist_atomic
 from edmkt_app.ingestion.report import IngestReport, ReportItem
 from edmkt_app.persistence import repositories as repos
 from edmkt_app.persistence.lock import PipelineLock
-
-# Raiz do FS de dados. Override por teste/deploy; default relativo ao cwd (data/<turma>/...).
-DATA_ROOT = Path("data")
-
 
 def _now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
@@ -50,7 +47,7 @@ def detect_variants(zip_path: Path, turma_slug: str) -> dict:
     em data/<turma_slug>/raw/, estado privado deste upload (preserva o cru — D-13). Devolve o
     dict de discover.detect_variants acrescido de `raw_dir` para o caminho de processamento.
     """
-    raw_dir = DATA_ROOT / turma_slug / "raw"
+    raw_dir = settings.DATA_ROOT / turma_slug / "raw"
     discover.extract_zip(Path(zip_path), raw_dir)
     variants = discover.detect_variants(raw_dir)
     variants["raw_dir"] = raw_dir

@@ -15,7 +15,7 @@ from edmkt_core.kc import (
     label_cluster,
     select_best_n_clusters,
 )
-from edmkt_app.kc_pipeline import settings
+from edmkt_app import settings
 from edmkt_app.kc_pipeline.qmatrix_validation import _validate_qmatrix
 from edmkt_app.kc_pipeline.transport import _CachedLLM, _kc_cache_dir
 from edmkt_app.persistence import models

@@ -10,6 +10,6 @@ O subprocess abre a SUA conexão SQLite, NUNCA compartilha objeto Python com o w
 a coordenação é só pela linha `pipeline_lock` + WAL. `edmkt_core.kc` é só ORQUESTRADO — o
 transporte LLM é injetado pela porta (DIP).
 
-Divisão: `settings` (config mutável) · `transport` (porta LLM + cache) · `stages` (os estágios)
+Divisão: `settings` (o modelo pinado) · `transport` (porta LLM + cache) · `stages` (os estágios)
 · `qmatrix_validation` (a guarda KC-04) · `__main__` (trava + CLI).
 """

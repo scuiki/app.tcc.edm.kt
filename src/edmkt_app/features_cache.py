@@ -16,11 +16,8 @@ import javalang
 
 from edmkt_core.features import build_cache, extract_paths_javalang
 
+from edmkt_app import settings
 from edmkt_app.values import CodeStateId, TurmaSlug
-
-# Raiz do FS de dados. Override por teste/deploy; default relativo ao cwd (data/<turma>/...).
-DATA_ROOT = Path("data")
-
 
 def _extract(code: str, config: dict) -> list[tuple[str, str, str]]:
     return extract_paths_javalang(
@@ -47,7 +44,7 @@ def build_cache_on_disk(
     `cache_raw` combinado alimenta `build_train_vocab(cache_raw, train_csids)` — o filtro
     train-only acontece DEPOIS, então cachear todos os CSIDs globalmente NÃO vaza (CORE-04).
     """
-    cache_dir = DATA_ROOT / turma_slug / "cache" / "paths"
+    cache_dir = settings.DATA_ROOT / turma_slug / "cache" / "paths"
     cache_dir.mkdir(parents=True, exist_ok=True)
 
     cache_raw: dict[str, list[tuple[str, str, str]]] = {}

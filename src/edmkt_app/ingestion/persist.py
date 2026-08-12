@@ -15,17 +15,13 @@ from pathlib import Path
 
 import pandas as pd
 
+from edmkt_app import settings
 from edmkt_app.ingestion import clean
 from edmkt_app.persistence import models, transaction
 from edmkt_app.persistence import repositories as repos
 from edmkt_app.values import TurmaSlug
 
-def _data_root() -> Path:
-    # Lido do service em tempo de chamada: é lá que o override de teste/deploy é aplicado, e uma
-    # segunda constante aqui seria mais um lugar para divergir.
-    from edmkt_app.ingestion import service
 
-    return service.DATA_ROOT
 
 
 def _now_iso() -> str:
@@ -47,7 +43,7 @@ def _persist_atomic(
     escrito — sem dataset meio-gravado. O Parquet fica fora da txn porque um blob de FS não
     participa do ROLLBACK do SQLite; escrevê-lo dentro deixaria-o órfão num INSERT que falha.
     """
-    clean_dir = _data_root() / TurmaSlug.from_name(turma_name) / "clean"
+    clean_dir = settings.DATA_ROOT / TurmaSlug.from_name(turma_name) / "clean"
     created_at = _now_iso()
 
     # 1. Blob (Parquet) FORA da txn — um arquivo por AssignmentID, colunas do seam (D-13).

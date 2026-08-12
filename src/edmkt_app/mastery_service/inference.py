@@ -16,7 +16,7 @@ from edmkt_core.features import build_cache
 from edmkt_core.models.code_dkt import predict_code_dkt
 from edmkt_core.sequences import build_sequences
 
-from edmkt_app.mastery_service import settings
+from edmkt_app import settings
 from edmkt_app.modeling_frame import load_modeling_frame
 from edmkt_app.persistence import models
 from edmkt_app.persistence import repositories as repos

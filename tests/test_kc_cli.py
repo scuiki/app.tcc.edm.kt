@@ -18,7 +18,8 @@ import pandas as pd
 import pytest
 
 # RED: o entrypoint CLI do KC ainda não existe (gate da Wave 1/3).
-from edmkt_app.kc_pipeline import runner, settings, transport  # noqa: E402
+from edmkt_app import settings  # noqa: E402
+from edmkt_app.kc_pipeline import runner, transport  # noqa: E402
 from edmkt_app.persistence import models
 from edmkt_app.persistence import repositories as repos
 

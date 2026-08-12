@@ -5,7 +5,7 @@ Camada DIP que liga o modelo Code-DKT treinado + a Q-matrix aprovada ao seam PUR
 cru — training-serving skew), recarrega o artefato, infere e mapeia ProblemID→KC pela Q-matrix.
 TODO I/O de FS/SQLite/torch vive aqui; toda agregação fica no core puro.
 
-Divisão: `settings` (raiz de dados) · `inference` (artefato → pred_df) · `materialization`
+Divisão: `inference` (artefato → pred_df) · `materialization`
 (pred_df → matriz persistida, compute-once).
 
 Os nomes seguem reexportados — a divisão é de arquivo, não de contrato.
@@ -13,6 +13,5 @@ Os nomes seguem reexportados — a divisão é de arquivo, não de contrato.
 
 from edmkt_app.mastery_service.inference import infer_predictions
 from edmkt_app.mastery_service.materialization import compute_mastery
-from edmkt_app.mastery_service.settings import DATA_ROOT
 
-__all__ = ["DATA_ROOT", "compute_mastery", "infer_predictions"]
+__all__ = ["compute_mastery", "infer_predictions"]

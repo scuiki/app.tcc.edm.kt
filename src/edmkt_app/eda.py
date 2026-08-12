@@ -15,6 +15,7 @@ from pathlib import Path
 
 import pandas as pd
 
+from edmkt_app import settings
 from edmkt_app.values import ProgSnapAssignmentId, TurmaSlug
 
 # EDA NÃO importa train.py/persistence: aquele lado puxa torch + ArtifactStore e quebraria a
@@ -25,8 +26,6 @@ from edmkt_app.values import ProgSnapAssignmentId, TurmaSlug
 RUN_EVENT = "Run.Program"
 COMPILE_ERROR_EVENT = "Compile.Error"
 
-# Default herdado de train.DATA_ROOT; não importado de lá para manter a EDA livre de torch.
-DATA_ROOT = Path("data")
 
 # Semente do protocolo congelado (Code-DKT, Shi et al. 2022) — reusada pelos clusters opcionais
 # para que o KMeans seja determinístico. EDA não treina modelo; só agrega.
@@ -42,7 +41,7 @@ def _read_canonical(pq: Path | str) -> pd.DataFrame:
 def canonical_parquet_path(turma_name: str, assignment_name: str) -> Path:
     """Deriva o caminho do Parquet canônico igual a `train.py:89` — a partir de nomes internos."""
     return (
-        DATA_ROOT
+        settings.DATA_ROOT
         / TurmaSlug.from_name(turma_name)
         / "clean"
         / f"assignment_{ProgSnapAssignmentId.from_name(assignment_name)}.parquet"
