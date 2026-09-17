@@ -2,8 +2,8 @@
 
 The `a439_mini` fixture is a SYNTHETIC, hermetic ProgSnap2-shaped DataFrame (D-11/D-12):
 it is generated in code, never loaded from the real CSEDM, and no test asserts a specific
-AUC against it. The real-data fidelity check lives in the golden-run (plan 06, marked
-`golden`, gated on EDMKT_CSEDM_PATH).
+AUC against it. The real-data check lives in the regression test against the TCC 1 reference
+run (plan 06, marked `regression`, gated on EDMKT_CSEDM_PATH).
 """
 
 from __future__ import annotations
@@ -19,22 +19,22 @@ ASSIGNMENT_ID = 439
 
 
 def _resolve_csedm_path() -> Path:
-    """Resolve EDMKT_CSEDM_PATH or skip the golden-run with a clear reason (D-07/D-12).
+    """Resolve EDMKT_CSEDM_PATH or skip the regression test with a clear reason (D-07/D-12).
 
     The real CSEDM is NEVER copied into the repo and NEVER read from ../tcc.edm.kt/data
     (D-12); the operator points EDMKT_CSEDM_PATH at the provisioned dataset on nitro. When
-    it is unset (or the dir/MainTable is missing) the golden-run skips cleanly rather than
+    it is unset (or the dir/MainTable is missing) the regression test skips cleanly rather than
     erroring, so the default fast suite stays green on machines without the dataset.
     """
     raw = os.environ.get("EDMKT_CSEDM_PATH")
     if not raw:
         pytest.skip(
-            "EDMKT_CSEDM_PATH unset — golden-run skipped (D-07 fast-by-default). "
+            "EDMKT_CSEDM_PATH unset — regression test skipped (D-07 fast-by-default). "
             "Set it to the provisioned CSEDM dir (with MainTable.csv + CodeStates/) to run."
         )
     data_dir = Path(raw)
     if not (data_dir / "MainTable.csv").exists():
-        pytest.skip(f"EDMKT_CSEDM_PATH={data_dir} has no MainTable.csv — golden-run skipped.")
+        pytest.skip(f"EDMKT_CSEDM_PATH={data_dir} has no MainTable.csv — regression test skipped.")
     return data_dir
 
 # Minimal compilable Java member declarations — javalang.parse_member_declaration
@@ -129,7 +129,7 @@ def csedm_main_table() -> pd.DataFrame:
     """Real CSEDM Spring 2019 events, shaped for the public train_and_evaluate seam.
 
     Reads EDMKT_CSEDM_PATH (skip-if-unset, D-07/D-12) and reproduces the TCC 1 Code-DKT
-    input exactly: Run.Program events only (the BKT/DKT filter the Code-DKT golden run
+    input exactly: Run.Program events only (the BKT/DKT filter the Code-DKT regression test
     consumed — sequences_bkt_dkt.pkl, notebook 06 cell 4 asserts EventType == Run.Program),
     correct = (Score == 1.0), the per-row Java snapshot joined from CodeStates.csv on
     CodeStateID, and types normalized like data_loader.load_spring2019_split
@@ -225,7 +225,7 @@ def tiny_config() -> dict:
 
 # --- Phase 3 ingestion fixtures (shared by the Wave 2 pure-logic plans) -----------
 # Synthetic + hermetic like a439_mini — NEVER the real CSEDM (Pitfall 2). Each fixture
-# exercises an edge case that has ZERO coverage in the golden dataset (orphan CodeStateID,
+# exercises an edge case that has ZERO coverage in the reference dataset (orphan CodeStateID,
 # single-class assignment, BOM, tolerant layout), so the discover/validate/clean/viability
 # plans can pin those behaviors without the real data.
 
@@ -234,7 +234,7 @@ def tiny_config() -> dict:
 def ingest_orphan_df() -> tuple[pd.DataFrame, dict[str, str]]:
     """Stream cru + code_states com ≥1 CodeStateID órfão (D-11): um evento aponta para um
     CodeStateID ausente em CodeStates, exercitando o descarte+contagem do clean (0 cobertura
-    no golden). Devolve (df, code_states) — o clean faz o join Code via code_states."""
+    no dataset de referência). Devolve (df, code_states) — o clean faz o join Code via code_states."""
     code_states = {"c1": _JAVA_OK_A, "c2": _JAVA_OK_B}  # "c_orphan" deliberadamente AUSENTE
     rows = [
         _row("S1", 1, "2019-03-01T08:00:00Z", "Run.Program", 1.0, _JAVA_OK_A, "c1"),
@@ -350,7 +350,7 @@ def trained_artifact(tmp_db, tmp_path, tiny_vocab, tiny_config):
     """Artefato Code-DKT minúsculo persistido + Q-matrix/KC determinísticos (DASH-01/02/03/05).
 
     NÃO é treinado: os pesos vêm de seed fixa (set_global_seed), não de um treino real — a
-    matriz aluno×KC daqui é determinística e reproduzível, não um AUC realista (o golden-run
+    matriz aluno×KC daqui é determinística e reproduzível, não um AUC realista (o teste de regressão
     é o oráculo de numerics). Persiste via ArtifactStore.persist para que load_version
     (artifacts.py:142) reconstrua o CodeDKTModel com weights_only=True. Q-matrix: 3 problemas
     (1,2,3) → 2 KCs, com o problema 3 ligado a ambos os KCs, exercitando a média problem→KC.
@@ -445,16 +445,16 @@ def trained_artifact(tmp_db, tmp_path, tiny_vocab, tiny_config):
 
 
 # --- Phase 5 KC pipeline fixtures (plan 05-01) ------------------------------------
-# Golden de regressão do KCGen-KT: os artefatos REAIS do TCC 1 (A439) copiados de
+# Artefatos de referência do KCGen-KT: os artefatos REAIS do TCC 1 (A439) copiados de
 # ../tcc.edm.kt/results/ para tests/data/kc/. Nenhum teste chama o `claude` real — o
 # transporte é sempre monkeypatchado (subprocess.run/Popen). `fake_claude_envelope` constrói
 # o envelope JSON verificado ao vivo no host (05-RESEARCH §Pattern 1) para esses mocks.
 
 
 @pytest.fixture
-def kc_golden_dir() -> Path:
-    """Path para tests/data/kc — os 4 artefatos golden do TCC (kc_raw/kc_clusters/
-    kc_descriptions/qmatrix _A439), usados pelo golden-replay do pipeline puro (KC-01)."""
+def kc_reference_dir() -> Path:
+    """Path para tests/data/kc — os 4 artefatos de referência do TCC 1 (kc_raw/kc_clusters/
+    kc_descriptions/qmatrix _A439), usados pelo replay de referência do pipeline puro (KC-01)."""
     return Path(__file__).resolve().parent / "data" / "kc"
 
 
@@ -478,7 +478,7 @@ def fake_claude_envelope():
 
 @pytest.fixture
 def ingest_layout_dir(tmp_path) -> Path:
-    """Árvore com CodeStates em LinkTables/ (variante CodeWorkout/golden — D-02) + múltiplas
+    """Árvore com CodeStates em LinkTables/ (variante CodeWorkout de referência — D-02) + múltiplas
     MainTable (All/ e Train/ — D-03 → professor escolhe). Exercita o glob tolerante do
     discover sem reorganização manual."""
     (tmp_path / "LinkTables").mkdir()

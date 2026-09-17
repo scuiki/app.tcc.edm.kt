@@ -2,7 +2,7 @@
 
 Smoke/characterization training on CPU over the hermetic fixture: prove the injected
 device and on_epoch callback work with behavior-preserving wiring, and that
-predict_code_dkt yields the documented pred_df columns. NOT the golden-run — epochs are
+predict_code_dkt yields the documented pred_df columns. NOT the regression test — epochs are
 reduced for speed; architecture stays frozen.
 """
 

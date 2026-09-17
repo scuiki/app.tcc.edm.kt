@@ -5,7 +5,7 @@ há menos nomes únicos de KC que o menor candidato viável, não há n < n_uniq
 silhouette/HAC não se aplica: a seleção deve falhar de forma CLARA (ValueError) em vez de estourar
 um `max() iterable argument is empty` opaco. O caminho real para esses datasets pequenos é NÃO
 clusterizar (cada nome único vira seu próprio cluster) — decidido no caller (_kc_body), provado em
-test_kc_cli.py. Aqui pinamos só o contrato robusto do selector. O caminho golden (n=15) segue
+test_kc_cli.py. Aqui pinamos só o contrato robusto do selector. O caminho de referência (n=15) segue
 intacto em test_kc_pipeline.py.
 """
 

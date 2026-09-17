@@ -9,12 +9,12 @@ description = "EDM·KT scientific core: Code-DKT knowledge tracing over ProgSnap
 requires-python = ">=3.10,<3.13"
 
 # Runtime deps inherited from the TCC 1 environment (commit 0e8807c).
-# Exact versions are frozen in requirements.lock — validated by the golden-run as the
+# Exact versions are frozen in requirements.lock — validated by the regression test as the
 # version oracle (CORE-03/RESEARCH A2): A439 first-attempt AUC = 0.7608, in band
 # [0.7027, 0.7627]. torch/numpy come from the pinned base image conda env (see Dockerfile,
 # pytorch/pytorch:2.7.1-cuda12.8-cudnn9-runtime); they are listed unversioned here because
 # the image — not PyPI — is the reproducibility anchor (torch==2.7.1+cu128 is not a plain
-# PyPI pin). The lower bounds below match the resolved lock; bump only with a green golden-run.
+# PyPI pin). The lower bounds below match the resolved lock; bump only with a green regression test.
 dependencies = [
     "torch",            # base image conda env: torch==2.7.1+cu128 (sm_89, RTX 4050)
     "numpy",            # base image conda env: numpy==2.2.6
@@ -25,7 +25,7 @@ dependencies = [
     # SBERT (KCGen-KT Etapa 3): única dependência nova da Fase 5. Pin = versão do TCC 1
     # (notebook de pesquisa: s-transformers = 5.4.1), não a latest — fidelidade do silhouette/
     # embeddings com results/kc_clusters_A*.json (Open Q1, KC-01). Transporte/embeddings, NÃO
-    # toca a numérica de treino do Code-DKT (não afeta a banda ±3pp do golden-run).
+    # toca a numérica de treino do Code-DKT (não afeta a banda ±3pp do teste de regressão).
     "sentence-transformers==5.4.1",
     "pyarrow==24.0.0",  # engine de DataFrame.to_parquet — stream canônico em Parquet (D-13)
     # HTTP/I/O stack (waves 2-3): camada de transporte, NÃO toca a numérica de treino —
@@ -47,6 +47,6 @@ where = ["src"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 markers = [
-    "golden: fidelity golden-run, needs EDMKT_CSEDM_PATH (deselect with -m 'not golden')",
+    "regression: AUC regression test against the TCC 1 reference run (A439, GPU + real CSEDM), needs EDMKT_CSEDM_PATH (deselect with -m 'not regression')",
 ]
-addopts = "-m 'not golden'"
+addopts = "-m 'not regression'"

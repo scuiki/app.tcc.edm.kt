@@ -3,7 +3,7 @@
 Pinam a política RESOLVIDA: o único bloqueio duro (trainable=False / EDA-only) é a ausência de
 ambas as classes nos first-attempts (AUC matematicamente indefinido). Pisos de problemas/amostra
 NUNCA derrubam trainable — viram avisos graduados severity="viability". A fixture de classe única
-(`ingest_single_class_df`) exercita o caso intestável no golden (Pitfall 2).
+(`ingest_single_class_df`) exercita o caso intestável no dataset de referência (Pitfall 2).
 """
 
 from __future__ import annotations

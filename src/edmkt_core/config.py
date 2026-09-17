@@ -13,7 +13,7 @@ from types import MappingProxyType
 #
 # Open Question Q1 (RESEARCH): the exact config that produced 73.27% must be
 # confirmed against results/code_dkt_results_multirun.pkl (the 73.27% reference
-# came from the grid BEST_CONFIG, not the default). The golden-run (plan 06) is
+# came from the grid BEST_CONFIG, not the default). The regression test (plan 06) is
 # the arbiter; if it lands outside [70.27, 76.27] revisit dropout/lr here.
 _FROZEN = {
     "R": 50,

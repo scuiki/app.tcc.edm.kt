@@ -3,7 +3,7 @@
 A ordem das operações é load-bearing para a reprodutibilidade (Pitfall 2): build_sequences
 (completo) → split → build_cache → build_train_vocab (train-only, CORE-04) → build_problem_index
 (todos) → truncate (só fatia, CORE-05) → train → predict → AUC separado. O glue NUNCA reordena
-esses passos — o golden-run é o oráculo que reprova qualquer troca.
+esses passos — o teste de regressão é o oráculo que reprova qualquer troca.
 """
 
 from __future__ import annotations
@@ -46,7 +46,7 @@ def train_and_evaluate(
 
     Accepts EITHER a single DataFrame (split internally via split_by_subject at the
     TCC 1 random_state=1, Pitfall 3) OR an explicit train/test pair (Open Q2: Fase 3
-    passes pre-split partitions; the golden-run reproduces random_state=1). Either way
+    passes pre-split partitions; the regression test reproduces random_state=1). Either way
     the operation order below is fixed (Pitfall 2) and the vocab is built from train only.
 
     Returns {model, config, vocab, first_auc, all_auc, pred_df, n_train_events,

@@ -23,7 +23,7 @@ from edmkt_app.ingestion.discover import (
 
 
 def test_find_code_states_prefere_link_tables(ingest_layout_dir: Path) -> None:
-    # D-02: na variante CodeWorkout/golden o CodeStates vive em LinkTables/, não em CodeStates/.
+    # D-02: na variante CodeWorkout de referência o CodeStates vive em LinkTables/, não em CodeStates/.
     found = find_code_states(ingest_layout_dir)
     assert found is not None
     assert found == ingest_layout_dir / "LinkTables" / "CodeStates.csv"

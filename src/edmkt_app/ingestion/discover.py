@@ -27,7 +27,7 @@ _CHUNK = 1024 * 1024  # 1 MiB por leitura: limita a RAM por membro durante a des
 def find_code_states(root: Path) -> Path | None:
     candidates = (
         root / "CodeStates" / "CodeStates.csv",
-        root / "LinkTables" / "CodeStates.csv",  # variante CodeWorkout/golden (D-02)
+        root / "LinkTables" / "CodeStates.csv",  # variante CodeWorkout de referência (D-02)
         *sorted(root.rglob("CodeStates.csv")),  # fallback tolerante, ordem estável
     )
     for cand in candidates:

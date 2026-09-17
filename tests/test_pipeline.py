@@ -1,6 +1,6 @@
 """End-to-end + separated-metrics tests for the public train_and_evaluate glue.
 
-This pins the DataFrame-in/artifacts-out boundary (D-01) that the golden-run (plan 06)
+This pins the DataFrame-in/artifacts-out boundary (D-01) that the regression test (plan 06)
 and every later phase wrap:
   - a generic ProgSnap2 DataFrame in -> a full artifact dict out, with no CSEDM-specific
     path read (CORE-01);
@@ -11,7 +11,7 @@ and every later phase wrap:
   - the pipeline builds vocab from the train partition only — held-out OOV>0 against the
     pipeline's OWN returned vocab proves it (a union vocab would yield OOV=0; T-01-06).
 
-This is NOT the golden-run: epochs are reduced for speed, the architecture stays frozen,
+This is NOT the regression test: epochs are reduced for speed, the architecture stays frozen,
 and no AUC value is asserted against a reference band. It runs CPU-only and fast.
 """
 

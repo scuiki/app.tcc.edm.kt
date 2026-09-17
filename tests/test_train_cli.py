@@ -294,7 +294,7 @@ def test_compile_errors_never_reach_the_training_stream(tmp_db, data_root, fast_
     """Compile.Error vive no Parquet canônico (a EDA precisa dele), mas NÃO se treina com ele.
 
     O TCC 1 treinou o Code-DKT só sobre Run.Program (data_loader.filter_for_bkt_dkt, o filtro
-    por trás de sequences_bkt_dkt.pkl); o golden-run reproduz aquele número porque o fixture
+    por trás de sequences_bkt_dkt.pkl); o teste de regressão reproduz aquele número porque o fixture
     csedm_main_table já chega filtrado. Sem o mesmo filtro AQUI, a aplicação treina sobre outro
     dado que o oráculo — no CSEDM real isso derrubou o first-attempt AUC para 0,6959, fora da
     banda ±3pp, e a taxa de parse para 78,58%.

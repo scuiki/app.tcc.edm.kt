@@ -1,7 +1,7 @@
 """Testes do estágio C (clean): stream de eventos canônico (D-10/D-11/D-12).
 
 Herméticos e CPU-only: constroem o cru sobre `a439_mini` / `ingest_orphan_df` (Pitfall 2 —
-órfão tem 0 cobertura no golden, então a fixture é sintética). Asseguram invariantes do
+órfão tem 0 cobertura no dataset de referência, então a fixture é sintética). Asseguram invariantes do
 contrato (conjuntos de EventType/colunas, contagens), nunca valores mágicos de AUC.
 """
 

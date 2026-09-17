@@ -1,10 +1,10 @@
-# requirements.lock — edmkt_core dependency pins validated by the golden-run (CORE-03).
+# requirements.lock — edmkt_core dependency pins validated by the regression test (CORE-03).
 #
-# The golden-run is the version oracle (RESEARCH A2 / D-08): these are the EXACT versions
-# resolved inside the edmkt-core:dev image when tests/test_golden_run.py::test_golden_run_a439
+# The regression test is the version oracle (RESEARCH A2 / D-08): these are the EXACT versions
+# resolved inside the edmkt-core:dev image when tests/test_regression_a439.py::test_regression_a439
 # reproduced A439 first-attempt AUC = 0.7608 — inside the ±3pp band [0.7027, 0.7627] anchored
 # on the TCC 1 reference 73.2654%. Any version change that moves A439 out of band turns the
-# golden-run red (T-01-08); re-pin here only after the band is green again.
+# regression test red (T-01-08); re-pin here only after the band is green again.
 #
 # REPRODUCIBILITY ANCHOR — the real freeze is the Docker image, not this file:
 #   torch and numpy ship from the conda env of the pinned base image
@@ -13,7 +13,7 @@
 #   image tag; this lockfile records the resolved versions that tag yields so any drift shows.
 #
 # Validated environment (captured from `docker run edmkt-core:dev python -m pip freeze`,
-# golden-run green on the nitro RTX 4050 / CUDA 12.8 GPU):
+# regression test green on the nitro RTX 4050 / CUDA 12.8 GPU):
 #   Python  3.11.13
 #   CUDA    12.8 (torch.version.cuda)
 
@@ -29,7 +29,7 @@ scikit-learn==1.9.0
 scipy==1.17.1
 pyarrow==24.0.0          # engine de Parquet do stream canônico (D-13); resolvido no container (cp311)
 
-# --- HTTP/I/O stack (camada de transporte; não toca a numérica do golden-run) ---
+# --- HTTP/I/O stack (camada de transporte; não toca a numérica do teste de regressão) ---
 fastapi==0.138.0
 uvicorn[standard]==0.49.0
 python-multipart==0.0.32
