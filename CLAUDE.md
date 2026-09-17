@@ -105,7 +105,7 @@ seguem o skill `nitro-env`.
 | Postgres ou outro servidor de banco | Sem multiusuário e sem concorrência de escrita: peso operacional sem ganho |
 | `BackgroundTasks` ou threads para treino | Bloqueia o processo web, morre no restart, sem status durável |
 | Instalar deps no host (npm/pip) | Regra dura: dependências vivem **só no container** |
-| Tag `latest` ou torch não pinado | Quebra a reprodutibilidade científica (o golden-run é o oráculo) |
+| Tag `latest` ou torch não pinado | Quebra a reprodutibilidade científica (o teste de regressão é o oráculo) |
 | Um segundo lib de gráficos | Chart.js já cobre tudo que o dashboard precisa |
 | Porta publicada sem bind IP explícito | Docker escreve nftables próprio e passa por cima do firewalld: vaza na LAN |
 

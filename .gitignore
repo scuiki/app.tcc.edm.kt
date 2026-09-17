@@ -3,7 +3,7 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 
-# Datasets provisionados no nitro (golden-run CSEDM etc.) — grandes, nunca versionados (D-12)
+# Datasets provisionados no nitro (CSEDM do teste de regressão etc.) — grandes, nunca versionados (D-12)
 datasets/
 # Dados de turma do fluxo de ingestão (uploads, clean/, cache/, models/)
 data/
@@ -11,7 +11,7 @@ data/
 app.db
 app.db-shm
 app.db-wal
-# Exceção: fixtures de teste versionadas (pequenas, golden de regressão — NÃO são dados de
+# Exceção: fixtures de teste versionadas (pequenas, artefatos de referência do TCC 1 — NÃO são dados de
 # turma nem o CSEDM grande do D-12). tests/data/ é raiz hermética dos testes.
 !tests/data/
 !tests/data/**

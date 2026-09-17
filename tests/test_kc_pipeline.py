@@ -1,4 +1,4 @@
-"""RED — golden-replay do pipeline KCGen-KT puro (KC-01, KC-04).
+"""RED — replay de referência do pipeline KCGen-KT puro (KC-01, KC-04).
 
 Reproduz a Q-matrix e o clustering do TCC 1 (A439) a partir do CRU cacheado, com o LLM
 SEMPRE mockado (carregamos `kc_raw_A439.json` como se fosse o cache de geração) — nenhum
@@ -22,37 +22,37 @@ from edmkt_core.kc.clustering import select_best_n_clusters  # noqa: E402
 from edmkt_core.kc.qmatrix import build_qmatrix  # noqa: E402
 
 
-def _load(kc_golden_dir, name):
-    return json.loads((kc_golden_dir / name).read_text())
+def _load(kc_reference_dir, name):
+    return json.loads((kc_reference_dir / name).read_text())
 
 
-def test_build_qmatrix_reproduces_golden(kc_golden_dir):
+def test_build_qmatrix_reproduces_reference(kc_reference_dir):
     """build_qmatrix(problem_ids, kc_raw, kc_clusters) reproduz qmatrix_A439.csv célula-a-célula
     (replay determinístico a partir do cru cacheado — o objeto científico reproduzível, D-03)."""
     import pandas as pd
 
-    kc_raw = _load(kc_golden_dir, "kc_raw_A439.json")
-    kc_clusters = _load(kc_golden_dir, "kc_clusters_A439.json")
-    golden = pd.read_csv(kc_golden_dir / "qmatrix_A439.csv", index_col="ProblemID")
+    kc_raw = _load(kc_reference_dir, "kc_raw_A439.json")
+    kc_clusters = _load(kc_reference_dir, "kc_clusters_A439.json")
+    reference = pd.read_csv(kc_reference_dir / "qmatrix_A439.csv", index_col="ProblemID")
 
-    # Os problem_ids do golden (o índice do CSV) na mesma ordem.
-    problem_ids = [str(p) for p in golden.index.tolist()]
+    # Os problem_ids da referência (o índice do CSV) na mesma ordem.
+    problem_ids = [str(p) for p in reference.index.tolist()]
     produced = build_qmatrix(problem_ids, kc_raw, kc_clusters)
 
     # Mesma forma (n_problemas × n_clusters) e mesmos valores binários.
-    assert list(produced.columns) == list(golden.columns)
-    assert produced.shape == golden.shape
+    assert list(produced.columns) == list(reference.columns)
+    assert produced.shape == reference.shape
     # Comparação célula-a-célula (alinha por reset de índice; valores 0/1).
-    assert produced.to_numpy().tolist() == golden.to_numpy().tolist()
+    assert produced.to_numpy().tolist() == reference.to_numpy().tolist()
 
 
-def test_selected_n_clusters_matches_golden(kc_golden_dir):
+def test_selected_n_clusters_matches_reference(kc_reference_dir):
     """A seleção por silhouette converge no n_clusters do TCC (15 para A439). Tolerante a
     pequenas variações de embedding entre versões de SBERT — pina só o n selecionado."""
     pytest.importorskip("sentence_transformers")
     from sentence_transformers import SentenceTransformer
 
-    kc_clusters = _load(kc_golden_dir, "kc_clusters_A439.json")
+    kc_clusters = _load(kc_reference_dir, "kc_clusters_A439.json")
     expected_n = kc_clusters["n_clusters_selected"]
 
     kc_names = list(kc_clusters["kc_to_cluster"].keys())
@@ -63,11 +63,11 @@ def test_selected_n_clusters_matches_golden(kc_golden_dir):
     assert best_n == expected_n
 
 
-def test_zero_kc_problem_guard(kc_golden_dir):
+def test_zero_kc_problem_guard(kc_reference_dir):
     """Guarda 0-KC (D-04): um problema sem nenhum KC mapeado fica com a linha toda zero, o que
     a validação a jusante trata como falha-dura. Aqui pinamos que build_qmatrix não inventa
     bindings para um problema ausente do kc_raw (linha toda 0)."""
-    kc_clusters = _load(kc_golden_dir, "kc_clusters_A439.json")
+    kc_clusters = _load(kc_reference_dir, "kc_clusters_A439.json")
     kc_raw = {}  # nenhum KC para nenhum problema
 
     produced = build_qmatrix(["999"], kc_raw, kc_clusters)

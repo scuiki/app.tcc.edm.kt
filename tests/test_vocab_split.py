@@ -7,7 +7,7 @@ tests pin the discipline that lives in notebook 06 cell 14:
   - the vocab helper only ever sees the train partition's CodeStateIDs;
   - a held-out tensorization against the train-only vocab yields path-OOV > 0.
 
-No real CSEDM, no AUC assertions — the numerics oracle is the golden-run (plan 06).
+No real CSEDM, no AUC assertions — the numerics oracle is the regression test (plan 06).
 """
 
 from __future__ import annotations

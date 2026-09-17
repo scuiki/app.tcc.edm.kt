@@ -1,5 +1,5 @@
 # Runtime image for the EDM·KT FastAPI app + KC pipeline (Phase 5 first live deploy).
-# Derives FROM the CORE-03 reproducibility anchor (edmkt-core:dev) so the golden-run numerics
+# Derives FROM the CORE-03 reproducibility anchor (edmkt-core:dev) so the regression-test numerics
 # image stays pure: this layer only ADDS a runtime concern — the pre-baked SBERT model.
 # The `claude` CLI (D-01 subscription transport) and the OAuth credential are deliberately NOT
 # baked: they are mounted read-only at run time (see run-app.sh). That pins the host's verified

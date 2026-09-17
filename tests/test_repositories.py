@@ -200,7 +200,7 @@ def test_submission_event_type_roundtrip(tmp_db):
 
 def test_kc_index_roundtrip(tmp_db):
     # kc_index (id de cluster 0..N por-assignment, degrau 0005) faz round-trip fiel — é o
-    # "kc_id científico" do TCC que o golden compara, distinto do kc.id autoincrement global.
+    # "kc_id científico" do TCC que o replay de referência compara, distinto do kc.id autoincrement global.
     conn = tmp_db
     _, assignment_id = _seed_turma_assignment(conn)
     kc_id = repos.KCRepository(conn).insert(

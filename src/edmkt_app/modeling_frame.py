@@ -3,7 +3,7 @@
 O Parquet canônico da Fase 3 guarda `{Run.Program, Compile.Error}` de propósito: o filtro de
 EventType é o dedup do par de mesmo timestamp (clean.py D-10) e a EDA precisa dos compile errors.
 Modelagem é outra história — o TCC 1 treinou o Code-DKT só sobre `Run.Program`, e é esse o dado
-que o golden-run usa como oráculo.
+que o teste de regressão usa como oráculo.
 
 Este módulo existe para que essa diferença tenha UM lugar. Antes dele, `train.py` e
 `mastery_service.py` montavam o caminho e liam o Parquet cada um por si; ambos esqueceram o

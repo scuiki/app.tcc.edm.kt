@@ -21,8 +21,8 @@ A handful of fabricated students (`S1`, `S2`, `S_long`) attempting three problem
 
 - It is **not** loaded from disk, pickled, or derived from the real CSEDM.
 - **No test asserts a specific AUC** against this fixture. Numerics are arbitrary on
-  synthetic data; the only real-data fidelity check is the **golden-run** (plan 06),
-  which is marked `golden`, reads the CSEDM via `EDMKT_CSEDM_PATH`, and asserts A439
+  synthetic data; the only real-data check is the **regression test against the TCC 1 reference run** (plan 06),
+  which is marked `regression`, reads the CSEDM via `EDMKT_CSEDM_PATH`, and asserts A439
   first-attempt AUC ∈ [70.27, 76.27].
 
 The characterization tests use this fixture only to pin **shapes and behavior**

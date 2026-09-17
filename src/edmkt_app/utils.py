@@ -17,7 +17,7 @@ import pandas as pd
 # O Parquet canônico da Fase 3 guarda {Run.Program, Compile.Error} de propósito — o filtro de
 # EventType É o dedup do par de mesmo timestamp (clean.py D-10) e a EDA precisa dos compile
 # errors para a taxa de erro. Modelagem é outra história: o TCC 1 treinou o Code-DKT só sobre
-# Run.Program, e é esse o dado que o golden-run usa como oráculo.
+# Run.Program, e é esse o dado que o teste de regressão usa como oráculo.
 RUN_EVENT = "Run.Program"
 
 
