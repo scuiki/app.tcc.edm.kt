@@ -4,8 +4,8 @@
 
 import { useQuery } from '@tanstack/react-query'
 
-import { fetchJson } from '../api/client'
-import type { AssignmentsResponse } from '../api/schema'
+import { fetchJson } from '../http/client'
+import type { AssignmentsResponse } from '../http/schema'
 
 export function useAssignments() {
   return useQuery({

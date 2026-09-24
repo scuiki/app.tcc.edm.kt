@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 
 import { RecommendationList } from './RecommendationList'
-import type { Recommendation } from '../api/schema'
+import type { Recommendation } from '../http/schema'
 
 // REC-01: the backend pre-renders each suggestion's pt-BR `text`; the SPA displays it VERBATIM
 // (character-for-character, never paraphrased or reconstructed client-side) and in backend order

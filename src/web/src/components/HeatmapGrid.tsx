@@ -2,7 +2,7 @@
 // and the DOM grid carries the dual-axis labels, the mandatory non-color cue, and ARIA more robustly
 // (UI-SPEC Interaction Contract). It only colors backend-authored mastery; it never recomputes (D-08).
 
-import type { MasteryCell } from '../api/schema'
+import type { MasteryCell } from '../http/schema'
 import { band, type Band } from '../lib/bands'
 import { formatPercent } from '../lib/format'
 import { EmptyState } from './states/EmptyState'

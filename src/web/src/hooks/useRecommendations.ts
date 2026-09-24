@@ -4,8 +4,8 @@
 
 import { useQuery } from '@tanstack/react-query'
 
-import { fetchJson } from '../api/client'
-import type { RecommendationsResponse } from '../api/schema'
+import { fetchJson } from '../http/client'
+import type { RecommendationsResponse } from '../http/schema'
 
 export function useRecommendations(assignmentId: number | null) {
   return useQuery({

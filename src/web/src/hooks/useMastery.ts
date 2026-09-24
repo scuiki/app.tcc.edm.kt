@@ -4,8 +4,8 @@
 
 import { useQuery } from '@tanstack/react-query'
 
-import { fetchJson } from '../api/client'
-import type { MasteryResponse } from '../api/schema'
+import { fetchJson } from '../http/client'
+import type { MasteryResponse } from '../http/schema'
 
 export function useMastery(assignmentId: number | null) {
   return useQuery({

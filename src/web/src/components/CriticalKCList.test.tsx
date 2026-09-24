@@ -2,7 +2,7 @@ import { render, screen, within } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 
 import { CriticalKCList } from './CriticalKCList'
-import type { CriticalKC } from '../api/schema'
+import type { CriticalKC } from '../http/schema'
 
 // DASH-02: the backend authors critical_kcs weakest-first; the client renders that order verbatim and
 // NEVER re-sorts (D-08). The order assertion is the tripwire against a client-side ranking recompute.

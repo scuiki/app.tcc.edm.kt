@@ -10,7 +10,8 @@ WORKDIR /app
 
 # Install the package + dev deps. torch already ships in the base image.
 COPY pyproject.toml ./
-COPY src ./src
+COPY src/api ./src/api
+COPY src/ml ./src/ml
 COPY tests ./tests
 RUN pip install --no-cache-dir -e ".[dev]"
 

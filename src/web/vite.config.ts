@@ -14,7 +14,7 @@ const allowedHosts = (process.env.VITE_ALLOWED_HOSTS ?? '')
   .filter(Boolean)
 
 // Same-origin proxy to the internal api service (D-01/D-04). In the compose topology the target is
-// the service name `api`, reachable only on the internal network; only the frontend publishes a port.
+// the service name `api`, reachable only on the internal network; only the web service publishes a port.
 const apiTarget = process.env.VITE_API_TARGET ?? 'http://api:8099'
 
 // https://vite.dev/config/

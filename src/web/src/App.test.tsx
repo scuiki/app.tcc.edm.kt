@@ -18,7 +18,7 @@ import {
   masteryUntrained,
   recommendations,
 } from './test/fixtures'
-import type { AssignmentsResponse } from './api/schema'
+import type { AssignmentsResponse } from './http/schema'
 
 // One fresh client per render so a query cached in one test never leaks into the next; retry off so an
 // error fixture resolves to the error copy immediately (mirrors main.tsx).

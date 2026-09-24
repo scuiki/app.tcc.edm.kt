@@ -4,8 +4,8 @@
 
 import { useQuery } from '@tanstack/react-query'
 
-import { fetchJson } from '../api/client'
-import type { EdaResponse } from '../api/schema'
+import { fetchJson } from '../http/client'
+import type { EdaResponse } from '../http/schema'
 
 export function useEda(assignmentId: number | null) {
   return useQuery({

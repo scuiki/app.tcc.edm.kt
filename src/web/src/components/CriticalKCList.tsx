@@ -1,7 +1,7 @@
 // Critical-KC list (DASH-02). The backend authors critical_kcs weakest-first; this component maps it in
 // array order and MUST NOT sort — re-ranking client-side would diverge from the source of truth (D-08).
 
-import type { CriticalKC } from '../api/schema'
+import type { CriticalKC } from '../http/schema'
 import { formatPercent } from '../lib/format'
 
 export function CriticalKCList({ criticalKcs }: { criticalKcs: CriticalKC[] }) {

@@ -1,8 +1,8 @@
 # EDM·KT container toolchain + dashboard stack (D-04).
 # nitro-env: never publish a bare port — every published port MUST bind an explicit IP
 # (127.0.0.1 = local only, 100.96.0.53 = tailnet). The `api` service publishes NOTHING (reachable only
-# as the compose service name `api`, which the Vite proxy targets); the `frontend` dev-server binds an
-# explicit IP via ${EDMKT_BIND_IP} (default loopback). `docker compose run --rm frontend sh -c "..."`
+# as the compose service name `api`, which the Vite proxy targets); the `web` dev-server binds an
+# explicit IP via ${EDMKT_BIND_IP} (default loopback). `docker compose run --rm web sh -c "..."`
 # still drives the gates: `run` overrides the `command:` below and publishes no port.
 services:
   # FastAPI app + KC pipeline (mirrors deploy/run-app.sh). Internal-only: NO published port — the
@@ -29,7 +29,7 @@ services:
       - ./:/app
       # Subscription transport (D-01): the host's verified claude CLI + the two OAuth credential files
       # are mounted READ-ONLY — never baked into the image, never via env (threat model: no secret in
-      # the frontend, T-06.1-14; credential only on the api).
+      # the web service, T-06.1-14; credential only on the api).
       - /home/leokuntz/.local/share/claude/versions/2.1.185:/usr/local/bin/claude:ro
       - /home/leokuntz/.claude/.credentials.json:/root/.claude/.credentials.json:ro
       - /home/leokuntz/.claude.json:/root/.claude.json:ro
@@ -53,19 +53,19 @@ services:
   # Vite dev server (D-01: the dev server serves in dev AND "production") + the JS gate runner. The
   # `command:` runs the dev server for `docker compose up`; a `docker compose run` overrides it (and
   # publishes nothing) so the typecheck/test gates keep working from the same image.
-  frontend:
+  web:
     build:
       context: .
-      dockerfile: deploy/Dockerfile.frontend
-    image: edmkt-frontend:dev
-    working_dir: /app/frontend
+      dockerfile: deploy/Dockerfile.web
+    image: edmkt-web:dev
+    working_dir: /app/src/web
     depends_on:
       - api
     # Bind the repo so edited source is visible inside the container; mask node_modules with a
     # named volume seeded from the image layer so dependencies NEVER touch the host tree.
     volumes:
       - ./:/app
-      - edmkt_frontend_node_modules:/app/frontend/node_modules
+      - edmkt_web_node_modules:/app/src/web/node_modules
     # Required to read /srv bind mounts under SELinux (mirrors deploy/run-app.sh).
     security_opt:
       - label=disable
@@ -73,11 +73,11 @@ services:
       # Vite validates the Host header and refuses unknown hosts (Pitfall 3): list the Tailscale
       # hostname(s) at deploy time. Loopback dev needs no entry.
       VITE_ALLOWED_HOSTS: ${EDMKT_ALLOWED_HOSTS:-}
-    # ONLY the frontend publishes a port, on an EXPLICIT bind IP — 127.0.0.1 local-only by default,
+    # ONLY the web service publishes a port, on an EXPLICIT bind IP — 127.0.0.1 local-only by default,
     # set EDMKT_BIND_IP=100.96.0.53 for Tailscale. NEVER 0.0.0.0, never a bare port (nitro-env / app.py).
     ports:
       - "${EDMKT_BIND_IP:-127.0.0.1}:5173:5173"
     command: ["npm", "run", "dev", "--", "--host"]
 
 volumes:
-  edmkt_frontend_node_modules:
+  edmkt_web_node_modules:
