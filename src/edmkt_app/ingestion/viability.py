@@ -12,9 +12,9 @@ mitigação real (intervalos de confiança, cautela na leitura) é da Fase 6 —
 graduados acionáveis (severity="viability"), nunca uma parede que esconde dado computável.
 
 O gate é por-assignment (D-08): A439 pode ser trainable e A492 EDA-only na mesma turma. A
-elegibilidade de aluno espelha o `split_by_subject` do núcleo (min_attempts≥3 Run.Program).
+elegibilidade de aluno espelha o `split_students_into_train_and_test` do núcleo (min_attempts≥3 Run.Program).
 
-Módulo puro (DataFrame-in → contrato-out): sem I/O, sem SQL, sem import de edmkt_core.
+Módulo puro (DataFrame-in → contrato-out): sem I/O, sem SQL, sem import de ml.
 """
 
 from __future__ import annotations
@@ -24,7 +24,7 @@ import pandas as pd
 from edmkt_app.ingestion.report import AssignmentSummary, ReportItem
 from edmkt_app.submission_events import RUN_PROGRAM
 
-# Espelha split_by_subject (../tcc.edm.kt data_loader → edmkt_core/pipeline.py:41-44): só conta
+# Espelha split_students_into_train_and_test (../tcc.edm.kt data_loader → ml/code_dkt/student_split.py:41-44): só conta
 # como elegível o aluno com >=3 eventos Run.Program. Alunos abaixo são EXCLUÍDOS da contagem,
 # nunca bloqueiam o assignment.
 MIN_ATTEMPTS = 3

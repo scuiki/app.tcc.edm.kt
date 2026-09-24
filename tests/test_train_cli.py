@@ -37,17 +37,17 @@ _JAVA_BODIES = [
     "public int g7(int n) { try { return 10 / n; } catch (Exception e) { return -1; } }",
 ]
 
-# Arquitetura congelada; só as épocas caem para um smoke CPU rápido (nunca no FROZEN_CONFIG).
+# Arquitetura congelada; só as épocas caem para um smoke CPU rápido (nunca no CODE_DKT_HYPERPARAMETERS).
 _FAST_EPOCHS = 3
 
 
-def _row(subject, problem, ts, score, code, csid):
+def _row(subject, problem, ts, score, code, snapshot_id):
     correct = int(score == 1.0)
     return {
         "student_id": subject,
         "progsnap_assignment_id": ASSIGNMENT_ID,
         "problem_id": problem,
-        "code_snapshot_id": csid,
+        "code_snapshot_id": snapshot_id,
         "code": code,
         "score": score,
         "submitted_at": ts,
@@ -83,11 +83,11 @@ def data_root(tmp_path, monkeypatch):
 
 @pytest.fixture
 def fast_config(monkeypatch):
-    """Reduz épocas via FROZEN_CONFIG visto pela CLI, sem mutar o MappingProxyType global."""
-    from edmkt_core.config import FROZEN_CONFIG
+    """Reduz épocas via CODE_DKT_HYPERPARAMETERS visto pela CLI, sem mutar o MappingProxyType global."""
+    from ml.reproducibility.code_dkt_hyperparameters import CODE_DKT_HYPERPARAMETERS
 
-    fast = {**FROZEN_CONFIG, "epochs": _FAST_EPOCHS}
-    monkeypatch.setattr(stages, "FROZEN_CONFIG", fast)
+    fast = {**CODE_DKT_HYPERPARAMETERS, "epochs": _FAST_EPOCHS}
+    monkeypatch.setattr(stages, "CODE_DKT_HYPERPARAMETERS", fast)
     return fast
 
 

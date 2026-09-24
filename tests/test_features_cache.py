@@ -12,9 +12,8 @@ from pathlib import Path
 import pytest
 
 from edmkt_app import features_cache, settings
-from edmkt_core.pipeline import build_train_vocab
+from ml.code_dkt.student_split import build_train_only_vocabulary
 
-from tests.conftest import _JAVA_BAD, _JAVA_EMPTY_CLASS, _JAVA_OK_A
 
 
 @pytest.fixture
@@ -30,21 +29,21 @@ def data_root(tmp_path, monkeypatch):
 def test_second_call_skips_extraction_same_result(
     data_root, cache_code_states, cache_config, monkeypatch
 ):
-    csids = ["c_ok1", "c_ok2"]
+    snapshot_ids = ["c_ok1", "c_ok2"]
     calls = {"missing": []}
-    real_build = features_cache.build_cache
+    real_build = features_cache.extract_ast_paths_for_snapshots
 
     def counting_build(missing, code_states, **kw):
         calls["missing"].append(list(missing))
         return real_build(missing, code_states, **kw)
 
-    monkeypatch.setattr(features_cache, "build_cache", counting_build)
+    monkeypatch.setattr(features_cache, "extract_ast_paths_for_snapshots", counting_build)
 
-    first = features_cache.build_cache_on_disk("A", csids, cache_code_states, cache_config)
-    second = features_cache.build_cache_on_disk("A", csids, cache_code_states, cache_config)
+    first = features_cache.build_cache_on_disk("A", snapshot_ids, cache_code_states, cache_config)
+    second = features_cache.build_cache_on_disk("A", snapshot_ids, cache_code_states, cache_config)
 
     # First call extracts both; second sees them all cached → empty missing (or no call).
-    assert sorted(calls["missing"][0]) == csids
+    assert sorted(calls["missing"][0]) == snapshot_ids
     assert all(len(m) == 0 for m in calls["missing"][1:])
     assert first == second
 
@@ -52,9 +51,9 @@ def test_second_call_skips_extraction_same_result(
 # --- namespace per turma (D-07) ---------------------------------------------------
 
 
-def test_namespace_isolation_no_cross_class_leak(data_root, cache_config):
-    code_a = {"shared": _JAVA_OK_A}
-    code_b = {"shared": _JAVA_EMPTY_CLASS}  # different code, same CSID
+def test_namespace_isolation_no_cross_class_leak(java_snippets, data_root, cache_config):
+    code_a = {"shared": java_snippets.ok_a}
+    code_b = {"shared": java_snippets.empty_class}  # different code, same CSID
 
     res_a = features_cache.build_cache_on_disk("turma-a", ["shared"], code_a, cache_config)
     res_b = features_cache.build_cache_on_disk("turma-b", ["shared"], code_b, cache_config)
@@ -71,11 +70,11 @@ def test_namespace_isolation_no_cross_class_leak(data_root, cache_config):
 # --- 3-way classification (D-09) --------------------------------------------------
 
 
-def test_classify_parse_three_way(cache_config):
-    assert features_cache.classify_parse(_JAVA_BAD, cache_config) == "parse_failed"
-    assert features_cache.classify_parse(_JAVA_OK_A, cache_config) == "com_paths"
+def test_classify_parse_three_way(java_snippets, cache_config):
+    assert features_cache.classify_parse(java_snippets.bad, cache_config) == "parse_failed"
+    assert features_cache.classify_parse(java_snippets.ok_a, cache_config) == "com_paths"
     assert features_cache.classify_parse("   ", cache_config) == "no_code"
-    assert features_cache.classify_parse(_JAVA_EMPTY_CLASS, cache_config) == "parsed_sem_paths"
+    assert features_cache.classify_parse(java_snippets.empty_class, cache_config) == "parsed_sem_paths"
 
 
 def test_parse_rate_excludes_no_code_from_denominator(cache_code_states, cache_config):
@@ -88,15 +87,15 @@ def test_parse_rate_excludes_no_code_from_denominator(cache_code_states, cache_c
 # --- no-leak invariant: train-only vocab still OOV on held-out (CORE-04, D-08) ----
 
 
-def test_global_cache_does_not_leak_into_train_vocab(data_root, cache_config):
-    # Cache ALL csids globally (com_paths each), then build vocab train-only.
-    code_states = {"train1": _JAVA_OK_A, "held_out": "public int z(int q) { return q * 2; }"}
-    cache_raw = features_cache.build_cache_on_disk(
+def test_global_cache_does_not_leak_into_train_vocab(java_snippets, data_root, cache_config):
+    # Cache ALL snapshot_ids globally (com_paths each), then build vocab train-only.
+    code_states = {"train1": java_snippets.ok_a, "held_out": "public int z(int q) { return q * 2; }"}
+    ast_paths_by_snapshot = features_cache.build_cache_on_disk(
         "A", ["train1", "held_out"], code_states, cache_config
     )
-    token_to_idx, path_to_idx = build_train_vocab(cache_raw, ["train1"])
+    token_to_idx, path_to_idx = build_train_only_vocabulary(ast_paths_by_snapshot, ["train1"])
 
-    held_paths = cache_raw["held_out"]
+    held_paths = ast_paths_by_snapshot["held_out"]
     assert held_paths, "held-out must have paths for the OOV check to be meaningful"
     oov = sum(
         1
@@ -109,8 +108,8 @@ def test_global_cache_does_not_leak_into_train_vocab(data_root, cache_config):
 # --- traversal guard (T-04-CSID) --------------------------------------------------
 
 
-def test_malicious_csid_cannot_escape_cache_dir(data_root, cache_config):
-    code_states = {"../../etc/x": _JAVA_OK_A}
+def test_malicious_csid_cannot_escape_cache_dir(java_snippets, data_root, cache_config):
+    code_states = {"../../etc/x": java_snippets.ok_a}
     with pytest.raises((ValueError, OSError)):
         features_cache.build_cache_on_disk("A", ["../../etc/x"], code_states, cache_config)
 

@@ -34,7 +34,7 @@ def _persist_atomic(
     """Commit atômico (D-06): Parquet FORA da txn → INSERTs dentro; falha ⇒ rmtree + ROLLBACK.
 
     Ordem load-bearing (espelha artifacts.persist): primeiro grava o(s) Parquet do stream
-    canônico (1 por AssignmentID, com as colunas exatas do seam edmkt_core — D-13), DEPOIS
+    canônico (1 por AssignmentID, com as colunas exatas do seam ml — D-13), DEPOIS
     abre a transação e insere Turma → Assignments → Submissions pelas portas da Fase 2. Em
     QUALQUER exceção, o `transaction` faz ROLLBACK e nós removemos o diretório clean/ recém-
     escrito — sem dataset meio-gravado. O Parquet fica fora da txn porque um blob de FS não

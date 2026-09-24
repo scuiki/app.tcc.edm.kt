@@ -45,8 +45,13 @@ dev = [
 where = ["src"]
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
+# Testes ficam ao lado do arquivo testado (<arquivo>_test.py, docs/ARCHITECTURE.md); tests/ guarda
+# só o teste de regressão contra o TCC 1 e os dados de exemplo.
+testpaths = ["src", "tests"]
+python_files = ["*_test.py", "test_*.py"]
+pythonpath = ["src"]
 markers = [
     "regression: AUC regression test against the TCC 1 reference run (A439, GPU + real CSEDM), needs EDMKT_CSEDM_PATH (deselect with -m 'not regression')",
 ]
-addopts = "-m 'not regression'"
+# importlib: dois *_test.py com o mesmo nome em pastas diferentes não colidem.
+addopts = "-m 'not regression' --import-mode=importlib"

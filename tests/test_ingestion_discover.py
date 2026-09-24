@@ -139,4 +139,4 @@ def test_discover_nao_importa_nucleo_nem_trava() -> None:
     }
     names = {node.id for node in ast.walk(tree) if isinstance(node, ast.Name)}
     assert "PipelineLock" not in names and "PipelineLock" not in imported
-    assert not any(m and m.startswith("edmkt_core") for m in modules)
+    assert not any(m and (m == "ml" or m.startswith("ml.")) for m in modules)

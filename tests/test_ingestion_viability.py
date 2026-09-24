@@ -114,7 +114,7 @@ def test_small_sample_avisa_mas_nao_bloqueia():
 
 
 def test_n_students_eligible_conta_so_min_3_run_program():
-    # S1 com 3 RP (elegível), S2 com 2 RP (NÃO elegível) — espelha split_by_subject.
+    # S1 com 3 RP (elegível), S2 com 2 RP (NÃO elegível) — espelha split_students_into_train_and_test.
     base = pd.Timestamp("2019-03-01T08:00:00Z")
     rows = []
     for k in range(3):

@@ -10,9 +10,10 @@ from pathlib import Path
 
 import torch
 
-from edmkt_core.config import FROZEN_CONFIG
-from edmkt_core.pipeline import code_states_from_df, split_by_subject, train_and_evaluate
-from edmkt_core.seeding import set_global_seed
+from ml.reproducibility.code_dkt_hyperparameters import CODE_DKT_HYPERPARAMETERS
+from ml.code_dkt.student_split import split_students_into_train_and_test
+from ml.code_dkt.train_and_evaluate import code_by_snapshot_id, train_and_evaluate
+from ml.reproducibility.random_seed import seed_all_random_generators
 
 from edmkt_app import data_layout, provenance
 from edmkt_app.features_cache import build_cache_on_disk, parse_rate
@@ -37,31 +38,31 @@ def _make_epoch_writer(conn, job_id: int):
 def _train_body(conn, assignment_id: int, job_id: int) -> dict:
     job_repo = repos.TrainingJobRepository(conn)
 
-    total_epochs = FROZEN_CONFIG["epochs"]
+    total_epochs = CODE_DKT_HYPERPARAMETERS["epochs"]
     job_repo.mark_running(job_id, total_epochs=total_epochs, started_at=utc_now_iso())
 
     frame = load_modeling_frame(conn, assignment_id)
     df, turma_slug, progsnap_aid = frame.events, frame.turma_slug, frame.assignment_id
 
-    train_df, test_df = split_by_subject(df)
-    config = dict(FROZEN_CONFIG)
+    train_df, test_df = split_students_into_train_and_test(df)
+    config = dict(CODE_DKT_HYPERPARAMETERS)
 
     # Aquece o cache de paths em disco (D-07): crash-safe, namespaced por turma, reaproveitado
     # no re-treino (Fase 7). A taxa de parse 3-vias (D-09) sai dos mesmos snapshots.
-    code_states = code_states_from_df(df)
+    code_states = code_by_snapshot_id(df)
     build_cache_on_disk(turma_slug, list(code_states.keys()), code_states, config)
     rate = parse_rate(list(code_states.values()), config)
 
-    set_global_seed(config["seed"], strict=False)  # D-10: não-estrito na GPU, banda ±3pp
+    seed_all_random_generators(config["seed"], strict=False)  # D-10: não-estrito na GPU, banda ±3pp
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")  # D-10/D-11
 
     result = train_and_evaluate(
         train_df,
         config=config,
         test_df=test_df,
-        # Desembrulhado para int: edmkt_core é a camada congelada e compara com df["progsnap_assignment_id"]
+        # Desembrulhado para int: ml é a camada congelada e compara com df["progsnap_assignment_id"]
         # — um VO aqui casaria com zero linhas em silêncio.
-        assignment_id=progsnap_aid.value,
+        progsnap_assignment_id=progsnap_aid.value,
         device=device,
         on_epoch=_make_epoch_writer(conn, job_id),
         n_workers=None,
@@ -71,7 +72,7 @@ def _train_body(conn, assignment_id: int, job_id: int) -> dict:
     # linha; flip_current só então aponta o ponteiro para um artefato já completo.
     persisted = ArtifactStore(str(data_layout.trained_models_dir(turma_slug))).persist(
         conn, frame.turma_id, assignment_id, result["model"], result["vocab"], config,
-        first_auc=result["first_auc"],  # DASH-05: o AUC sobrevive ao subprocess via a linha (D-05)
+        first_auc=result["first_attempt_auc"],  # DASH-05: o AUC sobrevive ao subprocess via a linha (D-05)
         git_commit=provenance.git_commit(Path.cwd()),
         data_hash=provenance.file_hash(
             data_layout.cleaned_submissions_path(turma_slug, progsnap_aid)
@@ -86,5 +87,5 @@ def _train_body(conn, assignment_id: int, job_id: int) -> dict:
     return {
         "parse_rate": rate,
         "artifact_id": persisted["artifact_id"],
-        "first_auc": result["first_auc"],
+        "first_auc": result["first_attempt_auc"],
     }

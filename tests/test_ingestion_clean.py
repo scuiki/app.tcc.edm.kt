@@ -97,7 +97,7 @@ def test_code_joined_for_valid_rows(ingest_orphan_df):
 
 
 def test_canonical_columns_match_seam_contract(ingest_orphan_df):
-    # O conjunto exato de colunas que edmkt_core consome, já com os nomes do glossário.
+    # O conjunto exato de colunas que ml consome, já com os nomes do glossário.
     raw, code_states = ingest_orphan_df
     df, _ = clean_event_stream(raw, code_states)
     assert set(df.columns) == set(CANONICAL_COLUMNS)

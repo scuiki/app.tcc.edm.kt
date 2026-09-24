@@ -1,10 +1,10 @@
 """Testes RED de mastery (DASH-01/02/03) — invariantes, não números mágicos.
 
-Pinam o contrato do módulo puro `edmkt_core.mastery` ANTES de existir (Nyquist: a
+Pinam o contrato do módulo puro `ml.mastery` ANTES de existir (Nyquist: a
 implementação dos planos 02-06 nasce GREEN contra estes testes). Filosofia herdada de
 test_artifacts.py: asseritar invariantes (ordenação, faixas nos limites, média problem→KC,
 regra de risco) em vez de valores específicos de um modelo treinado. Todos FALHAM agora com
-ImportError em `edmkt_core.mastery` — é o estado Wave 0 esperado.
+ImportError em `ml.mastery` — é o estado Wave 0 esperado.
 
 A matriz aluno×KC é construída tomando a ÚLTIMA correct_predictions por (user_id, ProblemID)
 e fazendo a MÉDIA sobre os problemas que cada KC marca (via Q-matrix) — NUNCA indexando a
@@ -20,53 +20,27 @@ import pytest
 def test_bands_classify_at_boundaries():
     # DASH-01: faixas fixas low <0.40 / medium 0.40–0.70 / high >0.70 (prototype, REQUIREMENTS:85).
     # Os limites são o que importa: 0.40 é o piso de medium, 0.70 o teto de medium.
-    from edmkt_core.mastery import classify_band
+    from edmkt_app.mastery_rules import classify_mastery_level
 
-    assert classify_band(0.0) == "low"
-    assert classify_band(0.399) == "low"
-    assert classify_band(0.40) == "medium"  # limite inferior pertence a medium
-    assert classify_band(0.55) == "medium"
-    assert classify_band(0.70) == "medium"  # 0.70 ainda é medium; só >0.70 vira high
-    assert classify_band(0.7001) == "high"
-    assert classify_band(1.0) == "high"
-
-
-def test_matrix_aggregates_problem_to_kc_by_mean():
-    # DASH-01 + Pitfall 2: a mastery de um KC é a MÉDIA das masteries dos problemas que o KC
-    # marca. Q-matrix: KC1 → {prob 1, prob 3}; KC2 → {prob 2, prob 3}.
-    # Para um aluno com problem-mastery {1: 0.2, 2: 0.8, 3: 0.6}:
-    #   KC1 = mean(0.2, 0.6) = 0.4 ; KC2 = mean(0.8, 0.6) = 0.7.
-    from edmkt_core.mastery import build_mastery_matrix
-
-    # pred_df no shape de predict_code_dkt: a ÚLTIMA linha por (user_id, ProblemID) é a mastery
-    # final daquele problema; uma 1ª tentativa anterior NÃO deve sobrescrever a última.
-    pred_df = pd.DataFrame(
-        [
-            {"student_id": "S1", "problem_id": "1", "is_correct": 0, "is_first_attempt": True,  "predicted_correct_probability": 0.9},
-            {"student_id": "S1", "problem_id": "1", "is_correct": 0, "is_first_attempt": False, "predicted_correct_probability": 0.2},  # última p/ prob 1
-            {"student_id": "S1", "problem_id": "2", "is_correct": 1, "is_first_attempt": True,  "predicted_correct_probability": 0.8},
-            {"student_id": "S1", "problem_id": "3", "is_correct": 1, "is_first_attempt": True,  "predicted_correct_probability": 0.6},
-        ]
-    )
-    qmatrix = {1: [10], 2: [20], 3: [10, 20]}  # problem_id -> [kc_id...]; KC1=10, KC2=20
-
-    matrix = build_mastery_matrix(pred_df, qmatrix)
-
-    # matrix indexável por (subject_id, kc_id) -> mastery float em [0,1].
-    assert matrix[("S1", 10)] == pytest.approx(0.4)  # mean(0.2 [última do prob1], 0.6)
-    assert matrix[("S1", 20)] == pytest.approx(0.7)  # mean(0.8, 0.6)
+    assert classify_mastery_level(0.0) == "low"
+    assert classify_mastery_level(0.399) == "low"
+    assert classify_mastery_level(0.40) == "medium"  # limite inferior pertence a medium
+    assert classify_mastery_level(0.55) == "medium"
+    assert classify_mastery_level(0.70) == "medium"  # 0.70 ainda é medium; só >0.70 vira high
+    assert classify_mastery_level(0.7001) == "high"
+    assert classify_mastery_level(1.0) == "high"
 
 
 def test_critical_kcs_ascending_by_mean_class_mastery(trained_artifact):
     # DASH-02: KCs críticos = ordenados por mastery MÉDIA da turma, ASCENDENTE (o mais fraco
     # primeiro). Duas turmas sintéticas: KC 'A' média 0.2, KC 'B' média 0.8 → A vem antes de B.
-    from edmkt_core.mastery import critical_kcs
+    from edmkt_app.mastery_rules import find_critical_knowledge_components
 
     matrix = {
         ("S1", 1): 0.1, ("S2", 1): 0.3,  # KC 1 média 0.2
         ("S1", 2): 0.7, ("S2", 2): 0.9,  # KC 2 média 0.8
     }
-    ranked = critical_kcs(matrix)
+    ranked = find_critical_knowledge_components(matrix)
 
     kc_order = [kc_id for kc_id, _mean in ranked]
     assert kc_order == [1, 2]  # ascendente: o KC de menor mastery média primeiro
@@ -77,13 +51,13 @@ def test_critical_kcs_ascending_by_mean_class_mastery(trained_artifact):
 def test_at_risk_students_below_low_band(trained_artifact):
     # DASH-03: aluno em atenção = tem >= N KCs abaixo da faixa low (<0.40). N=3 travado pelo
     # prototype (A4). S_risk tem 3 KCs <0.40 (entra); S_ok tem só 2 (não entra).
-    from edmkt_core.mastery import at_risk_students
+    from edmkt_app.mastery_rules import find_students_at_risk
 
     matrix = {
         ("S_risk", 1): 0.1, ("S_risk", 2): 0.2, ("S_risk", 3): 0.3, ("S_risk", 4): 0.9,
         ("S_ok",   1): 0.1, ("S_ok",   2): 0.2, ("S_ok",   3): 0.8, ("S_ok",   4): 0.9,
     }
-    at_risk = at_risk_students(matrix, threshold_n=3)
+    at_risk = find_students_at_risk(matrix, min_low_kcs=3)
 
     assert "S_risk" in at_risk
     assert "S_ok" not in at_risk
@@ -91,8 +65,8 @@ def test_at_risk_students_below_low_band(trained_artifact):
 
 # --- service-level: load → infer → aggregate → persist (plan 06-05, DASH-01/02/03, D-04) ---
 # A camada impura (mastery_service) orquestra ArtifactStore.load_version → predict_code_dkt →
-# Q-matrix aprovada → o SEAM puro edmkt_core.mastery → persiste em mastery_prediction. Os testes
-# abaixo pinam a DELEGAÇÃO (o serviço devolve EXATAMENTE o build_mastery_matrix puro sobre o
+# Q-matrix aprovada → o SEAM puro ml.mastery → persiste em mastery_prediction. Os testes
+# abaixo pinam a DELEGAÇÃO (o serviço devolve EXATAMENTE o aggregate_student_mastery puro sobre o
 # pred_df que ele mesmo inferiu) e o COMPUTE-ONCE (a 2ª chamada não recomputa nem duplica linhas).
 
 
@@ -107,12 +81,12 @@ def _seed_clean_parquet(ns, data_root, with_compile_errors: bool = False):
     java_b = "public int g(int a, int b) { int s = a + b; return s; }"
     java_c = "public boolean h(int n) { if (n > 0) { return true; } return false; }"
 
-    def _row(subject, problem, step, score, code, csid):
+    def _row(subject, problem, step, score, code, snapshot_id):
         return {
             "student_id": subject,
             "progsnap_assignment_id": 439,
             "problem_id": problem,
-            "code_snapshot_id": csid,
+            "code_snapshot_id": snapshot_id,
             "code": code,
             "score": score,
             "submitted_at": base + pd.Timedelta(minutes=step),
@@ -124,7 +98,7 @@ def _seed_clean_parquet(ns, data_root, with_compile_errors: bool = False):
     for si, subj in enumerate(("Sa", "Sb", "Sc")):
         plan = [(1, 0.0, java_a, "x1"), (2, 1.0, java_b, "x2"),
                 (1, 1.0, java_a, "x3"), (3, 0.0, java_c, "x4")]
-        for step, (pid, score, code, csid) in enumerate(plan):
+        for step, (pid, score, code, snapshot_id) in enumerate(plan):
             rows.append(_row(subj, pid, si * 10 + step, score, code, f"c{si}_{step}"))
         if with_compile_errors:
             # Como o canônico da Fase 3 grava de fato (ALLOWED_EVENTS, D-10): Compile.Error com
@@ -148,12 +122,12 @@ def _seed_clean_parquet(ns, data_root, with_compile_errors: bool = False):
 
 def test_service_matrix_equals_pure_seam(trained_artifact, tmp_path, monkeypatch):
     # DELEGAÇÃO (D-04): a matriz que o serviço persiste é IDÊNTICA a chamar o seam puro
-    # build_mastery_matrix sobre o pred_df que o próprio serviço inferiu + a Q-matrix aprovada —
+    # aggregate_student_mastery sobre o pred_df que o próprio serviço inferiu + a Q-matrix aprovada —
     # o serviço orquestra, não re-implementa a agregação.
     from edmkt_app import mastery_service
     from edmkt_app.mastery_service import inference
     from edmkt_app import settings
-    from edmkt_core.mastery import build_mastery_matrix
+    from ml.mastery.mastery_aggregation import aggregate_student_mastery
 
     monkeypatch.setattr(settings, "DATA_ROOT", tmp_path)
     _seed_clean_parquet(trained_artifact, tmp_path)
@@ -167,7 +141,7 @@ def test_service_matrix_equals_pure_seam(trained_artifact, tmp_path, monkeypatch
     qdict = {}
     for binding in trained_artifact.qmatrix:
         qdict.setdefault(binding.problem_id, []).append(binding.kc_id)
-    expected = build_mastery_matrix(pred_df, qdict)
+    expected = aggregate_student_mastery(pred_df, qdict)
 
     assert matrix == pytest.approx(expected)
     assert matrix  # não-vazio: a inferência produziu masteries para ao menos um (aluno, KC)
@@ -355,13 +329,13 @@ def test_inference_stream_excludes_compile_errors(trained_artifact, tmp_path, mo
     _seed_clean_parquet(trained_artifact, tmp_path, with_compile_errors=True)
 
     seen = {}
-    real_build_sequences = inference.build_sequences
+    real_build_sequences = inference.build_student_sequences
 
     def _spy(df, progsnap_aid, *args, **kwargs):
         seen["event_types"] = set(df["event_type"].unique())
         return real_build_sequences(df, progsnap_aid, *args, **kwargs)
 
-    monkeypatch.setattr(inference, "build_sequences", _spy)
+    monkeypatch.setattr(inference, "build_student_sequences", _spy)
     mastery_service.infer_predictions(trained_artifact.conn, trained_artifact.assignment_id)
 
     assert seen["event_types"] == {"Run.Program"}

@@ -6,14 +6,11 @@ from pathlib import Path
 
 import pandas as pd
 
-from edmkt_core.kc import (
-    CANDIDATE_N_CLUSTERS,
-    build_qmatrix,
-    diversity_sample,
-    generate_kcs_for_problem,
-    label_cluster,
-    select_best_n_clusters,
-)
+from ml.kc_generation.candidate_generation import generate_candidate_kcs
+from ml.kc_generation.group_naming import name_kc_group
+from ml.kc_generation.kc_grouping import CANDIDATE_GROUP_COUNTS, choose_kc_group_count
+from ml.kc_generation.qmatrix_builder import build_qmatrix
+from ml.kc_generation.solution_sampling import select_sample_solutions
 from edmkt_app import data_layout
 from edmkt_app.kc_pipeline.qmatrix_validation import _validate_qmatrix
 from edmkt_app.kc_pipeline.transport import _CachedLLM
@@ -42,27 +39,27 @@ def _kc_body(conn, assignment_id: int, job_id: int) -> dict:
     df = pd.read_parquet(pq, engine="pyarrow")
 
     # Pitfall 4: KC-gen vê só código CORRETO (a 1ª submissão correta por aluno×problema sai do
-    # diversity_sample). Filtrar aqui evita mostrar código errado ao LLM.
+    # select_sample_solutions). Filtrar aqui evita mostrar código errado ao LLM.
     correct_df = df[df["is_correct"] == 1]
     problem_ids = sorted(str(p) for p in correct_df["problem_id"].dropna().unique())
 
     cache_dir = data_layout.llm_cache_dir(turma_slug, progsnap_aid)
     gen_llm = _CachedLLM(cache_dir, stage="generate")
 
-    # Etapa 2 (por problema): amostra por diversidade → gera KCs pela porta LLM. EmptyKCError de
+    # Etapa 2 (por problema): amostra por diversidade → gera KCs pela porta LLM. NoCandidateKCsError de
     # um problema (0 KCs) sobe como falha-dura (D-04, capturada em _run_kc_pipeline).
     job_repo.update_stage(job_id, stage="generate", updated_at=utc_now_iso())
     kc_raw: dict = {}
     for pid in problem_ids:
         pdf = correct_df[correct_df["problem_id"].astype(str) == pid]
-        samples = diversity_sample(pdf, n=5)
+        samples = select_sample_solutions(pdf, n=5)
         code_samples = [s["code"] for s in samples]
-        kc_raw[pid] = generate_kcs_for_problem(int(pid), code_samples, gen_llm)
+        kc_raw[pid] = generate_candidate_kcs(int(pid), code_samples, gen_llm)
 
     # Etapa 3-4: nomes únicos de KC → clusters. Com menos nomes únicos que o MENOR candidato
     # {10,12,15} o silhouette/HAC não se aplica (CR-01, Pitfall 5 estendido): cada nome único
     # vira seu próprio cluster, sem SBERT nem chamada de labeling — caminho real p/ turmas pequenas.
-    # Este guard é o DONO da fronteira; select_best_n_clusters só roda quando há candidato viável.
+    # Este guard é o DONO da fronteira; choose_kc_group_count só roda quando há candidato viável.
     unique_names: list[str] = []
     for pid in problem_ids:
         for kc in kc_raw[pid]["kcs"]:
@@ -70,7 +67,7 @@ def _kc_body(conn, assignment_id: int, job_id: int) -> dict:
                 unique_names.append(kc["name"])
 
     job_repo.update_stage(job_id, stage="cluster", updated_at=utc_now_iso())
-    if len(unique_names) < min(CANDIDATE_N_CLUSTERS):
+    if len(unique_names) < min(CANDIDATE_GROUP_COUNTS):
         kc_to_cluster = {name: i for i, name in enumerate(unique_names)}
         cluster_names = {i: name for i, name in enumerate(unique_names)}
         n_clusters = len(unique_names)
@@ -133,11 +130,11 @@ def _cluster_and_label(unique_names: list[str], cache_dir: Path) -> tuple[int, d
     from sentence_transformers import SentenceTransformer
 
     embeddings = SentenceTransformer("all-MiniLM-L6-v2").encode(unique_names)
-    n_clusters, _scores = select_best_n_clusters(embeddings)
+    n_clusters, _scores = choose_kc_group_count(embeddings)
 
-    from edmkt_core.kc.clustering import _cluster_with_n
+    from ml.kc_generation.kc_grouping import group_similar_kcs
 
-    labels = _cluster_with_n(embeddings, n_clusters)
+    labels = group_similar_kcs(embeddings, n_clusters)
     members: dict[int, list[str]] = {}
     for name, cid in zip(unique_names, labels):
         members.setdefault(int(cid), []).append(name)
@@ -146,7 +143,7 @@ def _cluster_and_label(unique_names: list[str], cache_dir: Path) -> tuple[int, d
     kc_to_cluster: dict[str, int] = {}
     cluster_names: dict[int, str] = {}
     for cid in sorted(members):
-        labelled = label_cluster(members[cid], label_llm, cid)
+        labelled = name_kc_group(members[cid], label_llm, cid)
         cluster_names[cid] = labelled["name"]
         for name in members[cid]:
             kc_to_cluster[name] = cid

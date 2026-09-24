@@ -153,6 +153,6 @@ def test_validate_nao_importa_nucleo_nem_persistence() -> None:
         if isinstance(node, ast.ImportFrom) and node.module
     }
     assert not any(
-        m and (m.startswith("edmkt_core") or m.startswith("edmkt_app.persistence"))
+        m and (m == "ml" or m.startswith("ml.") or m.startswith("edmkt_app.persistence"))
         for m in modules
     )

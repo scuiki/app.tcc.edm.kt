@@ -1,7 +1,7 @@
 """Orquestração impura do mastery (D-04): load → infer → aggregate → persist.
 
 Camada DIP que liga o modelo Code-DKT treinado + a Q-matrix aprovada ao seam PURO
-`edmkt_core.mastery`. Toma o quadro de modelagem pronto de `modeling_frame` (nunca o Parquet
+`ml.mastery`. Toma o quadro de modelagem pronto de `modeling_frame` (nunca o Parquet
 cru — training-serving skew), recarrega o artefato, infere e mapeia ProblemID→KC pela Q-matrix.
 TODO I/O de FS/SQLite/torch vive aqui; toda agregação fica no core puro.
 

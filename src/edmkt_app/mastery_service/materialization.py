@@ -1,14 +1,14 @@
 """Compute-once: a matriz aluno×KC é materializada UMA vez por artefato e servida do SQLite.
 
 Gatilho lazy na primeira leitura do dashboard (D-65), o que mantém `train.py` intocado. A
-agregação em si é do seam PURO `edmkt_core.mastery`; aqui só há orquestração e I/O (T-06-11).
+agregação em si é do seam PURO `ml.mastery`; aqui só há orquestração e I/O (T-06-11).
 """
 
 from __future__ import annotations
 
 import sqlite3
 
-from edmkt_core.mastery import build_mastery_matrix
+from ml.mastery.mastery_aggregation import aggregate_student_mastery
 
 from edmkt_app.mastery_service import inference
 from edmkt_app.persistence import models, transaction
@@ -16,7 +16,7 @@ from edmkt_app.persistence import repositories as repos
 
 
 def _qmatrix_dict(conn: sqlite3.Connection, assignment_id: int) -> dict[int, list[int]]:
-    # Q-matrix aprovada (problem_id → [kc_id...]) no shape que o seam puro build_mastery_matrix
+    # Q-matrix aprovada (problem_id → [kc_id...]) no shape que o seam puro aggregate_student_mastery
     # consome. Um problema pode ligar vários KCs (a média problem→KC é do core, Pitfall 2).
     qdict: dict[int, list[int]] = {}
     for binding in repos.QMatrixRepository(conn).list_by_assignment(assignment_id):
@@ -40,7 +40,7 @@ def compute_mastery(
 
     Compute-once: se mastery_prediction já tem linhas para o artefato current, serve delas
     (sem re-inferir). Caso contrário, infere (infer_predictions) → constrói a matriz pelo seam
-    PURO edmkt_core.mastery.build_mastery_matrix → persiste cada (subject_id, kc_id, mastery)
+    PURO ml.mastery.aggregate_student_mastery → persiste cada (subject_id, kc_id, mastery)
     via MasteryPredictionRepository.insert keyed ao artifact_id → devolve a matriz.
     """
     # Pelo módulo, não por `from ... import`: a referência importada congela no import e o
@@ -55,7 +55,7 @@ def compute_mastery(
     # re-resolver — garante que as linhas keyed ao artifact.id e o modelo são a MESMA versão.
     pred_df = inference.infer_predictions(conn, assignment_id, artifact=artifact)
     qdict = _qmatrix_dict(conn, assignment_id)
-    matrix = build_mastery_matrix(pred_df, qdict)  # agregação no core puro (DIP)
+    matrix = aggregate_student_mastery(pred_df, qdict)  # agregação no core puro (DIP)
 
     # CR-01: a conn está em autocommit (isolation_level=None, db.py); sem uma transação
     # explícita CADA insert commitaria sozinho e uma falha no meio do loop deixaria um cache

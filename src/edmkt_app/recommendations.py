@@ -1,12 +1,12 @@
 # Pure reinforcement-ranking in the qmatrix.py style: list/dict in → list out, deterministic.
 # D-07: recommendations are a pure ranking — ZERO LLM here (any `import anthropic` is a bug).
-# Reuses the critical-KC ordering rule from edmkt_core.mastery (weakest mean mastery first).
+# Reuses the critical-KC ordering rule from mastery_rules (weakest mean mastery first).
 
 from __future__ import annotations
 
 # Templated pt-BR guidance keyed to the weakest KCs; the band word comes from the same cutoffs the
 # mastery aggregation classifies against, so message and dashboard agree.
-from edmkt_core.mastery import classify_band
+from edmkt_app.mastery_rules import classify_mastery_level
 
 _BAND_GUIDANCE = {
     "low": "domínio baixo na turma — priorize reforço",
@@ -26,7 +26,7 @@ def recommend_reinforcement(
 
     recs = []
     for kc_id, kc_name, mean_mastery in ranked:
-        guidance = _BAND_GUIDANCE[classify_band(mean_mastery)]
+        guidance = _BAND_GUIDANCE[classify_mastery_level(mean_mastery)]
         recs.append(
             {
                 "kc_id": kc_id,

@@ -10,7 +10,7 @@ from edmkt_app.persistence import repositories as repos
 def _run_kc_pipeline(conn, assignment_id: int, job_id: int) -> dict | None:
     """Roda o KC-gen sob a trava — nunca concorre com o treino (D-05/MODEL-03).
 
-    Em falha de conteúdo (EmptyContentError/EmptyKCError) ou qualquer outra exceção, o job falha e
+    Em falha de conteúdo (EmptyContentError/NoCandidateKCsError) ou qualquer outra exceção, o job falha e
     NADA parcial é persistido (D-04): a transação de persistência nem chegou a abrir, ou deu
     ROLLBACK. O assignment segue sem KCs (nunca foi flipado).
     """

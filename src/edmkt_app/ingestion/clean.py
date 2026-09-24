@@ -1,12 +1,12 @@
 """Estágio C da ingestão: o stream de eventos canônico (D-10/D-11/D-12).
 
-A ingestão é a DONA deste stream — foi verificado no código do núcleo que `edmkt_core` NÃO
-filtra EventType (exceto `Run.Program` para a elegibilidade min_attempts em `split_by_subject`),
+A ingestão é a DONA deste stream — foi verificado no código do núcleo que `ml` NÃO
+filtra EventType (exceto `Run.Program` para a elegibilidade min_attempts em `split_students_into_train_and_test`),
 NÃO binariza o Score e NÃO trata CodeStateID órfão. Logo o dedup, a binarização e a integridade
 referencial são responsabilidade EXCLUSIVA desta fase: sem esta limpeza explícita, "suporta
 ProgSnap2" silenciosamente vira "suporta só o shape do CSEDM" (Pitfall 1).
 
-Módulo puro (DataFrame-in → DataFrame canônico + avisos-out): sem I/O, sem SQL, sem edmkt_core.
+Módulo puro (DataFrame-in → DataFrame canônico + avisos-out): sem I/O, sem SQL, sem ml.
 Análogo EXATO: `../tcc.edm.kt/src/data_loader.py::filter_for_code_dkt`.
 """
 
@@ -31,7 +31,7 @@ PROGSNAP_TO_CLEANED_COLUMNS = {
     "EventType": "event_type",
 }
 
-# Contrato de colunas do dado limpo: exatamente o que build_sequences/train_and_evaluate consomem.
+# Contrato de colunas do dado limpo: exatamente o que build_student_sequences/train_and_evaluate consomem.
 # A ordem é estável para o Parquet.
 CANONICAL_COLUMNS = [*PROGSNAP_TO_CLEANED_COLUMNS.values(), "is_correct"]
 

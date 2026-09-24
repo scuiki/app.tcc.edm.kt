@@ -11,11 +11,11 @@ import sqlite3
 
 import pandas as pd
 
-from edmkt_core.config import FROZEN_CONFIG
-from edmkt_core.evaluation import build_problem_index
-from edmkt_core.pipeline import code_state_ids, code_states_from_df
-from edmkt_core.models.code_dkt import predict_code_dkt
-from edmkt_core.sequences import build_sequences
+from ml.reproducibility.code_dkt_hyperparameters import CODE_DKT_HYPERPARAMETERS
+from ml.code_dkt.problem_index import build_problem_index
+from ml.code_dkt.train_and_evaluate import code_by_snapshot_id, code_snapshot_ids
+from ml.code_dkt.prediction import predict_code_dkt
+from ml.code_dkt.student_sequences import build_student_sequences
 
 from edmkt_app import data_layout
 from edmkt_app.features_cache import build_cache_on_disk
@@ -53,8 +53,8 @@ def infer_predictions(
 
     Recarrega o modelo E o vocab via `load_version` (weights_only=True) — o vocab NUNCA é
     reconstruído (mesma garantia de pipeline.py: o reload é a fonte). As entradas de
-    inferência são montadas na mesma ordem de pipeline.train_and_evaluate: build_sequences →
-    build_cache (paths crus) → build_problem_index. Devolve o pred_df cru (user_id, skill_name,
+    inferência são montadas na mesma ordem de pipeline.train_and_evaluate: build_student_sequences →
+    extract_ast_paths_for_snapshots (paths crus) → build_problem_index. Devolve o pred_df cru (user_id, skill_name,
     correct, is_first_attempt, correct_predictions) — sem tocar o banco.
 
     WR-02: aceita um `artifact` já resolvido. compute_mastery resolve UMA vez e o thread aqui,
@@ -82,19 +82,19 @@ def infer_predictions(
 
     # Mesma montagem de pipeline.py: sequências completas → cache de paths crus → índice de
     # problemas global. O vocab vem do artefato (meta/vocab), nunca reconstruído (CORE-04).
-    # .value: build_sequences é do core congelado e filtra df["progsnap_assignment_id"] pelo int.
-    sequences = build_sequences(df, progsnap_aid.value)
+    # .value: build_student_sequences é do core congelado e filtra df["progsnap_assignment_id"] pelo int.
+    sequences = build_student_sequences(df, progsnap_aid.value)
     # O mesmo cache de paths em disco que o treino aqueceu: os snapshots já extraídos não são
     # extraídos de novo. Os parâmetros de extração são os do meta do artefato, completados pelos
     # hiperparâmetros congelados (que são os defaults com que todo artefato foi treinado).
-    cache_raw = build_cache_on_disk(
+    ast_paths_by_snapshot = build_cache_on_disk(
         frame.turma_slug,
-        sorted(set(code_state_ids(sequences))),
-        code_states_from_df(df),
-        {**FROZEN_CONFIG, **meta},
+        sorted(set(code_snapshot_ids(sequences))),
+        code_by_snapshot_id(df),
+        {**CODE_DKT_HYPERPARAMETERS, **meta},
     )
     problem_to_idx = build_problem_index(sequences)
 
     return predict_code_dkt(
-        model, sequences, problem_to_idx, vocab, cache_raw, max_len=max_len, R=R
+        model, sequences, problem_to_idx, vocab, ast_paths_by_snapshot, max_len=max_len, R=R
     )

@@ -1,7 +1,7 @@
 """Persistence layer for EDM·KT (SQLite + filesystem, D-03).
 
 Public surface = the DIP boundary the FastAPI app depends inward on. The scientific core
-(edmkt_core) is framework-free and NEVER imports from here; this package owns all SQLite
+(ml) is framework-free and NEVER imports from here; this package owns all SQLite
 and filesystem I/O.
 """
 

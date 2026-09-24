@@ -3,7 +3,7 @@
 Alimenta os cards de visão geral da tela de upload: contagens de alunos/assignments/problemas/
 submissões derivadas do stream canônico.
 
-Módulo puro (DataFrame-in → dict/list-out): sem I/O, sem SQL, sem import de edmkt_core.
+Módulo puro (DataFrame-in → dict/list-out): sem I/O, sem SQL, sem import de ml.
 """
 
 from __future__ import annotations
