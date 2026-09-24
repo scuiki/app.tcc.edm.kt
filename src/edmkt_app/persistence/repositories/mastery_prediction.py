@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import sqlite3
-from typing import Optional
 
 from edmkt_app.persistence import models
 
@@ -24,22 +23,6 @@ class MasteryPredictionRepository:
             ),
         )
         return cur.lastrowid
-
-    def get(self, prediction_id: int) -> Optional[models.MasteryPrediction]:
-        row = self._conn.execute(
-            "SELECT id, model_artifact_id, subject_id, kc_id, mastery "
-            "FROM mastery_prediction WHERE id = ?;",
-            (prediction_id,),
-        ).fetchone()
-        if row is None:
-            return None
-        return models.MasteryPrediction(
-            id=row["id"],
-            model_artifact_id=row["model_artifact_id"],
-            subject_id=row["subject_id"],
-            kc_id=row["kc_id"],
-            mastery=row["mastery"],
-        )
 
     def count_by_artifact(self, model_artifact_id: int) -> int:
         # Compute-once (T-06-11): o serviço de mastery checa se a matriz já foi materializada

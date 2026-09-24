@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import sqlite3
-from typing import Optional
 
 from edmkt_app.persistence import models
 
@@ -19,40 +18,10 @@ class QMatrixRepository:
         )
         return cur.lastrowid
 
-    def get(self, qmatrix_id: int) -> Optional[models.QMatrix]:
-        row = self._conn.execute(
-            "SELECT id, assignment_id, kc_id, problem_id FROM qmatrix WHERE id = ?;",
-            (qmatrix_id,),
-        ).fetchone()
-        if row is None:
-            return None
-        return models.QMatrix(
-            id=row["id"],
-            assignment_id=row["assignment_id"],
-            kc_id=row["kc_id"],
-            problem_id=row["problem_id"],
-        )
-
     def list_by_assignment(self, assignment_id: int) -> list[models.QMatrix]:
         rows = self._conn.execute(
             "SELECT id, assignment_id, kc_id, problem_id FROM qmatrix WHERE assignment_id = ?;",
             (assignment_id,),
-        ).fetchall()
-        return [
-            models.QMatrix(
-                id=r["id"],
-                assignment_id=r["assignment_id"],
-                kc_id=r["kc_id"],
-                problem_id=r["problem_id"],
-            )
-            for r in rows
-        ]
-
-    def list_by_problem(self, assignment_id: int, problem_id: int) -> list[models.QMatrix]:
-        rows = self._conn.execute(
-            "SELECT id, assignment_id, kc_id, problem_id FROM qmatrix "
-            "WHERE assignment_id = ? AND problem_id = ?;",
-            (assignment_id, problem_id),
         ).fetchall()
         return [
             models.QMatrix(

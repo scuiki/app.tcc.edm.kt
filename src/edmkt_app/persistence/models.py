@@ -91,10 +91,8 @@ class TrainingJob:
     assignment_id: int
     status: str
     created_at: str
-    # Progresso por-época (D-06): nascem None; a CLI de treino preenche via update_progress/mark_*.
-    current_epoch: Optional[int] = None
+    # O progresso por época vive em training_metric; aqui só o total, gravado no mark_running.
     total_epochs: Optional[int] = None
-    train_loss: Optional[float] = None
     started_at: Optional[str] = None
     updated_at: Optional[str] = None
     error_message: Optional[str] = None

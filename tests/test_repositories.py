@@ -63,15 +63,13 @@ def test_eight_entities_roundtrip(tmp_db):
         created_at="2026-06-21T00:00:00Z",
     )
     sub_id = repos.SubmissionRepository(conn).insert(submission)
-    assert repos.SubmissionRepository(conn).get(sub_id) == models.Submission(
-        id=sub_id,
-        assignment_id=assignment_id,
-        code_state_id="cs1",
-        subject_id="S1",
-        problem_id=1,
-        score=1.0,
-        created_at="2026-06-21T00:00:00Z",
-    )
+    # Sem get(): a produção só insere submissões; o round-trip é conferido direto na tabela.
+    row = conn.execute(
+        "SELECT assignment_id, code_state_id, subject_id, problem_id, score, created_at "
+        "FROM submission WHERE id = ?;",
+        (sub_id,),
+    ).fetchone()
+    assert tuple(row) == (assignment_id, "cs1", "S1", 1, 1.0, "2026-06-21T00:00:00Z")
 
     kc = models.KC(id=None, assignment_id=assignment_id, name="laços")
     kc_id = repos.KCRepository(conn).insert(kc)
@@ -81,9 +79,9 @@ def test_eight_entities_roundtrip(tmp_db):
 
     qm = models.QMatrix(id=None, assignment_id=assignment_id, kc_id=kc_id, problem_id=1)
     qm_id = repos.QMatrixRepository(conn).insert(qm)
-    assert repos.QMatrixRepository(conn).get(qm_id) == models.QMatrix(
-        id=qm_id, assignment_id=assignment_id, kc_id=kc_id, problem_id=1
-    )
+    assert repos.QMatrixRepository(conn).list_by_assignment(assignment_id) == [
+        models.QMatrix(id=qm_id, assignment_id=assignment_id, kc_id=kc_id, problem_id=1)
+    ]
 
     artifact = models.ModelArtifact(
         id=None,
@@ -107,9 +105,11 @@ def test_eight_entities_roundtrip(tmp_db):
         id=None, model_artifact_id=art_id, subject_id="S1", kc_id=kc_id, mastery=0.75
     )
     m_id = repos.MasteryPredictionRepository(conn).insert(mastery)
-    assert repos.MasteryPredictionRepository(conn).get(m_id) == models.MasteryPrediction(
-        id=m_id, model_artifact_id=art_id, subject_id="S1", kc_id=kc_id, mastery=0.75
-    )
+    assert repos.MasteryPredictionRepository(conn).list_by_artifact(art_id) == [
+        models.MasteryPrediction(
+            id=m_id, model_artifact_id=art_id, subject_id="S1", kc_id=kc_id, mastery=0.75
+        )
+    ]
 
     job = models.TrainingJob(
         id=None, assignment_id=assignment_id, status="pending", created_at="2026-06-21T00:00:00Z"
@@ -195,7 +195,8 @@ def test_submission_event_type_roundtrip(tmp_db):
         event_type="Run.Program",
     )
     sub_id = repos.SubmissionRepository(conn).insert(sub)
-    assert repos.SubmissionRepository(conn).get(sub_id).event_type == "Run.Program"
+    row = conn.execute("SELECT event_type FROM submission WHERE id = ?;", (sub_id,)).fetchone()
+    assert row["event_type"] == "Run.Program"
 
 
 def test_kc_index_roundtrip(tmp_db):

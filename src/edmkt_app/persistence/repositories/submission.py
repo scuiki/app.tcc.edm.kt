@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import sqlite3
-from typing import Optional
 
 from edmkt_app.persistence import models
 
@@ -28,23 +27,3 @@ class SubmissionRepository:
             ),
         )
         return cur.lastrowid
-
-    def get(self, submission_id: int) -> Optional[models.Submission]:
-        row = self._conn.execute(
-            "SELECT id, assignment_id, code_state_id, subject_id, problem_id, score, "
-            "created_at, event_type "
-            "FROM submission WHERE id = ?;",
-            (submission_id,),
-        ).fetchone()
-        if row is None:
-            return None
-        return models.Submission(
-            id=row["id"],
-            assignment_id=row["assignment_id"],
-            code_state_id=row["code_state_id"],
-            subject_id=row["subject_id"],
-            problem_id=row["problem_id"],
-            score=row["score"],
-            created_at=row["created_at"],
-            event_type=row["event_type"],
-        )

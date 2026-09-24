@@ -21,7 +21,6 @@ from edmkt_app import settings
 from edmkt_app.ingestion import clean, discover, summary, validate, viability
 from edmkt_app.ingestion.persist import _persist_atomic
 from edmkt_app.ingestion.report import IngestReport, ReportItem
-from edmkt_app.persistence import repositories as repos
 from edmkt_app.persistence.lock import PipelineLock
 
 def _now_iso() -> str:
@@ -30,12 +29,11 @@ def _now_iso() -> str:
 
 def _empty_report(items: list[ReportItem]) -> IngestReport:
     # Relatório que NÃO persistiu nada (busy ou fatal no pré-voo): contagens zeradas, sem
-    # per_assignment nem preview. has_fatal continua governado por `items`.
+    # per_assignment. has_fatal continua governado por `items`.
     return IngestReport(
         items=items,
         dataset_summary={"n_students": 0, "n_assignments": 0, "n_problems": 0, "n_submissions": 0},
         per_assignment=[],
-        main_table_preview=[],
     )
 
 
@@ -76,7 +74,7 @@ def ingest(
     Adquire a PipelineLock AQUI (não na detecção): a trava protege o estado COMPARTILHADO
     (SQLite/FS), que só é tocado a partir da persistência. Trava ocupada por dono vivo ⇒
     devolve relatório "busy" sem persistir. Dentro do `with lock:` roda validate → (fatal ⇒
-    aborta sem persistir, D-06) → clean → assess_viability → build_summary/preview, depois
+    aborta sem persistir, D-06) → clean → assess_viability → build_summary, depois
     persiste atomicamente. O `with` garante release ao sair, inclusive sob exceção (SC3).
     """
     lock = PipelineLock(conn).acquire("ingestion", job_id=None)
@@ -120,15 +118,13 @@ def _ingest_locked(
     per_assignment, viability_items = viability.assess_viability(canonical)
     items.extend(viability_items)
 
-    # Visão geral (INGEST-02): contagens do stream canônico + preview cru da MainTable (sem Code).
+    # Visão geral (INGEST-02): contagens do stream canônico.
     dataset_summary = summary.build_summary(canonical)
-    main_table_preview = summary.build_preview(main_df)
 
     report = IngestReport(
         items=items,
         dataset_summary=dataset_summary,
         per_assignment=per_assignment,
-        main_table_preview=main_table_preview,
     )
 
     # E. Persistência atômica. Mapeia trainable por AssignmentID (ProgSnap2) do gate.

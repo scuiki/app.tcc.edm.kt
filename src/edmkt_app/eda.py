@@ -27,11 +27,6 @@ RUN_EVENT = "Run.Program"
 COMPILE_ERROR_EVENT = "Compile.Error"
 
 
-# Semente do protocolo congelado (Code-DKT, Shi et al. 2022) — reusada pelos clusters opcionais
-# para que o KMeans seja determinístico. EDA não treina modelo; só agrega.
-SEED = 42
-
-
 def _read_canonical(pq: Path | str) -> pd.DataFrame:
     # Único ponto de I/O do módulo (T-06-05): o caminho vem de IDs int + _slug/_progsnap_aid
     # internos, NUNCA de caminho de cliente; o read não carrega artefato de modelo (D-06).
@@ -92,34 +87,3 @@ def learning_curve(pq: Path | str) -> dict[int, float]:
 def compile_error_rate_by_assignment(pq: Path | str) -> dict[int, float]:
     """Taxa de compile-error por AssignmentID = Compile.Error por tentativa (CE_count/Run_count)."""
     return _compile_error_rate_by_assignment(_read_canonical(pq))
-
-
-# --- Profile clusters: SÓ features do Parquet, degrada sem X-Grade (D-06, Pitfall 3) ----
-
-
-def _student_features(df: pd.DataFrame) -> pd.DataFrame:
-    runs = df[df["EventType"] == RUN_EVENT]
-    g = runs.groupby("SubjectID")
-    return pd.DataFrame(
-        {
-            "correct_rate": g["correct"].mean(),
-            "attempt_count": g.size(),
-            "completion": g["correct"].max(),  # chegou a passar ao menos um Run.Program
-        }
-    )
-
-
-def profile_clusters(pq: Path | str, n_clusters: int = 3) -> dict[str, int] | None:
-    """Agrupa alunos por features DERIVÁVEIS do Parquet (sem Subject.csv / X-Grade).
-
-    D-06: não constrói os clusters completos do KCGen — só os perfis de esforço/acerto que o
-    Parquet permite. Degrada limpo (retorna None) quando há alunos de menos para n_clusters.
-    """
-    feats = _student_features(_read_canonical(pq))
-    if len(feats) < n_clusters:
-        return None  # features esparsas demais — sem X-Grade não há como adensar (degrada).
-
-    from sklearn.cluster import KMeans
-
-    labels = KMeans(n_clusters=n_clusters, random_state=SEED, n_init=10).fit_predict(feats.values)
-    return {str(sid): int(lab) for sid, lab in zip(feats.index, labels)}

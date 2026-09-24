@@ -12,8 +12,7 @@ from __future__ import annotations
 
 import pytest
 
-# RED: módulo de validação/retry ainda não existe (gate da Wave 1).
-from edmkt_app.llm.claude_cli import (  # noqa: E402
+from edmkt_app.llm.validation import (  # noqa: E402
     EmptyContentError,
     TransientLLMError,
     call_with_retry,

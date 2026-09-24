@@ -6,14 +6,11 @@ import sqlite3
 from typing import Optional
 
 
-
 class TrainingMetricRepository:
     """Série append-only de (época, loss) por job — a curva de treino.
 
-    Substitui o UPDATE que sobrescrevia training_job.train_loss a cada época: o progresso
-    corrente passa a ser DERIVADO da última linha, em vez de um campo mutável mantido em
-    paralelo. As colunas training_job.current_epoch/train_loss ficam como resíduo da migração
-    0008 e não são mais a fonte.
+    O progresso corrente é DERIVADO da última linha, em vez de um campo mutável mantido em
+    paralelo em training_job.
     """
 
     def __init__(self, conn: sqlite3.Connection) -> None:

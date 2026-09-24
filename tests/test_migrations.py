@@ -342,27 +342,10 @@ def test_training_job_born_null_progress(tmp_path):
 
     job = repositories.TrainingJobRepository(conn).get(job_id)
     assert job is not None
-    assert job.current_epoch is None
     assert job.total_epochs is None
-    assert job.train_loss is None
     assert job.started_at is None
     assert job.updated_at is None
     assert job.error_message is None
-
-
-def test_training_job_update_progress_roundtrip(tmp_path):
-    from edmkt_app.persistence import repositories
-
-    conn = connect(str(tmp_path / "app.db"))
-    run_migrations(conn)
-    repo = repositories.TrainingJobRepository(conn)
-    job_id = _seed_training_job(conn)
-
-    repo.update_progress(job_id, current_epoch=5, train_loss=0.42, updated_at="2026-01-01T00:05:00Z")
-    job = repo.get(job_id)
-    assert job.current_epoch == 5
-    assert job.train_loss == 0.42
-    assert job.updated_at == "2026-01-01T00:05:00Z"
 
 
 def test_training_job_mark_transitions(tmp_path):

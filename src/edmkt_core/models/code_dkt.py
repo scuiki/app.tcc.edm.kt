@@ -17,11 +17,9 @@ import numpy as np
 import pandas as pd
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from torch import Tensor
 
 from edmkt_core.features import build_code_input_tensor
-from edmkt_core.evaluation import compute_auc
 from edmkt_core.models._dkt_loss import dkt_loss
 
 
@@ -253,41 +251,3 @@ def predict_code_dkt(
             })
 
     return pd.DataFrame(rows)
-
-
-def train_and_evaluate(
-    train_sequences: list[dict],
-    test_sequences: list[dict],
-    problem_to_idx: dict[int, int],
-    vocab: dict,
-    config: dict,
-    cache_raw: dict[str, list],
-    seed: int = 42,
-) -> dict:
-    #Pipeline completo: treina, prediz e calcula AUC para um assignment.
-
-    max_len = config.get("max_len", 50)
-    R = config.get("R", 50)
-
-    model = train_code_dkt(
-        train_sequences, problem_to_idx, vocab, config, cache_raw, seed=seed
-    )
-    pred_df = predict_code_dkt(
-        model, test_sequences, problem_to_idx, vocab, cache_raw,
-        max_len=max_len, R=R,
-    )
-
-    n_train_events = sum(
-        min(len(s["events"]), max_len) for s in train_sequences
-    )
-    n_test_events = len(pred_df)
-
-    return {
-        "model": model,
-        "config": config,
-        "all_auc": compute_auc(pred_df, first_attempt_only=False),
-        "first_auc": compute_auc(pred_df, first_attempt_only=True),
-        "n_train_events": n_train_events,
-        "n_test_events": n_test_events,
-        "pred_df": pred_df,
-    }

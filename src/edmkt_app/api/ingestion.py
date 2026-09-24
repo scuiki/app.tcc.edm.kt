@@ -14,7 +14,6 @@ import tempfile
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
-from pydantic import BaseModel
 
 from edmkt_app.api.deps import get_conn
 from edmkt_app.api.deps import process_ingestion_uc

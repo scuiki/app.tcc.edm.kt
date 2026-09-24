@@ -2,7 +2,7 @@
 
 Testes puros (sem I/O, sem SQLite, sem GPU): asseguram invariantes do contrato — has_fatal
 deriva da presença de ≥1 item fatal, ReportItem é write-once (frozen), e o IngestReport
-preserva preview + per_assignment. Nada de valores mágicos de AUC (Pitfall 2).
+preserva per_assignment. Nada de valores mágicos de AUC (Pitfall 2).
 """
 
 from __future__ import annotations
@@ -15,7 +15,7 @@ from edmkt_app.ingestion.report import AssignmentSummary, IngestReport, ReportIt
 
 
 def _empty_report(items) -> IngestReport:
-    return IngestReport(items=items, dataset_summary={}, per_assignment=[], main_table_preview=[])
+    return IngestReport(items=items, dataset_summary={}, per_assignment=[])
 
 
 def test_has_fatal_true_when_any_fatal_item():
@@ -43,7 +43,7 @@ def test_report_item_is_frozen():
         item.severity = "fatal"  # type: ignore[misc]
 
 
-def test_ingest_report_preserves_preview_and_per_assignment():
+def test_ingest_report_preserves_per_assignment():
     summary = AssignmentSummary(
         assignment_id=439,
         n_students_eligible=300,
@@ -56,9 +56,7 @@ def test_ingest_report_preserves_preview_and_per_assignment():
         items=[],
         dataset_summary={"n_students": 300, "n_assignments": 1},
         per_assignment=[summary],
-        main_table_preview=[{"SubjectID": "S1", "ProblemID": 1}],
     )
     assert report.per_assignment[0].trainable is True
     assert report.per_assignment[0].reasons == []
-    assert report.main_table_preview[0]["SubjectID"] == "S1"
     assert report.dataset_summary["n_assignments"] == 1
