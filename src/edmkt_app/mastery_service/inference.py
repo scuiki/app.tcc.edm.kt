@@ -11,12 +11,14 @@ import sqlite3
 
 import pandas as pd
 
+from edmkt_core.config import FROZEN_CONFIG
 from edmkt_core.evaluation import build_problem_index
-from edmkt_core.features import build_cache
+from edmkt_core.pipeline import code_state_ids, code_states_from_df
 from edmkt_core.models.code_dkt import predict_code_dkt
 from edmkt_core.sequences import build_sequences
 
 from edmkt_app import data_layout
+from edmkt_app.features_cache import build_cache_on_disk
 from edmkt_app.modeling_frame import load_modeling_frame
 from edmkt_app.persistence import models
 from edmkt_app.persistence import repositories as repos
@@ -82,18 +84,14 @@ def infer_predictions(
     # problemas global. O vocab vem do artefato (meta/vocab), nunca reconstruído (CORE-04).
     # .value: build_sequences é do core congelado e filtra df["AssignmentID"] pelo int.
     sequences = build_sequences(df, progsnap_aid.value)
-    code_states = dict(zip(df["CodeStateID"].astype(str), df["Code"].fillna("")))
-    all_csids: set[str] = set()
-    for seq in sequences:
-        all_csids.update(seq["events"]["CodeStateID"].astype(str).tolist())
-    cache_raw = build_cache(
-        sorted(all_csids),
-        code_states,
-        max_path_length=meta.get("max_path_length", 8),
-        max_path_width=meta.get("max_path_width", 2),
-        R=R,
-        seed=meta.get("seed", 42),
-        n_workers=None,
+    # O mesmo cache de paths em disco que o treino aqueceu: os snapshots já extraídos não são
+    # extraídos de novo. Os parâmetros de extração são os do meta do artefato, completados pelos
+    # hiperparâmetros congelados (que são os defaults com que todo artefato foi treinado).
+    cache_raw = build_cache_on_disk(
+        frame.turma_slug,
+        sorted(set(code_state_ids(sequences))),
+        code_states_from_df(df),
+        {**FROZEN_CONFIG, **meta},
     )
     problem_to_idx = build_problem_index(sequences)
 

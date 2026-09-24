@@ -10,6 +10,12 @@ contrato.
 """
 
 from edmkt_core.pipeline.partitioning import build_train_vocab, split_by_subject
-from edmkt_core.pipeline.training import train_and_evaluate
+from edmkt_core.pipeline.training import code_state_ids, code_states_from_df, train_and_evaluate
 
-__all__ = ["build_train_vocab", "split_by_subject", "train_and_evaluate"]
+__all__ = [
+    "build_train_vocab",
+    "code_state_ids",
+    "code_states_from_df",
+    "split_by_subject",
+    "train_and_evaluate",
+]

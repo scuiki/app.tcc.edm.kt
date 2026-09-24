@@ -136,7 +136,7 @@ def csedm_main_table() -> pd.DataFrame:
     (ServerTimestamp -> UTC datetime, AssignmentID/ProblemID -> Int64).
 
     split_by_subject(random_state=1, min_attempts=3) then reproduces the reference
-    partition (Pitfall 3); the Code column flows into _code_states_from_df and `correct`
+    partition (Pitfall 3); the Code column flows into code_states_from_df and `correct`
     into build_code_input_tensor/predict.
     """
     data_dir = _resolve_csedm_path()
@@ -152,7 +152,7 @@ def csedm_main_table() -> pd.DataFrame:
     df["correct"] = (df["Score"] == 1.0).astype(int)
 
     # Join the Java snapshot per event (CodeStateID -> Code) so the pure-DataFrame seam
-    # (_code_states_from_df) sees inline code without reading a CSEDM path itself (CORE-01).
+    # (code_states_from_df) sees inline code without reading a CSEDM path itself (CORE-01).
     code_states = pd.read_csv(data_dir / "CodeStates" / "CodeStates.csv")
     code_map = dict(zip(code_states["CodeStateID"].astype(str), code_states["Code"].fillna("")))
     df["Code"] = df["CodeStateID"].astype(str).map(code_map).fillna("")
