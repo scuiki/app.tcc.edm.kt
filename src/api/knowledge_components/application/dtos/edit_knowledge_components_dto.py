@@ -45,6 +45,17 @@ class RemovedKnowledgeComponentDTO(BaseModel):
     deleted_kc_id: int
 
 
+class ProblemKnowledgeComponentDTO(BaseModel):
+    kc_id: int
+    problem_id: int  # o ProblemID do dataset
+
+
+class RemovedProblemKnowledgeComponentDTO(BaseModel):
+    kc_id: int
+    problem_id: int
+    knowledge_component_removed: bool  # o KC perdeu o último problema e saiu junto
+
+
 class MergedKnowledgeComponentsDTO(BaseModel):
     keep_kc_id: int
     drop_kc_id: int

@@ -17,6 +17,7 @@ from api.knowledge_components.domain.interfaces.problem_knowledge_component_repo
     IProblemKnowledgeComponentRepository,
 )
 from api.shared.application.interfaces.unit_of_work import IUnitOfWork
+from api.shared.application.services.clock import utc_now_iso
 from api.shared.application.use_cases.write_use_case import WriteUseCase
 from api.shared.domain.errors.not_found import NotFound
 
@@ -40,9 +41,10 @@ class RemoveKnowledgeComponentUseCase(WriteUseCase):
             raise NotFound("KC inexistente")
         # Problemas que este KC liga, colhidos antes de remover, só eles podem ficar sem KC.
         affected_problems = self._problem_kcs.problems_of(dto.kc_id)
+        removed_at = utc_now_iso()
         with self._unit_of_work:
-            self._problem_kcs.delete_bindings_of(dto.kc_id)
-            self._knowledge_components.delete(dto.kc_id)
+            self._problem_kcs.remove_all_of(dto.kc_id, removed_at)
+            self._knowledge_components.remove(dto.kc_id, removed_at)
             ensure_every_problem_keeps_a_kc(
                 self._problem_kcs, knowledge_component.assignment_id, affected_problems
             )  # levanta dentro da transação, o que desfaz a remoção

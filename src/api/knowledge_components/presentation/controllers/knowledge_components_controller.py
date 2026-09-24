@@ -16,7 +16,9 @@ from api.knowledge_components.application.dtos.edit_knowledge_components_dto imp
     KnowledgeComponentDTO,
     MergedKnowledgeComponentsDTO,
     MergeKnowledgeComponentsDTO,
+    ProblemKnowledgeComponentDTO,
     RemovedKnowledgeComponentDTO,
+    RemovedProblemKnowledgeComponentDTO,
     RemoveKnowledgeComponentDTO,
     RenameKnowledgeComponentBody,
     RenameKnowledgeComponentDTO,
@@ -48,6 +50,12 @@ from api.knowledge_components.application.dtos.start_kc_generation_dto import (
 )
 from api.knowledge_components.application.use_cases.start_kc_generation_use_case import (
     StartKnowledgeComponentGenerationUseCase,
+)
+from api.knowledge_components.application.use_cases.add_problem_knowledge_component_use_case import (
+    AddProblemKnowledgeComponentUseCase,
+)
+from api.knowledge_components.application.use_cases.remove_problem_knowledge_component_use_case import (
+    RemoveProblemKnowledgeComponentUseCase,
 )
 from api.knowledge_components.presentation import dependencies
 
@@ -133,3 +141,34 @@ def approve_knowledge_components(
     use_case: ApproveKnowledgeComponentsUseCase = Depends(dependencies.approve_knowledge_components_use_case),
 ) -> ApprovedKnowledgeComponentsDTO:
     return use_case.execute(body)
+
+
+@router.post(
+    "/{kc_id}/problems/{problem_id}",
+    status_code=201,
+    response_model=ProblemKnowledgeComponentDTO,
+    description="Liga um KC que já existe a mais um problema do mesmo assignment.",
+)
+def add_problem_knowledge_component(
+    kc_id: int,
+    problem_id: int,
+    use_case: AddProblemKnowledgeComponentUseCase = Depends(
+        dependencies.add_problem_knowledge_component_use_case
+    ),
+) -> ProblemKnowledgeComponentDTO:
+    return use_case.execute(ProblemKnowledgeComponentDTO(kc_id=kc_id, problem_id=problem_id))
+
+
+@router.delete(
+    "/{kc_id}/problems/{problem_id}",
+    response_model=RemovedProblemKnowledgeComponentDTO,
+    description="Tira o KC de um problema só; se ele perder o último problema, sai junto.",
+)
+def remove_problem_knowledge_component(
+    kc_id: int,
+    problem_id: int,
+    use_case: RemoveProblemKnowledgeComponentUseCase = Depends(
+        dependencies.remove_problem_knowledge_component_use_case
+    ),
+) -> RemovedProblemKnowledgeComponentDTO:
+    return use_case.execute(ProblemKnowledgeComponentDTO(kc_id=kc_id, problem_id=problem_id))

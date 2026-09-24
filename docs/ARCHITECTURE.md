@@ -104,6 +104,13 @@ docker run --rm --security-opt label=disable -v "$PWD":/app -w /app edmkt-core:d
   `shared/domain/errors/`) não conhecem HTTP; `shared/presentation/http/error_handlers.py` os
   traduz para 404 e 409.
 
+## Remoção
+
+Remover é sempre soft delete: a linha fica, com a data da remoção em `deleted_at`, e só os
+repositórios sabem disso. Toda leitura de um repositório devolve só as linhas ativas
+(`deleted_at IS NULL`), então nenhum use case precisa lembrar do filtro. Hoje vale para `kc` e
+`problem_kc`; uma tabela nova que ganhe remoção segue a mesma regra.
+
 ## Nomes
 
 Seguem a [PEP 8](https://peps.python.org/pep-0008/) e dizem a intenção.

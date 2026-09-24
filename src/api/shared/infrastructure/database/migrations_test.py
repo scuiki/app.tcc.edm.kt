@@ -386,7 +386,7 @@ def test_migration_0012_renames_qmatrix_to_problem_kc(tmp_path):
         (assignment_id, kc_id),
     )
 
-    run_migrations(conn)
+    run_migrations(conn, migrations_dir=_migrations_up_to(tmp_path, 12))
 
     assert _user_version(conn) == 12
     tables = {r["name"] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='table';")}
@@ -398,3 +398,28 @@ def test_migration_0012_renames_qmatrix_to_problem_kc(tmp_path):
     }
     assert "uq_problem_kc" in indexes
     assert conn.execute("PRAGMA foreign_key_check;").fetchall() == []
+
+
+# 0013 sobre um banco em user_version=12, deleted_at em kc e problem_kc, e o índice parcial.
+def test_migration_0013_adds_soft_delete_and_a_partial_unique_index(tmp_path):
+    conn = connect(str(tmp_path / "app.db"))
+    run_migrations(conn, migrations_dir=_migrations_up_to(tmp_path, 12))
+    assignment_id = _seed_assignment(conn)
+    kc_id = conn.execute(
+        "INSERT INTO kc (assignment_id, name) VALUES (?, 'k');", (assignment_id,)
+    ).lastrowid
+    conn.execute("INSERT INTO problem (assignment_id, problem_id) VALUES (?, 7);", (assignment_id,))
+    insert = "INSERT INTO problem_kc (assignment_id, kc_id, problem_id) VALUES (?, ?, 7);"
+    conn.execute(insert, (assignment_id, kc_id))
+
+    run_migrations(conn)
+
+    assert _user_version(conn) == 13
+    assert "deleted_at" in _column_names(conn, "kc")
+    assert "deleted_at" in _column_names(conn, "problem_kc")
+    with pytest.raises(sqlite3.IntegrityError):
+        conn.execute(insert, (assignment_id, kc_id))  # dois vínculos ativos iguais, não
+    conn.execute("UPDATE problem_kc SET deleted_at = 't1';")
+    conn.execute(insert, (assignment_id, kc_id))  # um removido e um ativo, sim
+    assert conn.execute("SELECT COUNT(*) FROM problem_kc;").fetchone()[0] == 2
+

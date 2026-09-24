@@ -44,6 +44,12 @@ from api.knowledge_components.application.use_cases.start_kc_generation_use_case
 from api.knowledge_components.application.use_cases.list_knowledge_components_use_case import (
     ListKnowledgeComponentsUseCase,
 )
+from api.knowledge_components.application.use_cases.add_problem_knowledge_component_use_case import (
+    AddProblemKnowledgeComponentUseCase,
+)
+from api.knowledge_components.application.use_cases.remove_problem_knowledge_component_use_case import (
+    RemoveProblemKnowledgeComponentUseCase,
+)
 from api.knowledge_components.infrastructure.implementations.claude_cli_llm_client import (
     ClaudeCliLLMClient,
 )
@@ -117,6 +123,29 @@ def rename_knowledge_component_use_case(
     return RenameKnowledgeComponentUseCase(
         SqliteAssignmentRepository(conn),
         SqliteKnowledgeComponentRepository(conn),
+        SqliteUnitOfWork(conn),
+    )
+
+
+def add_problem_knowledge_component_use_case(
+    conn: sqlite3.Connection = Depends(open_database_session),
+) -> AddProblemKnowledgeComponentUseCase:
+    return AddProblemKnowledgeComponentUseCase(
+        SqliteAssignmentRepository(conn),
+        SqliteProblemRepository(conn),
+        SqliteKnowledgeComponentRepository(conn),
+        SqliteProblemKnowledgeComponentRepository(conn),
+        SqliteUnitOfWork(conn),
+    )
+
+
+def remove_problem_knowledge_component_use_case(
+    conn: sqlite3.Connection = Depends(open_database_session),
+) -> RemoveProblemKnowledgeComponentUseCase:
+    return RemoveProblemKnowledgeComponentUseCase(
+        SqliteAssignmentRepository(conn),
+        SqliteKnowledgeComponentRepository(conn),
+        SqliteProblemKnowledgeComponentRepository(conn),
         SqliteUnitOfWork(conn),
     )
 

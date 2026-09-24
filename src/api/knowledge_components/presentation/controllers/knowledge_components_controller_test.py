@@ -273,3 +273,120 @@ def test_editing_after_approval_reverts_status(api_client):
     assert resp.status_code == 200
 
     assert SqliteAssignmentRepository(conn).get(aid).status == "kc_draft"
+
+
+# Tirar um KC de um problema só, o xis do chip, e o caminho de volta
+
+
+def _active_links(conn, kc_id) -> list[int]:
+    rows = conn.execute(
+        "SELECT problem_id FROM problem_kc WHERE kc_id = ? AND deleted_at IS NULL ORDER BY 1;",
+        (kc_id,),
+    ).fetchall()
+    return [r[0] for r in rows]
+
+
+def test_removing_a_kc_from_one_problem_keeps_it_on_the_others(api_client):
+    client, conn = api_client
+    aid = _seed_assignment(conn, status="kc_draft")
+    loops, other = _seed_kc(conn, aid, "laços"), _seed_kc(conn, aid, "outro")
+    for problem_id in (1, 2):
+        _bind(conn, aid, loops, problem_id)
+        _bind(conn, aid, other, problem_id)
+
+    resp = client.delete(f"/knowledge-components/{loops}/problems/1")
+
+    assert resp.status_code == 200
+    assert resp.json() == {"kc_id": loops, "problem_id": 1, "knowledge_component_removed": False}
+    assert _active_links(conn, loops) == [2]
+    # Soft delete, o vínculo removido continua na tabela com a data
+    removed = conn.execute(
+        "SELECT deleted_at FROM problem_kc WHERE kc_id = ? AND problem_id = 1;", (loops,)
+    ).fetchone()[0]
+    assert removed is not None
+
+
+def test_removing_the_only_kc_of_a_problem_is_refused_and_nothing_changes(api_client):
+    client, conn = api_client
+    aid = _seed_assignment(conn, status="kc_draft")
+    only = _seed_kc(conn, aid, "único")
+    _bind(conn, aid, only, problem_id=1)
+
+    resp = client.delete(f"/knowledge-components/{only}/problems/1")
+
+    assert resp.status_code == 409
+    assert _active_links(conn, only) == [1]
+    assert SqliteKnowledgeComponentRepository(conn).get(only) is not None
+
+
+def test_a_kc_that_loses_its_last_problem_is_removed_too(api_client):
+    client, conn = api_client
+    aid = _seed_assignment(conn, status="kc_draft")
+    leaving, staying = _seed_kc(conn, aid, "sai"), _seed_kc(conn, aid, "fica")
+    _bind(conn, aid, leaving, problem_id=1)
+    _bind(conn, aid, staying, problem_id=1)
+
+    resp = client.delete(f"/knowledge-components/{leaving}/problems/1")
+
+    assert resp.json()["knowledge_component_removed"] is True
+    assert SqliteKnowledgeComponentRepository(conn).get(leaving) is None
+    kc_row = conn.execute("SELECT deleted_at FROM kc WHERE id = ?;", (leaving,)).fetchone()
+    assert kc_row[0] is not None  # o KC também fica como histórico
+
+
+def test_removing_a_link_sends_approved_kcs_back_to_draft(api_client):
+    client, conn = api_client
+    aid = _seed_assignment(conn, status="kc_approved")
+    loops, other = _seed_kc(conn, aid, "laços"), _seed_kc(conn, aid, "outro")
+    _bind(conn, aid, loops, problem_id=1)
+    _bind(conn, aid, other, problem_id=1)
+
+    client.delete(f"/knowledge-components/{loops}/problems/1")
+
+    assert SqliteAssignmentRepository(conn).get(aid).status == "kc_draft"
+
+
+def test_removing_a_missing_kc_or_link_is_404(api_client):
+    client, conn = api_client
+    aid = _seed_assignment(conn, status="kc_draft")
+    kc_id = _seed_kc(conn, aid, "k")
+    _bind(conn, aid, kc_id, problem_id=1)
+
+    assert client.delete("/knowledge-components/999/problems/1").status_code == 404
+    assert client.delete(f"/knowledge-components/{kc_id}/problems/7").status_code == 404
+
+
+def test_linking_an_existing_kc_to_another_problem_creates_a_new_row(api_client):
+    client, conn = api_client
+    aid = _seed_assignment(conn, status="kc_approved")
+    loops, other = _seed_kc(conn, aid, "laços"), _seed_kc(conn, aid, "outro")
+    _bind(conn, aid, loops, problem_id=1)
+    _bind(conn, aid, loops, problem_id=2)
+    _bind(conn, aid, other, problem_id=2)
+    client.delete(f"/knowledge-components/{loops}/problems/2")
+
+    resp = client.post(f"/knowledge-components/{loops}/problems/2")
+
+    assert resp.status_code == 201
+    assert resp.json() == {"kc_id": loops, "problem_id": 2}
+    assert _active_links(conn, loops) == [1, 2]
+    total = conn.execute(
+        "SELECT COUNT(*) FROM problem_kc WHERE kc_id = ? AND problem_id = 2;", (loops,)
+    ).fetchone()[0]
+    assert total == 2  # a linha removida fica como histórico e nasce outra
+    assert SqliteAssignmentRepository(conn).get(aid).status == "kc_draft"
+
+
+def test_linking_is_refused_for_a_repeated_link_or_a_problem_of_another_assignment(api_client):
+    client, conn = api_client
+    aid = _seed_assignment(conn, status="kc_draft")
+    kc_id = _seed_kc(conn, aid, "k")
+    _bind(conn, aid, kc_id, problem_id=1)
+
+    repeated = client.post(f"/knowledge-components/{kc_id}/problems/1")
+    unknown = client.post(f"/knowledge-components/{kc_id}/problems/99")
+
+    assert repeated.status_code == 409
+    assert unknown.status_code == 409
+    assert client.post("/knowledge-components/999/problems/1").status_code == 404
+

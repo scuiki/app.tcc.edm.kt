@@ -23,6 +23,7 @@ from api.knowledge_components.domain.interfaces.problem_knowledge_component_repo
     IProblemKnowledgeComponentRepository,
 )
 from api.shared.application.interfaces.unit_of_work import IUnitOfWork
+from api.shared.application.services.clock import utc_now_iso
 from api.shared.application.use_cases.write_use_case import WriteUseCase
 from api.shared.domain.interfaces.business_rule import IBusinessRule
 from api.shared.domain.errors.not_found import NotFound
@@ -59,9 +60,12 @@ class MergeKnowledgeComponentsUseCase(WriteUseCase):
     def _run(self, dto: MergeKnowledgeComponentsDTO) -> MergedKnowledgeComponentsDTO:
         # A fusão é a união dos vínculos, só os problemas de drop_kc_id podem ficar sem KC.
         affected_problems = self._problem_kcs.problems_of(dto.drop_kc_id)
+        removed_at = utc_now_iso()
         with self._unit_of_work:
-            self._problem_kcs.move_bindings(dto.assignment_id, dto.drop_kc_id, dto.keep_kc_id)
-            self._knowledge_components.delete(dto.drop_kc_id)
+            self._problem_kcs.move_bindings(
+                dto.assignment_id, dto.drop_kc_id, dto.keep_kc_id, removed_at
+            )
+            self._knowledge_components.remove(dto.drop_kc_id, removed_at)
             ensure_every_problem_keeps_a_kc(self._problem_kcs, dto.assignment_id, affected_problems)
             revert_approval_after_edit(self._assignments, dto.assignment_id)
         return MergedKnowledgeComponentsDTO(keep_kc_id=dto.keep_kc_id, drop_kc_id=dto.drop_kc_id)
