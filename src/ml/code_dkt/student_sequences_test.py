@@ -1,10 +1,4 @@
-"""build_student_sequences / truncate_student_sequences.
-
-Caracterização do comportamento portado do TCC 1 e a invariante que corrige o bug do port literal:
-`is_first_attempt` é marcado uma vez na sequência completa e carregado intacto pelo truncamento.
-Recalculá-lo na janela reetiquetava como primeira tentativa uma ocorrência posterior de um problema
-cuja primeira tentativa real ficou fora da janela (+13,6 pontos de first-attempt AUC inflado).
-"""
+# Caracterização de build/truncate_student_sequences; is_first_attempt não é recalculado na janela.
 
 from __future__ import annotations
 
@@ -21,7 +15,7 @@ def test_build_sequences_returns_one_dict_per_student(a439_mini):
 
 
 def test_build_sequences_first_attempt_has_true_and_false(a439_mini):
-    # Repeated problems in the fixture produce both first (True) and repeat (False).
+    # Problemas repetidos na fixture produzem tentativa 1ª (True) e repetida (False).
     sequences = build_student_sequences(a439_mini, 439)
     flags = set()
     for seq in sequences:
@@ -37,20 +31,16 @@ def test_truncate_keeps_at_most_max_len_events(a439_mini):
 
 
 def test_truncate_first_attempt_counts(a439_mini):
-    # Plan 03 deliberately replaced the old buggy baseline: the prior
-    # assertion (trunc["S_long"] >= 1) pinned the documented +13.6pp inflation bug,
-    # where the in-window recompute relabeled global 2nd-occurrences as first attempts.
-    # The corrected invariant slices only, so the flag is carried, never recomputed.
+    # Antes fixava o bug de +13,6pp; agora garante que a janela só fatia, nunca recalcula.
     sequences = build_student_sequences(a439_mini, 439)
     full = {s["student_id"]: s["events"]["is_first_attempt"].sum() for s in sequences}
     truncated = truncate_student_sequences(sequences, max_len=5)
     trunc = {s["student_id"]: s["events"]["is_first_attempt"].sum() for s in truncated}
 
-    # Untruncated students keep their counts unchanged.
+    # Alunos não truncados mantêm as contagens.
     assert trunc["S1"] == full["S1"]
     assert trunc["S2"] == full["S2"]
-    # S_long's last-5 window [3,2,3,1,2]: only P3's global-first (l4) lands inside the
-    # window, so the carried count is 1 — vs the old buggy in-window recompute of 3.
+    # Janela [3,2,3,1,2] de S_long, só P3 (l4) é 1ª global dentro dela, contagem correta é 1.
     assert trunc["S_long"] == 1
 
 
@@ -59,18 +49,14 @@ def _events_for(sequences, subject_id):
 
 
 def test_first_attempt_immutable(a439_mini):
-    # S_long problems in order: [1,2,1,3,2,3,1,2]. With max_len=5 the window is the
-    # last 5 events [3,2,3,1,2] (CodeStateIDs l4..l8). P2 and P1 in the window are
-    # global repeats (their first attempt is OUTSIDE the window) and must stay False;
-    # P3's first global attempt (l4) happens to fall inside the window, so it stays
-    # True. The buggy in-window recompute instead flips l5 (P2) and l7 (P1) to True.
+    # S_long, problemas [1,2,1,3,2,3,1,2]; janela max_len=5 é [3,2,3,1,2] (l4..l8).
     sequences = build_student_sequences(a439_mini, 439)
     truncated = truncate_student_sequences(sequences, max_len=5)
     window = _events_for(truncated, "S_long").set_index("code_snapshot_id")["is_first_attempt"]
     assert len(window) == 5
-    assert bool(window.loc["l5"]) is False  # P2 global-first (l2) outside window
-    assert bool(window.loc["l7"]) is False  # P1 global-first (l1) outside window
-    assert bool(window.loc["l4"]) is True   # P3 global-first is inside the window
+    assert bool(window.loc["l5"]) is False  # P2, 1ª global (l2) fica fora da janela
+    assert bool(window.loc["l7"]) is False  # P1, 1ª global (l1) fica fora da janela
+    assert bool(window.loc["l4"]) is True   # P3, 1ª global cai dentro da janela
     assert window.sum() == 1
 
 
@@ -84,8 +70,7 @@ def test_truncated_count_le_full(a439_mini):
 
 
 def test_no_recompute_preserves_column(a439_mini):
-    # The flag on surviving rows must equal its value in the full sequence (carried,
-    # not recomputed). CodeStateID uniquely identifies a row, so align on it.
+    # A flag nas linhas sobreviventes bate com a sequência completa, é carregada, não recalculada.
     sequences = build_student_sequences(a439_mini, 439)
     truncated = truncate_student_sequences(sequences, max_len=5)
     for seq in sequences:
@@ -96,7 +81,7 @@ def test_no_recompute_preserves_column(a439_mini):
 
 
 def test_short_sequence_unchanged(a439_mini):
-    # S1 has 3 events (< max_len): returned untouched, flag identical to build output.
+    # S1 tem 3 eventos (menos que max_len), volta intacto, flag igual ao output do build.
     sequences = build_student_sequences(a439_mini, 439)
     truncated = truncate_student_sequences(sequences, max_len=5)
     before = _events_for(sequences, "S1")

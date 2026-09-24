@@ -1,9 +1,4 @@
-"""build_qmatrix reproduz a Q-matrix do TCC 1 (A439) célula a célula, a partir do cru guardado.
-
-O LLM nunca é chamado: os artefatos de referência em tests/data/kc fazem o papel do cache de
-geração. A Q-matrix é uma função pura dos KCs candidatos + do agrupamento, então o replay é
-determinístico.
-"""
+# build_qmatrix reproduz a Q-matrix do TCC 1 (A439) célula a célula; LLM nunca é chamado aqui.
 
 from __future__ import annotations
 
@@ -17,8 +12,7 @@ def _load(kc_reference_dir, name):
 
 
 def test_build_qmatrix_reproduces_reference(kc_reference_dir):
-    """build_qmatrix(problem_ids, kc_raw, kc_clusters) reproduz qmatrix_A439.csv célula-a-célula
-    (replay determinístico a partir do cru cacheado — o objeto científico reproduzível)."""
+    # Reproduz qmatrix_A439.csv célula-a-célula, replay determinístico a partir do cru cacheado.
     import pandas as pd
 
     kc_raw = _load(kc_reference_dir, "kc_raw_A439.json")
@@ -39,9 +33,7 @@ def test_build_qmatrix_reproduces_reference(kc_reference_dir):
 
 
 def test_zero_kc_problem_guard(kc_reference_dir):
-    """Guarda 0-KC: um problema sem nenhum KC mapeado fica com a linha toda zero, o que
-    a validação a jusante trata como falha-dura. Aqui pinamos que build_qmatrix não inventa
-    bindings para um problema ausente do kc_raw (linha toda 0)."""
+    # Guarda 0-KC, problema sem KC mapeado fica com a linha toda zero; não inventamos vínculo.
     kc_clusters = _load(kc_reference_dir, "kc_clusters_A439.json")
     kc_raw = {}  # nenhum KC para nenhum problema
 

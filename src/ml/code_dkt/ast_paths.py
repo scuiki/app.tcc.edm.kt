@@ -1,8 +1,4 @@
-"""AST paths: os caminhos entre folhas da árvore sintática do Java, a feature do Code-DKT.
-
-Portado do TCC 1 (src/code_features.py), que adapta o path_extractor.py de Shi et al. (2022).
-Numérica congelada; os testes de caracterização ao lado travam qualquer mudança.
-"""
+# AST paths, caminhos entre folhas da árvore sintática Java, feature do Code-DKT, congelada.
 
 
 from __future__ import annotations
@@ -18,9 +14,7 @@ from anytree.search import findall_by_attr
 from anytree.walker import Walker
 
 
-# ---------------------------------------------------------------------------
-# Extração de paths AST — adaptado de path_extractor.py (Code-DKT)
-# ---------------------------------------------------------------------------
+# Extração de paths AST, adaptado de path_extractor.py (TCC 1, Shi et al. 2022).
 
 def _get_token(node) -> str:
     if isinstance(node, str):
@@ -85,9 +79,7 @@ def extract_ast_paths(
     if not leaf_nodes:
         return []
 
-    #Padding dos order strings ao comprimento máximo para normalização de rank
-    #(path_extractor.py: get_node_rank). O atributo .order permanece inalterado
-    #e é usado na comparação de largura (get_path_width).
+    # Padding dos orders ao comprimento máximo antes de comparar (path_extractor.py, get_node_rank).
     max_depth = max(len(node.name[0]) for node in leaf_nodes)
     for leaf in leaf_nodes:
         while len(leaf.name[0]) < max_depth:
@@ -113,10 +105,7 @@ def extract_ast_paths(
             if len(walk_path) > max_path_length:
                 continue
 
-            # Largura: diferença inteira entre orders dos nós imediatamente
-            # adjacentes à LCA (path_extractor.py: get_path_width).
-            # upstream[-1] = nó filho da LCA no lado de leaf_i
-            # downstream[0] = nó filho da LCA no lado de leaf_j
+            # Largura é a diferença de order entre os filhos da LCA mais próximos de leaf_i/leaf_j.
             try:
                 width = (
                     abs(int(upstream[-1].order) - int(downstream[0].order))
@@ -141,12 +130,10 @@ def extract_ast_paths(
     return paths
 
 
-# ---------------------------------------------------------------------------
-# Extração em lote (paralela)
-# ---------------------------------------------------------------------------
+# Extração em lote (paralela).
 
 def _worker_extract(args: tuple) -> tuple[str, list]:
-    """Worker picklável do multiprocessing.Pool."""
+    # Worker picklável do multiprocessing.Pool.
     snapshot_id, code, max_path_length, max_path_width, R, seed = args
     paths = extract_ast_paths(code, max_path_length, max_path_width, R, seed)
     return snapshot_id, paths
@@ -161,7 +148,7 @@ def extract_ast_paths_for_snapshots(
     seed: int = 42,
     n_workers: Optional[int] = None,
 ) -> dict[str, list[tuple[str, str, str]]]:
-    """Os AST paths de cada snapshot, extraídos em paralelo (multiprocessing.Pool)."""
+    # Os AST paths de cada snapshot, extraídos em paralelo (multiprocessing.Pool).
 
     args_list = [
         (snapshot_id, code_by_snapshot.get(snapshot_id, ""), max_path_length, max_path_width, R, seed)
@@ -174,14 +161,12 @@ def extract_ast_paths_for_snapshots(
     return cache
 
 
-# ---------------------------------------------------------------------------
-# Vocabulário
-# ---------------------------------------------------------------------------
+# Vocabulário.
 
 def build_ast_path_vocabulary(
     ast_paths_by_snapshot: dict[str, list[tuple[str, str, str]]],
 ) -> tuple[dict[str, int], dict[str, int]]:
-    """token_to_idx e path_to_idx a partir dos paths recebidos (quem chama passa só o treino)."""
+    # token_to_idx e path_to_idx a partir dos paths recebidos (quem chama passa só o treino).
 
     tokens: set[str] = set()
     path_strs: set[str] = set()

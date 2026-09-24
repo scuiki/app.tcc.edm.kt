@@ -1,6 +1,4 @@
-"""compute_auc: first-attempt e todas as tentativas são métricas distintas; uma classe só ou
-nenhuma linha devolvem NaN.
-"""
+# compute_auc, first-attempt e todas as tentativas são distintas; sem classe ou linha dá NaN.
 
 from __future__ import annotations
 
@@ -12,8 +10,7 @@ from ml.evaluation.auc import compute_auc
 
 
 def _pred_df():
-    # Mix of first-attempt and repeat rows with both correct classes, so first-only
-    # and all-rows AUC differ.
+    # Mistura de 1ª tentativa e repetição, com as duas classes, p/ first-only e all-rows diferirem.
     return pd.DataFrame(
         [
             {"is_correct": 1, "is_first_attempt": True, "predicted_correct_probability": 0.9},
@@ -34,7 +31,7 @@ def test_first_and_all_metrics_are_distinct():
 
 
 def test_single_class_input_returns_nan():
-    # Only one class present -> roc_auc undefined -> NaN guard.
+    # Só uma classe presente, roc_auc fica indefinido, cai na guarda de NaN.
     df = pd.DataFrame(
         [
             {"is_correct": 1, "is_first_attempt": True, "predicted_correct_probability": 0.9},

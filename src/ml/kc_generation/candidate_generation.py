@@ -1,22 +1,16 @@
-"""Etapa 2 do KCGen-KT: pedir ao LLM os KCs que cada problema exige.
-
-Portado do TCC 1 (notebook 03b_kc_generation, célula 8). Os prompts são congelados e literais:
-fazem parte da chave do cache de respostas do LLM, então mudar uma vírgula aqui reprocessa tudo e
-gasta cota. A chamada ao LLM chega injetada (LLMClient); a saída estruturada é do transporte.
-"""
+# Etapa 2 do KCGen-KT, pede ao LLM os KCs de cada problema; prompts congelados, chave de cache pago.
 
 from __future__ import annotations
 
 from ml.kc_generation.llm_client import LLMClient
 
 
+# O LLM não devolveu nenhum KC para um problema (reforço do minItems=1 do schema).
 class NoCandidateKCsError(ValueError):
-    """O LLM não devolveu nenhum KC para um problema (reforço do minItems: 1 do schema)."""
+    pass
 
 
-# O JSON Schema que o transporte impõe (`claude -p --json-schema`). minItems: 1 exige ao menos um
-# KC por problema; NoCandidateKCsError confere de novo aqui, porque o CLI pode não preencher o
-# structured_output.
+# Schema imposto pelo transporte (claude -p --json-schema); minItems=1 é conferido de novo aqui.
 CANDIDATE_KCS_SCHEMA: dict = {
     "type": "object",
     "properties": {
@@ -37,8 +31,7 @@ CANDIDATE_KCS_SCHEMA: dict = {
     "required": ["problem_description", "kcs"],
 }
 
-# In-context examples adapted from Duan et al. (2025), Appendix B (Table 8): two intro Java
-# problems anchoring KC naming (3-8 words) and granularity (3-7 KCs/problem).
+# Exemplos in-context de Duan et al. (2025), Apêndice B (Tabela 8); ancoram nome e granularidade.
 _FEW_SHOT_EXAMPLES = """\
 === FEW-SHOT EXAMPLE 1 ===
 Problem A — Correct student solutions (n=3):
@@ -144,7 +137,7 @@ _SYSTEM_PROMPT = (
 
 
 def _build_kc_prompt(problem_id: int, code_samples: list[str]) -> str:
-    """Construct the chain-of-thought prompt with in-context examples (Table 8)."""
+    # Constrói o prompt chain-of-thought com os exemplos in-context (Tabela 8).
     solutions = "".join(
         f"\nSolution {i}:\n```java\n{code}\n```"
         for i, code in enumerate(code_samples, 1)
@@ -166,14 +159,10 @@ def _build_kc_prompt(problem_id: int, code_samples: list[str]) -> str:
 
 
 def generate_candidate_kcs(problem_id: int, code_samples: list[str], llm: LLMClient) -> dict:
-    """Generate KCs for one problem from raw Java code, via the injected LLM port.
-
-    Raw code (not AST) is fed: Duan et al. (2025) Table 4 shows AST degrades AUC 0.812→0.784.
-    Levanta NoCandidateKCsError se o problema não render nenhum KC.
-    """
+    # Código bruto (não AST) alimenta o LLM; Duan et al. (2025) Tab. 4, AST piora AUC 0.812->0.784.
     result = llm.generate(_SYSTEM_PROMPT, _build_kc_prompt(problem_id, code_samples), CANDIDATE_KCS_SCHEMA)
 
-    # Reforço do minItems do schema: sem KC, o job de geração falha inteiro.
+    # Reforço do minItems do schema, sem KC o job de geração falha inteiro.
     if not result or "kcs" not in result or not result["kcs"]:
         raise NoCandidateKCsError(f"problema {problem_id} não gerou nenhum KC")
     return result

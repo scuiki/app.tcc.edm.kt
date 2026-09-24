@@ -1,4 +1,4 @@
-"""Fixtures do code_dkt: as entradas mínimas de treino a partir do a439_mini."""
+# Fixtures do code_dkt, as entradas mínimas de treino a partir do a439_mini.
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ from ml.code_dkt.student_sequences import build_student_sequences
 
 @pytest.fixture
 def training_inputs(a439_mini):
-    """(sequences, ast_paths_by_snapshot, vocab, problem_to_idx, config) para um treino curto em CPU."""
+    # Devolve (sequences, ast_paths, vocab, problem_to_idx, config) para um treino curto em CPU.
     sequences = build_student_sequences(a439_mini, 439)
     cache = {
         snapshot_id: extract_ast_paths(code)
@@ -27,7 +27,7 @@ def training_inputs(a439_mini):
         "path_count": len(path_to_idx),
     }
     problem_to_idx = build_problem_index(sequences)
-    # Architecture frozen; only epoch count reduced for a fast smoke run.
+    # Arquitetura congelada; só a contagem de épocas foi reduzida para rodar rápido.
     config = {"hidden_dim": 128, "dropout": 0.1, "lr": 5e-4,
               "batch_size": 128, "epochs": 3, "max_len": 50, "R": 50}
     return sequences, cache, vocab, problem_to_idx, config

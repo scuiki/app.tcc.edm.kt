@@ -1,4 +1,4 @@
-"""A mastery de um KC é a média das masteries dos problemas que ele tagueia."""
+# A mastery de um KC é a média das masteries dos problemas que ele tagueia.
 
 from __future__ import annotations
 
@@ -9,16 +9,13 @@ from ml.mastery.mastery_aggregation import aggregate_student_mastery
 
 
 def test_matrix_aggregates_problem_to_kc_by_mean():
-    # A mastery de um KC é a MÉDIA das masteries dos problemas que o KC
-    # marca. Q-matrix: KC1 → {prob 1, prob 3}; KC2 → {prob 2, prob 3}.
-    # Para um aluno com problem-mastery {1: 0.2, 2: 0.8, 3: 0.6}:
-    #   KC1 = mean(0.2, 0.6) = 0.4 ; KC2 = mean(0.8, 0.6) = 0.7.
-    # previsões no formato de predict_code_dkt: a ÚLTIMA linha por (aluno, problema) é a mastery
-    # final daquele problema; uma 1ª tentativa anterior NÃO deve sobrescrever a última.
+    # Q-matrix liga KC1 aos problemas 1 e 3, e KC2 aos problemas 2 e 3.
+
+    # A ÚLTIMA linha por (aluno, problema) vale como mastery final, não a 1ª tentativa.
     pred_df = pd.DataFrame(
         [
             {"student_id": "S1", "problem_id": 1, "is_correct": 0, "is_first_attempt": True,  "predicted_correct_probability": 0.9},
-            {"student_id": "S1", "problem_id": 1, "is_correct": 0, "is_first_attempt": False, "predicted_correct_probability": 0.2},  # última p/ prob 1
+            {"student_id": "S1", "problem_id": 1, "is_correct": 0, "is_first_attempt": False, "predicted_correct_probability": 0.2},
             {"student_id": "S1", "problem_id": 2, "is_correct": 1, "is_first_attempt": True,  "predicted_correct_probability": 0.8},
             {"student_id": "S1", "problem_id": 3, "is_correct": 1, "is_first_attempt": True,  "predicted_correct_probability": 0.6},
         ]
@@ -28,5 +25,5 @@ def test_matrix_aggregates_problem_to_kc_by_mean():
     matrix = aggregate_student_mastery(pred_df, qmatrix)
 
     # matriz indexável por (student_id, kc_id) -> mastery float em [0,1].
-    assert matrix[("S1", 10)] == pytest.approx(0.4)  # mean(0.2 [última do prob1], 0.6)
-    assert matrix[("S1", 20)] == pytest.approx(0.7)  # mean(0.8, 0.6)
+    assert matrix[("S1", 10)] == pytest.approx(0.4)  # média(0.2 [última do prob1], 0.6)
+    assert matrix[("S1", 20)] == pytest.approx(0.7)  # média(0.8, 0.6)

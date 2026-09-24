@@ -1,8 +1,6 @@
-"""Treino do Code-DKT: Adam, gradient clipping e a loss do DKT, com os hiperparâmetros congelados."""
+# Treino do Code-DKT, Adam + gradient clipping + loss do DKT, hiperparâmetros congelados.
 
-# Portado do TCC 1 (src/models/code_dkt.py). Numérica congelada. Duas parametrizações que não
-# mexem nos números: o `device` e o callback `on_epoch` vêm de quem chama, com defaults que
-# reproduzem o comportamento original.
+# Portado do TCC 1 (src/models/code_dkt.py); device/on_epoch são injetáveis sem mudar os números.
 
 from __future__ import annotations
 
@@ -27,7 +25,7 @@ def train_code_dkt(
     device: torch.device | None = None,
     on_epoch: Callable[[int, float], None] = lambda epoch, loss: None,
 ) -> CodeDKTModel:
-    """Treina o CodeDKTModel com Adam e gradient clipping; chama `on_epoch(época, loss_média)`."""
+    # Treina o CodeDKTModel com Adam e gradient clipping; chama `on_epoch(época, loss_média)`.
 
     torch.manual_seed(seed)
     np.random.seed(seed)
@@ -41,7 +39,7 @@ def train_code_dkt(
     max_len = config.get("max_len", 50)
     R = config.get("R", 50)
 
-    # device=None mantém o default original: cuda se houver, senão cpu.
+    # device=None mantém o default original, cuda se houver, senão cpu.
     if device is None:
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -64,10 +62,10 @@ def train_code_dkt(
         problem_to_idx, max_len=max_len, R=R,
     )
 
-    # y_true: correctness do próximo passo a_{t+1}
-    correct_t = X[:, :, :M].sum(dim=-1)        # (N, max_len) — 1 se acerto no passo t
+    # y_true é a correção do próximo passo, a_{t+1}
+    correct_t = X[:, :, :M].sum(dim=-1)        # (N, max_len), 1 se acerto no passo t
     y_true = torch.zeros_like(correct_t)
-    y_true[:, :-1] = correct_t[:, 1:]          # shift: y_true[t] = correct[t+1]
+    y_true[:, :-1] = correct_t[:, 1:]          # shift, y_true[t] = correct[t+1]
 
     X = X.to(device)
     Y_next = Y_next.to(device)
