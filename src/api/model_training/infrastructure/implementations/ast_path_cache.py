@@ -9,7 +9,7 @@ from ml.code_dkt.ast_paths import extract_ast_paths_for_snapshots
 
 from api.shared.infrastructure.filesystem import data_layout
 from api.model_training.infrastructure.implementations.code_snapshot_id import CodeSnapshotId
-from api.assignments.domain.value_objects.classroom_slug import ClassroomSlug
+from api.classrooms.domain.value_objects.classroom_slug import ClassroomSlug
 
 def load_or_extract_ast_paths(
     classroom_slug: ClassroomSlug,

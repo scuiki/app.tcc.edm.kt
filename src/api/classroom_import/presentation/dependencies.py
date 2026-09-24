@@ -9,7 +9,7 @@ from fastapi import Depends
 from api.assignments.infrastructure.repositories.sqlite_assignment_repository import (
     SqliteAssignmentRepository,
 )
-from api.assignments.infrastructure.repositories.sqlite_classroom_repository import (
+from api.classrooms.infrastructure.repositories.sqlite_classroom_repository import (
     SqliteClassroomRepository,
 )
 from api.classroom_import.application.use_cases.import_classroom_dataset_use_case import (

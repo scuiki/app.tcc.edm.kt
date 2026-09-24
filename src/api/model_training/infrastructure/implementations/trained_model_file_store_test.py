@@ -11,7 +11,7 @@ import pandas as pd
 import pytest
 import torch
 
-from api.assignments.domain.value_objects.classroom_slug import ClassroomSlug
+from api.classrooms.domain.value_objects.classroom_slug import ClassroomSlug
 from api.assignments.domain.value_objects.progsnap_assignment_id import ProgSnapAssignmentId
 from api.model_training.domain.value_objects.training_outcome import TrainingOutcome
 from api.model_training.domain.value_objects.training_dataset import TrainingDataset

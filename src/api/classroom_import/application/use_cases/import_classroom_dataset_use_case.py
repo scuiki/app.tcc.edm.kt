@@ -6,8 +6,8 @@ import pandas as pd
 
 from api.assignments.domain.entities.assignment_entity import Assignment, AssignmentStatus
 from api.assignments.domain.interfaces.assignment_repository import IAssignmentRepository
-from api.assignments.domain.entities.classroom_entity import Classroom
-from api.assignments.domain.interfaces.classroom_repository import IClassroomRepository
+from api.classrooms.domain.entities.classroom_entity import Classroom
+from api.classrooms.domain.interfaces.classroom_repository import IClassroomRepository
 from api.classroom_import.application.dtos.import_classroom_dataset_dto import (
     ImportClassroomDatasetDTO,
     ImportClassroomDatasetResponseDTO,

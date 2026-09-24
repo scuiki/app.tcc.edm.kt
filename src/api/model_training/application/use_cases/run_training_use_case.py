@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from api.assignments.domain.entities.assignment_entity import AssignmentStatus
 from api.assignments.domain.interfaces.assignment_repository import IAssignmentRepository
-from api.assignments.domain.interfaces.classroom_repository import IClassroomRepository
+from api.classrooms.domain.interfaces.classroom_repository import IClassroomRepository
 from api.classroom_import.domain.interfaces.submission_repository import ISubmissionRepository
 from api.model_training.domain.interfaces.code_dkt_trainer import ICodeDktTrainer
 from api.model_training.domain.interfaces.trained_model_store import ITrainedModelStore

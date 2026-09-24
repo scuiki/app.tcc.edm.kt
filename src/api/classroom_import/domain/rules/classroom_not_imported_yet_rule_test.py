@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
-from api.assignments.domain.entities.classroom_entity import Classroom
+from api.classrooms.domain.entities.classroom_entity import Classroom
 from api.classroom_import.domain.rules.classroom_not_imported_yet_rule import (
     ClassroomNotImportedYetRule,
 )

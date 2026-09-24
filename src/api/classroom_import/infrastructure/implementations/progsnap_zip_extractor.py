@@ -5,7 +5,7 @@ from __future__ import annotations
 import zipfile
 from pathlib import Path
 
-from api.assignments.domain.value_objects.classroom_slug import ClassroomSlug
+from api.classrooms.domain.value_objects.classroom_slug import ClassroomSlug
 from api.classroom_import.domain.value_objects.detected_upload import DetectedUpload
 from api.shared.infrastructure.filesystem import data_layout
 from api.shared.infrastructure.filesystem.confined_path import ConfinedPath

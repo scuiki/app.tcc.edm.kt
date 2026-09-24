@@ -5,11 +5,11 @@ import subprocess
 import sys
 
 from api.assignments.domain.entities.assignment_entity import Assignment
-from api.assignments.domain.entities.classroom_entity import Classroom
+from api.classrooms.domain.entities.classroom_entity import Classroom
 from api.assignments.infrastructure.repositories.sqlite_assignment_repository import (
     SqliteAssignmentRepository,
 )
-from api.assignments.infrastructure.repositories.sqlite_classroom_repository import (
+from api.classrooms.infrastructure.repositories.sqlite_classroom_repository import (
     SqliteClassroomRepository,
 )
 from api.knowledge_components.domain.entities.knowledge_component_entity import KnowledgeComponent

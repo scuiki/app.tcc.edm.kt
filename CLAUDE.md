@@ -93,7 +93,7 @@ porquê completo das decisões não óbvias fica em `docs/DECISIONS.md`.
 ## Architecture
 
 `src/ml/` é a ciência e nunca importa de `api/`. `src/web/` é a SPA. `src/api/` é organizada por
-funcionalidade (`assignments`, `classroom_import`, `knowledge_components`, `model_training`,
-`mastery_dashboard`, `shared`), cada uma com `domain/ application/ infrastructure/ presentation/`
-e, dentro delas, uma subpasta por papel. As regras estão em `docs/ARCHITECTURE.md` e são
+funcionalidade (`classrooms`, `assignments`, `classroom_import`, `knowledge_components`,
+`model_training`, `mastery_dashboard`, `shared`), cada uma com `domain/ application/
+infrastructure/ presentation/` e, dentro delas, uma subpasta por papel. As regras estão em `docs/ARCHITECTURE.md` e são
 verificadas pelo `import-linter` e por `src/api/architecture_test.py`.

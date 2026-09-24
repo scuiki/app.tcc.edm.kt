@@ -5,18 +5,15 @@ from __future__ import annotations
 import pytest
 
 from api.assignments.domain.entities.assignment_entity import Assignment, AssignmentStatus
-from api.assignments.domain.entities.classroom_entity import Classroom
 from api.assignments.infrastructure.repositories.sqlite_assignment_repository import (
     SqliteAssignmentRepository,
-)
-from api.assignments.infrastructure.repositories.sqlite_classroom_repository import (
-    SqliteClassroomRepository,
 )
 
 
 @pytest.fixture
 def classroom_id(tmp_db) -> int:
-    return SqliteClassroomRepository(tmp_db).add(Classroom(id=None, name="T", created_at="t0"))
+    # SQL direto porque o repositório da turma é infraestrutura de outra funcionalidade
+    return tmp_db.execute("INSERT INTO classroom (name, created_at) VALUES ('T', 't0');").lastrowid
 
 
 def _assignment(classroom_id: int, **fields) -> Assignment:

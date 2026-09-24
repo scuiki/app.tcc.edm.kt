@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from api.assignments.domain.value_objects.classroom_slug import ClassroomSlug
+from api.classrooms.domain.value_objects.classroom_slug import ClassroomSlug
 
 
 def test_classroom_slug_normalizes():

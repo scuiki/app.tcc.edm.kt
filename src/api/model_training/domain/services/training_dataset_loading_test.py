@@ -6,7 +6,7 @@ import pandas as pd
 import pytest
 
 from api.assignments.domain.entities.assignment_entity import Assignment
-from api.assignments.domain.entities.classroom_entity import Classroom
+from api.classrooms.domain.entities.classroom_entity import Classroom
 from api.model_training.domain.services.training_dataset_loading import load_training_dataset
 
 

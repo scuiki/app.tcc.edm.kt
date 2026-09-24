@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from api.assignments.domain.interfaces.classroom_repository import IClassroomRepository
-from api.assignments.domain.value_objects.classroom_slug import ClassroomSlug
+from api.classrooms.domain.interfaces.classroom_repository import IClassroomRepository
+from api.classrooms.domain.value_objects.classroom_slug import ClassroomSlug
 
 
 class ClassroomNotImportedYetRule:
