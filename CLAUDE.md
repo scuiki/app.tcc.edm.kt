@@ -113,14 +113,20 @@ seguem o skill `nitro-env`.
 
 ## Conventions
 
-Conventions not yet established. Will populate as patterns emerge during development.
+Nomes em inglês, PEP 8, dizendo a intenção (`StartTrainingUseCase`, `find_students_at_risk()`).
+Todo nome sai de `docs/GLOSSARY.md`; conceito novo entra no glossário antes de entrar no código.
+Testes ficam ao lado do arquivo testado, com sufixo `_test.py`. Detalhes em `docs/ARCHITECTURE.md`.
 <!-- GSD:conventions-end -->
 
 <!-- GSD:architecture-start source:ARCHITECTURE.md -->
 
 ## Architecture
 
-Architecture not yet mapped. Follow existing patterns found in the codebase.
+`src/ml/` é a ciência (nunca importa de `api/`). `src/api/` é organizada por funcionalidade
+(`assignments`, `classroom_import`, `knowledge_components`, `model_training`, `mastery_dashboard`,
+`shared`), cada uma com `domain/ application/ infrastructure/ presentation/`. A regra de dependência
+e a de imports entre funcionalidades estão em `docs/ARCHITECTURE.md` e são verificadas pelo
+`import-linter`.
 <!-- GSD:architecture-end -->
 
 <!-- GSD:skills-start source:skills/ -->
