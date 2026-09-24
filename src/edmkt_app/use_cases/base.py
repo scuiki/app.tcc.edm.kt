@@ -23,6 +23,8 @@ from typing import Any, Protocol
 from edmkt_app.persistence import models
 from edmkt_app.persistence import repositories as repos
 from api.shared.domain.errors import BusinessRuleViolation, NotFound
+from api.assignments.infrastructure.sqlite_assignment_repository import SqliteAssignmentRepository
+from api.assignments.domain.assignment_entity import Assignment
 
 
 class Specification(Protocol):
@@ -31,9 +33,9 @@ class Specification(Protocol):
     def check(self, conn: sqlite3.Connection, dto: Any) -> str | None: ...
 
 
-def require_assignment(conn: sqlite3.Connection, assignment_id: int) -> models.Assignment:
+def require_assignment(conn: sqlite3.Connection, assignment_id: int) -> Assignment:
     """O assignment alvo, ou NotFound — o 404 que todo use case sobre um assignment começa por."""
-    assignment = repos.AssignmentRepository(conn).get(assignment_id)
+    assignment = SqliteAssignmentRepository(conn).get(assignment_id)
     if assignment is None:
         raise NotFound("assignment inexistente")
     return assignment

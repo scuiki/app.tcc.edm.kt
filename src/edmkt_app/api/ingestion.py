@@ -21,7 +21,7 @@ from api.shared.infrastructure import settings
 from edmkt_app.ingestion import service
 from edmkt_app.use_cases.process_ingestion import ProcessIngestionDto, ProcessIngestionUseCase
 from api.shared.infrastructure.confined_path import ConfinedPath
-from edmkt_app.values import TurmaSlug
+from api.assignments.domain.classroom_slug import ClassroomSlug
 
 router = APIRouter(tags=["ingestion"])
 
@@ -68,7 +68,7 @@ def upload_and_detect(
 
     READ-ONLY do estado compartilhado: detect_variants não toca a trava (Lock Timing).
     """
-    slug = TurmaSlug.from_name(turma)
+    slug = ClassroomSlug.from_name(turma)
     with tempfile.NamedTemporaryFile(suffix=".zip", delete=False) as tmp:
         tmp_path = Path(tmp.name)
     try:

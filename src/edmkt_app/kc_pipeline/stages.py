@@ -17,20 +17,23 @@ from edmkt_app.kc_pipeline.transport import _CachedLLM
 from edmkt_app.persistence import models
 from edmkt_app.persistence import repositories as repos
 from api.shared.infrastructure.database.sqlite_connection import transaction
-from edmkt_app.values import ProgSnapAssignmentId, TurmaSlug
+from api.assignments.domain.progsnap_assignment_id import ProgSnapAssignmentId
+from api.assignments.domain.classroom_slug import ClassroomSlug
 from api.shared.infrastructure.clock import utc_now_iso
+from api.assignments.infrastructure.sqlite_classroom_repository import SqliteClassroomRepository
+from api.assignments.infrastructure.sqlite_assignment_repository import SqliteAssignmentRepository
 
 
 
 def _kc_body(conn, assignment_id: int, job_id: int) -> dict:
     job_repo = repos.KCJobRepository(conn)
-    asg_repo = repos.AssignmentRepository(conn)
+    asg_repo = SqliteAssignmentRepository(conn)
 
     asg = asg_repo.get(assignment_id)
     if asg is None:
         raise ValueError(f"assignment {assignment_id} inexistente")
-    turma = repos.TurmaRepository(conn).get(asg.turma_id)
-    turma_slug = TurmaSlug.from_name(turma.name)
+    turma = SqliteClassroomRepository(conn).get(asg.classroom_id)
+    turma_slug = ClassroomSlug.from_name(turma.name)
     progsnap_aid = ProgSnapAssignmentId(asg.progsnap_assignment_id)
 
     job_repo.mark_running(job_id, started_at=utc_now_iso())

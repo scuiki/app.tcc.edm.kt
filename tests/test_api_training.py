@@ -17,6 +17,10 @@ import sys
 from edmkt_app.api import training
 from edmkt_app.persistence import models
 from edmkt_app.persistence import repositories as repos
+from api.assignments.infrastructure.sqlite_classroom_repository import SqliteClassroomRepository
+from api.assignments.infrastructure.sqlite_assignment_repository import SqliteAssignmentRepository
+from api.assignments.domain.classroom_entity import Classroom
+from api.assignments.domain.assignment_entity import Assignment
 
 _NOW = "2026-06-21T00:00:00Z"
 
@@ -24,16 +28,16 @@ _NOW = "2026-06-21T00:00:00Z"
 # KC-03: o guard de /training agora exige 'kc_approved' (era 'trainable'). O caminho-feliz
 # semeia já-aprovado; os testes de rejeição passam um status explícito não-aprovado.
 def _seed_assignment(conn, status: str = "kc_approved") -> int:
-    turma_id = repos.TurmaRepository(conn).insert(
-        models.Turma(id=None, name="Turma X", created_at=_NOW)
+    classroom_id = SqliteClassroomRepository(conn).add(
+        Classroom(id=None, name="Turma X", created_at=_NOW)
     )
-    return repos.AssignmentRepository(conn).insert(
-        models.Assignment(
+    return SqliteAssignmentRepository(conn).add(
+        Assignment(
             id=None,
-            turma_id=turma_id,
+            classroom_id=classroom_id,
             name="Assignment 439",
             progsnap_assignment_id=439,
-            current_version_id=None,
+            published_model_id=None,
             created_at=_NOW,
             status=status,
         )
@@ -94,7 +98,7 @@ def test_dispatch_blocked_before_approval_then_ok_after(api_client, monkeypatch)
 
     assert client.post("/training", json={"assignment_id": aid}).status_code == 409
 
-    repos.AssignmentRepository(conn).set_status(aid, "kc_approved")
+    SqliteAssignmentRepository(conn).set_status(aid, "kc_approved")
     assert client.post("/training", json={"assignment_id": aid}).status_code == 202
 
 

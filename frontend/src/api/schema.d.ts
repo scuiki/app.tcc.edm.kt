@@ -9,16 +9,16 @@
 // Pitfall 1 (RESEARCH): `at_risk_students` is `string[]` (subject_ids), NOT object[]. dashboard.py
 // returns edmkt_core.mastery.at_risk_students(matrix) -> list[str].
 
-// GET /assignments -> dashboard.py::list_assignments
+// GET /assignments -> api/assignments/application/list_assignments_dto.py
 export interface AssignmentSummary {
   /** internal DB id (autoincrement) */
   id: number;
-  /** ProgSnap2 id derived from the name; null when the name has no numeric suffix */
-  progsnap_id: number | null;
+  /** the dataset's AssignmentID (e.g. 439); null when the assignment did not come from an import */
+  progsnap_assignment_id: number | null;
   name: string;
-  status: string;
-  /** null until a model artifact is published (untrained assignment) */
-  current_version_id: number | null;
+  status: string | null;
+  /** null until a trained model is published (untrained assignment) */
+  published_model_id: number | null;
 }
 
 export interface AssignmentsResponse {

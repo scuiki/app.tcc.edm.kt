@@ -12,14 +12,15 @@ import sqlite3
 from edmkt_app import mastery_service
 from edmkt_app.persistence import models
 from edmkt_app.persistence import repositories as repos
+from api.assignments.domain.assignment_entity import Assignment
 
 
 def uncertainty_frame(
-    conn: sqlite3.Connection, assignment: models.Assignment
+    conn: sqlite3.Connection, assignment: Assignment
 ) -> tuple[dict[tuple[str, int], float], object, object]:
-    if assignment.current_version_id is None:
+    if assignment.published_model_id is None:
         return {}, None, None
-    artifact = repos.ModelArtifactRepository(conn).get(assignment.current_version_id)
+    artifact = repos.ModelArtifactRepository(conn).get(assignment.published_model_id)
     if artifact is None:
         return {}, None, None
     return mastery_service.compute_mastery(conn, assignment.id), artifact.first_auc, artifact.created_at

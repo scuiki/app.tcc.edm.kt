@@ -17,25 +17,6 @@ from typing import Optional
 
 
 @dataclass
-class Turma:
-    id: Optional[int]
-    name: str
-    created_at: str
-
-
-@dataclass
-class Assignment:
-    id: Optional[int]
-    turma_id: int
-    name: str
-    current_version_id: Optional[int]  # ponteiro para o ModelArtifact publicado; nasce None (D-06)
-    created_at: str
-    # Estado de 1ª classe: statistics_only | ready_for_kc_generation | kc_draft | kc_approved | trained
-    status: Optional[str] = None
-    progsnap_assignment_id: Optional[int] = None  # o AssignmentID do dataset, distinto do id do banco
-
-
-@dataclass
 class Submission:
     id: Optional[int]
     assignment_id: int

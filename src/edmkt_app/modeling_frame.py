@@ -23,7 +23,10 @@ import pandas as pd
 from api.shared.infrastructure import data_layout
 from edmkt_app import utils
 from edmkt_app.persistence import repositories as repos
-from edmkt_app.values import ProgSnapAssignmentId, TurmaSlug
+from api.assignments.domain.progsnap_assignment_id import ProgSnapAssignmentId
+from api.assignments.domain.classroom_slug import ClassroomSlug
+from api.assignments.infrastructure.sqlite_classroom_repository import SqliteClassroomRepository
+from api.assignments.infrastructure.sqlite_assignment_repository import SqliteAssignmentRepository
 
 
 @dataclass(frozen=True)
@@ -31,9 +34,9 @@ class ModelingFrame:
     """Eventos prontos para modelar + os identificadores que os chamadores derivavam sozinhos."""
 
     events: pd.DataFrame
-    turma_slug: TurmaSlug
+    turma_slug: ClassroomSlug
     assignment_id: ProgSnapAssignmentId
-    turma_id: int  # id do banco — o artefato é persistido por (turma, assignment)
+    classroom_id: int  # id do banco — o artefato é persistido por (turma, assignment)
 
 
 def load_modeling_frame(conn: sqlite3.Connection, assignment_id: int) -> ModelingFrame:
@@ -41,16 +44,16 @@ def load_modeling_frame(conn: sqlite3.Connection, assignment_id: int) -> Modelin
 
     `assignment_id` é o id do BANCO; o do ProgSnap2 vem da coluna própria e volta no frame (999.2).
     """
-    assignment = repos.AssignmentRepository(conn).get(assignment_id)
+    assignment = SqliteAssignmentRepository(conn).get(assignment_id)
     if assignment is None:
         raise ValueError(f"assignment {assignment_id} inexistente")
-    turma = repos.TurmaRepository(conn).get(assignment.turma_id)
+    turma = SqliteClassroomRepository(conn).get(assignment.classroom_id)
     if turma is None:
         # Turma órfã (FK não-cascade por-conexão): erro nomeado em vez de AttributeError em
         # turma.name, que já subiu como 500 cru uma vez (WR-01 em api/dashboard).
-        raise ValueError(f"turma {assignment.turma_id} inexistente")
+        raise ValueError(f"turma {assignment.classroom_id} inexistente")
 
-    turma_slug = TurmaSlug.from_name(turma.name)
+    turma_slug = ClassroomSlug.from_name(turma.name)
     progsnap_aid = ProgSnapAssignmentId(assignment.progsnap_assignment_id)
     pq = data_layout.cleaned_submissions_path(turma_slug, progsnap_aid)
 
@@ -58,5 +61,5 @@ def load_modeling_frame(conn: sqlite3.Connection, assignment_id: int) -> Modelin
         events=utils.run_program_only(pd.read_parquet(pq, engine="pyarrow")),
         turma_slug=turma_slug,
         assignment_id=progsnap_aid,
-        turma_id=assignment.turma_id,
+        classroom_id=assignment.classroom_id,
     )

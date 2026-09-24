@@ -22,6 +22,7 @@ from edmkt_app.modeling_frame import load_modeling_frame
 from edmkt_app.persistence import repositories as repos
 from edmkt_app.persistence.artifacts import ArtifactStore, flip_current
 from api.shared.infrastructure.clock import utc_now_iso
+from api.assignments.infrastructure.sqlite_assignment_repository import SqliteAssignmentRepository
 
 
 
@@ -72,7 +73,7 @@ def _train_body(conn, assignment_id: int, job_id: int) -> dict:
     # Ordem load-bearing blob→INSERT→flip (Pitfall 2 artifacts): persist grava o v<N> e a
     # linha; flip_current só então aponta o ponteiro para um artefato já completo.
     persisted = ArtifactStore(str(data_layout.trained_models_dir(turma_slug))).persist(
-        conn, frame.turma_id, assignment_id, result["model"], result["vocab"], config,
+        conn, frame.classroom_id, assignment_id, result["model"], result["vocab"], config,
         first_auc=result["first_attempt_auc"],  # DASH-05: o AUC sobrevive ao subprocess via a linha (D-05)
         git_commit=provenance.git_commit(Path.cwd()),
         data_hash=provenance.file_hash(
@@ -80,7 +81,7 @@ def _train_body(conn, assignment_id: int, job_id: int) -> dict:
         ),
     )
     flip_current(conn, assignment_id, persisted["artifact_id"])
-    repos.AssignmentRepository(conn).set_status(assignment_id, "trained")  # D-03: flipa só no fim
+    SqliteAssignmentRepository(conn).set_status(assignment_id, "trained")  # D-03: flipa só no fim
     # O dict de retorno some com o subprocess fire-and-forget; a linha SQLite é a ponte que
     # sobrevive ao término do filho — sem isto a taxa nunca chega ao GET (SC-3/MODEL-05).
     job_repo.mark_done(job_id, updated_at=utc_now_iso(), parse_rate=rate)

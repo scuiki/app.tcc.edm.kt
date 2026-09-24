@@ -217,158 +217,88 @@ def test_migration_0007_adds_first_auc(tmp_path):
     assert "first_attempt_auc" in _column_names(conn, "model_artifact")
 
 
-def test_migration_0007_repo_round_trips_first_auc(tmp_path):
-    """Grava first_auc via o ModelArtifactRepository e relê via get() — prova o caminho de
-    persistência; nasce NULL quando não informado (artefatos pré-0007)."""
-    from edmkt_app.persistence import models, repositories
-
+def test_first_attempt_auc_is_nullable(tmp_path):
+    """model_artifact.first_attempt_auc guarda o AUC do treino e nasce NULL quando não informado
+    (os artefatos anteriores à 0007)."""
     conn = connect(str(tmp_path / "app.db"))
     run_migrations(conn)
-    turma_id = repositories.TurmaRepository(conn).insert(
-        models.Turma(id=None, name="t", created_at="2026-01-01T00:00:00Z")
+    aid = _seed_assignment(conn)
+    conn.execute(
+        "INSERT INTO model_artifact (assignment_id, version_number, content_hash, artifact_dir, "
+        "created_at, first_attempt_auc) VALUES (?, 1, 'h1', 'v1', 't0', 0.73), "
+        "(?, 2, 'h2', 'v2', 't0', NULL);",
+        (aid, aid),
     )
-    aid = repositories.AssignmentRepository(conn).insert(
-        models.Assignment(
-            id=None, turma_id=turma_id, name="a", current_version_id=None,
-            created_at="2026-01-01T00:00:00Z",
-        )
-    )
-    repo = repositories.ModelArtifactRepository(conn)
-
-    with_auc = repo.insert(
-        models.ModelArtifact(
-            id=None, assignment_id=aid, version_number=1, content_hash="h1",
-            artifact_dir="v1", created_at="2026-01-01T00:00:00Z", first_auc=0.73,
-        )
-    )
-    assert repo.get(with_auc).first_auc == 0.73
-
-    # Sem first_auc informado, a coluna nasce NULL (artefato pré-0007 / persist sem AUC).
-    without_auc = repo.insert(
-        models.ModelArtifact(
-            id=None, assignment_id=aid, version_number=2, content_hash="h2",
-            artifact_dir="v2", created_at="2026-01-01T00:00:00Z",
-        )
-    )
-    assert repo.get(without_auc).first_auc is None
+    rows = conn.execute(
+        "SELECT version_number, first_attempt_auc FROM model_artifact ORDER BY version_number;"
+    ).fetchall()
+    assert [tuple(r) for r in rows] == [(1, 0.73), (2, None)]
 
 
 def test_qmatrix_unique_blocks_duplicate_binding(tmp_path):
-    """O trio (assignment_id, kc_id, problem_id) é único: um INSERT direto do mesmo trio levanta
-    IntegrityError, e o INSERT OR IGNORE do repo dedupe de fato (WR-04)."""
+    """O trio (assignment_id, kc_id, problem_id) é único (0006): um INSERT do mesmo trio levanta
+    IntegrityError, e é isso que torna real o INSERT OR IGNORE de quem grava vínculos."""
     import sqlite3 as _sqlite3
-
-    from edmkt_app.persistence import models, repositories
 
     conn = connect(str(tmp_path / "app.db"))
     run_migrations(conn)
-    turma_id = repositories.TurmaRepository(conn).insert(
-        models.Turma(id=None, name="t", created_at="2026-01-01T00:00:00Z")
-    )
-    aid = repositories.AssignmentRepository(conn).insert(
-        models.Assignment(
-            id=None, turma_id=turma_id, name="a", current_version_id=None,
-            created_at="2026-01-01T00:00:00Z",
-        )
-    )
-    kc_id = repositories.KCRepository(conn).insert(
-        models.KC(id=None, assignment_id=aid, name="k", kc_index=None)
-    )
-    qrepo = repositories.QMatrixRepository(conn)
-    qrepo.insert(models.QMatrix(id=None, assignment_id=aid, kc_id=kc_id, problem_id=7))
+    aid = _seed_assignment(conn)
+    kc_id = conn.execute(
+        "INSERT INTO kc (assignment_id, name) VALUES (?, 'k');", (aid,)
+    ).lastrowid
+    insert = "INSERT INTO qmatrix (assignment_id, kc_id, problem_id) VALUES (?, ?, 7);"
+    conn.execute(insert, (aid, kc_id))
 
-    # INSERT direto do mesmo trio viola o UNIQUE.
     with pytest.raises(_sqlite3.IntegrityError):
-        conn.execute(
-            "INSERT INTO qmatrix (assignment_id, kc_id, problem_id) VALUES (?, ?, ?);",
-            (aid, kc_id, 7),
-        )
-    # O OR IGNORE do bulk-insert dedupe sem estourar: a contagem fica em 1 (sem duplicata).
-    qrepo.insert_bindings(aid, kc_id, [7, 7])
-    n = conn.execute(
-        "SELECT COUNT(*) FROM qmatrix WHERE assignment_id=? AND kc_id=? AND problem_id=7;",
-        (aid, kc_id),
-    ).fetchone()[0]
+        conn.execute(insert, (aid, kc_id))
+    conn.execute(insert.replace("INSERT", "INSERT OR IGNORE"), (aid, kc_id))
+    n = conn.execute("SELECT COUNT(*) FROM qmatrix;").fetchone()[0]
     assert n == 1
 
 
-def test_migration_0004_repo_round_trips_parse_rate(tmp_path):
-    """Grava parse_rate via o repo e relê via get() — prova o caminho de persistência."""
-    from edmkt_app.persistence import repositories
-
+def test_training_job_parse_rate_round_trips(tmp_path):
+    """training_job.parse_rate (0004) guarda a taxa de parse do javalang do treino."""
     conn = connect(str(tmp_path / "app.db"))
     run_migrations(conn)
-    repo = repositories.TrainingJobRepository(conn)
     job_id = _seed_training_job(conn)
 
-    repo.mark_done(job_id, updated_at="2026-01-01T00:10:00Z", parse_rate=0.86)
-    job = repo.get(job_id)
-    assert job.parse_rate == 0.86
+    conn.execute("UPDATE training_job SET parse_rate = 0.86 WHERE id = ?;", (job_id,))
+    row = conn.execute("SELECT parse_rate FROM training_job WHERE id = ?;", (job_id,)).fetchone()
+    assert row["parse_rate"] == 0.86
+
+
+def _seed_assignment(conn: sqlite3.Connection) -> int:
+    """classroom → assignment, em SQL puro (este teste é do schema, não de um repositório)."""
+    classroom_id = conn.execute(
+        "INSERT INTO classroom (name, created_at) VALUES ('t', 't0');"
+    ).lastrowid
+    return conn.execute(
+        "INSERT INTO assignment (classroom_id, name, created_at) VALUES (?, 'a', 't0');",
+        (classroom_id,),
+    ).lastrowid
 
 
 def _seed_training_job(conn: sqlite3.Connection) -> int:
-    """turma → assignment → training_job; devolve o job_id (FK exige a cadeia)."""
-    from edmkt_app.persistence import models, repositories
-
-    turma_id = repositories.TurmaRepository(conn).insert(
-        models.Turma(id=None, name="t", created_at="2026-01-01T00:00:00Z")
-    )
-    assignment_id = repositories.AssignmentRepository(conn).insert(
-        models.Assignment(
-            id=None,
-            turma_id=turma_id,
-            name="a",
-            current_version_id=None,
-            created_at="2026-01-01T00:00:00Z",
-        )
-    )
-    return repositories.TrainingJobRepository(conn).insert(
-        models.TrainingJob(
-            id=None, assignment_id=assignment_id, status="queued", created_at="2026-01-01T00:00:00Z"
-        )
-    )
+    """classroom → assignment → training_job; devolve o job_id (a FK exige a cadeia)."""
+    return conn.execute(
+        "INSERT INTO training_job (assignment_id, status, created_at) VALUES (?, 'pending', 't0');",
+        (_seed_assignment(conn),),
+    ).lastrowid
 
 
 def test_training_job_born_null_progress(tmp_path):
-    """Uma linha criada antes de qualquer escrita de progresso lê as 6 colunas novas como
-    None (nascem NULL nas linhas pré-progresso)."""
-    from edmkt_app.persistence import repositories
-
+    """Uma linha recém-criada lê as colunas de progresso como NULL."""
     conn = connect(str(tmp_path / "app.db"))
     run_migrations(conn)
     job_id = _seed_training_job(conn)
 
-    job = repositories.TrainingJobRepository(conn).get(job_id)
-    assert job is not None
-    assert job.total_epochs is None
-    assert job.started_at is None
-    assert job.updated_at is None
-    assert job.error_message is None
+    row = conn.execute(
+        "SELECT total_epochs, started_at, updated_at, error_message FROM training_job "
+        "WHERE id = ?;",
+        (job_id,),
+    ).fetchone()
+    assert tuple(row) == (None, None, None, None)
 
-
-def test_training_job_mark_transitions(tmp_path):
-    from edmkt_app.persistence import repositories
-
-    conn = connect(str(tmp_path / "app.db"))
-    run_migrations(conn)
-    repo = repositories.TrainingJobRepository(conn)
-    job_id = _seed_training_job(conn)
-
-    repo.mark_running(job_id, total_epochs=40, started_at="2026-01-01T00:00:01Z")
-    job = repo.get(job_id)
-    assert job.status == "running"
-    assert job.total_epochs == 40
-    assert job.started_at == "2026-01-01T00:00:01Z"
-
-    repo.mark_done(job_id, updated_at="2026-01-01T00:10:00Z")
-    job = repo.get(job_id)
-    assert job.status == "done"
-    assert job.updated_at == "2026-01-01T00:10:00Z"
-
-    repo.mark_failed(job_id, "boom")
-    job = repo.get(job_id)
-    assert job.status == "failed"
-    assert job.error_message == "boom"
 
 
 def test_pyarrow_parquet_roundtrip(tmp_path):

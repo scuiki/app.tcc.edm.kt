@@ -14,44 +14,35 @@ import pytest
 
 from edmkt_app.persistence import models
 from edmkt_app.persistence import repositories as repos
+from api.assignments.infrastructure.sqlite_classroom_repository import SqliteClassroomRepository
+from api.assignments.infrastructure.sqlite_assignment_repository import SqliteAssignmentRepository
+from api.assignments.domain.classroom_entity import Classroom
+from api.assignments.domain.assignment_entity import Assignment
 
 
 def _seed_turma_assignment(conn) -> tuple[int, int]:
-    """Insere uma turma + assignment e devolve (turma_id, assignment_id).
+    """Insere uma turma + assignment e devolve (classroom_id, assignment_id).
 
     A maioria das entidades pendura numa assignment válida (FK), então este helper monta
     o mínimo de pai antes dos round-trips filhos."""
-    turma_id = repos.TurmaRepository(conn).insert(
-        models.Turma(id=None, name="Turma A", created_at="2026-06-21T00:00:00Z")
+    classroom_id = SqliteClassroomRepository(conn).add(
+        Classroom(id=None, name="Turma A", created_at="2026-06-21T00:00:00Z")
     )
-    assignment_id = repos.AssignmentRepository(conn).insert(
-        models.Assignment(
+    assignment_id = SqliteAssignmentRepository(conn).add(
+        Assignment(
             id=None,
-            turma_id=turma_id,
+            classroom_id=classroom_id,
             name="A1",
-            current_version_id=None,
+            published_model_id=None,
             created_at="2026-06-21T00:00:00Z",
         )
     )
-    return turma_id, assignment_id
+    return classroom_id, assignment_id
 
 
-def test_eight_entities_roundtrip(tmp_db):
+def test_entities_roundtrip(tmp_db):
     conn = tmp_db
-    turma_id, assignment_id = _seed_turma_assignment(conn)
-
-    # Turma + Assignment já inseridas no helper: lê de volta e compara.
-    turma = repos.TurmaRepository(conn).get(turma_id)
-    assert turma == models.Turma(id=turma_id, name="Turma A", created_at="2026-06-21T00:00:00Z")
-
-    assignment = repos.AssignmentRepository(conn).get(assignment_id)
-    assert assignment == models.Assignment(
-        id=assignment_id,
-        turma_id=turma_id,
-        name="A1",
-        current_version_id=None,
-        created_at="2026-06-21T00:00:00Z",
-    )
+    classroom_id, assignment_id = _seed_turma_assignment(conn)
 
     submission = models.Submission(
         id=None,
@@ -159,25 +150,6 @@ def test_fk_enforced(tmp_db):
         repos.SubmissionRepository(conn).insert(orphan)
 
 
-def test_assignment_status_roundtrip(tmp_db):
-    # status é estado de primeira classe (D-05/D-08): 'eda_only' | 'trainable' fazem
-    # round-trip fiel pelo insert→get (a ingestão sempre grava explícito).
-    conn = tmp_db
-    turma_id = repos.TurmaRepository(conn).insert(
-        models.Turma(id=None, name="Turma A", created_at="2026-06-21T00:00:00Z")
-    )
-    for status in ("statistics_only", "ready_for_kc_generation"):
-        aid = repos.AssignmentRepository(conn).insert(
-            models.Assignment(
-                id=None,
-                turma_id=turma_id,
-                name=f"A-{status}",
-                current_version_id=None,
-                created_at="2026-06-21T00:00:00Z",
-                status=status,
-            )
-        )
-        assert repos.AssignmentRepository(conn).get(aid).status == status
 
 
 def test_submission_event_type_roundtrip(tmp_db):
@@ -274,13 +246,3 @@ def test_kc_job_mark_failed(tmp_db):
     assert "0 KCs" in job.error_message
 
 
-def test_sql_is_parametrized(tmp_db):
-    # Valor malicioso é gravado como dado literal, não executado (placeholders ?).
-    conn = tmp_db
-    evil = "x'); DROP TABLE turma; --"
-    turma_id = repos.TurmaRepository(conn).insert(
-        models.Turma(id=None, name=evil, created_at="2026-06-21T00:00:00Z")
-    )
-    # A tabela continua existindo e o nome foi gravado verbatim.
-    assert repos.TurmaRepository(conn).get(turma_id).name == evil
-    conn.execute("SELECT 1 FROM classroom LIMIT 1;")  # não levanta: tabela não foi dropada
