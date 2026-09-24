@@ -1,10 +1,4 @@
-"""Uma conexão SQLite por requisição HTTP: abre ao entrar, fecha ao sair.
-
-O web e os subprocessos de job NUNCA compartilham um objeto Python; a coordenação é só pela linha
-da OneJobAtATimeLock + WAL. Como a conexão é por requisição, os use cases também nascem por
-requisição: o FastAPI resolve a cadeia `open_database_session → factory → rota` sozinho.
-"""
-
+# Uma conexão SQLite por requisição HTTP, abre ao entrar e fecha ao sair.
 from __future__ import annotations
 
 import sqlite3

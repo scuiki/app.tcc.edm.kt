@@ -1,18 +1,7 @@
--- 0010 — o dado limpo passa a morar no SQLite, na tabela submission.
---
--- Antes ele ficava num Parquet por assignment, e a tabela submission guardava uma cópia só dos
--- metadados que ninguém lia. Agora a tabela tem tudo (o código Java inclusive) e é a única fonte:
--- a importação grava numa transação só, e treino, dashboard e geração de KCs leem daqui.
---
--- A tabela antiga é descartada, porque cada linha dela está no Parquet, com mais colunas.
--- Numa instalação que já tem dados, os Parquets são copiados para cá por um script avulso,
--- conferido linha a linha, antes de serem apagados.
---
--- student_id e code_snapshot_id ficam SEM tipo declarado: o SQLite guarda o valor como veio
--- (número no CSEDM, texto em outro dataset), como o Parquet fazia.
+-- O dado limpo (código Java inclusive) sai do Parquet e passa a morar todo em submission.
+DROP TABLE submission;  -- numa instalação com dado real, os Parquets migram para cá antes disto
 
-DROP TABLE submission;
-
+-- student_id e code_snapshot_id ficam sem tipo declarado, o SQLite guarda o valor como veio.
 CREATE TABLE submission (
     id INTEGER PRIMARY KEY,
     assignment_id INTEGER NOT NULL,

@@ -1,9 +1,4 @@
-"""Traduz as recusas do domínio para HTTP num lugar só.
-
-Sem isto cada rota repetiria o mesmo try/except. O corpo é `{"detail": ...}`, a mesma forma que
-HTTPException produz, porque o texto e o formato do erro fazem parte do contrato.
-"""
-
+# Traduz as recusas do domínio para HTTP num lugar só, o corpo é `{"detail": ...}` do HTTPException.
 from __future__ import annotations
 
 from fastapi import FastAPI, Request

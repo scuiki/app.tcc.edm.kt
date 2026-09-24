@@ -1,14 +1,4 @@
-"""Uma raiz de dados só para a app layer.
-
-`DATA_ROOT` tinha SEIS definições (eda, features_cache, ingestion/service, kc_pipeline, train,
-mastery_service). Cada consumidor carregava a sua, e o fixture de teste do treino precisava
-lembrar de apontar DUAS delas para o tmp_path — esquecer uma faria o teste escrever na árvore
-`data/` de verdade, em silêncio.
-
-É a mesma duplicação que `_slug` (7 cópias) e o filtro de evento (2) tinham: conhecimento que
-existe em vários lugares e diverge.
-"""
-
+# Uma raiz de dados só para a app layer, definida uma vez só (antes eram SEIS cópias divergentes).
 from __future__ import annotations
 
 import re
@@ -41,12 +31,8 @@ def test_db_path_is_defined_exactly_once():
     assert definicoes == [Path("api/shared/infrastructure/settings.py")]
 
 
+# Um único monkeypatch em settings.DATA_ROOT redireciona todo caminho sob data/.
 def test_a_single_monkeypatch_redirects_every_path(monkeypatch, tmp_path):
-    """Um único monkeypatch em settings.DATA_ROOT redireciona todo caminho sob data/.
-
-    Que ninguém guarde a própria cópia da raiz é o que test_data_root_is_defined_exactly_once
-    garante; aqui se prova que data_layout lê a raiz em tempo de chamada, não no import.
-    """
     from api.shared.infrastructure.filesystem import data_layout
 
     monkeypatch.setattr(settings, "DATA_ROOT", tmp_path)

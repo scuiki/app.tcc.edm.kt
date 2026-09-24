@@ -1,10 +1,4 @@
-"""As convenções de pasta e de nome de docs/ARCHITECTURE.md, verificadas.
-
-O import-linter garante quem importa quem; este teste garante onde cada coisa mora: o papel de um
-arquivo decide a subpasta, e todo Protocol é uma interface com prefixo I. Lê o código com `ast`,
-sem importar nada, então não depende de banco, GPU nem do estado de nenhum módulo.
-"""
-
+# As convenções de pasta e de nome, verificadas com `ast`, sem importar nada e sem depender de nada.
 from __future__ import annotations
 
 import ast
@@ -22,7 +16,7 @@ ALLOWED_SUBFOLDERS = {
     "infrastructure": {"repositories", "implementations"},
     "presentation": {"controllers", "workers"},
 }
-# O shared/ não é uma funcionalidade: tem pastas de tecnologia e os erros (ver ARCHITECTURE).
+# O shared/ não é uma funcionalidade, tem pastas de tecnologia e os erros também.
 SHARED_EXTRA_SUBFOLDERS = {
     "domain": {"errors"},
     "infrastructure": {"database", "filesystem"},
@@ -33,7 +27,7 @@ ALLOWED_ROOT_FILES = {
 }
 SHARED_EXTRA_ROOT_FILES = {"infrastructure": {"settings.py"}}
 
-# O sufixo do arquivo diz o papel; o papel diz a subpasta.
+# O sufixo do arquivo diz o papel, o papel diz a subpasta.
 SUFFIX_TO_SUBFOLDER = {
     "_entity": "entities",
     "_rule": "rules",
@@ -50,8 +44,8 @@ def _python_files():
             yield f
 
 
+# Devolve ('domain', 'entities') para domain/entities/x.py, (None, None) fora das camadas.
 def _layer_and_subfolder(path: Path) -> tuple[str | None, str | None]:
-    """('domain', 'entities') para api/<feature>/domain/entities/x.py; (None, None) fora das camadas."""
     parts = path.relative_to(API).parts
     if len(parts) < 3 or parts[1] not in LAYERS:
         return None, None
@@ -113,8 +107,7 @@ def test_every_protocol_is_an_interface_named_with_i():
             public = name.lstrip("_")
             if not (public.startswith("I") and public[1:2].isupper()):
                 wrong.append(f"{f.relative_to(API)}: {name} deveria começar com I")
-            # Um Protocol privado (_IAlgo) é detalhe de tipagem do único arquivo que o usa e pode
-            # morar ao lado dele. Os públicos são contratos entre camadas: moram em interfaces/.
+            # Protocol privado é detalhe de tipagem do único arquivo que o usa, pode ficar ao lado.
             if not name.startswith("_") and "interfaces" not in f.parts:
                 wrong.append(f"{f.relative_to(API)}: {name} deveria estar em interfaces/")
     assert not wrong, "\n".join(wrong)

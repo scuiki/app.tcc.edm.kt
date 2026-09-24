@@ -1,20 +1,13 @@
-"""Caminho provado como estando sob uma raiz — a guarda resolve-depois-confere."""
-
 from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
 
 
+# Caminho provado como estando sob `root`, pela disciplina resolve-depois-confere.
 @dataclass(frozen=True)
 class ConfinedPath:
-    """Caminho provado como estando sob `root`, pela disciplina resolve-depois-confere.
-
-    Confere o caminho JÁ resolvido, não a string: `..` e symlink são fechados antes da
-    comparação, e um `..` que volta para dentro segue legítimo. Construir este tipo É a prova —
-    quem recebe um `ConfinedPath` não precisa reconferir.
-    """
-
+    # Confere o caminho JÁ resolvido, não a string, `..` e symlink são fechados antes de comparar.
     path: Path
     root: Path
 

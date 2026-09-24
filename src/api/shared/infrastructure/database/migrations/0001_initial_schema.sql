@@ -1,17 +1,12 @@
--- 0001 — initial schema: the 8 domain entities (D-01) + the one-row pipeline lock.
--- foreign_keys is enabled on the CONNECTION (db.py), NOT here (RESEARCH §0001).
--- kc / qmatrix / mastery_prediction are born MINIMAL (PK + FKs + the 1-2 columns SC4
--- exercises) and grow via ALTER TABLE in phases 5-6.
+-- Schema inicial, as entidades do domínio mais a trava de pipeline de uma linha só.
 
--- Turma (class).
 CREATE TABLE turma (
     id INTEGER PRIMARY KEY,
     name TEXT NOT NULL,
     created_at TEXT NOT NULL
 );
 
--- Assignment. current_version_id points at the published ModelArtifact (D-06); it is born
--- NULL and gets flipped atomically only after a complete artifact is written + inserted.
+-- current_version_id nasce NULL e só vira o ModelArtifact publicado após um artefato completo.
 CREATE TABLE assignment (
     id INTEGER PRIMARY KEY,
     turma_id INTEGER NOT NULL,
@@ -22,7 +17,6 @@ CREATE TABLE assignment (
     FOREIGN KEY (current_version_id) REFERENCES model_artifact (id)
 );
 
--- Submission: one ProgSnap2 code state for an assignment.
 CREATE TABLE submission (
     id INTEGER PRIMARY KEY,
     assignment_id INTEGER NOT NULL,
@@ -34,10 +28,7 @@ CREATE TABLE submission (
     FOREIGN KEY (assignment_id) REFERENCES assignment (id)
 );
 
--- ModelArtifact: write-once trained model on the FS, referenced by path (CLAUDE.md §Persistence).
--- version_number is monotonic per (assignment); UNIQUE is the safety net for the
--- MAX(version_number)+1 race (D-04 / RESEARCH Pitfall 5). content_hash is integrity/dedup,
--- NOT identity (it can collide under seed=42) — so it is a plain column, never the PK.
+-- content_hash é dedup/integridade, não identidade (pode colidir com seed fixo), nunca é a PK.
 CREATE TABLE model_artifact (
     id INTEGER PRIMARY KEY,
     assignment_id INTEGER NOT NULL,
@@ -49,7 +40,6 @@ CREATE TABLE model_artifact (
     UNIQUE (assignment_id, version_number)
 );
 
--- KC (knowledge component) — minimal; grows in phase 5.
 CREATE TABLE kc (
     id INTEGER PRIMARY KEY,
     assignment_id INTEGER NOT NULL,
@@ -57,7 +47,6 @@ CREATE TABLE kc (
     FOREIGN KEY (assignment_id) REFERENCES assignment (id)
 );
 
--- Q-matrix entry (problem x KC) — minimal; grows in phase 5.
 CREATE TABLE qmatrix (
     id INTEGER PRIMARY KEY,
     assignment_id INTEGER NOT NULL,
@@ -67,7 +56,6 @@ CREATE TABLE qmatrix (
     FOREIGN KEY (kc_id) REFERENCES kc (id)
 );
 
--- MasteryPrediction (student x KC mastery) — minimal; grows in phase 6.
 CREATE TABLE mastery_prediction (
     id INTEGER PRIMARY KEY,
     model_artifact_id INTEGER NOT NULL,
@@ -78,7 +66,6 @@ CREATE TABLE mastery_prediction (
     FOREIGN KEY (kc_id) REFERENCES kc (id)
 );
 
--- TrainingJob: status of a background training run — minimal.
 CREATE TABLE training_job (
     id INTEGER PRIMARY KEY,
     assignment_id INTEGER NOT NULL,
@@ -87,8 +74,7 @@ CREATE TABLE training_job (
     FOREIGN KEY (assignment_id) REFERENCES assignment (id)
 );
 
--- Pipeline lock: a dedicated ONE-row table (RESEARCH Open Q3). CHECK(id=1) makes it a
--- singleton; holder_pid NULL means the lock is free.
+-- CHECK(id = 1) faz da trava um singleton, holder_pid NULL quer dizer trava livre.
 CREATE TABLE pipeline_lock (
     id INTEGER PRIMARY KEY CHECK (id = 1),
     holder_pid INTEGER,
@@ -97,6 +83,5 @@ CREATE TABLE pipeline_lock (
     acquired_at TEXT
 );
 
--- Seed the single free lock row.
 INSERT INTO pipeline_lock (id, holder_pid, operation, job_id, acquired_at)
 VALUES (1, NULL, NULL, NULL, NULL);
