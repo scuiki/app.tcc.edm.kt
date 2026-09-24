@@ -10,6 +10,8 @@ from __future__ import annotations
 import sqlite3
 from datetime import datetime, timezone
 
+from edmkt_app.persistence.db import transaction
+
 
 def _now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
@@ -34,13 +36,8 @@ def flip_current(conn: sqlite3.Connection, assignment_id: int, new_version_id: i
     O flip é o ÚLTIMO passo da ordem load-bearing (blob write-once → INSERT → flip): só
     aqui um leitor passa a enxergar a nova versão, e sempre uma já completa (Pitfall 2). O
     ponteiro no DB é a fonte única — este UPDATE nunca toca o diretório do artefato."""
-    conn.execute("BEGIN IMMEDIATE;")
-    try:
+    with transaction(conn):
         conn.execute(
             "UPDATE assignment SET current_version_id=? WHERE id=?;",
             (new_version_id, assignment_id),
         )
-        conn.execute("COMMIT;")
-    except BaseException:
-        conn.execute("ROLLBACK;")
-        raise
