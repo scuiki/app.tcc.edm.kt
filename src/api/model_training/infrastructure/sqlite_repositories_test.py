@@ -4,16 +4,16 @@ from __future__ import annotations
 
 import pytest
 
-from api.model_training.domain.trained_model_entity import TrainedModel
-from api.model_training.domain.training_epoch_metric import TrainingEpochMetric
-from api.model_training.domain.training_job_entity import TrainingJob
-from api.model_training.infrastructure.sqlite_trained_model_repository import (
+from api.model_training.domain.entities.trained_model_entity import TrainedModel
+from api.model_training.domain.entities.training_epoch_metric import TrainingEpochMetric
+from api.model_training.domain.entities.training_job_entity import TrainingJob
+from api.model_training.infrastructure.repositories.sqlite_trained_model_repository import (
     SqliteTrainedModelRepository,
 )
-from api.model_training.infrastructure.sqlite_training_epoch_metric_repository import (
+from api.model_training.infrastructure.repositories.sqlite_training_epoch_metric_repository import (
     SqliteTrainingEpochMetricRepository,
 )
-from api.model_training.infrastructure.sqlite_training_job_repository import (
+from api.model_training.infrastructure.repositories.sqlite_training_job_repository import (
     SqliteTrainingJobRepository,
 )
 from api.shared.domain.value_objects.job_status import JobStatus

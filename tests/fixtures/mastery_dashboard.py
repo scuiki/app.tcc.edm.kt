@@ -21,14 +21,16 @@ from api.mastery_dashboard.application.published_model_mastery import PublishedM
 from api.mastery_dashboard.infrastructure.sqlite_student_mastery_repository import (
     SqliteStudentMasteryRepository,
 )
-from api.model_training.domain.training_dataset import load_training_dataset
-from api.model_training.infrastructure.ml_student_mastery_predictor import (
+from api.model_training.domain.services.training_dataset_loading import load_training_dataset
+from api.model_training.infrastructure.implementations.ml_student_mastery_predictor import (
     MlStudentMasteryPredictor,
 )
-from api.model_training.infrastructure.sqlite_trained_model_repository import (
+from api.model_training.infrastructure.repositories.sqlite_trained_model_repository import (
     SqliteTrainedModelRepository,
 )
-from api.model_training.infrastructure.trained_model_file_store import TrainedModelFileStore
+from api.model_training.infrastructure.implementations.trained_model_file_store import (
+    TrainedModelFileStore,
+)
 from api.shared.infrastructure.implementations.sqlite_unit_of_work import SqliteUnitOfWork
 
 

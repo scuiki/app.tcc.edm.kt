@@ -346,12 +346,14 @@ def trained_artifact(tmp_db, data_root, tiny_vocab, tiny_config):
 
     from api.assignments.domain.value_objects.classroom_slug import ClassroomSlug
     from api.assignments.domain.value_objects.progsnap_assignment_id import ProgSnapAssignmentId
-    from api.model_training.domain.code_dkt_trainer import TrainingOutcome
-    from api.model_training.domain.training_dataset import TrainingDataset
-    from api.model_training.infrastructure.sqlite_trained_model_repository import (
+    from api.model_training.domain.value_objects.training_outcome import TrainingOutcome
+    from api.model_training.domain.value_objects.training_dataset import TrainingDataset
+    from api.model_training.infrastructure.repositories.sqlite_trained_model_repository import (
         SqliteTrainedModelRepository,
     )
-    from api.model_training.infrastructure.trained_model_file_store import TrainedModelFileStore
+    from api.model_training.infrastructure.implementations.trained_model_file_store import (
+        TrainedModelFileStore,
+    )
     from ml.code_dkt.model import CodeDKTModel
     from ml.reproducibility.random_seed import seed_all_random_generators
 
