@@ -18,8 +18,12 @@ from api.knowledge_components.domain.interfaces.knowledge_component_generator im
 from api.knowledge_components.domain.interfaces.knowledge_component_repository import (
     IKnowledgeComponentRepository,
 )
-from api.knowledge_components.domain.entities.qmatrix_binding_entity import QMatrixBinding
-from api.knowledge_components.domain.interfaces.qmatrix_repository import IQMatrixRepository
+from api.knowledge_components.domain.entities.problem_knowledge_component_entity import (
+    ProblemKnowledgeComponent,
+)
+from api.knowledge_components.domain.interfaces.problem_knowledge_component_repository import (
+    IProblemKnowledgeComponentRepository,
+)
 from api.shared.application.services.clock import utc_now_iso
 from api.shared.application.interfaces.unit_of_work import IUnitOfWork
 
@@ -33,7 +37,7 @@ class RunKnowledgeComponentGenerationUseCase:
         submissions: ISubmissionRepository,
         generator: IKnowledgeComponentGenerator,
         knowledge_components: IKnowledgeComponentRepository,
-        qmatrix: IQMatrixRepository,
+        problem_kcs: IProblemKnowledgeComponentRepository,
         jobs: IKnowledgeComponentGenerationJobRepository,
         unit_of_work: IUnitOfWork,
     ) -> None:
@@ -43,7 +47,7 @@ class RunKnowledgeComponentGenerationUseCase:
         self._submissions = submissions
         self._generator = generator
         self._knowledge_components = knowledge_components
-        self._qmatrix = qmatrix
+        self._problem_kcs = problem_kcs
         self._jobs = jobs
         self._unit_of_work = unit_of_work
 
@@ -62,7 +66,7 @@ class RunKnowledgeComponentGenerationUseCase:
             progsnap_id,
             on_stage=lambda stage: self._jobs.update_stage(job_id, stage, utc_now_iso()),
         )
-        # Valida tudo antes de abrir a transação, problema sem KC reprova a Q-matrix inteira.
+        # Valida tudo antes de abrir a transação, problema sem KC reprova a geração inteira.
         generated.ensure_every_problem_has_a_kc()
 
         with self._unit_of_work:
@@ -79,8 +83,8 @@ class RunKnowledgeComponentGenerationUseCase:
             }
             for problem_id in generated.problem_ids:
                 for group in generated.groups_by_problem[problem_id]:
-                    self._qmatrix.add(
-                        QMatrixBinding(
+                    self._problem_kcs.add(
+                        ProblemKnowledgeComponent(
                             id=None,
                             assignment_id=assignment_id,
                             kc_id=kc_id_of_group[group],

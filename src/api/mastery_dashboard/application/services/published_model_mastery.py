@@ -6,7 +6,9 @@ from api.assignments.domain.entities.assignment_entity import Assignment
 from api.assignments.domain.interfaces.assignment_repository import IAssignmentRepository
 from api.classrooms.domain.interfaces.classroom_repository import IClassroomRepository
 from api.classroom_import.domain.interfaces.submission_repository import ISubmissionRepository
-from api.knowledge_components.domain.interfaces.qmatrix_repository import IQMatrixRepository
+from api.knowledge_components.domain.interfaces.problem_knowledge_component_repository import (
+    IProblemKnowledgeComponentRepository,
+)
 from api.mastery_dashboard.domain.value_objects.student_mastery_matrix import StudentMasteryMatrix
 from api.mastery_dashboard.domain.entities.student_mastery_entity import StudentMastery
 from api.mastery_dashboard.domain.interfaces.student_mastery_repository import (
@@ -27,7 +29,7 @@ class PublishedModelMastery:
         classrooms: IClassroomRepository,
         submissions: ISubmissionRepository,
         trained_models: ITrainedModelRepository,
-        qmatrix: IQMatrixRepository,
+        problem_kcs: IProblemKnowledgeComponentRepository,
         student_masteries: IStudentMasteryRepository,
         predictor: IStudentMasteryPredictor,
         unit_of_work: IUnitOfWork,
@@ -36,7 +38,7 @@ class PublishedModelMastery:
         self._classrooms = classrooms
         self._submissions = submissions
         self._trained_models = trained_models
-        self._qmatrix = qmatrix
+        self._problem_kcs = problem_kcs
         self._student_masteries = student_masteries
         self._predictor = predictor
         self._unit_of_work = unit_of_work
@@ -64,7 +66,7 @@ class PublishedModelMastery:
             assignment.id, self._assignments, self._classrooms, self._submissions
         )
         kcs_by_problem: dict[int, list[int]] = {}
-        for binding in self._qmatrix.list_by_assignment(assignment.id):
+        for binding in self._problem_kcs.list_by_assignment(assignment.id):
             kcs_by_problem.setdefault(binding.problem_id, []).append(binding.kc_id)
         matrix = self._predictor.predict_mastery(model, dataset, kcs_by_problem)
 

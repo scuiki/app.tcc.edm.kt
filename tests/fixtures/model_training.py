@@ -19,12 +19,14 @@ from api.classrooms.infrastructure.repositories.sqlite_classroom_repository impo
     SqliteClassroomRepository,
 )
 from api.knowledge_components.domain.entities.knowledge_component_entity import KnowledgeComponent
-from api.knowledge_components.domain.entities.qmatrix_binding_entity import QMatrixBinding
+from api.knowledge_components.domain.entities.problem_knowledge_component_entity import (
+    ProblemKnowledgeComponent,
+)
 from api.knowledge_components.infrastructure.repositories.sqlite_knowledge_component_repository import (
     SqliteKnowledgeComponentRepository,
 )
-from api.knowledge_components.infrastructure.repositories.sqlite_qmatrix_repository import (
-    SqliteQMatrixRepository,
+from api.knowledge_components.infrastructure.repositories.sqlite_problem_knowledge_component_repository import (
+    SqliteProblemKnowledgeComponentRepository,
 )
 from api.model_training.domain.value_objects.training_dataset import TrainingDataset
 from api.model_training.domain.value_objects.training_outcome import TrainingOutcome
@@ -100,7 +102,7 @@ def cache_code_states() -> dict[str, str]:
 
 @pytest.fixture
 def trained_artifact(tmp_db, data_root, tiny_vocab, tiny_config):
-    # Code-DKT minúsculo publicado, sem treino, e uma Q-matrix em que o problema 3 liga os 2 KCs
+    # Code-DKT minúsculo publicado, sem treino, em que o problema 3 exige os 2 KCs
     conn = tmp_db
     now = "2026-06-21T00:00:00Z"
 
@@ -158,10 +160,10 @@ def trained_artifact(tmp_db, data_root, tiny_vocab, tiny_config):
         KnowledgeComponent(id=None, assignment_id=assignment_id, name="Condicionais", group_index=1)
     )
     add_problems(conn, assignment_id, [1, 2, 3])
-    qm_repo = SqliteQMatrixRepository(conn)
+    problem_kc_repo = SqliteProblemKnowledgeComponentRepository(conn)
     for kc_id, problem_id in [(kc1, 1), (kc1, 3), (kc2, 2), (kc2, 3)]:
-        qm_repo.add(
-            QMatrixBinding(id=None, assignment_id=assignment_id, kc_id=kc_id, problem_id=problem_id)
+        problem_kc_repo.add(
+            ProblemKnowledgeComponent(id=None, assignment_id=assignment_id, kc_id=kc_id, problem_id=problem_id)
         )
 
     return SimpleNamespace(
@@ -173,7 +175,7 @@ def trained_artifact(tmp_db, data_root, tiny_vocab, tiny_config):
         artifact_dir=trained_model.model_dir,
         trained_model=trained_model,
         kcs=kc_repo.list_by_assignment(assignment_id),
-        qmatrix=qm_repo.list_by_assignment(assignment_id),
+        problem_kcs=problem_kc_repo.list_by_assignment(assignment_id),
         store=store,
         model=model,
         vocab=tiny_vocab,

@@ -26,7 +26,7 @@ from api.model_training.presentation.dependencies import TRAINING_WORKER
 _NOW = "2026-06-21T00:00:00Z"
 
 
-# O treino exige a Q-matrix aprovada; o caminho feliz semeia kc_approved, as recusas passam outro.
+# O treino exige os KCs aprovados; o caminho feliz semeia kc_approved, as recusas passam outro.
 def _seed_assignment(conn, status: str = "kc_approved") -> int:
     classroom_id = SqliteClassroomRepository(conn).add(
         Classroom(id=None, name="Turma X", created_at=_NOW)

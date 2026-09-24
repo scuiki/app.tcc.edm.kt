@@ -38,7 +38,7 @@ Code-DKT treinado → dashboard de mastery.
 | Python | 3.11 (conda da imagem base) | Linguagem do backend |
 | FastAPI + Uvicorn | | API **JSON pura**, `--workers 1` (escritor único e GPU compartilhada) |
 | PyTorch | 2.7.1+cu128 | Treino e inferência do Code-DKT, na GPU do mesmo container da API |
-| SQLite (`sqlite3` stdlib) | | `app.db` com turmas, assignments, o dado limpo, KCs, Q-matrix, jobs e modelos. Sem ORM |
+| SQLite (`sqlite3` stdlib) | | `app.db` com turmas, assignments, o dado limpo, problemas, KCs, jobs e modelos. Sem ORM |
 | pandas | | Ingestão ProgSnap2 e o dado limpo em DataFrame |
 | javalang + anytree | 0.13.0 / 2.x | Paths da AST Java (a feature do Code-DKT) |
 | sentence-transformers | 5.4.1 | Embeddings SBERT do KCGen-KT |
@@ -95,5 +95,6 @@ porquê completo das decisões não óbvias fica em `docs/DECISIONS.md`.
 `src/ml/` é a ciência e nunca importa de `api/`. `src/web/` é a SPA. `src/api/` é organizada por
 funcionalidade (`classrooms`, `assignments`, `classroom_import`, `knowledge_components`,
 `model_training`, `mastery_dashboard`, `shared`), cada uma com `domain/ application/
-infrastructure/ presentation/` e, dentro delas, uma subpasta por papel. As regras estão em `docs/ARCHITECTURE.md` e são
-verificadas pelo `import-linter` e por `src/api/architecture_test.py`.
+infrastructure/ presentation/` e, dentro delas, uma subpasta por papel. Uma funcionalidade pode
+ter uma sub-funcionalidade com camadas próprias (`assignments/problems/`). As regras estão em
+`docs/ARCHITECTURE.md` e são verificadas pelo `import-linter` e por `src/api/architecture_test.py`.

@@ -1,4 +1,4 @@
-# Cria os problemas de um assignment direto no banco, antes das tentativas e da Q-matrix.
+# Cria os problemas de um assignment direto no banco, antes das tentativas e dos KCs.
 
 from __future__ import annotations
 

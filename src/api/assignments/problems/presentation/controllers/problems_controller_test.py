@@ -1,4 +1,4 @@
-# As três rotas de leitura, os problemas, os KCs com seus problemas e a Q-matrix.
+# As três rotas de leitura, os problemas, os KCs e os KCs de cada problema.
 
 from __future__ import annotations
 
@@ -47,13 +47,13 @@ def test_the_knowledge_components_route_lists_each_kc_with_its_problems(
     ]
 
 
-def test_the_qmatrix_route_joins_problems_and_kcs_including_problems_without_kc(
+def test_problem_kcs_route_joins_problems_and_kcs_including_problems_without_kc(
     api_client, trained_artifact
 ):
     client, _ = api_client
     assignment_id = _seed(trained_artifact)
 
-    body = client.get(f"/assignments/{assignment_id}/qmatrix").json()
+    body = client.get(f"/assignments/{assignment_id}/problems/knowledge-components").json()
 
     assert body["status"] == "kc_approved"
     assert [
@@ -70,6 +70,6 @@ def test_the_qmatrix_route_joins_problems_and_kcs_including_problems_without_kc(
 def test_the_three_routes_answer_404_for_a_missing_assignment(api_client):
     client, _ = api_client
 
-    for path in ("/assignments/999/problems", "/assignments/999/qmatrix"):
+    for path in ("/assignments/999/problems", "/assignments/999/problems/knowledge-components"):
         assert client.get(path).status_code == 404
     assert client.get("/knowledge-components", params={"assignment_id": 999}).status_code == 404

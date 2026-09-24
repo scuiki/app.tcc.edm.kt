@@ -16,7 +16,8 @@ _DOMAIN_TABLES = {
     "assignment",
     "submission",
     "kc",
-    "qmatrix",
+    "problem",
+    "problem_kc",
     "model_artifact",
     "mastery_prediction",
     "training_job",
@@ -171,8 +172,8 @@ def test_migration_0005_adds_kc_index_and_kc_job(tmp_path):
 
 def test_migration_0006_adds_qmatrix_unique_index(tmp_path):
     conn = connect(str(tmp_path / "app.db"))
-    run_migrations(conn)
-    assert _user_version(conn) >= 6
+    run_migrations(conn, migrations_dir=_migrations_up_to(tmp_path, 6))
+    assert _user_version(conn) == 6
     indexes = {
         r["name"]
         for r in conn.execute(
@@ -205,7 +206,7 @@ def test_first_attempt_auc_is_nullable(tmp_path):
     assert [tuple(r) for r in rows] == [(1, 0.73), (2, None)]
 
 
-def test_qmatrix_unique_blocks_duplicate_binding(tmp_path):
+def test_problem_kc_unique_blocks_duplicate_binding(tmp_path):
     import sqlite3 as _sqlite3
 
     conn = connect(str(tmp_path / "app.db"))
@@ -215,13 +216,13 @@ def test_qmatrix_unique_blocks_duplicate_binding(tmp_path):
         "INSERT INTO kc (assignment_id, name) VALUES (?, 'k');", (aid,)
     ).lastrowid
     conn.execute("INSERT INTO problem (assignment_id, problem_id) VALUES (?, 7);", (aid,))
-    insert = "INSERT INTO qmatrix (assignment_id, kc_id, problem_id) VALUES (?, ?, 7);"
+    insert = "INSERT INTO problem_kc (assignment_id, kc_id, problem_id) VALUES (?, ?, 7);"
     conn.execute(insert, (aid, kc_id))
 
     with pytest.raises(_sqlite3.IntegrityError):
         conn.execute(insert, (aid, kc_id))
     conn.execute(insert.replace("INSERT", "INSERT OR IGNORE"), (aid, kc_id))
-    n = conn.execute("SELECT COUNT(*) FROM qmatrix;").fetchone()[0]
+    n = conn.execute("SELECT COUNT(*) FROM problem_kc;").fetchone()[0]
     assert n == 1
 
 
@@ -355,7 +356,7 @@ def test_migration_0011_creates_the_problems_and_keeps_every_row(tmp_path):
         (assignment_id, kc_id),
     )
 
-    run_migrations(conn)
+    run_migrations(conn, migrations_dir=_migrations_up_to(tmp_path, 11))
 
     assert _user_version(conn) == 11
     problems = conn.execute("SELECT problem_id, description FROM problem ORDER BY 1;").fetchall()
@@ -369,3 +370,31 @@ def test_migration_0011_creates_the_problems_and_keeps_every_row(tmp_path):
             "INSERT INTO qmatrix (assignment_id, kc_id, problem_id) VALUES (?, ?, 99);",
             (assignment_id, kc_id),
         )
+
+
+# 0012 sobre um banco em user_version=11, a tabela qmatrix vira problem_kc sem perder vínculos.
+def test_migration_0012_renames_qmatrix_to_problem_kc(tmp_path):
+    conn = connect(str(tmp_path / "app.db"))
+    run_migrations(conn, migrations_dir=_migrations_up_to(tmp_path, 11))
+    assignment_id = _seed_assignment(conn)
+    kc_id = conn.execute(
+        "INSERT INTO kc (assignment_id, name) VALUES (?, 'k');", (assignment_id,)
+    ).lastrowid
+    conn.execute("INSERT INTO problem (assignment_id, problem_id) VALUES (?, 7);", (assignment_id,))
+    conn.execute(
+        "INSERT INTO qmatrix (assignment_id, kc_id, problem_id) VALUES (?, ?, 7);",
+        (assignment_id, kc_id),
+    )
+
+    run_migrations(conn)
+
+    assert _user_version(conn) == 12
+    tables = {r["name"] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='table';")}
+    assert "problem_kc" in tables and "qmatrix" not in tables
+    assert conn.execute("SELECT COUNT(*) FROM problem_kc;").fetchone()[0] == 1
+    indexes = {
+        r["name"]
+        for r in conn.execute("SELECT name FROM sqlite_master WHERE tbl_name='problem_kc';")
+    }
+    assert "uq_problem_kc" in indexes
+    assert conn.execute("PRAGMA foreign_key_check;").fetchall() == []

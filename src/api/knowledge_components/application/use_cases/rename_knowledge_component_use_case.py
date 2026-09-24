@@ -1,15 +1,17 @@
-# O professor renomeia um KC, não mexe na Q-matrix, então nenhum problema fica sem KC.
+# Renomear um KC não mexe nos vínculos com os problemas, então nenhum problema fica sem KC.
 from __future__ import annotations
 
 from api.assignments.domain.interfaces.assignment_repository import IAssignmentRepository
-from api.knowledge_components.application.dtos.edit_qmatrix_dto import (
+from api.knowledge_components.application.dtos.edit_knowledge_components_dto import (
     KnowledgeComponentDTO,
     RenameKnowledgeComponentDTO,
 )
 from api.knowledge_components.domain.interfaces.knowledge_component_repository import (
     IKnowledgeComponentRepository,
 )
-from api.knowledge_components.domain.services.qmatrix_edit import revert_approval_after_edit
+from api.knowledge_components.domain.services.knowledge_component_edit import (
+    revert_approval_after_edit,
+)
 from api.shared.application.interfaces.unit_of_work import IUnitOfWork
 from api.shared.application.use_cases.write_use_case import WriteUseCase
 from api.shared.domain.errors.not_found import NotFound

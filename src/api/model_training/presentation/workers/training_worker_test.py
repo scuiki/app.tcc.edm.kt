@@ -121,7 +121,7 @@ def _canonical_df_with_compile_errors() -> pd.DataFrame:
 
 
 def _seed_approved(conn, data_root, df: pd.DataFrame | None = None) -> tuple[int, int]:
-    # Turma + assignment com a Q-matrix aprovada + dado limpo + job pending. Devolve (aid, job).
+    # Turma + assignment com os KCs aprovados + dado limpo + job pending. Devolve (aid, job).
     created = "2019-03-01T00:00:00+00:00"
     classroom_id = SqliteClassroomRepository(conn).add(
         Classroom(id=None, name="Turma X", created_at=created)

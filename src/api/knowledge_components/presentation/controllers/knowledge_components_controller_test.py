@@ -1,4 +1,4 @@
-# Rotas de /knowledge-components, disparo/progresso da geração, edição e aprovação da Q-matrix.
+# Rotas de /knowledge-components, disparo/progresso da geração, edição e aprovação dos KCs.
 from __future__ import annotations
 
 import subprocess
@@ -13,15 +13,17 @@ from api.classrooms.infrastructure.repositories.sqlite_classroom_repository impo
     SqliteClassroomRepository,
 )
 from api.knowledge_components.domain.entities.knowledge_component_entity import KnowledgeComponent
-from api.knowledge_components.domain.entities.qmatrix_binding_entity import QMatrixBinding
+from api.knowledge_components.domain.entities.problem_knowledge_component_entity import (
+    ProblemKnowledgeComponent,
+)
 from api.knowledge_components.infrastructure.repositories.sqlite_kc_generation_job_repository import (
     SqliteKnowledgeComponentGenerationJobRepository,
 )
 from api.knowledge_components.infrastructure.repositories.sqlite_knowledge_component_repository import (
     SqliteKnowledgeComponentRepository,
 )
-from api.knowledge_components.infrastructure.repositories.sqlite_qmatrix_repository import (
-    SqliteQMatrixRepository,
+from api.knowledge_components.infrastructure.repositories.sqlite_problem_knowledge_component_repository import (
+    SqliteProblemKnowledgeComponentRepository,
 )
 from api.knowledge_components.presentation.dependencies import KC_GENERATION_WORKER
 from tests.fixtures.problems import add_problems
@@ -54,8 +56,8 @@ def _seed_kc(conn, assignment_id, name, kc_index=None) -> int:
 
 def _bind(conn, assignment_id, kc_id, problem_id) -> None:
     add_problems(conn, assignment_id, [problem_id])
-    SqliteQMatrixRepository(conn).add(
-        QMatrixBinding(id=None, assignment_id=assignment_id, kc_id=kc_id, problem_id=problem_id)
+    SqliteProblemKnowledgeComponentRepository(conn).add(
+        ProblemKnowledgeComponent(id=None, assignment_id=assignment_id, kc_id=kc_id, problem_id=problem_id)
     )
 
 
@@ -120,7 +122,7 @@ def test_poll_missing_job_404(api_client):
     assert client.get("/knowledge-components/generation-jobs/9999").status_code == 404
 
 
-# --- edição da Q-matrix ---
+# Edição dos KCs
 
 
 def test_rename_kc_updates_name(api_client, monkeypatch):
@@ -150,7 +152,7 @@ def test_merge_unions_bindings(api_client):
     problems = {
         r["problem_id"]
         for r in conn.execute(
-            "SELECT problem_id FROM qmatrix WHERE kc_id=?;", (keep,)
+            "SELECT problem_id FROM problem_kc WHERE kc_id=?;", (keep,)
         ).fetchall()
     }
     assert problems == {1, 2}
@@ -169,7 +171,7 @@ def test_remove_that_empties_a_problem_is_blocked(api_client):
 
     # ROLLBACK, o KC e seu binding continuam intactos.
     assert SqliteKnowledgeComponentRepository(conn).get(only_kc) is not None
-    assert conn.execute("SELECT COUNT(*) FROM qmatrix WHERE kc_id=?;", (only_kc,)).fetchone()[0] == 1
+    assert conn.execute("SELECT COUNT(*) FROM problem_kc WHERE kc_id=?;", (only_kc,)).fetchone()[0] == 1
 
 
 def test_merge_rejects_cross_assignment_kc(api_client):
@@ -191,7 +193,7 @@ def test_merge_rejects_cross_assignment_kc(api_client):
     # O KC alheio (e seu binding) seguem intactos, nenhuma FK pendurada.
     assert SqliteKnowledgeComponentRepository(conn).get(foreign) is not None
     assert (
-        conn.execute("SELECT COUNT(*) FROM qmatrix WHERE kc_id=?;", (foreign,)).fetchone()[0] == 1
+        conn.execute("SELECT COUNT(*) FROM problem_kc WHERE kc_id=?;", (foreign,)).fetchone()[0] == 1
     )
 
 
@@ -232,28 +234,28 @@ def test_approve_sets_kc_approved(api_client):
     kc_id = _seed_kc(conn, aid, "x")
     _bind(conn, aid, kc_id, problem_id=1)
 
-    resp = client.post("/knowledge-components/approve-qmatrix", json={"assignment_id": aid})
+    resp = client.post("/knowledge-components/approve", json={"assignment_id": aid})
     assert resp.status_code == 200
 
     assert SqliteAssignmentRepository(conn).get(aid).status == "kc_approved"
 
 
 def test_approve_rejects_non_draft_assignment(api_client):
-    # Aprovar sem gerar KCs burlaria a revisão e treinaria sobre Q-matrix inexistente, é 409.
+    # Aprovar sem gerar KCs burlaria a revisão e treinaria sobre KCs inexistentes, é 409.
     client, conn = api_client
     aid = _seed_assignment(conn, status="ready_for_kc_generation")
 
-    resp = client.post("/knowledge-components/approve-qmatrix", json={"assignment_id": aid})
+    resp = client.post("/knowledge-components/approve", json={"assignment_id": aid})
     assert resp.status_code == 409
     assert SqliteAssignmentRepository(conn).get(aid).status == "ready_for_kc_generation"  # parado
 
 
 def test_approve_rejects_draft_without_kcs(api_client):
-    # kc_draft mas SEM nenhum KC não pode ser aprovado (não há Q-matrix a treinar).
+    # kc_draft mas SEM nenhum KC não pode ser aprovado (não há KC a treinar).
     client, conn = api_client
     aid = _seed_assignment(conn, status="kc_draft")  # nenhum KC inserido
 
-    resp = client.post("/knowledge-components/approve-qmatrix", json={"assignment_id": aid})
+    resp = client.post("/knowledge-components/approve", json={"assignment_id": aid})
     assert resp.status_code == 409
     assert SqliteAssignmentRepository(conn).get(aid).status == "kc_draft"
 

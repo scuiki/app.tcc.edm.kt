@@ -1,1 +1,1 @@
-# Gerar KCs com o LLM, editar e aprovar a Q-matrix.
+# Gerar KCs com o LLM, editar os KCs dos problemas e aprová-los.

@@ -73,8 +73,9 @@ O modelo é sempre passado por quem chama (o pin científico). A CLI roda fora d
 **Retry só para erro transitório.** Rede, 429, 5xx e timeout são refeitos com espera. Conteúdo vazio
 ou inválido sobe na hora, porque refazer não muda um conteúdo já gerado e gastaria cota.
 
-**A Q-matrix não inventa vínculos.** `build_qmatrix` bate célula a célula com o `qmatrix_A439.csv`
-do TCC 1. Um problema sem KC fica com a linha zerada, e quem recusa isso é a validação da Q-matrix.
+**A Q-matrix não inventa vínculos.** `build_qmatrix`, no `ml/`, bate célula a célula com o
+`qmatrix_A439.csv` do TCC 1. Um problema sem KC fica com a linha zerada, e quem recusa isso é a
+validação da geração. Na aplicação, cada célula 1 vira um `ProblemKnowledgeComponent`.
 
 **A geração termina numa transação só.** O `mark_done()` do job roda junto com a mudança do
 assignment para `kc_draft`, e uma falha desfaz os dois.
@@ -106,14 +107,19 @@ erro. Por isso o teste do repositório compara com `assert_frame_equal` em dtype
 ## Problemas
 
 **A chave de `problem` é (`assignment_id`, `problem_id`).** O `ProblemID` do dataset só é único
-dentro do assignment, e sem um id próprio do banco a `submission` e a `qmatrix` continuaram com o
+dentro do assignment, e sem um id próprio do banco a `submission` e a `problem_kc` continuaram com o
 `problem_id` que já tinham, sem renumerar nada.
 
-**Quem junta problema e KC é `knowledge_components`.** A chave estrangeira vai da `qmatrix` para
-`problem`, então o problema não sabe quais KCs apontam para ele, e a entidade `Problem` não carrega
-KCs. A rota `/assignments/{assignment_id}/qmatrix` fica na `presentation/` de `problems`, mas a
-lógica dela é um use case de `knowledge_components`. Fazer `problems` buscar os KCs criaria um
-ciclo entre as duas funcionalidades.
+**Quem junta problema e KC é `knowledge_components`.** A chave estrangeira vai da `problem_kc`
+para `problem`, então o problema não sabe quais KCs apontam para ele, e a entidade `Problem` não
+carrega KCs. A rota `/assignments/{assignment_id}/problems/knowledge-components` fica na
+`presentation/` de `problems`, mas a lógica dela é um use case de `knowledge_components`. Fazer
+`problems` buscar os KCs criaria um ciclo entre as duas funcionalidades.
+
+**A aplicação não fala em Q-matrix.** Na literatura, a Q-matrix é a matriz problema × KC, e é isso
+que o `ml/` monta. A aplicação nunca devolve uma matriz, e sim os KCs ligados a cada problema. Por
+isso a entidade, a tabela (`problem_kc`) e as rotas dizem o que guardam, e o termo da literatura
+fica só no `ml/` e nas etapas do KCGen-KT.
 
 **Um KC novo só liga problemas do próprio assignment.** Antes da FK, um `problem_id` qualquer era
 aceito em silêncio. Com ela, viraria um erro do banco (500). A regra recusa o pedido antes, com a
@@ -150,8 +156,8 @@ passam por ele e o segundo perde no subprocess.
 **`release()` confere o dono.** O `UPDATE` tem `WHERE holder_pid = ?`, para um release tardio de
 quem já perdeu a trava não soltar a de outro job.
 
-**`AnotherJobRunning` não é regra de negócio.** É corrida, não defeito do pedido. Tratá-la como regra
-sugeriria que a exclusão mora no web e convidaria a apagar o acquire do subprocess.
+**`AnotherJobRunning` não é regra de negócio.** É corrida, não defeito do pedido. Tratá-la como
+regra sugeriria que a exclusão mora no web e convidaria a apagar o acquire do subprocess.
 
 **`NotFound` é separado das regras.** Ele vira 404 e as regras viram 409, e ele não acumula com as
 regras, porque sem alvo não há sobre o que aplicá-las. As regras rodam todas e acumulam as recusas,

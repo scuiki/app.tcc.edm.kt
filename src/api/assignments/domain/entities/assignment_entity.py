@@ -13,7 +13,7 @@ class AssignmentStatus(StrEnum):
     STATISTICS_ONLY = "statistics_only"
     READY_FOR_KC_GENERATION = "ready_for_kc_generation"
     KC_DRAFT = "kc_draft"  # KCs gerados pelo LLM, aguardando o professor
-    KC_APPROVED = "kc_approved"  # o professor aprovou a Q-matrix; pode treinar
+    KC_APPROVED = "kc_approved"  # o professor aprovou os KCs; pode treinar
     TRAINED = "trained"  # existe um modelo publicado
 
 

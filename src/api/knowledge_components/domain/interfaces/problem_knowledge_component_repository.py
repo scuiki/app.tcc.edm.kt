@@ -1,15 +1,17 @@
-# Interface de persistência da Q-matrix (os vínculos problema ↔ KC).
+# Interface de persistência dos vínculos entre problema e KC.
 from __future__ import annotations
 
 from typing import Protocol
 
-from api.knowledge_components.domain.entities.qmatrix_binding_entity import QMatrixBinding
+from api.knowledge_components.domain.entities.problem_knowledge_component_entity import (
+    ProblemKnowledgeComponent,
+)
 
 
-class IQMatrixRepository(Protocol):
-    def add(self, binding: QMatrixBinding) -> int: ...
+class IProblemKnowledgeComponentRepository(Protocol):
+    def add(self, binding: ProblemKnowledgeComponent) -> int: ...
 
-    def list_by_assignment(self, assignment_id: int) -> list[QMatrixBinding]: ...
+    def list_by_assignment(self, assignment_id: int) -> list[ProblemKnowledgeComponent]: ...
 
     def bind_problems(self, assignment_id: int, kc_id: int, problem_ids: list[int]) -> None:
         # Liga o KC a cada problema, um vínculo que já existe é ignorado.
