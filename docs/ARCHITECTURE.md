@@ -21,15 +21,39 @@ Os nomes seguem o [glossário](GLOSSARY.md).
 | `api/mastery_dashboard/` | Mastery, recomendações e estatísticas pré-treino |
 | `api/shared/` | O que todas usam: erros, base de use case, banco, trava, settings |
 
-Toda funcionalidade tem as quatro pastas, mesmo que alguma fique com um arquivo só:
+Toda funcionalidade tem as quatro pastas, mesmo que alguma fique com um arquivo só. Dentro de
+cada camada, os arquivos se separam **por papel**, uma subpasta por papel. Uma subpasta só existe
+quando tem conteúdo:
 
 ```
 <funcionalidade>/
-  domain/           entidades, regras de negócio, interfaces (Protocol) dos repositórios
-  application/      use cases e DTOs
-  infrastructure/   implementações SQLite, disco, LLM, torch
-  presentation/     controllers HTTP (FastAPI) e workers (entrada dos subprocessos)
+  domain/
+    entities/         as entidades: têm identidade (id) e ciclo de vida
+    value_objects/    valores sem identidade, imutáveis (ClassroomSlug, MasteryLevel, TrainingOutcome…)
+    interfaces/       TODOS os Protocols que outra camada implementa, repositórios inclusive
+    rules/            as regras de negócio (IBusinessRule) que os use cases de escrita checam
+    services/         lógica de negócio pura, em funções (limpeza, treinabilidade, classificação…)
+  application/
+    use_cases/        um arquivo por use case
+    dtos/             a entrada e a saída dos use cases
+    interfaces/       os Protocols que a aplicação precisa (IUnitOfWork, IJobLock…)
+    services/         lógica de aplicação usada por mais de um use case
+  infrastructure/
+    repositories/     as implementações SQLite das interfaces de repositório
+    implementations/  as demais implementações (ml/, LLM, disco, leitores) e seus ajudantes
+  presentation/
+    controllers/      as rotas HTTP (FastAPI)
+    workers/          a entrada dos subprocessos (python -m …)
+    dependencies.py   o composition root: monta as implementações e entrega aos use cases
 ```
+
+Uma interface do `domain/interfaces/` é implementada ou em `infrastructure/repositories/` (se é
+um repositório) ou em `infrastructure/implementations/` (todo o resto).
+
+O `shared/` não é uma funcionalidade, e por isso tem três exceções: `domain/errors/` (os erros,
+um por arquivo), `infrastructure/database/` (conexão e migrations, uma pasta de tecnologia) e
+`infrastructure/filesystem/` (o layout de `data/` e a guarda de caminho); o `settings.py` fica
+na raiz de `infrastructure/`.
 
 ## Regra de dependência
 
@@ -49,7 +73,8 @@ presentation → application → domain ← infrastructure
   declarada no `domain/` da dona, ligada no composition root.
 
 Essas regras são verificadas pelo `import-linter` (contratos em `pyproject.toml`). Uma violação
-reprova a verificação, então a regra não depende de lembrar dela:
+reprova a verificação, então a regra não depende de lembrar dela. As convenções de pasta e de
+nome das interfaces são verificadas por `src/api/architecture_test.py`, que roda com a suíte:
 
 ```bash
 docker run --rm --security-opt label=disable -v "$PWD":/app -w /app edmkt-core:dev lint-imports
@@ -57,13 +82,15 @@ docker run --rm --security-opt label=disable -v "$PWD":/app -w /app edmkt-core:d
 
 ## Transações e regras
 
-- Um use case que grava recebe um `UnitOfWork` (`shared/application/unit_of_work.py`): tudo dentro
-  do `with` é gravado junto, ou nada é. A implementação SQLite fica na infraestrutura.
-- Uma regra de negócio (`shared/domain/business_rule.py`) recebe no construtor as interfaces de
-  repositório de que precisa, e `check(dto)` devolve a mensagem de recusa ou `None`. Os use cases de
-  escrita estendem `WriteUseCase`, que roda todas as regras e acumula as recusas.
-- Os erros do domínio (`NotFound`, `BusinessRuleViolation`, `AnotherJobRunning`) não conhecem HTTP;
-  `shared/presentation/http/error_handlers.py` os traduz para 404 e 409.
+- Um use case que grava recebe um `IUnitOfWork` (`shared/application/interfaces/unit_of_work.py`):
+  tudo dentro do `with` é gravado junto, ou nada é. A implementação SQLite fica na infraestrutura.
+- Uma regra de negócio (`IBusinessRule`, em `shared/domain/interfaces/business_rule.py`) recebe
+  no construtor as interfaces de repositório de que precisa, e `check(dto)` devolve a mensagem de
+  recusa ou `None`. Os use cases de escrita estendem `WriteUseCase`, que roda todas as regras e
+  acumula as recusas.
+- Os erros do domínio (`NotFound`, `BusinessRuleViolation`, `AnotherJobRunning`, em
+  `shared/domain/errors/`) não conhecem HTTP; `shared/presentation/http/error_handlers.py` os
+  traduz para 404 e 409.
 
 ## Nomes
 
@@ -73,12 +100,20 @@ Seguem a [PEP 8](https://peps.python.org/pep-0008/) e dizem a intenção.
 |---|---|---|
 | Arquivo | `snake_case`: a coisa principal + o papel | `start_training_use_case.py` |
 | Classe | `PascalCase`: substantivo + sufixo do papel | `StartTrainingUseCase`, `StartTrainingDTO` |
+| Interface (`Protocol`) | `I` + `PascalCase` | `IAssignmentRepository`, `ICodeDktTrainer` |
 | Função e método | `snake_case`: verbo + objeto | `find_students_at_risk()` |
 | Booleano | `is_` / `has_` / `can_` | `is_another_job_running()` |
 | Constante | `UPPER_SNAKE` | `CODE_DKT_HYPERPARAMETERS` |
 
 Sufixos de papel: `_entity`, `_rule`, `_repository` (a interface no domínio), `sqlite_…_repository`
 (a implementação), `_use_case`, `_dto`, `_controller`, `_worker`.
+
+O prefixo `I` não é da PEP 8 (a comunidade Python costuma nomear o Protocol só pela capacidade).
+Ele está aqui por escolha: numa assinatura como `assignments: IAssignmentRepository`, deixa claro
+que entra um contrato e não uma implementação, e forma o par com quem implementa
+(`IAssignmentRepository` → `SqliteAssignmentRepository`). O arquivo não leva o `i_`: a pasta
+`interfaces/` já diz o que ele é (`interfaces/assignment_repository.py`). O `LLMClient` do `ml/`
+fica sem `I`: o `ml/` é biblioteca e não segue as convenções da `api/`.
 
 ## Testes
 
