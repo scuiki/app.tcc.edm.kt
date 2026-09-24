@@ -32,9 +32,7 @@ class GetRecommendationsUseCase:
     def execute(self, assignment_id: int) -> RecommendationsResponseDTO:
         assignment = get_existing_assignment(self._assignments, assignment_id)
         matrix, _model_info = self._mastery.of(assignment)
-        names = {
-            kc.id: kc.name for kc in self._knowledge_components.list_by_assignment(assignment_id)
-        }
+        names = self._knowledge_components.names_including_removed(assignment_id)
         kc_means = [
             (kc_id, names.get(kc_id, f"KC {kc_id}"), mean)
             for kc_id, mean in find_critical_knowledge_components(matrix)

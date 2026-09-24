@@ -31,13 +31,14 @@ class SqliteProblemKnowledgeComponentRepository:
 
     def list_by_assignment(self, assignment_id: int) -> list[ProblemKnowledgeComponent]:
         rows = self._conn.execute(
-            "SELECT id, assignment_id, kc_id, problem_id FROM problem_kc WHERE assignment_id = ?;",
+            "SELECT id, assignment_id, kc_id, problem_id FROM problem_kc "
+            "WHERE assignment_id = ? AND deleted_at IS NULL;",
             (assignment_id,),
         ).fetchall()
         return [_to_entity(r) for r in rows]
 
     def bind_problems(self, assignment_id: int, kc_id: int, problem_ids: list[int]) -> None:
-        # OR IGNORE, o UNIQUE (assignment, kc, problema) da 0006 descarta vínculo já existente.
+        # OR IGNORE, o índice único dos vínculos ativos descarta o vínculo que já existe
         for problem_id in problem_ids:
             self._conn.execute(
                 "INSERT OR IGNORE INTO problem_kc (assignment_id, kc_id, problem_id) "
@@ -45,30 +46,55 @@ class SqliteProblemKnowledgeComponentRepository:
                 (assignment_id, kc_id, problem_id),
             )
 
-    def move_bindings(self, assignment_id: int, from_kc_id: int, to_kc_id: int) -> None:
-        # União, cada vínculo de from_kc vira de to_kc, UPDATE OR IGNORE descarta o par repetido.
+    def is_linked(self, assignment_id: int, kc_id: int, problem_id: int) -> bool:
+        row = self._conn.execute(
+            "SELECT 1 FROM problem_kc WHERE assignment_id = ? AND kc_id = ? AND problem_id = ? "
+            "AND deleted_at IS NULL;",
+            (assignment_id, kc_id, problem_id),
+        ).fetchone()
+        return row is not None
+
+    def move_bindings(
+        self, assignment_id: int, from_kc_id: int, to_kc_id: int, removed_at: str
+    ) -> None:
+        # Os vínculos de from_kc ganham uma cópia ativa em to_kc e ficam como histórico
         self._conn.execute(
-            "UPDATE OR IGNORE problem_kc SET kc_id = ? WHERE kc_id = ? AND assignment_id = ?;",
+            "INSERT OR IGNORE INTO problem_kc (assignment_id, kc_id, problem_id) "
+            "SELECT assignment_id, ?, problem_id FROM problem_kc "
+            "WHERE kc_id = ? AND assignment_id = ? AND deleted_at IS NULL;",
             (to_kc_id, from_kc_id, assignment_id),
         )
         self._conn.execute(
-            "DELETE FROM problem_kc WHERE kc_id = ? AND assignment_id = ?;",
-            (from_kc_id, assignment_id),
+            "UPDATE problem_kc SET deleted_at = ? "
+            "WHERE kc_id = ? AND assignment_id = ? AND deleted_at IS NULL;",
+            (removed_at, from_kc_id, assignment_id),
         )
 
-    def delete_bindings_of(self, kc_id: int) -> None:
-        self._conn.execute("DELETE FROM problem_kc WHERE kc_id = ?;", (kc_id,))
+    def remove(self, assignment_id: int, kc_id: int, problem_id: int, removed_at: str) -> bool:
+        cur = self._conn.execute(
+            "UPDATE problem_kc SET deleted_at = ? "
+            "WHERE assignment_id = ? AND kc_id = ? AND problem_id = ? AND deleted_at IS NULL;",
+            (removed_at, assignment_id, kc_id, problem_id),
+        )
+        return cur.rowcount == 1
+
+    def remove_all_of(self, kc_id: int, removed_at: str) -> None:
+        self._conn.execute(
+            "UPDATE problem_kc SET deleted_at = ? WHERE kc_id = ? AND deleted_at IS NULL;",
+            (removed_at, kc_id),
+        )
 
     def problems_of(self, kc_id: int) -> list[int]:
         rows = self._conn.execute(
-            "SELECT DISTINCT problem_id FROM problem_kc WHERE kc_id = ? AND problem_id IS NOT NULL;",
+            "SELECT DISTINCT problem_id FROM problem_kc WHERE kc_id = ? AND deleted_at IS NULL;",
             (kc_id,),
         ).fetchall()
         return [r["problem_id"] for r in rows]
 
     def count_kcs_of_problem(self, assignment_id: int, problem_id: int) -> int:
         row = self._conn.execute(
-            "SELECT COUNT(*) AS n FROM problem_kc WHERE assignment_id = ? AND problem_id = ?;",
+            "SELECT COUNT(*) AS n FROM problem_kc "
+            "WHERE assignment_id = ? AND problem_id = ? AND deleted_at IS NULL;",
             (assignment_id, problem_id),
         ).fetchone()
         return row["n"]

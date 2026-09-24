@@ -130,6 +130,26 @@ deduz uma descrição a partir das soluções corretas. Ela é gravada junto com
 A439 estão sem descrição, porque os KCs dele foram gerados antes da tabela existir, e o cache do LLM
 não guarda o `problem_id` de cada resposta. Só uma nova geração, que gasta cota, preenche.
 
+## Remoção
+
+**Remover é soft delete, para guardar o histórico.** O KC e o vínculo removidos continuam no banco,
+com `deleted_at`. Não há rota de restaurar: o histórico serve para saber o que o professor mudou, e
+desfazer um vínculo é ligar de novo.
+
+**O índice único de `problem_kc` vale só para os vínculos ativos.** Sem isso, religar um vínculo
+removido esbarraria na linha antiga. Com o índice parcial, a linha antiga fica como histórico e
+nasce uma nova, então cada remoção e cada religação ficam registradas.
+
+**A fusão também guarda o histórico.** Antes ela reescrevia o `kc_id` dos vínculos do KC descartado.
+Agora ela cria os vínculos que faltam no KC que fica e marca os do descartado como removidos.
+
+**Um KC que perde o último problema sai junto.** Um KC sem problema não entra no treino nem no
+dashboard, e com soft delete isso é reversível.
+
+**O dashboard ainda mostra o nome de um KC removido.** O modelo publicado pode ter sido treinado
+antes da remoção e continuar prevendo aquele KC. As recomendações buscam os nomes incluindo os
+removidos, em vez de mostrar "KC 5".
+
 ## Dashboard
 
 **A matriz de mastery é calculada uma vez por versão.** A versão publicada é resolvida uma vez por

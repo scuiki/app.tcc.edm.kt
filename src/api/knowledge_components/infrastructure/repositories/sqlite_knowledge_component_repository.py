@@ -1,4 +1,4 @@
-# IKnowledgeComponentRepository sobre SQLite (tabela `kc`). Todo SQL é parametrizado.
+# IKnowledgeComponentRepository sobre SQLite (tabela `kc`); as leituras ignoram os removidos.
 from __future__ import annotations
 
 import sqlite3
@@ -32,20 +32,34 @@ class SqliteKnowledgeComponentRepository:
 
     def get(self, kc_id: int) -> KnowledgeComponent | None:
         row = self._conn.execute(
-            "SELECT id, assignment_id, name, kc_index FROM kc WHERE id = ?;", (kc_id,)
+            "SELECT id, assignment_id, name, kc_index FROM kc WHERE id = ? AND deleted_at IS NULL;",
+            (kc_id,),
         ).fetchone()
         return None if row is None else _to_entity(row)
 
     def list_by_assignment(self, assignment_id: int) -> list[KnowledgeComponent]:
         rows = self._conn.execute(
-            "SELECT id, assignment_id, name, kc_index FROM kc WHERE assignment_id = ?;",
+            "SELECT id, assignment_id, name, kc_index FROM kc "
+            "WHERE assignment_id = ? AND deleted_at IS NULL ORDER BY id;",
             (assignment_id,),
         ).fetchall()
         return [_to_entity(r) for r in rows]
 
     def rename(self, kc_id: int, name: str) -> None:
         # Nome vem do professor, parametrizado, nunca interpolado.
-        self._conn.execute("UPDATE kc SET name = ? WHERE id = ?;", (name, kc_id))
+        self._conn.execute(
+            "UPDATE kc SET name = ? WHERE id = ? AND deleted_at IS NULL;", (name, kc_id)
+        )
 
-    def delete(self, kc_id: int) -> None:
-        self._conn.execute("DELETE FROM kc WHERE id = ?;", (kc_id,))
+    def remove(self, kc_id: int, removed_at: str) -> None:
+        self._conn.execute(
+            "UPDATE kc SET deleted_at = ? WHERE id = ? AND deleted_at IS NULL;",
+            (removed_at, kc_id),
+        )
+
+    def names_including_removed(self, assignment_id: int) -> dict[int, str]:
+        # Um modelo treinado antes de uma remoção ainda prevê o KC removido, e o nome dele fica
+        rows = self._conn.execute(
+            "SELECT id, name FROM kc WHERE assignment_id = ?;", (assignment_id,)
+        ).fetchall()
+        return {r["id"]: r["name"] for r in rows}

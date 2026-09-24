@@ -49,14 +49,19 @@ def test_a_kc_round_trips_with_its_group_index(tmp_db, assignment_id):
     assert repository.list_by_assignment(assignment_id) == [generated, by_teacher]
 
 
-def test_rename_and_delete(tmp_db, assignment_id):
+def test_rename_and_remove_keeps_the_row_as_history(tmp_db, assignment_id):
     repository = SqliteKnowledgeComponentRepository(tmp_db)
     kc_id = repository.add(KnowledgeComponent(id=None, assignment_id=assignment_id, name="a"))
 
     repository.rename(kc_id, "b")
     assert repository.get(kc_id).name == "b"
-    repository.delete(kc_id)
+    repository.remove(kc_id, "t1")
+
     assert repository.get(kc_id) is None
+    assert repository.list_by_assignment(assignment_id) == []
+    row = tmp_db.execute("SELECT name, deleted_at FROM kc WHERE id = ?;", (kc_id,)).fetchone()
+    assert tuple(row) == ("b", "t1")  # a linha fica, só marcada como removida
+    assert repository.names_including_removed(assignment_id) == {kc_id: "b"}
 
 
 def test_bindings_union_on_move_and_ignore_duplicates(tmp_db, assignment_id):
@@ -68,11 +73,38 @@ def test_bindings_union_on_move_and_ignore_duplicates(tmp_db, assignment_id):
     problem_kcs.add(ProblemKnowledgeComponent(id=None, assignment_id=assignment_id, kc_id=drop, problem_id=1))
     problem_kcs.add(ProblemKnowledgeComponent(id=None, assignment_id=assignment_id, kc_id=drop, problem_id=2))
 
-    problem_kcs.move_bindings(assignment_id, from_kc_id=drop, to_kc_id=keep)
+    problem_kcs.move_bindings(assignment_id, from_kc_id=drop, to_kc_id=keep, removed_at="t1")
 
     assert sorted(problem_kcs.problems_of(keep)) == [1, 2]
     assert problem_kcs.problems_of(drop) == []
     assert problem_kcs.count_kcs_of_problem(assignment_id, 1) == 1
+    # Os vínculos do KC descartado ficam como histórico
+    removed = tmp_db.execute(
+        "SELECT COUNT(*) FROM problem_kc WHERE kc_id = ? AND deleted_at = 't1';", (drop,)
+    ).fetchone()[0]
+    assert removed == 2
+
+
+def test_removing_a_link_hides_it_and_relinking_creates_a_new_row(tmp_db, assignment_id):
+    kc_id = SqliteKnowledgeComponentRepository(tmp_db).add(
+        KnowledgeComponent(id=None, assignment_id=assignment_id, name="k")
+    )
+    problem_kcs = SqliteProblemKnowledgeComponentRepository(tmp_db)
+    problem_kcs.bind_problems(assignment_id, kc_id, [1])
+
+    assert problem_kcs.remove(assignment_id, kc_id, 1, "t1") is True
+    assert problem_kcs.remove(assignment_id, kc_id, 1, "t2") is False  # já não havia ativo
+    assert problem_kcs.is_linked(assignment_id, kc_id, 1) is False
+    assert problem_kcs.list_by_assignment(assignment_id) == []
+    assert problem_kcs.count_kcs_of_problem(assignment_id, 1) == 0
+
+    problem_kcs.bind_problems(assignment_id, kc_id, [1])
+
+    assert problem_kcs.is_linked(assignment_id, kc_id, 1) is True
+    rows = tmp_db.execute(
+        "SELECT deleted_at FROM problem_kc WHERE kc_id = ? ORDER BY id;", (kc_id,)
+    ).fetchall()
+    assert [r[0] for r in rows] == ["t1", None]
 
 
 def test_a_generation_job_moves_through_its_states(tmp_db, assignment_id):

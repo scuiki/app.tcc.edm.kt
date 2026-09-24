@@ -60,6 +60,14 @@ Todo `Protocol` da `api/` começa com `I` e fica numa pasta `interfaces/` (ver
 | `IJobLock` / `IAcquiredJobLock` | `OneJobAtATimeLock` | Pegar e soltar a trava de job | `JobLock` / `AcquiredJobLock` |
 | `IBackgroundJobLauncher` | `SubprocessJobLauncher` | Disparar um worker em background | `BackgroundJobLauncher` |
 
+## Remoção
+
+| Nome no código | O que é |
+|---|---|
+| `deleted_at` | A data em que a linha foi removida. Vazia enquanto ela está ativa (ver ARCHITECTURE, Remoção) |
+| `remove()` / `remove_all_of()` | Os métodos de repositório que removem, marcando `deleted_at` |
+| `names_including_removed()` | Os nomes dos KCs de um assignment, removidos inclusive, para o dashboard de um modelo treinado antes da remoção |
+
 ## Estados do assignment
 
 `AssignmentStatus` descreve até onde o assignment chegou. Cada transição tem um único dono.
@@ -145,6 +153,8 @@ Os jobs (`TrainingJob`, `KnowledgeComponentGenerationJob`) têm os estados `pend
 | `GET /assignments/{assignment_id}/problems` | Os problemas do assignment, com a descrição | — |
 | `GET /assignments/{assignment_id}/problems/knowledge-components` | Cada problema com a descrição e os KCs que exige (a lógica é de `knowledge_components`) | — |
 | `GET /knowledge-components?assignment_id=…` | Os KCs do assignment, cada um com os `problem_ids` a que se liga | — |
+| `POST /knowledge-components/{kc_id}/problems/{problem_id}` | Liga um KC que já existe a mais um problema | — |
+| `DELETE /knowledge-components/{kc_id}/problems/{problem_id}` | Tira o KC de um problema só; se ele perder o último, sai junto | — |
 | `POST /classroom-imports` | Recebe o `.zip` e devolve os arquivos detectados | `POST /ingest` |
 | `POST /classroom-imports/process` | Importa a variante escolhida | `POST /ingest/process` |
 | `POST /knowledge-components/generation-jobs` | Dispara a geração de KCs | `POST /kc/generate` |
