@@ -8,13 +8,15 @@ Pitfall 5): prendê-la aqui a manteria presa durante a escolha humana de variant
 `find_code_states`/`find_main_tables` substituem o `_SPLITS` hard-coded do TCC1 por glob
 tolerante (D-02: CodeStates pode viver em CodeStates/ ou LinkTables/; D-03: N MainTable viram
 variantes para o professor escolher, sem adivinhar). `extract_zip` espelha a defesa de
-path-traversal do `persistence/artifacts._version_dir`.
+path-traversal de `values.ConfinedPath`.
 """
 
 from __future__ import annotations
 
 import zipfile
 from pathlib import Path
+
+from edmkt_app.values import ConfinedPath
 
 # Tetos conservadores contra zip-bomb (DoS — RESEARCH §Security): o limite exato é detalhe
 # operacional; escolhidos folgados o bastante para um ProgSnap2 real (≈milhares de CodeStates),
@@ -69,9 +71,11 @@ def extract_zip(zip_path: Path, dest: Path) -> Path:
         for info in infos:
             # O nome do membro NÃO é caminho confiável: resolve sob base e valida ANTES de
             # escrever (mesma disciplina do _version_dir). Path absoluto ou ../ escapa => rejeita.
-            resolved = (base / info.filename).resolve()
-            if base not in resolved.parents and resolved != base:
-                raise ValueError("path traversal detectado na extração do zip")
+            try:
+                resolved = Path(ConfinedPath(base / info.filename, root=base))
+            except ValueError:
+                # Mensagem própria, sem o caminho: o nome do membro pode carregar conteúdo do aluno.
+                raise ValueError("path traversal detectado na extração do zip") from None
             if info.is_dir():
                 resolved.mkdir(parents=True, exist_ok=True)
                 continue

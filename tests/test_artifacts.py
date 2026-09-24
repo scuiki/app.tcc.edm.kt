@@ -282,7 +282,7 @@ def test_load_version_refuses_dir_outside_base(tmp_path):
     with open(evil_dir / "vocab.pkl", "wb") as f:
         pickle.dump(_Payload(), f)
 
-    with pytest.raises(ValueError, match="path traversal"):
+    with pytest.raises(ValueError, match="fora da raiz"):
         store.load_version(str(evil_dir))
 
     # O efeito colateral do pickle NÃO ocorreu: a guarda barrou antes de qualquer pickle.load.
@@ -343,5 +343,5 @@ def test_reader_and_writer_agree_on_the_root(tmp_path):
     # guarda. Provamos que a raiz certa o recusa.
     raw_dir = data_root / "turma-x" / "raw" / "forjado"
     raw_dir.mkdir(parents=True)
-    with pytest.raises(ValueError, match="traversal"):
+    with pytest.raises(ValueError, match="fora da raiz"):
         ArtifactStore(str(base)).load_version(str(raw_dir))
