@@ -1,4 +1,4 @@
-"""O que um treino devolve. O modelo treinado é opaco para a aplicação."""
+# O que um treino devolve. O modelo treinado é opaco para a aplicação.
 
 from __future__ import annotations
 

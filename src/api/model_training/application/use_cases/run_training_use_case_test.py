@@ -1,8 +1,4 @@
-"""RunTrainingUseCase: a ordem arquivos → linha → publicação, e a curva gravada época por época.
-
-Com fakes que registram as chamadas: nada de GPU, banco ou disco. A ordem importa porque publicar
-antes de gravar exporia ao dashboard uma versão incompleta.
-"""
+# Fakes registram as chamadas (sem GPU, banco ou disco); publicar antes de gravar seria prematuro.
 
 from __future__ import annotations
 

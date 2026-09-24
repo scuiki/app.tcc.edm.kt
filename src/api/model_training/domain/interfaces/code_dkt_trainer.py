@@ -1,4 +1,4 @@
-"""Treinar o Code-DKT (ml/). A implementação fica na infraestrutura."""
+# Treinar o Code-DKT (ml/). A implementação fica na infraestrutura.
 
 from __future__ import annotations
 
@@ -15,5 +15,5 @@ class ICodeDktTrainer(Protocol):
     def train(
         self, dataset: TrainingDataset, on_epoch: Callable[[int, float], None]
     ) -> TrainingOutcome:
-        """Treina e avalia; `on_epoch(época, loss_média)` é chamado ao fim de cada época."""
+        # `on_epoch(época, loss_média)` é chamado ao fim de cada época.
         ...

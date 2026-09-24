@@ -1,4 +1,4 @@
-"""MlStudentMasteryPredictor: a mastery por KC é a agregação, pela Q-matrix, da previsão por problema."""
+# MlStudentMasteryPredictor, a mastery por KC é a agregação, pela Q-matrix, da previsão por problema
 
 from __future__ import annotations
 

@@ -1,9 +1,4 @@
-"""IStudentMasteryPredictor sobre o ml/: recarrega a versão, prevê cada tentativa e agrega por KC.
-
-O vocabulário é SEMPRE o recarregado da versão, nunca reconstruído: reconstruí-lo vazaria a
-partição de teste. As entradas seguem a mesma montagem do treino (sequências completas → AST
-paths → índice de problemas), sobre o mesmo cache de paths em disco que o treino aqueceu.
-"""
+# Vocabulário SEMPRE recarregado da versão, nunca reconstruído (vazaria a partição de teste).
 
 from __future__ import annotations
 
@@ -38,15 +33,12 @@ class MlStudentMasteryPredictor:
         return aggregate_student_mastery(self.predict(trained_model, dataset), kcs_by_problem)
 
     def predict(self, trained_model: TrainedModel, dataset: TrainingDataset) -> pd.DataFrame:
-        """A probabilidade prevista de acerto de cada tentativa (menos a primeira de cada aluno)."""
-        # A leitura dos arquivos é confinada ao models/ da turma e desserializa os pesos com
-        # weights_only=True.
+        # Probabilidade de acerto (menos a 1ª tentativa); leitura confinada ao models/ da turma
         model, vocab, meta = self._model_store.load(trained_model, dataset.classroom_slug)
 
-        # int, não o value object: o ml/ filtra a coluna do DataFrame pelo int.
+        # int, não o value object (o ml/ filtra a coluna do DataFrame pelo int).
         sequences = build_student_sequences(dataset.events, dataset.progsnap_assignment_id.value)
-        # Os parâmetros de extração são os do meta da versão, completados pelos hiperparâmetros
-        # congelados (os defaults com que toda versão foi treinada).
+        # Parâmetros de extração vêm do meta da versão, completados pelos hiperparâmetros congelados
         ast_paths_by_snapshot = load_or_extract_ast_paths(
             dataset.classroom_slug,
             sorted(set(code_snapshot_ids(sequences))),

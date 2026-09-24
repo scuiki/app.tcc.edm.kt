@@ -1,4 +1,4 @@
-"""ITrainedModelRepository sobre SQLite (tabela `model_artifact`), mais o que o store usa ao gravar."""
+# ITrainedModelRepository sobre SQLite (tabela `model_artifact`), mais o que o store usa ao gravar.
 
 from __future__ import annotations
 
@@ -55,8 +55,7 @@ class SqliteTrainedModelRepository:
         return None if row is None else _to_entity(row)
 
     def next_version_number(self, assignment_id: int) -> int:
-        """MAX(version_number) + 1 no assignment. O UNIQUE(assignment_id, version_number) é a rede
-        contra dois treinos calculando o mesmo número (a trava de job já impede os dois)."""
+        # MAX(version_number)+1; o UNIQUE é rede contra dois treinos calculando o mesmo número.
         row = self._conn.execute(
             "SELECT COALESCE(MAX(version_number), 0) + 1 AS next FROM model_artifact "
             "WHERE assignment_id = ?;",

@@ -1,4 +1,4 @@
-"""Os repositórios SQLite do treino: jobs, curva de loss e versões de modelo."""
+# Os repositórios SQLite do treino, jobs, curva de loss e versões de modelo.
 
 from __future__ import annotations
 

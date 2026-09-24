@@ -1,9 +1,4 @@
-"""As rotas de /training-jobs: o disparo devolve o job na hora, o GET acompanha o progresso.
-
-O Popen é substituído: nenhum processo real nasce, e os argumentos (list-form, sem shell) são
-conferidos. Cobre a recusa sem Q-matrix aprovada ou com outro job rodando (409), o progresso lido
-da curva de loss, a taxa de parse e a curva completa. Herméticos via api_client.
-"""
+# As rotas de /training-jobs, disparo devolve o job na hora, GET acompanha o progresso.
 
 from __future__ import annotations
 
@@ -31,7 +26,7 @@ from api.model_training.presentation.dependencies import TRAINING_WORKER
 _NOW = "2026-06-21T00:00:00Z"
 
 
-# O treino exige a Q-matrix aprovada: o caminho feliz semeia kc_approved; as recusas passam outro.
+# O treino exige a Q-matrix aprovada; o caminho feliz semeia kc_approved, as recusas passam outro.
 def _seed_assignment(conn, status: str = "kc_approved") -> int:
     classroom_id = SqliteClassroomRepository(conn).add(
         Classroom(id=None, name="Turma X", created_at=_NOW)
@@ -49,9 +44,8 @@ def _seed_assignment(conn, status: str = "kc_approved") -> int:
     )
 
 
+# Captura os args do dispatch sem spawnar processo (treino real nunca roda no teste).
 class _FakePopen:
-    """Captura os args do dispatch sem spawnar processo (treino real nunca roda no teste)."""
-
     calls: list[list[str]] = []
 
     def __init__(self, args, *a, **kw):
@@ -69,7 +63,7 @@ def test_dispatch_returns_job_id_immediately(api_client, monkeypatch):
     assert resp.status_code == 202
     job_id = resp.json()["job_id"]
     assert isinstance(job_id, int)
-    # Exatamente um disparo, list-form: sys.executable -m <worker>, com os ids como str.
+    # Exatamente um disparo, list-form, sys.executable -m <worker>, com os ids como str.
     assert len(_FakePopen.calls) == 1
     args = _FakePopen.calls[0]
     assert args == [
@@ -81,7 +75,7 @@ def test_dispatch_returns_job_id_immediately(api_client, monkeypatch):
         "--job-id",
         str(job_id),
     ]
-    # Nenhum shell=True / string interpolada: os args são uma lista de str puras.
+    # Nenhum shell=True / string interpolada, os args são uma lista de str puras.
     assert all(isinstance(a, str) for a in args)
 
 
@@ -95,7 +89,7 @@ def test_dispatch_rejects_statistics_only_409(api_client, monkeypatch):
 
 
 def test_dispatch_blocked_before_approval_then_ok_after(api_client, monkeypatch):
-    # o gate humano — kc_draft (não-aprovado) é 409; aprovar destrava o /training.
+    # o gate humano, kc_draft (não-aprovado) é 409; aprovar destrava o /training.
     client, conn = api_client
     aid = _seed_assignment(conn, status="kc_draft")
     _FakePopen.calls = []
@@ -151,7 +145,7 @@ def test_poll_returns_progress_fields(api_client, monkeypatch):
 
 
 def test_poll_returns_parse_rate(api_client, monkeypatch):
-    """O progresso expõe ao professor a taxa de parse gravada pelo worker."""
+    # O progresso expõe ao professor a taxa de parse gravada pelo worker.
     client, conn = api_client
     aid = _seed_assignment(conn)
     _FakePopen.calls = []
@@ -167,7 +161,7 @@ def test_poll_returns_parse_rate(api_client, monkeypatch):
 
 
 def test_poll_parse_rate_null_when_unset(api_client, monkeypatch):
-    """Um job em andamento, sem taxa de parse gravada, devolve null sem erro."""
+    # Um job em andamento, sem taxa de parse gravada, devolve null sem erro.
     client, conn = api_client
     aid = _seed_assignment(conn)
     _FakePopen.calls = []

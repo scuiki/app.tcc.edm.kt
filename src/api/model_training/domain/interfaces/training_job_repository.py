@@ -1,4 +1,4 @@
-"""A interface de persistência dos jobs de treino: a ponte entre o web e o subprocess."""
+# A interface de persistência dos jobs de treino, a ponte entre o web e o subprocess.
 
 from __future__ import annotations
 

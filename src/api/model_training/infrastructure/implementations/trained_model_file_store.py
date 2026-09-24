@@ -1,9 +1,4 @@
-"""Os modelos treinados em disco: data/<turma>/models/<assignment_id>/v<K>/.
-
-Cada versão é um diretório write-once com os pesos (model.pt), o vocabulário (vocab.pkl) e tudo que
-reconstrói o modelo (config.json). A ordem ao gravar sustenta a consistência: arquivos → linha no
-banco → publicação (esta última é do use case). Publicar antes exporia uma versão incompleta.
-"""
+# Modelos treinados em disco (data/<turma>/models/<assignment_id>/v<K>/), cada versão write-once.
 
 from __future__ import annotations
 
@@ -31,9 +26,8 @@ from api.shared.infrastructure.database.sqlite_connection import transaction
 from ml.code_dkt.model import CodeDKTModel
 
 
+# Os arquivos de cada versão sob `base_path` (o models/ de uma turma).
 class ModelVersionFiles:
-    """Os arquivos de cada versão sob `base_path` (o models/ de uma turma)."""
-
     def __init__(self, base_path: str | Path) -> None:
         self._base = Path(base_path)
 
@@ -50,34 +44,23 @@ class ModelVersionFiles:
         vocab: dict,
         config: dict,
     ) -> dict:
-        """Grava state_dict + vocab.pkl + config.json num v<N> write-once; devolve dir+hash.
-
-        n_problems é derivado do modelo vivo (model.input_dim / model.fc.out_features),
-        evitando alterar o ml. O diretório é criado SEM exist_ok: re-gravar uma
-        versão existente levanta FileExistsError (write-once)."""
+        # Grava state_dict + vocab.pkl + config.json em v<N> write-once (mkdir sem exist_ok).
         vdir = self.version_dir(assignment_id, version_number)
-        # parents=True cria a árvore-pai que falte (turma/assignment/models) sem falhar se já
-        # existe; SEM exist_ok o v<N> final é write-once — FileExistsError se já existir.
+        # parents=True cria a árvore-pai que falte; sem exist_ok, v<N> é write-once.
         vdir.mkdir(parents=True)
 
         weights_path = vdir / "model.pt"
         vocab_path = vdir / "vocab.pkl"
         config_path = vdir / "config.json"
 
-        # Contrato de reload: o CodeDKTModel real tem input_dim=2M e output_dim=M
-        # — NÃO são iguais (assumir input_dim == output_dim == n_problems
-        # causaria size mismatch no modelo de verdade).
-        # n_problems = M = output_dim = fc.out_features; input_dim e output_dim são gravados
-        # separadamente, derivados do objeto vivo, para reconstruir sem assumir a relação 2M.
+        # Contrato de reload, input_dim=2M != output_dim=M no CodeDKTModel real; gravados separados.
         input_dim = int(model.input_dim)
         output_dim = int(model.fc.out_features)
 
         torch.save(model.state_dict(), weights_path)  # só os pesos, não o nn.Module
         with open(vocab_path, "wb") as f:
             pickle.dump(vocab, f)
-        # meta carrega TUDO que reconstrói o modelo no reload: config + input/output
-        # dim + node_count/path_count do vocab. n_problems (=output_dim=M) fica explícito como
-        # o id de problemas. sort_keys deixa o JSON (e o hash) estável.
+        # meta carrega tudo pro reload (config, input/output dim, node/path count).
         meta = {
             **dict(config),
             "input_dim": input_dim,
@@ -95,21 +78,12 @@ class ModelVersionFiles:
         return {"dir": str(vdir), "content_hash": h.hexdigest()}
 
     def read(self, vdir: str) -> tuple[CodeDKTModel, dict, dict]:
-        """Reconstrói o CodeDKTModel pelos args do meta ANTES do load_state_dict.
-
-        map_location='cpu' (a suíte é CPU-only) e model.eval() (inferência). Devolve
-        (model, vocab, meta)."""
-        # vdir vem de a linha do modelo (DB-owned), mas o vocab.pkl é lido com
-        # pickle.load IRRESTRITO (≠ torch.load weights_only=True do .pt). Um artifact_dir
-        # adulterado/fora-da-árvore apontaria a desserialização para um .pkl arbitrário ⇒ RCE.
-        # Mesma guarda resolve-depois-confere de version_dir ANTES de abrir o .pkl.
+        # vocab.pkl usa pickle irrestrito; artifact_dir adulterado seria RCE, daí resolve-e-confere
         path = Path(ConfinedPath(vdir, root=self._base))
         meta = json.loads((path / "config.json").read_text())
         with open(path / "vocab.pkl", "rb") as f:
             vocab = pickle.load(f)
-        # Todos os args de construção saem do meta — reconstrução determinística.
-        # input_dim (2M) e output_dim (M) são distintos no CodeDKTModel real — usar os valores
-        # gravados, não assumir input_dim==output_dim.
+        # Args de construção saem do meta (determinístico); input_dim(2M) e output_dim(M) diferem.
         model = CodeDKTModel(
             input_dim=meta["input_dim"],
             hidden_dim=meta["hidden_dim"],
@@ -121,8 +95,7 @@ class ModelVersionFiles:
             node_embed_dim=meta["node_embed_dim"],
             path_embed_dim=meta["path_embed_dim"],
         )
-        # weights_only=True restringe a desserialização a tensores (sem pickle irrestrito);
-        # o state_dict é dict[str, Tensor], totalmente suportado nesse modo.
+        # weights_only=True restringe a tensores, sem pickle irrestrito; state_dict só usa tensores.
         model.load_state_dict(
             torch.load(path / "model.pt", map_location="cpu", weights_only=True)
         )
@@ -130,20 +103,14 @@ class ModelVersionFiles:
         return model, vocab, meta
 
 
+# ITrainedModelStore, arquivos da versão + a linha em model_artifact.
 class TrainedModelFileStore:
-    """ITrainedModelStore: arquivos da versão + a linha em model_artifact."""
-
     def __init__(self, conn: sqlite3.Connection) -> None:
         self._conn = conn
         self._models = SqliteTrainedModelRepository(conn)
 
     def save(self, dataset: TrainingDataset, assignment_id: int, outcome: TrainingOutcome) -> int:
-        """Grava os arquivos e a linha; devolve o id da versão. NÃO publica.
-
-        Os arquivos ficam FORA da transação: dentro dela, uma falha do INSERT desfaria o banco mas
-        deixaria o v<K> órfão no disco, e a próxima gravação bateria no mesmo K. Em qualquer falha
-        do INSERT, o diretório recém-escrito é apagado e o número da versão fica livre de novo.
-        """
+        # Arquivos fora da transação; falha no INSERT apaga o dir recém-escrito e libera o número.
         files = ModelVersionFiles(data_layout.trained_models_dir(dataset.classroom_slug))
         version_number = self._models.next_version_number(assignment_id)
         written = files.write(
@@ -169,7 +136,7 @@ class TrainedModelFileStore:
             raise
 
     def load(self, trained_model: TrainedModel, classroom_slug: ClassroomSlug):
-        """(modelo, vocab, meta) de uma versão, confinada ao models/ da turma."""
+        # (modelo, vocab, meta) de uma versão, confinada ao models/ da turma.
         return ModelVersionFiles(data_layout.trained_models_dir(classroom_slug)).read(
             trained_model.model_dir
         )

@@ -1,4 +1,4 @@
-"""O progresso de um treino, lido enquanto o subprocess escreve (WAL)."""
+# O progresso de um treino, lido enquanto o subprocess escreve (WAL).
 
 from __future__ import annotations
 

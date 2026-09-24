@@ -1,4 +1,4 @@
-"""ITrainingJobRepository sobre SQLite (tabela `training_job`)."""
+# ITrainingJobRepository sobre SQLite (tabela `training_job`).
 
 from __future__ import annotations
 
@@ -47,8 +47,7 @@ class SqliteTrainingJobRepository:
         )
 
     def mark_done(self, job_id: int, updated_at: str, java_parse_rate: float | None) -> None:
-        # A taxa de parse é gravada na mesma transição de sucesso: o retorno do subprocess se
-        # perde, a linha é o que chega ao GET do professor.
+        # A taxa é gravada na mesma transição de sucesso, pois o retorno do subprocess se perde.
         self._conn.execute(
             "UPDATE training_job SET status = 'done', updated_at = ?, "
             "parse_rate = COALESCE(?, parse_rate) WHERE id = ?;",

@@ -1,4 +1,4 @@
-"""CodeSnapshotId: o id do ProgSnap2 que vira nome de arquivo no cache de AST paths."""
+# CodeSnapshotId, o id do ProgSnap2 que vira nome de arquivo no cache de AST paths.
 
 from __future__ import annotations
 
@@ -18,4 +18,4 @@ def test_code_snapshot_id_rejects_anything_that_could_escape_a_directory(bad):
         CodeSnapshotId(bad)
 
 
-# --- ConfinedPath: resolve-depois-confere sob uma raiz --------------------------------------
+# --- ConfinedPath, resolve-depois-confere sob uma raiz --------------------------------------

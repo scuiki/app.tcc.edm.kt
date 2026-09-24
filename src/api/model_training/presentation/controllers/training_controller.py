@@ -1,4 +1,4 @@
-"""As rotas de /training-jobs: HTTP puro. Recebe, delega ao use case, devolve."""
+# As rotas de /training-jobs, HTTP puro. Recebe, delega ao use case, devolve.
 
 from __future__ import annotations
 
