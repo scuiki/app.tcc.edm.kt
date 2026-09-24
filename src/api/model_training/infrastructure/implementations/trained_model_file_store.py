@@ -161,11 +161,7 @@ class TrainedModelFileStore:
                         created_at=utc_now_iso(),
                         first_attempt_auc=outcome.first_attempt_auc,
                         git_commit=model_provenance.git_commit(Path.cwd()),
-                        data_hash=model_provenance.file_hash(
-                            data_layout.cleaned_submissions_path(
-                                dataset.classroom_slug, dataset.progsnap_assignment_id
-                            )
-                        ),
+                        data_hash=model_provenance.dataset_hash(dataset.events),
                     )
                 )
         except BaseException:

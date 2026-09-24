@@ -17,6 +17,6 @@ class TrainedModel:
     model_dir: str  # onde os arquivos moram; o banco nunca guarda os bytes
     created_at: str
     first_attempt_auc: float | None = None
-    # A proveniência: qual código (commit) e qual dado (hash do Parquet limpo) geraram a versão.
+    # A proveniência: qual código (commit) e qual dado (hash do dado de treino) geraram a versão.
     git_commit: str | None = None
     data_hash: str | None = None

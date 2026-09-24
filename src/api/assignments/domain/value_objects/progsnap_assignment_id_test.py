@@ -14,7 +14,7 @@ def test_progsnap_assignment_id_wraps_the_dataset_int():
 
 @pytest.mark.parametrize("not_an_int", [None, "439", 439.0, True])
 def test_progsnap_assignment_id_refuses_anything_but_an_int(not_an_int):
-    # None viraria "assignment_None.parquet" em silêncio; é a coluna vazia de um assignment
+    # None viraria "kc/assignment_None/" em silêncio; é a coluna vazia de um assignment
     # que não veio da importação.
     with pytest.raises(ValueError):
         ProgSnapAssignmentId(not_an_int)

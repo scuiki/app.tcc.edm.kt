@@ -21,6 +21,9 @@ from api.assignments.infrastructure.repositories.sqlite_assignment_repository im
 from api.assignments.infrastructure.repositories.sqlite_classroom_repository import (
     SqliteClassroomRepository,
 )
+from api.classroom_import.infrastructure.repositories.sqlite_submission_repository import (
+    SqliteSubmissionRepository,
+)
 from api.model_training.domain.entities.training_job_entity import TrainingJob
 from api.model_training.infrastructure.implementations.ml_code_dkt_trainer import MlCodeDktTrainer
 from api.model_training.infrastructure.repositories.sqlite_trained_model_repository import (
@@ -128,7 +131,7 @@ def _canonical_df_with_compile_errors() -> pd.DataFrame:
 
 
 def _seed_approved(conn, data_root, df: pd.DataFrame | None = None) -> tuple[int, int]:
-    """Turma + assignment com a Q-matrix aprovada + Parquet limpo + job pending. Devolve (aid, job)."""
+    """Turma + assignment com a Q-matrix aprovada + dado limpo + job pending. Devolve (aid, job)."""
     created = "2019-03-01T00:00:00+00:00"
     classroom_id = SqliteClassroomRepository(conn).add(
         Classroom(id=None, name="Turma X", created_at=created)
@@ -144,10 +147,8 @@ def _seed_approved(conn, data_root, df: pd.DataFrame | None = None) -> tuple[int
             status="kc_approved",
         )
     )
-    clean_dir = data_root / "turma-x" / "clean"
-    clean_dir.mkdir(parents=True, exist_ok=True)
-    (_canonical_df() if df is None else df).to_parquet(
-        clean_dir / f"assignment_{ASSIGNMENT_ID}.parquet", engine="pyarrow", index=False
+    SqliteSubmissionRepository(conn).add_many(
+        assignment_id, _canonical_df() if df is None else df
     )
     job_id = SqliteTrainingJobRepository(conn).add(
         TrainingJob(id=None, assignment_id=assignment_id, status=JobStatus.PENDING, created_at=created)
@@ -298,7 +299,7 @@ def test_parse_rate_is_persisted(tmp_db, data_root, fast_trainer):
 
 
 def test_compile_errors_never_reach_the_training_stream(tmp_db, data_root, fast_trainer):
-    """Compile.Error vive no Parquet canônico (a EDA precisa dele), mas NÃO se treina com ele.
+    """Compile.Error vive no dado limpo (as estatísticas precisam dele), mas NÃO se treina com ele.
 
     O TCC 1 treinou o Code-DKT só sobre Run.Program (data_loader.filter_for_bkt_dkt, o filtro
     por trás de sequences_bkt_dkt.pkl); o teste de regressão reproduz aquele número porque o fixture

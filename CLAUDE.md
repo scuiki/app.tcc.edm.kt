@@ -38,8 +38,8 @@ Code-DKT treinado → dashboard de mastery.
 | Python | 3.11 (conda da imagem base) | Linguagem do backend |
 | FastAPI + Uvicorn | | API **JSON pura**, `--workers 1` (escritor único e GPU compartilhada) |
 | PyTorch | 2.7.1+cu128 | Treino e inferência do Code-DKT, na GPU do mesmo container da API |
-| SQLite (`sqlite3` stdlib) | | `app.db` com turmas, assignments, KCs, Q-matrix, jobs e modelos. Sem ORM |
-| pandas + pyarrow | pyarrow 24.0.0 | Ingestão ProgSnap2 e Parquet por assignment |
+| SQLite (`sqlite3` stdlib) | | `app.db` com turmas, assignments, o dado limpo, KCs, Q-matrix, jobs e modelos. Sem ORM |
+| pandas | | Ingestão ProgSnap2 e o dado limpo em DataFrame |
 | javalang + anytree | 0.13.0 / 2.x | Paths da AST Java (a feature do Code-DKT) |
 | sentence-transformers | 5.4.1 | Embeddings SBERT do KCGen-KT |
 | scikit-learn | | Clustering de KCs (HAC + silhouette) e AUC |

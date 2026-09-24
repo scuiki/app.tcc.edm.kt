@@ -1,50 +1,90 @@
-"""SqliteSubmissionRepository: grava a tentativa fielmente, sem o código, e respeita a FK."""
+"""SqliteSubmissionRepository: o DataFrame volta igual ao que foi gravado, tipos inclusive.
+
+O treino ordena por `submitted_at` e o ml/ compara ids: um tipo que mudasse no ida e volta mudaria a
+numérica em silêncio. Por isso a comparação é `assert_frame_equal` com dtype estrito.
+"""
 
 from __future__ import annotations
 
 import sqlite3
 
+import pandas as pd
 import pytest
 
-from api.classroom_import.domain.entities.submission_entity import Submission
+from api.classroom_import.domain.services.submission_cleaning import CLEANED_COLUMNS
 from api.classroom_import.infrastructure.repositories.sqlite_submission_repository import (
     SqliteSubmissionRepository,
 )
 
 
-def _assignment_id(conn) -> int:
+def _assignment_id(conn, progsnap_assignment_id: int = 439) -> int:
     classroom_id = conn.execute(
         "INSERT INTO classroom (name, created_at) VALUES ('T', 't0');"
     ).lastrowid
     return conn.execute(
-        "INSERT INTO assignment (classroom_id, name, created_at) VALUES (?, 'A', 't0');",
-        (classroom_id,),
+        "INSERT INTO assignment (classroom_id, name, created_at, progsnap_assignment_id) "
+        "VALUES (?, 'A', 't0', ?);",
+        (classroom_id, progsnap_assignment_id),
     ).lastrowid
 
 
-def _submission(assignment_id: int, **fields) -> Submission:
-    values = dict(
-        id=None, assignment_id=assignment_id, code_snapshot_id="cs1", student_id="S1",
-        problem_id=1, score=0.5, created_at="t0", event_type="Run.Program",
+def _cleaned(student_ids, snapshot_ids) -> pd.DataFrame:
+    """Um dado limpo com os tipos que a limpeza produz."""
+    n = len(student_ids)
+    df = pd.DataFrame(
+        {
+            "student_id": student_ids,
+            "progsnap_assignment_id": pd.array([439] * n, dtype="Int64"),
+            "problem_id": pd.array([1, 2, 1][:n], dtype="Int64"),
+            "code_snapshot_id": snapshot_ids,
+            "code": ["int f(){return 0;}", "int g(){\n  return 1;\n}", ""][:n],
+            "score": [0.5, float("nan"), 1.0][:n],  # contínuo, e nulo num Compile.Error
+            "submitted_at": pd.to_datetime(
+                ["2019-03-01T08:00:00Z", "2019-03-01T08:01:00Z", "2019-03-01T08:02:30Z"][:n],
+                utc=True,
+            ),
+            "event_type": ["Run.Program", "Compile.Error", "Run.Program"][:n],
+            "is_correct": [0, 0, 1][:n],
+        }
     )
-    values.update(fields)
-    return Submission(**values)
+    return df[CLEANED_COLUMNS]
 
 
-def test_add_stores_every_field(tmp_db):
+@pytest.mark.parametrize(
+    ("student_ids", "snapshot_ids"),
+    [
+        ([9300, 9300, 17], [1720630, 1720631, 5]),  # CSEDM: o CSV traz números
+        (["S1", "S1", "S2"], ["c1", "c2", "c3"]),  # outro dataset: texto
+    ],
+    ids=["ids_numericos", "ids_em_texto"],
+)
+def test_the_cleaned_data_comes_back_identical(tmp_db, student_ids, snapshot_ids):
+    repo = SqliteSubmissionRepository(tmp_db)
     assignment_id = _assignment_id(tmp_db)
+    cleaned = _cleaned(student_ids, snapshot_ids)
 
-    submission_id = SqliteSubmissionRepository(tmp_db).add(_submission(assignment_id))
+    repo.add_many(assignment_id, cleaned)
 
-    row = tmp_db.execute(
-        "SELECT assignment_id, code_snapshot_id, student_id, problem_id, score, created_at, "
-        "event_type FROM submission WHERE id = ?;",
-        (submission_id,),
-    ).fetchone()
-    # O score contínuo (0.5) fica como veio: o binário é derivado no dado limpo, não aqui.
-    assert tuple(row) == (assignment_id, "cs1", "S1", 1, 0.5, "t0", "Run.Program")
+    pd.testing.assert_frame_equal(repo.list_by_assignment(assignment_id), cleaned, check_dtype=True)
 
 
-def test_a_submission_for_a_missing_assignment_is_refused(tmp_db):
+def test_each_assignment_reads_only_its_own_rows_in_insertion_order(tmp_db):
+    repo = SqliteSubmissionRepository(tmp_db)
+    first, second = _assignment_id(tmp_db, 439), _assignment_id(tmp_db, 487)
+    repo.add_many(first, _cleaned([3, 1, 2], [30, 10, 20]))
+    repo.add_many(second, _cleaned([7], [70]))
+
+    assert repo.list_by_assignment(first)["student_id"].tolist() == [3, 1, 2]  # sem reordenar
+    assert repo.list_by_assignment(second)["progsnap_assignment_id"].tolist() == [487]
+
+
+def test_an_assignment_without_submissions_reads_as_empty_with_the_same_columns(tmp_db):
+    empty = SqliteSubmissionRepository(tmp_db).list_by_assignment(_assignment_id(tmp_db))
+
+    assert empty.empty
+    assert list(empty.columns) == CLEANED_COLUMNS
+
+
+def test_submissions_for_a_missing_assignment_are_refused(tmp_db):
     with pytest.raises(sqlite3.IntegrityError):
-        SqliteSubmissionRepository(tmp_db).add(_submission(assignment_id=999_999))
+        SqliteSubmissionRepository(tmp_db).add_many(999_999, _cleaned([1], [1]))

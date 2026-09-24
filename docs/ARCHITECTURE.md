@@ -128,7 +128,7 @@ start_training_use_case_test.py
 
 - As fixtures compartilhadas ficam no `conftest.py` da raiz do repositório.
 - **Os testes também respeitam as camadas.** Um teste ao lado de um use case importa só a própria
-  camada e o domínio. Quando precisa da infraestrutura real (SQLite, Parquet), quem a monta é uma
+  camada e o domínio. Quando precisa da infraestrutura real (SQLite, disco), quem a monta é uma
   fixture em `tests/fixtures/<funcionalidade>.py`, que fica fora de `api/` e é registrada no
   `conftest.py` da raiz. Assim o `import-linter` vale para o teste como vale para o código.
 - Em `tests/` ficam só o teste de regressão contra a execução de referência do TCC 1 (o sistema

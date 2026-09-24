@@ -1,7 +1,7 @@
 """ImportClassroomDatasetUseCase com a infraestrutura real (fixture `import_classroom`).
 
 Cobre o que as etapas puras não exercitam: a gravação atômica (uma falha no meio não deixa resto),
-as colunas do Parquet, a preservação do cru e a trava de job (ocupada não grava; liberada mesmo
+o dado limpo gravado no banco, a preservação do cru e a trava de job (ocupada não grava; liberada mesmo
 sob exceção). Herméticos, sobre `tmp_db` + tmp_path; nunca o CSEDM real.
 """
 
@@ -10,7 +10,6 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-import pandas as pd
 import pytest
 
 from api.classroom_import.domain.services.submission_cleaning import CLEANED_COLUMNS
@@ -25,8 +24,8 @@ _MAIN_TABLE = (
     "S2,439,2,c4,Run.Program,0.5,2019-03-01T08:03:00Z\n"
 )
 
-# CodeStates: o snapshot Java por CodeStateID. O `Code` deve sobreviver SÓ no Parquet, nunca
-# no SQLite. Score 0.5 acima fica preservado contínuo.
+# CodeStates: o snapshot Java por CodeStateID, gravado junto com a tentativa. Score 0.5 acima
+# fica preservado contínuo.
 _CODE_STATES = (
     "CodeStateID,Code\n"
     'c1,"public int f(){return 0;}"\n'
@@ -54,28 +53,25 @@ def _counts(conn) -> tuple[int, int, int]:
     return t, a, s
 
 
-class _FailsOnSecondAdd:
-    """Deixa a 1ª submissão passar e falha na 2ª: o meio da gravação."""
+class _FailsAfterWriting:
+    """Grava as submissões e só então falha: o meio da transação, com linhas já escritas."""
 
     def __init__(self, real) -> None:
         self._real = real
-        self._calls = 0
 
-    def add(self, submission) -> int:
-        self._calls += 1
-        if self._calls == 2:
-            raise RuntimeError("disk full at submission INSERT (simulado)")
-        return self._real.add(submission)
+    def add_many(self, assignment_id, events) -> None:
+        self._real.add_many(assignment_id, events)
+        raise RuntimeError("disk full depois dos INSERTs (simulado)")
 
 
 def _holder_pid(conn):
     return conn.execute("SELECT holder_pid FROM pipeline_lock WHERE id=1;").fetchone()["holder_pid"]
 
 
-# --- caminho feliz: grava turma + assignments + submissões + Parquet ---------------------
+# --- caminho feliz: grava turma + assignments + submissões ------------------------------
 
 
-def test_happy_persists_turma_assignment_submissions_and_parquet(import_classroom, tmp_db, data_root):
+def test_happy_persists_classroom_assignment_and_submissions(import_classroom, tmp_db, data_root):
     conn = tmp_db
     raw, main = _make_raw(data_root)
 
@@ -91,38 +87,21 @@ def test_happy_persists_turma_assignment_submissions_and_parquet(import_classroo
     status = conn.execute("SELECT status FROM assignment;").fetchone()["status"]
     assert status == "ready_for_kc_generation"
 
-    # Parquet do stream canônico existe em clean/ com o nome derivado do AssignmentID (não do zip).
-    pq = data_root / "turma-x" / "clean" / "assignment_439.parquet"
-    assert pq.exists()
 
-
-def test_parquet_roundtrip_columns_and_score_continuous(import_classroom, tmp_db, data_root):
+def test_the_cleaned_data_is_readable_by_assignment(import_classroom, sqlite_submissions, tmp_db, data_root):
     conn = tmp_db
     raw, main = _make_raw(data_root)
     import_classroom(raw, "Turma X", main)
 
-    pq = data_root / "turma-x" / "clean" / "assignment_439.parquet"
-    back = pd.read_parquet(pq)
+    assignment_id = conn.execute("SELECT id FROM assignment;").fetchone()["id"]
+    back = sqlite_submissions.list_by_assignment(assignment_id)
 
-    # As 9 colunas do seam ml, exatamente.
-    assert set(back.columns) == set(CLEANED_COLUMNS)
+    # As 9 colunas que o ml/ consome, na ordem.
+    assert list(back.columns) == CLEANED_COLUMNS
     # Score contínuo preservado: o 0.5 não foi destruído na binarização.
     assert 0.5 in set(back["score"].tolist())
-    # Code presente no Parquet (é o snapshot do treino/EDA).
+    # O código Java vai junto (é o snapshot do treino e das estatísticas).
     assert back["code"].notna().all()
-
-
-def test_code_absent_from_sqlite_submission(import_classroom, tmp_db, data_root):
-    # Information Disclosure: o Code cru do aluno NUNCA entra no SQLite — a tabela
-    # submission sequer tem coluna Code. Score cru contínuo, sim, está lá.
-    conn = tmp_db
-    raw, main = _make_raw(data_root)
-    import_classroom(raw, "Turma X", main)
-
-    cols = {r["name"] for r in conn.execute("PRAGMA table_info(submission);").fetchall()}
-    assert "code" not in {c.lower() for c in cols}
-    scores = [r["score"] for r in conn.execute("SELECT score FROM submission;").fetchall()]
-    assert 0.5 in scores  # cru contínuo preservado no SQLite
 
 
 def test_raw_csv_preserved_after_ingest(import_classroom, tmp_db, data_root):
@@ -138,19 +117,15 @@ def test_raw_csv_preserved_after_ingest(import_classroom, tmp_db, data_root):
 
 
 def test_atomicity_failure_mid_persist_leaves_nothing(import_classroom, sqlite_submissions, tmp_db, data_root):
-    # Falha dura DEPOIS do Parquet escrito e no meio dos INSERTs: o ROLLBACK desfaz o SQLite e
-    # o service remove o Parquet recém-escrito (rmtree/unlink) — espelha test_artifacts CR-01.
+    # Falha dura DEPOIS dos INSERTs das submissões: o ROLLBACK desfaz tudo, turma inclusive.
     conn = tmp_db
     raw, main = _make_raw(data_root)
 
     with pytest.raises(RuntimeError):
-        import_classroom(raw, "Turma X", main, submissions=_FailsOnSecondAdd(sqlite_submissions))
+        import_classroom(raw, "Turma X", main, submissions=_FailsAfterWriting(sqlite_submissions))
 
     # SQLite inalterado: 0 turmas/assignments/submissions (ROLLBACK).
     assert _counts(conn) == (0, 0, 0)
-    # Nenhum Parquet remanescente (unlink no rollback) — sem dataset meio-gravado.
-    pq = data_root / "turma-x" / "clean" / "assignment_439.parquet"
-    assert not pq.exists()
     # Release garantido mesmo sob exceção: a trava voltou a NULL.
     assert _holder_pid(conn) is None
 
@@ -168,8 +143,6 @@ def test_fatal_preflight_persists_nothing(import_classroom, tmp_db, data_root):
 
     assert report.has_fatal
     assert _counts(conn) == (0, 0, 0)
-    # Pré-voo aborta antes da persistência: nenhum diretório clean/ criado.
-    assert not (data_root / "turma-x" / "clean").exists()
 
 
 # --- Lock Timing: busy não persiste; release garantido --------------------------------------

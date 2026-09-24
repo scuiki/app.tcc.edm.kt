@@ -302,20 +302,24 @@ def test_training_job_born_null_progress(tmp_path):
 
 
 
-def test_migration_0009_carries_existing_data_to_the_glossary_names(tmp_path):
-    """0009 sobre um banco em user_version=8 com dado real: renomeia sem perder nada, preenche o
-    AssignmentID do ProgSnap2 a partir do nome e traduz os estados antigos."""
+def _migrations_up_to(tmp_path: Path, version: int) -> Path:
+    """Uma cópia da pasta de migrations só até `version`: o banco como estava naquela versão."""
     import shutil
 
     migrations_dir = Path(runner_mod.__file__).resolve().parent
-    up_to_8 = tmp_path / "migrations_up_to_8"
-    up_to_8.mkdir()
+    up_to = tmp_path / f"migrations_up_to_{version}"
+    up_to.mkdir()
     for script in migrations_dir.glob("[0-9][0-9][0-9][0-9]_*.sql"):
-        if int(script.name[:4]) <= 8:
-            shutil.copy(script, up_to_8 / script.name)
+        if int(script.name[:4]) <= version:
+            shutil.copy(script, up_to / script.name)
+    return up_to
 
+
+def test_migration_0009_carries_existing_data_to_the_glossary_names(tmp_path):
+    """0009 sobre um banco em user_version=8 com dado real: renomeia sem perder nada, preenche o
+    AssignmentID do ProgSnap2 a partir do nome e traduz os estados antigos."""
     conn = connect(str(tmp_path / "app.db"))
-    run_migrations(conn, migrations_dir=up_to_8)
+    run_migrations(conn, migrations_dir=_migrations_up_to(tmp_path, 8))
     assert _user_version(conn) == 8
     conn.execute("INSERT INTO turma (id, name, created_at) VALUES (1, 'CSEDM', 't0');")
     conn.executemany(
@@ -328,7 +332,7 @@ def test_migration_0009_carries_existing_data_to_the_glossary_names(tmp_path):
         "created_at) VALUES (1, 'cs1', 'S1', 7, 1.0, 't0');"
     )
 
-    run_migrations(conn)
+    run_migrations(conn, migrations_dir=_migrations_up_to(tmp_path, 9))
 
     assert _user_version(conn) == 9
     rows = conn.execute(
@@ -344,3 +348,26 @@ def test_migration_0009_carries_existing_data_to_the_glossary_names(tmp_path):
     assert tuple(sub) == ("cs1", "S1")
     assert {"current_epoch", "train_loss"}.isdisjoint(_column_names(conn, "training_job"))
     assert conn.execute("PRAGMA foreign_key_check;").fetchall() == []
+
+
+def test_migration_0010_moves_the_cleaned_data_into_submission(tmp_path):
+    """0010 sobre um banco em user_version=9: submission passa a ter o dado limpo inteiro (o código
+    inclusive), e as linhas antigas, só com metadados, saem. O resto do banco fica intacto."""
+    conn = connect(str(tmp_path / "app.db"))
+    run_migrations(conn, migrations_dir=_migrations_up_to(tmp_path, 9))
+    assignment_id = _seed_assignment(conn)
+    conn.execute(
+        "INSERT INTO submission (assignment_id, code_snapshot_id, student_id, problem_id, score, "
+        "created_at) VALUES (?, 'cs1', 'S1', 7, 1.0, 't0');",
+        (assignment_id,),
+    )
+
+    run_migrations(conn)
+
+    assert _user_version(conn) == 10
+    assert _column_names(conn, "submission") == {
+        "id", "assignment_id", "student_id", "problem_id", "code_snapshot_id", "code", "score",
+        "submitted_at", "event_type", "is_correct",
+    }
+    assert conn.execute("SELECT COUNT(*) FROM submission;").fetchone()[0] == 0
+    assert conn.execute("SELECT COUNT(*) FROM assignment;").fetchone()[0] == 1

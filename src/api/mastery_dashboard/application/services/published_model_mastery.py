@@ -11,7 +11,7 @@ from __future__ import annotations
 from api.assignments.domain.entities.assignment_entity import Assignment
 from api.assignments.domain.interfaces.assignment_repository import IAssignmentRepository
 from api.assignments.domain.interfaces.classroom_repository import IClassroomRepository
-from api.classroom_import.domain.interfaces.cleaned_submissions_store import ICleanedSubmissionsStore
+from api.classroom_import.domain.interfaces.submission_repository import ISubmissionRepository
 from api.knowledge_components.domain.interfaces.qmatrix_repository import IQMatrixRepository
 from api.mastery_dashboard.domain.value_objects.student_mastery_matrix import StudentMasteryMatrix
 from api.mastery_dashboard.domain.entities.student_mastery_entity import StudentMastery
@@ -31,7 +31,7 @@ class PublishedModelMastery:
         self,
         assignments: IAssignmentRepository,
         classrooms: IClassroomRepository,
-        cleaned_submissions: ICleanedSubmissionsStore,
+        submissions: ISubmissionRepository,
         trained_models: ITrainedModelRepository,
         qmatrix: IQMatrixRepository,
         student_masteries: IStudentMasteryRepository,
@@ -40,7 +40,7 @@ class PublishedModelMastery:
     ) -> None:
         self._assignments = assignments
         self._classrooms = classrooms
-        self._cleaned_submissions = cleaned_submissions
+        self._submissions = submissions
         self._trained_models = trained_models
         self._qmatrix = qmatrix
         self._student_masteries = student_masteries
@@ -68,7 +68,7 @@ class PublishedModelMastery:
         # O mesmo recorte do treino (só Run.Program): inferir sobre outro dado produziria a matriz
         # de uma distribuição diferente da que o AUC exibido mediu.
         dataset = load_training_dataset(
-            assignment.id, self._assignments, self._classrooms, self._cleaned_submissions
+            assignment.id, self._assignments, self._classrooms, self._submissions
         )
         kcs_by_problem: dict[int, list[int]] = {}
         for binding in self._qmatrix.list_by_assignment(assignment.id):

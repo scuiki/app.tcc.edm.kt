@@ -51,4 +51,4 @@ def test_a_single_monkeypatch_redirects_every_path(monkeypatch, tmp_path):
 
     monkeypatch.setattr(settings, "DATA_ROOT", tmp_path)
 
-    assert tmp_path in data_layout.cleaned_submissions_path("turma-x", 439).parents
+    assert tmp_path in data_layout.raw_upload_dir("turma-x").parents
