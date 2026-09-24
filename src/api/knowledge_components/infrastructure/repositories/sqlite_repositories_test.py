@@ -1,4 +1,4 @@
-# Repositórios SQLite de KCs, da Q-matrix e dos jobs de geração, ida e volta e transições.
+# Repositórios SQLite de KCs, dos vínculos com problemas e dos jobs de geração.
 from __future__ import annotations
 
 import pytest
@@ -7,15 +7,17 @@ from api.knowledge_components.domain.entities.kc_generation_job_entity import (
     KnowledgeComponentGenerationJob,
 )
 from api.knowledge_components.domain.entities.knowledge_component_entity import KnowledgeComponent
-from api.knowledge_components.domain.entities.qmatrix_binding_entity import QMatrixBinding
+from api.knowledge_components.domain.entities.problem_knowledge_component_entity import (
+    ProblemKnowledgeComponent,
+)
 from api.knowledge_components.infrastructure.repositories.sqlite_kc_generation_job_repository import (
     SqliteKnowledgeComponentGenerationJobRepository,
 )
 from api.knowledge_components.infrastructure.repositories.sqlite_knowledge_component_repository import (
     SqliteKnowledgeComponentRepository,
 )
-from api.knowledge_components.infrastructure.repositories.sqlite_qmatrix_repository import (
-    SqliteQMatrixRepository,
+from api.knowledge_components.infrastructure.repositories.sqlite_problem_knowledge_component_repository import (
+    SqliteProblemKnowledgeComponentRepository,
 )
 from api.shared.domain.value_objects.job_status import JobStatus
 from tests.fixtures.problems import add_problems
@@ -61,16 +63,16 @@ def test_bindings_union_on_move_and_ignore_duplicates(tmp_db, assignment_id):
     kcs = SqliteKnowledgeComponentRepository(tmp_db)
     keep = kcs.add(KnowledgeComponent(id=None, assignment_id=assignment_id, name="keep"))
     drop = kcs.add(KnowledgeComponent(id=None, assignment_id=assignment_id, name="drop"))
-    qmatrix = SqliteQMatrixRepository(tmp_db)
-    qmatrix.bind_problems(assignment_id, keep, [1, 1])  # o duplicado é ignorado
-    qmatrix.add(QMatrixBinding(id=None, assignment_id=assignment_id, kc_id=drop, problem_id=1))
-    qmatrix.add(QMatrixBinding(id=None, assignment_id=assignment_id, kc_id=drop, problem_id=2))
+    problem_kcs = SqliteProblemKnowledgeComponentRepository(tmp_db)
+    problem_kcs.bind_problems(assignment_id, keep, [1, 1])  # o duplicado é ignorado
+    problem_kcs.add(ProblemKnowledgeComponent(id=None, assignment_id=assignment_id, kc_id=drop, problem_id=1))
+    problem_kcs.add(ProblemKnowledgeComponent(id=None, assignment_id=assignment_id, kc_id=drop, problem_id=2))
 
-    qmatrix.move_bindings(assignment_id, from_kc_id=drop, to_kc_id=keep)
+    problem_kcs.move_bindings(assignment_id, from_kc_id=drop, to_kc_id=keep)
 
-    assert sorted(qmatrix.problems_of(keep)) == [1, 2]
-    assert qmatrix.problems_of(drop) == []
-    assert qmatrix.count_kcs_of_problem(assignment_id, 1) == 1
+    assert sorted(problem_kcs.problems_of(keep)) == [1, 2]
+    assert problem_kcs.problems_of(drop) == []
+    assert problem_kcs.count_kcs_of_problem(assignment_id, 1) == 1
 
 
 def test_a_generation_job_moves_through_its_states(tmp_db, assignment_id):

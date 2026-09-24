@@ -18,8 +18,8 @@ from api.classroom_import.infrastructure.repositories.sqlite_submission_reposito
 from api.knowledge_components.infrastructure.repositories.sqlite_knowledge_component_repository import (
     SqliteKnowledgeComponentRepository,
 )
-from api.knowledge_components.infrastructure.repositories.sqlite_qmatrix_repository import (
-    SqliteQMatrixRepository,
+from api.knowledge_components.infrastructure.repositories.sqlite_problem_knowledge_component_repository import (
+    SqliteProblemKnowledgeComponentRepository,
 )
 from api.mastery_dashboard.application.use_cases.get_mastery_use_case import GetMasteryUseCase
 from api.mastery_dashboard.application.use_cases.get_pre_training_statistics_use_case import (
@@ -52,7 +52,7 @@ def build_published_model_mastery(conn: sqlite3.Connection, predictor=None) -> P
         classrooms=SqliteClassroomRepository(conn),
         submissions=SqliteSubmissionRepository(conn),
         trained_models=SqliteTrainedModelRepository(conn),
-        qmatrix=SqliteQMatrixRepository(conn),
+        problem_kcs=SqliteProblemKnowledgeComponentRepository(conn),
         student_masteries=SqliteStudentMasteryRepository(conn),
         predictor=predictor or MlStudentMasteryPredictor(TrainedModelFileStore(conn)),
         unit_of_work=SqliteUnitOfWork(conn),

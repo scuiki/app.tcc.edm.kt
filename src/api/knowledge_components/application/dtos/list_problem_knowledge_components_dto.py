@@ -1,11 +1,13 @@
-# A resposta de GET /assignments/{assignment_id}/qmatrix, cada problema com os KCs que ele exige.
+# A resposta de GET /assignments/{assignment_id}/problems/knowledge-components.
 
 from __future__ import annotations
 
 from pydantic import BaseModel
 
 from api.assignments.domain.entities.assignment_entity import AssignmentStatus
-from api.knowledge_components.application.dtos.edit_qmatrix_dto import KnowledgeComponentDTO
+from api.knowledge_components.application.dtos.edit_knowledge_components_dto import (
+    KnowledgeComponentDTO,
+)
 
 
 class ProblemKnowledgeComponentsDTO(BaseModel):
@@ -14,7 +16,7 @@ class ProblemKnowledgeComponentsDTO(BaseModel):
     knowledge_components: list[KnowledgeComponentDTO]  # vazia se o problema ainda não tem KC
 
 
-class QMatrixResponseDTO(BaseModel):
+class ListProblemKnowledgeComponentsResponseDTO(BaseModel):
     assignment_id: int
     status: AssignmentStatus | None
     problems: list[ProblemKnowledgeComponentsDTO]

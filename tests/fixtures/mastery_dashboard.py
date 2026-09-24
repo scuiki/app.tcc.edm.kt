@@ -15,8 +15,8 @@ from api.classroom_import.domain.services.submission_cleaning import CLEANED_COL
 from api.classroom_import.infrastructure.repositories.sqlite_submission_repository import (
     SqliteSubmissionRepository,
 )
-from api.knowledge_components.infrastructure.repositories.sqlite_qmatrix_repository import (
-    SqliteQMatrixRepository,
+from api.knowledge_components.infrastructure.repositories.sqlite_problem_knowledge_component_repository import (
+    SqliteProblemKnowledgeComponentRepository,
 )
 from api.mastery_dashboard.application.services.published_model_mastery import PublishedModelMastery
 from api.mastery_dashboard.infrastructure.repositories.sqlite_student_mastery_repository import (
@@ -36,7 +36,7 @@ from api.shared.infrastructure.implementations.sqlite_unit_of_work import Sqlite
 
 
 def _cleaned_submissions(with_compile_errors: bool) -> pd.DataFrame:
-    # Os problemas 1, 2 e 3 batem com a Q-matrix do trained_artifact
+    # Os problemas 1, 2 e 3 batem com os KCs do trained_artifact
     base = pd.Timestamp("2019-03-01T08:00:00Z")
     java_a = "public int f(int x) { return x + 1; }"
     java_b = "public int g(int a, int b) { int s = a + b; return s; }"
@@ -108,7 +108,7 @@ def published_model_mastery(trained_artifact, real_mastery_predictor, sqlite_stu
             classrooms=SqliteClassroomRepository(conn),
             submissions=SqliteSubmissionRepository(conn),
             trained_models=SqliteTrainedModelRepository(conn),
-            qmatrix=SqliteQMatrixRepository(conn),
+            problem_kcs=SqliteProblemKnowledgeComponentRepository(conn),
             student_masteries=student_masteries or sqlite_student_masteries,
             predictor=predictor or real_mastery_predictor,
             unit_of_work=SqliteUnitOfWork(conn),

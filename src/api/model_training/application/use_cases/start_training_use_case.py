@@ -34,12 +34,12 @@ class StartTrainingUseCase(WriteUseCase):
         self._launcher = launcher
 
     def rules(self) -> list[IBusinessRule]:
-        # Nada de treino antes de o professor aprovar a Q-matrix.
+        # Nada de treino antes de o professor aprovar os KCs.
         return [
             AssignmentInStatusRule(
                 self._assignments,
                 allowed=(AssignmentStatus.KC_APPROVED,),
-                message="Q-matrix ainda não aprovada pelo professor",
+                message="KCs ainda não aprovados pelo professor",
             )
         ]
 

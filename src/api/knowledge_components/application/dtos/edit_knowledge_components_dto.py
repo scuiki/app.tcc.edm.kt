@@ -1,4 +1,4 @@
-# Pedidos e respostas das edições da Q-matrix pelo professor.
+# Pedidos e respostas das edições que o professor faz nos KCs.
 from __future__ import annotations
 
 from pydantic import BaseModel
@@ -32,7 +32,7 @@ class MergeKnowledgeComponentsDTO(BaseModel):
     drop_kc_id: int  # o KC que some, seus problemas passam para keep_kc_id
 
 
-class ApproveQMatrixDTO(BaseModel):
+class ApproveKnowledgeComponentsDTO(BaseModel):
     assignment_id: int
 
 
@@ -50,6 +50,6 @@ class MergedKnowledgeComponentsDTO(BaseModel):
     drop_kc_id: int
 
 
-class ApprovedQMatrixDTO(BaseModel):
+class ApprovedKnowledgeComponentsDTO(BaseModel):
     assignment_id: int
     status: AssignmentStatus

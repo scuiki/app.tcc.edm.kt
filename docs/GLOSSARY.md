@@ -7,11 +7,13 @@ ele entra neste arquivo antes de entrar no código.
 Regras gerais:
 
 - Código em **inglês**. Documentação em pt-BR.
-- Termos da literatura de EDM ficam como a literatura os chama (*mastery*, *Q-matrix*,
-  *AST path*, *first-attempt AUC*): são o vocabulário da banca.
+- Termos da literatura de EDM ficam como a literatura os chama (*mastery*, *AST path*,
+  *first-attempt AUC*): são o vocabulário da banca. A exceção é quando o termo nomeia uma
+  estrutura que o sistema não entrega. A *Q-matrix* é uma matriz no `ml/`, mas na aplicação o
+  que existe são vínculos entre problema e KC (`ProblemKnowledgeComponent`).
 - Nomes de classe escrevem o termo por extenso (`KnowledgeComponent`). A abreviação `kc`
   é aceita em variáveis locais, parâmetros e campos (`kc_id`), nunca em nome de classe.
-- Nomes de tabela do SQLite podem continuar abreviados (`kc`, `kc_job`, `qmatrix`). O
+- Nomes de tabela do SQLite podem continuar abreviados (`kc`, `kc_job`, `problem_kc`). O
   repositório traduz tabela ↔ classe.
 - Os nomes do ProgSnap2 (`SubjectID`, `CodeStateID`…) só aparecem no código que lê o CSV
   do professor. Dali em diante, o dado já usa os nomes deste glossário.
@@ -31,7 +33,7 @@ Regras gerais:
 | `is_correct` | A tentativa acertou (`score == 1.0`). É o rótulo que o modelo aprende | `correct` |
 | `SubmissionEvent` | Se o código rodou (`Run.Program`) ou nem compilou (`Compile.Error`). Os **valores** seguem os do ProgSnap2 | `EventType` |
 | `KnowledgeComponent` | Um conceito de programação que um problema exige (ex.: "laço com acumulador") | `KC` |
-| `QMatrix` / `QMatrixBinding` | O mapa problema → KCs que ele exige. Cada linha é um *binding* | `QMatrix` |
+| `ProblemKnowledgeComponent` | O vínculo "o problema P exige o KC K". O conjunto dos vínculos de um assignment é o que a literatura chama de Q-matrix. Tabela `problem_kc` | `QMatrixBinding`, tabela `qmatrix` |
 | `TrainedModel` | Uma versão treinada do Code-DKT: arquivos em disco + métricas no banco | `ModelArtifact` |
 | `published_model_id` | A versão de modelo que o dashboard usa | `current_version_id` |
 | `TrainingJob` | Um treino em andamento ou concluído | — |
@@ -46,7 +48,7 @@ Todo `Protocol` da `api/` começa com `I` e fica numa pasta `interfaces/` (ver
 
 | Interface | Quem implementa | O que é | Nome antigo |
 |---|---|---|---|
-| `I<Entidade>Repository` (`IAssignmentRepository`, `IClassroomRepository`, `IProblemRepository`, `ISubmissionRepository`, `IKnowledgeComponentRepository`, `IKnowledgeComponentGenerationJobRepository`, `IQMatrixRepository`, `ITrainingJobRepository`, `ITrainedModelRepository`, `ITrainingEpochMetricRepository`, `IStudentMasteryRepository`) | `Sqlite<Entidade>Repository` | Ler e gravar uma entidade | sem o `I` |
+| `I<Entidade>Repository` (`IAssignmentRepository`, `IClassroomRepository`, `IProblemRepository`, `ISubmissionRepository`, `IKnowledgeComponentRepository`, `IKnowledgeComponentGenerationJobRepository`, `IProblemKnowledgeComponentRepository`, `ITrainingJobRepository`, `ITrainedModelRepository`, `ITrainingEpochMetricRepository`, `IStudentMasteryRepository`) | `Sqlite<Entidade>Repository` | Ler e gravar uma entidade | sem o `I` |
 | `IProgSnapUploadExtractor` | `ProgSnapZipExtractor` | Extrair o `.zip` enviado e achar as tabelas | `ProgSnapUploadExtractor` |
 | `IProgSnapTableReader` | `ProgSnapCsvReader` | Ler as tabelas ProgSnap2 do CSV | `ProgSnapTableReader` |
 | `IKnowledgeComponentGenerator` | `KcGenKtGenerator` | Gerar os KCs de um assignment | `KnowledgeComponentGenerator` |
@@ -66,8 +68,8 @@ Todo `Protocol` da `api/` começa com `I` e fica numa pasta `interfaces/` (ver
 |---|---|---|
 | `statistics_only` | Os first-attempts têm uma classe só, então o AUC é indefinido e não dá para treinar. Só as estatísticas pré-treino ficam disponíveis | importação (antes `eda_only`) |
 | `ready_for_kc_generation` | Tem as duas classes; pode gerar KCs | importação (antes `trainable`) |
-| `kc_draft` | KCs gerados pelo LLM, aguardando o professor | geração de KCs; ou editar uma Q-matrix aprovada |
-| `kc_approved` | O professor aprovou a Q-matrix; pode treinar | aprovação |
+| `kc_draft` | KCs gerados pelo LLM, aguardando o professor | geração de KCs; ou editar KCs já aprovados |
+| `kc_approved` | O professor aprovou os KCs; pode treinar | aprovação |
 | `trained` | Existe um modelo publicado | treino |
 
 Os jobs (`TrainingJob`, `KnowledgeComponentGenerationJob`) têm os estados `pending`,
@@ -141,7 +143,7 @@ Os jobs (`TrainingJob`, `KnowledgeComponentGenerationJob`) têm os estados `pend
 |---|---|---|
 | `GET /assignments` | Lista os assignments | igual |
 | `GET /assignments/{assignment_id}/problems` | Os problemas do assignment, com a descrição | — |
-| `GET /assignments/{assignment_id}/qmatrix` | Cada problema com a descrição e os KCs que exige (a lógica é de `knowledge_components`) | — |
+| `GET /assignments/{assignment_id}/problems/knowledge-components` | Cada problema com a descrição e os KCs que exige (a lógica é de `knowledge_components`) | — |
 | `GET /knowledge-components?assignment_id=…` | Os KCs do assignment, cada um com os `problem_ids` a que se liga | — |
 | `POST /classroom-imports` | Recebe o `.zip` e devolve os arquivos detectados | `POST /ingest` |
 | `POST /classroom-imports/process` | Importa a variante escolhida | `POST /ingest/process` |
@@ -151,7 +153,7 @@ Os jobs (`TrainingJob`, `KnowledgeComponentGenerationJob`) têm os estados `pend
 | `PATCH /knowledge-components/{kc_id}` | Renomeia um KC | `PATCH /kc/{kc_id}` |
 | `DELETE /knowledge-components/{kc_id}` | Remove um KC | `DELETE /kc/{kc_id}` |
 | `POST /knowledge-components/merge` | Funde dois KCs | `POST /kc/merge` |
-| `POST /knowledge-components/approve-qmatrix` | Aprova a Q-matrix | `POST /kc/approve` |
+| `POST /knowledge-components/approve` | Aprova os KCs do assignment | `POST /knowledge-components/approve-qmatrix` |
 | `POST /training-jobs` | Dispara o treino | `POST /training` |
 | `GET /training-jobs/{job_id}` | Progresso do treino | `GET /training/{job_id}` |
 | `GET /training-jobs/{job_id}/loss-history` | A curva de loss por época | `GET /training/{job_id}/metrics` |

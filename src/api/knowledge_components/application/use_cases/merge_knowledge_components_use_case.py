@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from api.assignments.domain.interfaces.assignment_repository import IAssignmentRepository
-from api.knowledge_components.application.dtos.edit_qmatrix_dto import (
+from api.knowledge_components.application.dtos.edit_knowledge_components_dto import (
     MergedKnowledgeComponentsDTO,
     MergeKnowledgeComponentsDTO,
 )
@@ -15,11 +15,13 @@ from api.knowledge_components.domain.rules.knowledge_components_are_distinct_rul
 from api.knowledge_components.domain.rules.knowledge_components_belong_to_assignment_rule import (
     KnowledgeComponentsBelongToAssignmentRule,
 )
-from api.knowledge_components.domain.services.qmatrix_edit import (
+from api.knowledge_components.domain.services.knowledge_component_edit import (
     ensure_every_problem_keeps_a_kc,
     revert_approval_after_edit,
 )
-from api.knowledge_components.domain.interfaces.qmatrix_repository import IQMatrixRepository
+from api.knowledge_components.domain.interfaces.problem_knowledge_component_repository import (
+    IProblemKnowledgeComponentRepository,
+)
 from api.shared.application.interfaces.unit_of_work import IUnitOfWork
 from api.shared.application.use_cases.write_use_case import WriteUseCase
 from api.shared.domain.interfaces.business_rule import IBusinessRule
@@ -31,12 +33,12 @@ class MergeKnowledgeComponentsUseCase(WriteUseCase):
         self,
         assignments: IAssignmentRepository,
         knowledge_components: IKnowledgeComponentRepository,
-        qmatrix: IQMatrixRepository,
+        problem_kcs: IProblemKnowledgeComponentRepository,
         unit_of_work: IUnitOfWork,
     ) -> None:
         self._assignments = assignments
         self._knowledge_components = knowledge_components
-        self._qmatrix = qmatrix
+        self._problem_kcs = problem_kcs
         self._unit_of_work = unit_of_work
 
     def rules(self) -> list[IBusinessRule]:
@@ -56,10 +58,10 @@ class MergeKnowledgeComponentsUseCase(WriteUseCase):
 
     def _run(self, dto: MergeKnowledgeComponentsDTO) -> MergedKnowledgeComponentsDTO:
         # A fusão é a união dos vínculos, só os problemas de drop_kc_id podem ficar sem KC.
-        affected_problems = self._qmatrix.problems_of(dto.drop_kc_id)
+        affected_problems = self._problem_kcs.problems_of(dto.drop_kc_id)
         with self._unit_of_work:
-            self._qmatrix.move_bindings(dto.assignment_id, dto.drop_kc_id, dto.keep_kc_id)
+            self._problem_kcs.move_bindings(dto.assignment_id, dto.drop_kc_id, dto.keep_kc_id)
             self._knowledge_components.delete(dto.drop_kc_id)
-            ensure_every_problem_keeps_a_kc(self._qmatrix, dto.assignment_id, affected_problems)
+            ensure_every_problem_keeps_a_kc(self._problem_kcs, dto.assignment_id, affected_problems)
             revert_approval_after_edit(self._assignments, dto.assignment_id)
         return MergedKnowledgeComponentsDTO(keep_kc_id=dto.keep_kc_id, drop_kc_id=dto.drop_kc_id)

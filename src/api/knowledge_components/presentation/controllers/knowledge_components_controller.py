@@ -6,13 +6,13 @@ from fastapi import APIRouter, Depends
 from api.knowledge_components.application.use_cases.add_knowledge_component_use_case import (
     AddKnowledgeComponentUseCase,
 )
-from api.knowledge_components.application.use_cases.approve_qmatrix_use_case import (
-    ApproveQMatrixUseCase,
+from api.knowledge_components.application.use_cases.approve_knowledge_components_use_case import (
+    ApproveKnowledgeComponentsUseCase,
 )
-from api.knowledge_components.application.dtos.edit_qmatrix_dto import (
+from api.knowledge_components.application.dtos.edit_knowledge_components_dto import (
     AddKnowledgeComponentDTO,
-    ApprovedQMatrixDTO,
-    ApproveQMatrixDTO,
+    ApprovedKnowledgeComponentsDTO,
+    ApproveKnowledgeComponentsDTO,
     KnowledgeComponentDTO,
     MergedKnowledgeComponentsDTO,
     MergeKnowledgeComponentsDTO,
@@ -127,9 +127,9 @@ def merge_knowledge_components(
     return use_case.execute(body)
 
 
-@router.post("/approve-qmatrix", response_model=ApprovedQMatrixDTO)
-def approve_qmatrix(
-    body: ApproveQMatrixDTO,
-    use_case: ApproveQMatrixUseCase = Depends(dependencies.approve_qmatrix_use_case),
-) -> ApprovedQMatrixDTO:
+@router.post("/approve", response_model=ApprovedKnowledgeComponentsDTO)
+def approve_knowledge_components(
+    body: ApproveKnowledgeComponentsDTO,
+    use_case: ApproveKnowledgeComponentsUseCase = Depends(dependencies.approve_knowledge_components_use_case),
+) -> ApprovedKnowledgeComponentsDTO:
     return use_case.execute(body)

@@ -1,4 +1,4 @@
-# Só se aprova um rascunho de fato, evita treinar sobre uma Q-matrix inexistente.
+# Só se aprova um rascunho de fato, evita treinar sobre KCs que ninguém revisou.
 from __future__ import annotations
 
 from typing import Any

@@ -10,7 +10,7 @@ from api.classrooms.domain.value_objects.classroom_slug import ClassroomSlug
 from api.assignments.domain.value_objects.progsnap_assignment_id import ProgSnapAssignmentId
 
 
-# A Q-matrix gerada deixou algum problema sem KC, o job falha e nada é gravado.
+# A geração deixou algum problema sem KC, o job falha e nada é gravado.
 class ProblemWithoutKnowledgeComponent(ValueError):
     pass
 
@@ -24,10 +24,10 @@ class GeneratedKnowledgeComponents:
     problem_descriptions: dict[int, str] = field(default_factory=dict)
 
     def ensure_every_problem_has_a_kc(self) -> None:
-        # Valida tudo antes de gravar, uma linha toda zerada reprova a Q-matrix inteira.
+        # Valida tudo antes de gravar, uma linha toda zerada reprova a geração inteira.
         if not self.problem_ids:
             raise ProblemWithoutKnowledgeComponent(
-                "Q-matrix vazia: nenhum problema correto gerou KCs"
+                "nenhum problema correto gerou KCs"
             )
         for problem_id in self.problem_ids:
             if not self.groups_by_problem.get(problem_id):

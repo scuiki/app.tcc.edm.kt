@@ -53,7 +53,7 @@ def test_the_matrix_comes_from_the_predictor_and_carries_the_model_info(
     assert all(isinstance(s, str) and isinstance(k, int) and 0.0 <= v <= 1.0
                for (s, k), v in matrix.items())
     assert model_info.trained_at is not None
-    # A Q-matrix aprovada chega ao preditor como problem_id -> [kc_id...].
+    # Os KCs aprovados chegam ao preditor como problem_id -> [kc_id...].
     _model, _dataset, kcs_by_problem = spy.calls[0]
     assert sorted(kcs_by_problem) == [1, 2, 3] and len(kcs_by_problem[3]) == 2
 
@@ -114,7 +114,7 @@ def test_inference_sees_only_program_runs(
 
     published_model_mastery(predictor=spy).of(published_assignment)
 
-    _model, dataset, _qmatrix = spy.calls[0]
+    _model, dataset, _problem_kcs = spy.calls[0]
     assert set(dataset.events["event_type"].unique()) == {"Run.Program"}
 
 

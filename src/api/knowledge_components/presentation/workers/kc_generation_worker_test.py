@@ -141,7 +141,7 @@ def test_content_hard_fail_marks_failed_nothing_persisted(tmp_db, data_root):
     assert job.status == "failed"
     # Nada persistido.
     assert conn.execute("SELECT COUNT(*) FROM kc;").fetchone()[0] == 0
-    assert conn.execute("SELECT COUNT(*) FROM qmatrix;").fetchone()[0] == 0
+    assert conn.execute("SELECT COUNT(*) FROM problem_kc;").fetchone()[0] == 0
     asg = SqliteAssignmentRepository(conn).get(assignment_id)
     assert asg.status == "ready_for_kc_generation"  # não avançou para kc_draft
     assert lock_holder_pid(conn) is None  # lock liberado mesmo na falha (with lock)

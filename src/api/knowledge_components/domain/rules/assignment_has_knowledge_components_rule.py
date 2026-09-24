@@ -1,4 +1,4 @@
-# Um rascunho sem nenhum KC não tem Q-matrix a aprovar.
+# Um rascunho sem nenhum KC não tem o que aprovar.
 from __future__ import annotations
 
 from typing import Any

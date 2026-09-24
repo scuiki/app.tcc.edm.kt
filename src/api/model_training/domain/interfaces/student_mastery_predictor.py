@@ -1,4 +1,4 @@
-# O dashboard só quer mastery por aluno x KC; a impl. prevê por problema e agrega via Q-matrix.
+# O dashboard quer mastery por aluno x KC; a impl. prevê por problema e agrega pelos KCs.
 
 from __future__ import annotations
 
@@ -15,5 +15,5 @@ class IStudentMasteryPredictor(Protocol):
         dataset: TrainingDataset,
         kcs_by_problem: dict[int, list[int]],
     ) -> dict[tuple[str, int], float]:
-        # `{(student_id, kc_id): mastery}`; `kcs_by_problem` é a Q-matrix aprovada.
+        # `{(student_id, kc_id): mastery}`; `kcs_by_problem` são os KCs aprovados de cada problema.
         ...

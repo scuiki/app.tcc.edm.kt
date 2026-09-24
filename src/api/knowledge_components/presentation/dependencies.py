@@ -20,8 +20,8 @@ from api.classroom_import.infrastructure.repositories.sqlite_submission_reposito
 from api.knowledge_components.application.use_cases.add_knowledge_component_use_case import (
     AddKnowledgeComponentUseCase,
 )
-from api.knowledge_components.application.use_cases.approve_qmatrix_use_case import (
-    ApproveQMatrixUseCase,
+from api.knowledge_components.application.use_cases.approve_knowledge_components_use_case import (
+    ApproveKnowledgeComponentsUseCase,
 )
 from api.knowledge_components.application.use_cases.get_kc_generation_job_use_case import (
     GetKnowledgeComponentGenerationJobUseCase,
@@ -59,8 +59,8 @@ from api.knowledge_components.infrastructure.repositories.sqlite_kc_generation_j
 from api.knowledge_components.infrastructure.repositories.sqlite_knowledge_component_repository import (
     SqliteKnowledgeComponentRepository,
 )
-from api.knowledge_components.infrastructure.repositories.sqlite_qmatrix_repository import (
-    SqliteQMatrixRepository,
+from api.knowledge_components.infrastructure.repositories.sqlite_problem_knowledge_component_repository import (
+    SqliteProblemKnowledgeComponentRepository,
 )
 from api.shared.infrastructure.implementations.background_jobs import SubprocessJobLauncher
 from api.shared.infrastructure.implementations.sqlite_unit_of_work import SqliteUnitOfWork
@@ -76,7 +76,7 @@ def list_knowledge_components_use_case(
     return ListKnowledgeComponentsUseCase(
         SqliteAssignmentRepository(conn),
         SqliteKnowledgeComponentRepository(conn),
-        SqliteQMatrixRepository(conn),
+        SqliteProblemKnowledgeComponentRepository(conn),
     )
 
 
@@ -106,7 +106,7 @@ def add_knowledge_component_use_case(
         SqliteAssignmentRepository(conn),
         SqliteProblemRepository(conn),
         SqliteKnowledgeComponentRepository(conn),
-        SqliteQMatrixRepository(conn),
+        SqliteProblemKnowledgeComponentRepository(conn),
         SqliteUnitOfWork(conn),
     )
 
@@ -127,7 +127,7 @@ def remove_knowledge_component_use_case(
     return RemoveKnowledgeComponentUseCase(
         SqliteAssignmentRepository(conn),
         SqliteKnowledgeComponentRepository(conn),
-        SqliteQMatrixRepository(conn),
+        SqliteProblemKnowledgeComponentRepository(conn),
         SqliteUnitOfWork(conn),
     )
 
@@ -138,15 +138,15 @@ def merge_knowledge_components_use_case(
     return MergeKnowledgeComponentsUseCase(
         SqliteAssignmentRepository(conn),
         SqliteKnowledgeComponentRepository(conn),
-        SqliteQMatrixRepository(conn),
+        SqliteProblemKnowledgeComponentRepository(conn),
         SqliteUnitOfWork(conn),
     )
 
 
-def approve_qmatrix_use_case(
+def approve_knowledge_components_use_case(
     conn: sqlite3.Connection = Depends(open_database_session),
-) -> ApproveQMatrixUseCase:
-    return ApproveQMatrixUseCase(
+) -> ApproveKnowledgeComponentsUseCase:
+    return ApproveKnowledgeComponentsUseCase(
         SqliteAssignmentRepository(conn),
         SqliteKnowledgeComponentRepository(conn),
         SqliteUnitOfWork(conn),
@@ -164,7 +164,7 @@ def build_run_kc_generation_use_case(
         submissions=SqliteSubmissionRepository(conn),
         generator=KcGenKtGenerator(llm or ClaudeCliLLMClient(model=KC_GENERATION_MODEL_ID)),
         knowledge_components=SqliteKnowledgeComponentRepository(conn),
-        qmatrix=SqliteQMatrixRepository(conn),
+        problem_kcs=SqliteProblemKnowledgeComponentRepository(conn),
         jobs=SqliteKnowledgeComponentGenerationJobRepository(conn),
         unit_of_work=SqliteUnitOfWork(conn),
     )

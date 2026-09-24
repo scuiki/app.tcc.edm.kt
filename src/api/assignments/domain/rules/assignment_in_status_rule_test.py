@@ -20,7 +20,7 @@ def _rule(*assignments: Assignment) -> AssignmentInStatusRule:
     return AssignmentInStatusRule(
         _InMemoryAssignments(*assignments),
         allowed=(AssignmentStatus.KC_APPROVED,),
-        message="Q-matrix ainda não aprovada",
+        message="KCs ainda não aprovados",
     )
 
 
@@ -37,8 +37,8 @@ def test_passes_when_the_status_is_allowed():
 def test_refuses_any_other_status():
     rule = _rule(_assignment(AssignmentStatus.KC_DRAFT))
 
-    assert rule.check(SimpleNamespace(assignment_id=1)) == "Q-matrix ainda não aprovada"
+    assert rule.check(SimpleNamespace(assignment_id=1)) == "KCs ainda não aprovados"
 
 
 def test_refuses_a_missing_assignment_with_the_same_message():
-    assert _rule().check(SimpleNamespace(assignment_id=1)) == "Q-matrix ainda não aprovada"
+    assert _rule().check(SimpleNamespace(assignment_id=1)) == "KCs ainda não aprovados"
