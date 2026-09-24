@@ -31,20 +31,20 @@ def _first_correct_per_subject(problem_df: pd.DataFrame) -> list[dict]:
 
     Never returns incorrect code (Pitfall 4): a subject with no correct submission is skipped.
     """
-    events = problem_df.sort_values("ServerTimestamp", kind="stable")
+    events = problem_df.sort_values("submitted_at", kind="stable")
     samples: list[dict] = []
-    for _subject_id, subject_events in events.groupby("SubjectID", sort=False):
-        subject_events = subject_events.sort_values("ServerTimestamp", kind="stable")
-        correct_mask = subject_events["correct"] == 1
+    for _subject_id, subject_events in events.groupby("student_id", sort=False):
+        subject_events = subject_events.sort_values("submitted_at", kind="stable")
+        correct_mask = subject_events["is_correct"] == 1
         if not correct_mask.any():
             continue
         first_correct_pos = int(correct_mask.values.argmax())  # attempts BEFORE the first correct
         first_correct = subject_events.iloc[first_correct_pos]
         samples.append({
-            "subject_id": str(_subject_id),
-            "codestate_id": str(first_correct["CodeStateID"]),
+            "student_id": str(_subject_id),
+            "code_snapshot_id": str(first_correct["code_snapshot_id"]),
             "total_attempts": first_correct_pos + 1,
-            "code": str(first_correct["Code"]),
+            "code": str(first_correct["code"]),
         })
     return samples
 

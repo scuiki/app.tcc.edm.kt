@@ -17,25 +17,29 @@ import pandas as pd
 from edmkt_app.ingestion.report import ReportItem
 from edmkt_app.submission_events import KEPT_EVENTS, RUN_PROGRAM
 
-# Contrato de colunas do seam: exatamente o que build_sequences/train_and_evaluate consomem
-# (verificado em edmkt_core/sequences.py:16 e pipeline.py:84-130). A ordem é estável p/ o Parquet.
-CANONICAL_COLUMNS = [
-    "SubjectID",
-    "AssignmentID",
-    "ProblemID",
-    "CodeStateID",
-    "Code",
-    "Score",
-    "ServerTimestamp",
-    "EventType",
-    "correct",
-]
+# A tradução ProgSnap2 -> glossário acontece AQUI e só aqui: o CSV do professor chega com os
+# nomes do padrão, e tudo o que vem depois (Parquet, EDA, treino, inferência) lê os nomes do
+# glossário (docs/GLOSSARY.md, "Colunas do dado limpo").
+PROGSNAP_TO_CLEANED_COLUMNS = {
+    "SubjectID": "student_id",
+    "AssignmentID": "progsnap_assignment_id",
+    "ProblemID": "problem_id",
+    "CodeStateID": "code_snapshot_id",
+    "Code": "code",
+    "Score": "score",
+    "ServerTimestamp": "submitted_at",
+    "EventType": "event_type",
+}
+
+# Contrato de colunas do dado limpo: exatamente o que build_sequences/train_and_evaluate consomem.
+# A ordem é estável para o Parquet.
+CANONICAL_COLUMNS = [*PROGSNAP_TO_CLEANED_COLUMNS.values(), "is_correct"]
 
 
 def clean_event_stream(
     raw: pd.DataFrame, code_states: dict[str, str]
 ) -> tuple[pd.DataFrame, list[ReportItem]]:
-    """Normaliza o DataFrame cru do ProgSnap2 no stream canônico que o edmkt_core consome.
+    """Normaliza o DataFrame cru do ProgSnap2 no dado limpo, já com os nomes do glossário.
 
     Devolve (df_canônico, avisos). `code_states` é o dict {CodeStateID: Code} usado para o
     join do snapshot e a integridade referencial (D-11) — adicionados no estágio de integridade.
@@ -58,9 +62,9 @@ def clean_event_stream(
             )
         )
 
-    # Binarização (D-12) preservando o Score CONTÍNUO: `correct` é derivada à parte; a coluna
+    # Binarização (D-12) preservando o Score CONTÍNUO: `is_correct` é derivada à parte; a coluna
     # Score crua segue intacta para a EDA da Fase 6 (Pitfall 4 — não destruir o contínuo).
-    df["correct"] = (
+    df["is_correct"] = (
         (df["EventType"] == RUN_PROGRAM) & (df["Score"] == 1.0)
     ).astype(int)
 
@@ -86,4 +90,5 @@ def clean_event_stream(
     # órfãos todo CodeStateID remanescente existe em code_states, então o map nunca produz NaN.
     df["Code"] = df["CodeStateID"].astype(str).map(code_states)
 
-    return df[CANONICAL_COLUMNS].reset_index(drop=True), items
+    cleaned = df.rename(columns=PROGSNAP_TO_CLEANED_COLUMNS)
+    return cleaned[CANONICAL_COLUMNS].reset_index(drop=True), items

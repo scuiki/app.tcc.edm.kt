@@ -42,10 +42,10 @@ def test_matrix_aggregates_problem_to_kc_by_mean():
     # final daquele problema; uma 1ª tentativa anterior NÃO deve sobrescrever a última.
     pred_df = pd.DataFrame(
         [
-            {"user_id": "S1", "skill_name": "1", "correct": 0, "is_first_attempt": True,  "correct_predictions": 0.9},
-            {"user_id": "S1", "skill_name": "1", "correct": 0, "is_first_attempt": False, "correct_predictions": 0.2},  # última p/ prob 1
-            {"user_id": "S1", "skill_name": "2", "correct": 1, "is_first_attempt": True,  "correct_predictions": 0.8},
-            {"user_id": "S1", "skill_name": "3", "correct": 1, "is_first_attempt": True,  "correct_predictions": 0.6},
+            {"student_id": "S1", "problem_id": "1", "is_correct": 0, "is_first_attempt": True,  "predicted_correct_probability": 0.9},
+            {"student_id": "S1", "problem_id": "1", "is_correct": 0, "is_first_attempt": False, "predicted_correct_probability": 0.2},  # última p/ prob 1
+            {"student_id": "S1", "problem_id": "2", "is_correct": 1, "is_first_attempt": True,  "predicted_correct_probability": 0.8},
+            {"student_id": "S1", "problem_id": "3", "is_correct": 1, "is_first_attempt": True,  "predicted_correct_probability": 0.6},
         ]
     )
     qmatrix = {1: [10], 2: [20], 3: [10, 20]}  # problem_id -> [kc_id...]; KC1=10, KC2=20
@@ -109,15 +109,15 @@ def _seed_clean_parquet(ns, data_root, with_compile_errors: bool = False):
 
     def _row(subject, problem, step, score, code, csid):
         return {
-            "SubjectID": subject,
-            "AssignmentID": 439,
-            "ProblemID": problem,
-            "CodeStateID": csid,
-            "Code": code,
-            "Score": score,
-            "ServerTimestamp": base + pd.Timedelta(minutes=step),
-            "EventType": "Run.Program",
-            "correct": int(score == 1.0),
+            "student_id": subject,
+            "progsnap_assignment_id": 439,
+            "problem_id": problem,
+            "code_snapshot_id": csid,
+            "code": code,
+            "score": score,
+            "submitted_at": base + pd.Timedelta(minutes=step),
+            "event_type": "Run.Program",
+            "is_correct": int(score == 1.0),
         }
 
     rows = []
@@ -130,14 +130,14 @@ def _seed_clean_parquet(ns, data_root, with_compile_errors: bool = False):
             # Como o canônico da Fase 3 grava de fato (ALLOWED_EVENTS, D-10): Compile.Error com
             # Java quebrado convive com os Run.Program no MESMO Parquet.
             broken = _row(subj, 1, si * 10 + 5, 0.0, "public int oops( { return ;;; }", "")
-            broken["CodeStateID"] = f"e{si}"
-            broken["EventType"] = "Compile.Error"
-            broken["correct"] = 0
+            broken["code_snapshot_id"] = f"e{si}"
+            broken["event_type"] = "Compile.Error"
+            broken["is_correct"] = 0
             rows.append(broken)
     df = pd.DataFrame(rows)
-    df["ServerTimestamp"] = pd.to_datetime(df["ServerTimestamp"], utc=True)
-    df["AssignmentID"] = df["AssignmentID"].astype("Int64")
-    df["ProblemID"] = df["ProblemID"].astype("Int64")
+    df["submitted_at"] = pd.to_datetime(df["submitted_at"], utc=True)
+    df["progsnap_assignment_id"] = df["progsnap_assignment_id"].astype("Int64")
+    df["problem_id"] = df["problem_id"].astype("Int64")
 
     clean_dir = data_root / "turma-6" / "clean"
     clean_dir.mkdir(parents=True, exist_ok=True)
@@ -358,7 +358,7 @@ def test_inference_stream_excludes_compile_errors(trained_artifact, tmp_path, mo
     real_build_sequences = inference.build_sequences
 
     def _spy(df, progsnap_aid, *args, **kwargs):
-        seen["event_types"] = set(df["EventType"].unique())
+        seen["event_types"] = set(df["event_type"].unique())
         return real_build_sequences(df, progsnap_aid, *args, **kwargs)
 
     monkeypatch.setattr(inference, "build_sequences", _spy)

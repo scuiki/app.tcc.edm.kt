@@ -34,15 +34,15 @@ _JAVA_BODIES = [
 
 def _row(subject, problem, ts, score, code, csid):
     return {
-        "SubjectID": subject,
-        "AssignmentID": ASSIGNMENT_ID,
-        "ProblemID": problem,
-        "CodeStateID": csid,
-        "Code": code,
-        "Score": score,
-        "ServerTimestamp": ts,
-        "EventType": "Run.Program",
-        "correct": int(score == 1.0),
+        "student_id": subject,
+        "progsnap_assignment_id": ASSIGNMENT_ID,
+        "problem_id": problem,
+        "code_snapshot_id": csid,
+        "code": code,
+        "score": score,
+        "submitted_at": ts,
+        "event_type": "Run.Program",
+        "is_correct": int(score == 1.0),
     }
 
 
@@ -54,9 +54,9 @@ def _canonical_df() -> pd.DataFrame:
             ts = base + pd.Timedelta(hours=s) + pd.Timedelta(minutes=step)
             rows.append(_row(f"S{s}", pid, ts, score, body, f"c{s}_{step}"))
     df = pd.DataFrame(rows)
-    df["ServerTimestamp"] = pd.to_datetime(df["ServerTimestamp"], utc=True)
-    df["AssignmentID"] = df["AssignmentID"].astype("Int64")
-    df["ProblemID"] = df["ProblemID"].astype("Int64")
+    df["submitted_at"] = pd.to_datetime(df["submitted_at"], utc=True)
+    df["progsnap_assignment_id"] = df["progsnap_assignment_id"].astype("Int64")
+    df["problem_id"] = df["problem_id"].astype("Int64")
     return df
 
 

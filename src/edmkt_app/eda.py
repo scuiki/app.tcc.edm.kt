@@ -31,15 +31,15 @@ def _read_canonical(pq: Path | str) -> pd.DataFrame:
 
 
 def _success_rate_by_assignment(df: pd.DataFrame) -> dict[int, float]:
-    runs = df[df["EventType"] == RUN_PROGRAM]
-    return {int(aid): float(rate) for aid, rate in runs.groupby("AssignmentID")["correct"].mean().items()}
+    runs = df[df["event_type"] == RUN_PROGRAM]
+    return {int(aid): float(rate) for aid, rate in runs.groupby("progsnap_assignment_id")["is_correct"].mean().items()}
 
 
 def _learning_curve(df: pd.DataFrame) -> dict[int, float]:
-    runs = df[df["EventType"] == RUN_PROGRAM].sort_values("ServerTimestamp")
+    runs = df[df["event_type"] == RUN_PROGRAM].sort_values("submitted_at")
     # attempt_num = cumcount por (aluno, assignment): a n-ésima tentativa de Run.Program do aluno.
-    attempt = runs.groupby(["SubjectID", "AssignmentID"]).cumcount()
-    curve = runs.assign(attempt_num=attempt).groupby("attempt_num")["correct"].mean()
+    attempt = runs.groupby(["student_id", "progsnap_assignment_id"]).cumcount()
+    curve = runs.assign(attempt_num=attempt).groupby("attempt_num")["is_correct"].mean()
     return {int(k): float(v) for k, v in curve.sort_index().items()}
 
 
@@ -47,10 +47,10 @@ def _compile_error_rate_by_assignment(df: pd.DataFrame) -> dict[int, float]:
     # WR-03: a taxa é CE_count / Run_count (compile-errors POR tentativa de execução), não
     # CE_count / (CE+Run). A média sobre TODOS os eventos misturava os dois tipos e variava
     # com quantos Run.Program o aluno teve, tornando a métrica incomparável com a convenção.
-    runs = df[df["EventType"] == RUN_PROGRAM]
-    ce = df[df["EventType"] == COMPILE_ERROR]
-    run_counts = runs.groupby("AssignmentID").size()
-    ce_counts = ce.groupby("AssignmentID").size().reindex(run_counts.index, fill_value=0)
+    runs = df[df["event_type"] == RUN_PROGRAM]
+    ce = df[df["event_type"] == COMPILE_ERROR]
+    run_counts = runs.groupby("progsnap_assignment_id").size()
+    ce_counts = ce.groupby("progsnap_assignment_id").size().reindex(run_counts.index, fill_value=0)
     rate = (ce_counts / run_counts).fillna(0.0)
     return {int(aid): float(v) for aid, v in rate.items()}
 

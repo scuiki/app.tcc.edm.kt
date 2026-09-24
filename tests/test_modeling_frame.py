@@ -51,20 +51,20 @@ def _seed(conn, data_root) -> int:
     ):
         rows.append(
             {
-                "SubjectID": "S1",
-                "AssignmentID": 439,
-                "ProblemID": 1,
-                "CodeStateID": f"c{i}",
-                "Code": code,
-                "Score": 0.0,
-                "ServerTimestamp": base + pd.Timedelta(minutes=i),
-                "EventType": event,
-                "correct": 0,
+                "student_id": "S1",
+                "progsnap_assignment_id": 439,
+                "problem_id": 1,
+                "code_snapshot_id": f"c{i}",
+                "code": code,
+                "score": 0.0,
+                "submitted_at": base + pd.Timedelta(minutes=i),
+                "event_type": event,
+                "is_correct": 0,
             }
         )
     df = pd.DataFrame(rows)
-    df["AssignmentID"] = df["AssignmentID"].astype("Int64")
-    df["ProblemID"] = df["ProblemID"].astype("Int64")
+    df["progsnap_assignment_id"] = df["progsnap_assignment_id"].astype("Int64")
+    df["problem_id"] = df["problem_id"].astype("Int64")
     clean_dir = data_root / "turma-x" / "clean"
     clean_dir.mkdir(parents=True, exist_ok=True)
     df.to_parquet(clean_dir / "assignment_439.parquet", engine="pyarrow", index=False)
@@ -77,7 +77,7 @@ def test_frame_carries_only_run_program(tmp_db, tmp_path, monkeypatch):
 
     frame = modeling_frame.load_modeling_frame(tmp_db, assignment_id)
 
-    assert set(frame.events["EventType"].unique()) == {"Run.Program"}
+    assert set(frame.events["event_type"].unique()) == {"Run.Program"}
     assert len(frame.events) == 2
 
 

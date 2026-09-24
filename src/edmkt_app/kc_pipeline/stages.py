@@ -43,8 +43,8 @@ def _kc_body(conn, assignment_id: int, job_id: int) -> dict:
 
     # Pitfall 4: KC-gen vê só código CORRETO (a 1ª submissão correta por aluno×problema sai do
     # diversity_sample). Filtrar aqui evita mostrar código errado ao LLM.
-    correct_df = df[df["correct"] == 1]
-    problem_ids = sorted(str(p) for p in correct_df["ProblemID"].dropna().unique())
+    correct_df = df[df["is_correct"] == 1]
+    problem_ids = sorted(str(p) for p in correct_df["problem_id"].dropna().unique())
 
     cache_dir = data_layout.llm_cache_dir(turma_slug, progsnap_aid)
     gen_llm = _CachedLLM(cache_dir, stage="generate")
@@ -54,7 +54,7 @@ def _kc_body(conn, assignment_id: int, job_id: int) -> dict:
     job_repo.update_stage(job_id, stage="generate", updated_at=utc_now_iso())
     kc_raw: dict = {}
     for pid in problem_ids:
-        pdf = correct_df[correct_df["ProblemID"].astype(str) == pid]
+        pdf = correct_df[correct_df["problem_id"].astype(str) == pid]
         samples = diversity_sample(pdf, n=5)
         code_samples = [s["code"] for s in samples]
         kc_raw[pid] = generate_kcs_for_problem(int(pid), code_samples, gen_llm)

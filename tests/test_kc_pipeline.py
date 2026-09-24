@@ -33,7 +33,9 @@ def test_build_qmatrix_reproduces_reference(kc_reference_dir):
 
     kc_raw = _load(kc_reference_dir, "kc_raw_A439.json")
     kc_clusters = _load(kc_reference_dir, "kc_clusters_A439.json")
+    # O CSV é o artefato do TCC 1 e guarda o índice com o nome do ProgSnap2.
     reference = pd.read_csv(kc_reference_dir / "qmatrix_A439.csv", index_col="ProblemID")
+    reference.index.name = "problem_id"
 
     # Os problem_ids da referência (o índice do CSV) na mesma ordem.
     problem_ids = [str(p) for p in reference.index.tolist()]

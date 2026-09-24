@@ -215,8 +215,8 @@ def predict_code_dkt(
 
     if not sequences:
         return pd.DataFrame(
-            columns=["user_id", "skill_name", "correct",
-                     "is_first_attempt", "correct_predictions"]
+            columns=["student_id", "problem_id", "is_correct",
+                     "is_first_attempt", "predicted_correct_probability"]
         )
 
     device = next(model.parameters()).device
@@ -241,13 +241,13 @@ def predict_code_dkt(
         for t_rel in range(1, L):
             t_prev = start_idx + t_rel - 1
             row = events.iloc[t_rel]
-            m = problem_to_idx[int(row["ProblemID"])]
+            m = problem_to_idx[int(row["problem_id"])]
             rows.append({
-                "user_id": str(seq["subject_id"]),
-                "skill_name": str(int(row["ProblemID"])),
-                "correct": int(row["correct"]),
+                "student_id": str(seq["student_id"]),
+                "problem_id": int(row["problem_id"]),
+                "is_correct": int(row["is_correct"]),
                 "is_first_attempt": bool(row["is_first_attempt"]),
-                "correct_predictions": float(y_pred_np[i, t_prev, m]),
+                "predicted_correct_probability": float(y_pred_np[i, t_prev, m]),
             })
 
     return pd.DataFrame(rows)

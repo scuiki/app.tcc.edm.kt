@@ -51,21 +51,21 @@ def test_few_problems_avisa_mas_nao_bloqueia():
         for k in range(3):
             rows.append(
                 {
-                    "SubjectID": sid,
-                    "AssignmentID": 439,
-                    "ProblemID": 1,  # 1 problema só => few_problems
-                    "ServerTimestamp": base + pd.Timedelta(minutes=10 * i + k),
-                    "EventType": "Run.Program",
-                    "Score": score if k == 0 else 1.0,
-                    "CodeStateID": f"{sid}-{k}",
-                    "Code": "public int f(){return 1;}",
-                    "correct": int(score == 1.0) if k == 0 else 1,
+                    "student_id": sid,
+                    "progsnap_assignment_id": 439,
+                    "problem_id": 1,  # 1 problema só => few_problems
+                    "submitted_at": base + pd.Timedelta(minutes=10 * i + k),
+                    "event_type": "Run.Program",
+                    "score": score if k == 0 else 1.0,
+                    "code_snapshot_id": f"{sid}-{k}",
+                    "code": "public int f(){return 1;}",
+                    "is_correct": int(score == 1.0) if k == 0 else 1,
                 }
             )
     df = pd.DataFrame(rows)
-    df["ServerTimestamp"] = pd.to_datetime(df["ServerTimestamp"], utc=True)
-    df["AssignmentID"] = df["AssignmentID"].astype("Int64")
-    df["ProblemID"] = df["ProblemID"].astype("Int64")
+    df["submitted_at"] = pd.to_datetime(df["submitted_at"], utc=True)
+    df["progsnap_assignment_id"] = df["progsnap_assignment_id"].astype("Int64")
+    df["problem_id"] = df["problem_id"].astype("Int64")
 
     summaries, items = assess_viability(df)
     s = summaries[0]
@@ -88,21 +88,21 @@ def test_small_sample_avisa_mas_nao_bloqueia():
             pid = 1 + k  # >=2 problemas => não dispara few_problems
             rows.append(
                 {
-                    "SubjectID": sid,
-                    "AssignmentID": 439,
-                    "ProblemID": pid,
-                    "ServerTimestamp": base + pd.Timedelta(minutes=10 * i + k),
-                    "EventType": "Run.Program",
-                    "Score": score if k == 0 else 1.0,
-                    "CodeStateID": f"{sid}-{k}",
-                    "Code": "public int f(){return 1;}",
-                    "correct": int(score == 1.0) if k == 0 else 1,
+                    "student_id": sid,
+                    "progsnap_assignment_id": 439,
+                    "problem_id": pid,
+                    "submitted_at": base + pd.Timedelta(minutes=10 * i + k),
+                    "event_type": "Run.Program",
+                    "score": score if k == 0 else 1.0,
+                    "code_snapshot_id": f"{sid}-{k}",
+                    "code": "public int f(){return 1;}",
+                    "is_correct": int(score == 1.0) if k == 0 else 1,
                 }
             )
     df = pd.DataFrame(rows)
-    df["ServerTimestamp"] = pd.to_datetime(df["ServerTimestamp"], utc=True)
-    df["AssignmentID"] = df["AssignmentID"].astype("Int64")
-    df["ProblemID"] = df["ProblemID"].astype("Int64")
+    df["submitted_at"] = pd.to_datetime(df["submitted_at"], utc=True)
+    df["progsnap_assignment_id"] = df["progsnap_assignment_id"].astype("Int64")
+    df["problem_id"] = df["problem_id"].astype("Int64")
 
     summaries, items = assess_viability(df)
     s = summaries[0]
@@ -120,35 +120,35 @@ def test_n_students_eligible_conta_so_min_3_run_program():
     for k in range(3):
         rows.append(
             {
-                "SubjectID": "S1",
-                "AssignmentID": 439,
-                "ProblemID": 1 + k,
-                "ServerTimestamp": base + pd.Timedelta(minutes=k),
-                "EventType": "Run.Program",
-                "Score": 0.0 if k == 0 else 1.0,
-                "CodeStateID": f"S1-{k}",
-                "Code": "x",
-                "correct": 0 if k == 0 else 1,
+                "student_id": "S1",
+                "progsnap_assignment_id": 439,
+                "problem_id": 1 + k,
+                "submitted_at": base + pd.Timedelta(minutes=k),
+                "event_type": "Run.Program",
+                "score": 0.0 if k == 0 else 1.0,
+                "code_snapshot_id": f"S1-{k}",
+                "code": "x",
+                "is_correct": 0 if k == 0 else 1,
             }
         )
     for k in range(2):  # S2 abaixo do piso de elegibilidade
         rows.append(
             {
-                "SubjectID": "S2",
-                "AssignmentID": 439,
-                "ProblemID": 1 + k,
-                "ServerTimestamp": base + pd.Timedelta(hours=1, minutes=k),
-                "EventType": "Run.Program",
-                "Score": 1.0,
-                "CodeStateID": f"S2-{k}",
-                "Code": "x",
-                "correct": 1,
+                "student_id": "S2",
+                "progsnap_assignment_id": 439,
+                "problem_id": 1 + k,
+                "submitted_at": base + pd.Timedelta(hours=1, minutes=k),
+                "event_type": "Run.Program",
+                "score": 1.0,
+                "code_snapshot_id": f"S2-{k}",
+                "code": "x",
+                "is_correct": 1,
             }
         )
     df = pd.DataFrame(rows)
-    df["ServerTimestamp"] = pd.to_datetime(df["ServerTimestamp"], utc=True)
-    df["AssignmentID"] = df["AssignmentID"].astype("Int64")
-    df["ProblemID"] = df["ProblemID"].astype("Int64")
+    df["submitted_at"] = pd.to_datetime(df["submitted_at"], utc=True)
+    df["progsnap_assignment_id"] = df["progsnap_assignment_id"].astype("Int64")
+    df["problem_id"] = df["problem_id"].astype("Int64")
 
     summaries, _ = assess_viability(df)
     s = summaries[0]
@@ -164,36 +164,36 @@ def test_gate_por_assignment_independente():
     for sid, score in [("S1", 0.0), ("S2", 1.0)]:
         rows.append(
             {
-                "SubjectID": sid,
-                "AssignmentID": 439,
-                "ProblemID": 1,
-                "ServerTimestamp": base,
-                "EventType": "Run.Program",
-                "Score": score,
-                "CodeStateID": f"{sid}-439",
-                "Code": "x",
-                "correct": int(score == 1.0),
+                "student_id": sid,
+                "progsnap_assignment_id": 439,
+                "problem_id": 1,
+                "submitted_at": base,
+                "event_type": "Run.Program",
+                "score": score,
+                "code_snapshot_id": f"{sid}-439",
+                "code": "x",
+                "is_correct": int(score == 1.0),
             }
         )
     # A492: todos acertam => uma classe só.
     for sid in ["S3", "S4"]:
         rows.append(
             {
-                "SubjectID": sid,
-                "AssignmentID": 492,
-                "ProblemID": 1,
-                "ServerTimestamp": base,
-                "EventType": "Run.Program",
-                "Score": 1.0,
-                "CodeStateID": f"{sid}-492",
-                "Code": "x",
-                "correct": 1,
+                "student_id": sid,
+                "progsnap_assignment_id": 492,
+                "problem_id": 1,
+                "submitted_at": base,
+                "event_type": "Run.Program",
+                "score": 1.0,
+                "code_snapshot_id": f"{sid}-492",
+                "code": "x",
+                "is_correct": 1,
             }
         )
     df = pd.DataFrame(rows)
-    df["ServerTimestamp"] = pd.to_datetime(df["ServerTimestamp"], utc=True)
-    df["AssignmentID"] = df["AssignmentID"].astype("Int64")
-    df["ProblemID"] = df["ProblemID"].astype("Int64")
+    df["submitted_at"] = pd.to_datetime(df["submitted_at"], utc=True)
+    df["progsnap_assignment_id"] = df["progsnap_assignment_id"].astype("Int64")
+    df["problem_id"] = df["problem_id"].astype("Int64")
 
     summaries, _ = assess_viability(df)
     by_id = {s.assignment_id: s for s in summaries}

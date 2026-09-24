@@ -14,10 +14,10 @@ def _mixed_stream() -> pd.DataFrame:
     # Espelha o Parquet canônico da Fase 3: ALLOWED_EVENTS = {Run.Program, Compile.Error}.
     return pd.DataFrame(
         [
-            {"SubjectID": "S1", "EventType": "Run.Program", "correct": 1},
-            {"SubjectID": "S1", "EventType": "Compile.Error", "correct": 0},
-            {"SubjectID": "S2", "EventType": "Compile.Error", "correct": 0},
-            {"SubjectID": "S2", "EventType": "Run.Program", "correct": 0},
+            {"student_id": "S1", "event_type": "Run.Program", "is_correct": 1},
+            {"student_id": "S1", "event_type": "Compile.Error", "is_correct": 0},
+            {"student_id": "S2", "event_type": "Compile.Error", "is_correct": 0},
+            {"student_id": "S2", "event_type": "Run.Program", "is_correct": 0},
         ]
     )
 
@@ -25,7 +25,7 @@ def _mixed_stream() -> pd.DataFrame:
 def test_run_program_only_drops_compile_errors():
     out = utils.run_program_only(_mixed_stream())
 
-    assert list(out["EventType"].unique()) == ["Run.Program"]
+    assert list(out["event_type"].unique()) == ["Run.Program"]
     assert len(out) == 2
 
 

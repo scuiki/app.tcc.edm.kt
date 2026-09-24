@@ -243,9 +243,9 @@ def build_code_input_tensor(
         L = len(events)
         pad = max_len - L  # left-padding offset (readdata.py: 'extra')
 
-        pids = events["ProblemID"].values
-        corrects = events["correct"].values
-        csids = events["CodeStateID"].astype(str).values
+        pids = events["problem_id"].values
+        corrects = events["is_correct"].values
+        csids = events["code_snapshot_id"].astype(str).values
 
         for t_rel in range(L):
             t = pad + t_rel

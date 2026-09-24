@@ -50,15 +50,15 @@ _JAVA_BODIES = [
 def _row(subject, problem, ts, score, code, csid):
     correct = int(score == 1.0)
     return {
-        "SubjectID": subject,
-        "ProblemID": problem,
-        "AssignmentID": ASSIGNMENT_ID,
-        "ServerTimestamp": ts,
-        "EventType": "Run.Program",
-        "Score": score,
-        "CodeStateID": csid,
-        "Code": code,
-        "correct": correct,
+        "student_id": subject,
+        "problem_id": problem,
+        "progsnap_assignment_id": ASSIGNMENT_ID,
+        "submitted_at": ts,
+        "event_type": "Run.Program",
+        "score": score,
+        "code_snapshot_id": csid,
+        "code": code,
+        "is_correct": correct,
     }
 
 
@@ -88,9 +88,9 @@ def progsnap_df() -> pd.DataFrame:
             rows.append(_row(subject, pid, ts, score, body, f"c{s}_{step}"))
 
     df = pd.DataFrame(rows)
-    df["ServerTimestamp"] = pd.to_datetime(df["ServerTimestamp"], utc=True)
-    df["AssignmentID"] = df["AssignmentID"].astype("Int64")
-    df["ProblemID"] = df["ProblemID"].astype("Int64")
+    df["submitted_at"] = pd.to_datetime(df["submitted_at"], utc=True)
+    df["progsnap_assignment_id"] = df["progsnap_assignment_id"].astype("Int64")
+    df["problem_id"] = df["problem_id"].astype("Int64")
     return df
 
 
@@ -111,7 +111,7 @@ def test_end_to_end_fixture(progsnap_df, cpu_device):
 
     pred_df = result["pred_df"]
     assert len(pred_df) > 0
-    for col in ("correct", "correct_predictions", "is_first_attempt"):
+    for col in ("is_correct", "predicted_correct_probability", "is_first_attempt"):
         assert col in pred_df.columns
 
 
@@ -160,7 +160,7 @@ def test_first_attempt_carried_to_pred_df(progsnap_df, cpu_device):
     # through truncation -> the count of first-attempt rows per (user, problem) is <= 1.
     # No recompute can produce a second "first attempt" for the same (user, problem).
     first_only = pred_df[pred_df["is_first_attempt"]]
-    per_pair = first_only.groupby(["user_id", "skill_name"]).size()
+    per_pair = first_only.groupby(["student_id", "problem_id"]).size()
     assert (per_pair <= 1).all()
 
 

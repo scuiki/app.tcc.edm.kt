@@ -82,7 +82,7 @@ def infer_predictions(
 
     # Mesma montagem de pipeline.py: sequências completas → cache de paths crus → índice de
     # problemas global. O vocab vem do artefato (meta/vocab), nunca reconstruído (CORE-04).
-    # .value: build_sequences é do core congelado e filtra df["AssignmentID"] pelo int.
+    # .value: build_sequences é do core congelado e filtra df["progsnap_assignment_id"] pelo int.
     sequences = build_sequences(df, progsnap_aid.value)
     # O mesmo cache de paths em disco que o treino aqueceu: os snapshots já extraídos não são
     # extraídos de novo. Os parâmetros de extração são os do meta do artefato, completados pelos
