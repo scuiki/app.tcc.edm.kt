@@ -15,38 +15,46 @@ from api.assignments.infrastructure.repositories.sqlite_classroom_repository imp
 from api.classroom_import.infrastructure.implementations.parquet_cleaned_submissions_store import (
     ParquetCleanedSubmissionsStore,
 )
-from api.knowledge_components.application.add_knowledge_component_use_case import (
+from api.knowledge_components.application.use_cases.add_knowledge_component_use_case import (
     AddKnowledgeComponentUseCase,
 )
-from api.knowledge_components.application.approve_qmatrix_use_case import ApproveQMatrixUseCase
-from api.knowledge_components.application.get_kc_generation_job_use_case import (
+from api.knowledge_components.application.use_cases.approve_qmatrix_use_case import (
+    ApproveQMatrixUseCase,
+)
+from api.knowledge_components.application.use_cases.get_kc_generation_job_use_case import (
     GetKnowledgeComponentGenerationJobUseCase,
 )
-from api.knowledge_components.application.merge_knowledge_components_use_case import (
+from api.knowledge_components.application.use_cases.merge_knowledge_components_use_case import (
     MergeKnowledgeComponentsUseCase,
 )
-from api.knowledge_components.application.remove_knowledge_component_use_case import (
+from api.knowledge_components.application.use_cases.remove_knowledge_component_use_case import (
     RemoveKnowledgeComponentUseCase,
 )
-from api.knowledge_components.application.rename_knowledge_component_use_case import (
+from api.knowledge_components.application.use_cases.rename_knowledge_component_use_case import (
     RenameKnowledgeComponentUseCase,
 )
-from api.knowledge_components.application.run_kc_generation_use_case import (
+from api.knowledge_components.application.use_cases.run_kc_generation_use_case import (
     RunKnowledgeComponentGenerationUseCase,
 )
-from api.knowledge_components.application.start_kc_generation_use_case import (
+from api.knowledge_components.application.use_cases.start_kc_generation_use_case import (
     StartKnowledgeComponentGenerationUseCase,
 )
-from api.knowledge_components.infrastructure.claude_cli_llm_client import ClaudeCliLLMClient
-from api.knowledge_components.infrastructure.kcgen_kt_generator import KcGenKtGenerator
-from api.knowledge_components.infrastructure.llm_response_cache import KC_GENERATION_MODEL_ID
-from api.knowledge_components.infrastructure.sqlite_kc_generation_job_repository import (
+from api.knowledge_components.infrastructure.implementations.claude_cli_llm_client import (
+    ClaudeCliLLMClient,
+)
+from api.knowledge_components.infrastructure.implementations.kcgen_kt_generator import (
+    KcGenKtGenerator,
+)
+from api.knowledge_components.infrastructure.implementations.llm_response_cache import (
+    KC_GENERATION_MODEL_ID,
+)
+from api.knowledge_components.infrastructure.repositories.sqlite_kc_generation_job_repository import (
     SqliteKnowledgeComponentGenerationJobRepository,
 )
-from api.knowledge_components.infrastructure.sqlite_knowledge_component_repository import (
+from api.knowledge_components.infrastructure.repositories.sqlite_knowledge_component_repository import (
     SqliteKnowledgeComponentRepository,
 )
-from api.knowledge_components.infrastructure.sqlite_qmatrix_repository import (
+from api.knowledge_components.infrastructure.repositories.sqlite_qmatrix_repository import (
     SqliteQMatrixRepository,
 )
 from api.shared.infrastructure.implementations.background_jobs import SubprocessJobLauncher
@@ -54,7 +62,7 @@ from api.shared.infrastructure.implementations.sqlite_unit_of_work import Sqlite
 from api.shared.infrastructure.implementations.one_job_at_a_time_lock import OneJobAtATimeLock
 from api.shared.presentation.http.database_session import open_database_session
 
-KC_GENERATION_WORKER = "api.knowledge_components.presentation.kc_generation_worker"
+KC_GENERATION_WORKER = "api.knowledge_components.presentation.workers.kc_generation_worker"
 
 
 def start_kc_generation_use_case(

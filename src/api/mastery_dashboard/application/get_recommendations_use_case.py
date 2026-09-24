@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from api.assignments.domain.interfaces.assignment_repository import IAssignmentRepository
 from api.assignments.domain.services.existing_assignment import get_existing_assignment
-from api.knowledge_components.domain.knowledge_component_repository import (
-    KnowledgeComponentRepository,
+from api.knowledge_components.domain.interfaces.knowledge_component_repository import (
+    IKnowledgeComponentRepository,
 )
 from api.mastery_dashboard.application.mastery_dashboard_dto import (
     RecommendationsResponseDTO,
@@ -20,7 +20,7 @@ class GetRecommendationsUseCase:
     def __init__(
         self,
         assignments: IAssignmentRepository,
-        knowledge_components: KnowledgeComponentRepository,
+        knowledge_components: IKnowledgeComponentRepository,
         mastery: PublishedModelMastery,
     ) -> None:
         self._assignments = assignments
