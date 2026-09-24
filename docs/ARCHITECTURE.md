@@ -118,6 +118,19 @@ que entra um contrato e não uma implementação, e forma o par com quem impleme
 `interfaces/` já diz o que ele é (`interfaces/assignment_repository.py`). O `LLMClient` do `ml/`
 fica sem `I`: o `ml/` é biblioteca e não segue as convenções da `api/`.
 
+## Comentários
+
+- Só comentário `#`, nunca docstring. As rotas descrevem a si mesmas pelo `description=` do
+  decorator do FastAPI.
+- Uma linha por comentário, curta, em pt-BR, e só onde o *porquê* não é óbvio lendo o código.
+- Sem travessão e sem dois-pontos. Dois-pontos só dentro de um trecho de código entre crases ou num
+  pragma de ferramenta (`# noqa`, `# type: ignore`).
+- O comentário faz sentido sozinho, sem apontar para outro documento.
+- Nas migrations SQL vale o mesmo, com `--`.
+
+O raciocínio completo das decisões não óbvias fica em [DECISIONS](DECISIONS.md). A regra é
+verificada por `src/api/code_comments_test.py`, que roda com a suíte.
+
 ## Testes
 
 O teste fica **ao lado do arquivo que testa**, com o sufixo `_test.py`:

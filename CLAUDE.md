@@ -86,7 +86,9 @@ serviço. O `web` publica em `${EDMKT_BIND_IP:-127.0.0.1}:5173`. GPU RTX 4050, 6
 
 Nomes em inglês, PEP 8, dizendo a intenção (`StartTrainingUseCase`, `find_students_at_risk()`).
 Todo nome sai de `docs/GLOSSARY.md`, e um conceito novo entra no glossário antes de entrar no
-código. Testes ficam ao lado do arquivo testado, com sufixo `_test.py`.
+código. Testes ficam ao lado do arquivo testado, com sufixo `_test.py`. Comentários só com `#`, de
+uma linha, sem travessão nem dois-pontos (verificado por `src/api/code_comments_test.py`), e o
+porquê completo das decisões não óbvias fica em `docs/DECISIONS.md`.
 
 ## Architecture
 

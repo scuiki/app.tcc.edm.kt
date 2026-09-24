@@ -99,8 +99,7 @@ def cache_code_states() -> dict[str, str]:
 
 @pytest.fixture
 def trained_artifact(tmp_db, data_root, tiny_vocab, tiny_config):
-    # Um Code-DKT minúsculo publicado, com pesos de semente fixa e sem treino, e uma Q-matrix
-    # em que o problema 3 liga os dois KCs
+    # Code-DKT minúsculo publicado, sem treino, e uma Q-matrix em que o problema 3 liga os 2 KCs
     conn = tmp_db
     now = "2026-06-21T00:00:00Z"
 
