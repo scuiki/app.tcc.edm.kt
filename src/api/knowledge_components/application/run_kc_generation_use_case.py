@@ -11,7 +11,7 @@ from api.assignments.domain.interfaces.assignment_repository import IAssignmentR
 from api.assignments.domain.interfaces.classroom_repository import IClassroomRepository
 from api.assignments.domain.value_objects.classroom_slug import ClassroomSlug
 from api.assignments.domain.value_objects.progsnap_assignment_id import ProgSnapAssignmentId
-from api.classroom_import.domain.cleaned_submissions_store import CleanedSubmissionsStore
+from api.classroom_import.domain.interfaces.cleaned_submissions_store import ICleanedSubmissionsStore
 from api.knowledge_components.domain.kc_generation_job_repository import (
     KnowledgeComponentGenerationJobRepository,
 )
@@ -33,7 +33,7 @@ class RunKnowledgeComponentGenerationUseCase:
         self,
         assignments: IAssignmentRepository,
         classrooms: IClassroomRepository,
-        cleaned_submissions: CleanedSubmissionsStore,
+        cleaned_submissions: ICleanedSubmissionsStore,
         generator: KnowledgeComponentGenerator,
         knowledge_components: KnowledgeComponentRepository,
         qmatrix: QMatrixRepository,

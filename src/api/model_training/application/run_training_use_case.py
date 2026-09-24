@@ -9,7 +9,7 @@ from __future__ import annotations
 from api.assignments.domain.entities.assignment_entity import AssignmentStatus
 from api.assignments.domain.interfaces.assignment_repository import IAssignmentRepository
 from api.assignments.domain.interfaces.classroom_repository import IClassroomRepository
-from api.classroom_import.domain.cleaned_submissions_store import CleanedSubmissionsStore
+from api.classroom_import.domain.interfaces.cleaned_submissions_store import ICleanedSubmissionsStore
 from api.model_training.domain.code_dkt_trainer import CodeDktTrainer, TrainedModelStore
 from api.model_training.domain.training_dataset import load_training_dataset
 from api.model_training.domain.training_epoch_metric import TrainingEpochMetric
@@ -26,7 +26,7 @@ class RunTrainingUseCase:
         self,
         assignments: IAssignmentRepository,
         classrooms: IClassroomRepository,
-        cleaned_submissions: CleanedSubmissionsStore,
+        cleaned_submissions: ICleanedSubmissionsStore,
         trainer: CodeDktTrainer,
         model_store: TrainedModelStore,
         jobs: TrainingJobRepository,

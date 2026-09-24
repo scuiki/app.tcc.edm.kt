@@ -11,7 +11,7 @@ from __future__ import annotations
 from api.assignments.domain.entities.assignment_entity import Assignment
 from api.assignments.domain.interfaces.assignment_repository import IAssignmentRepository
 from api.assignments.domain.interfaces.classroom_repository import IClassroomRepository
-from api.classroom_import.domain.cleaned_submissions_store import CleanedSubmissionsStore
+from api.classroom_import.domain.interfaces.cleaned_submissions_store import ICleanedSubmissionsStore
 from api.knowledge_components.domain.qmatrix_repository import QMatrixRepository
 from api.mastery_dashboard.domain.mastery_level import StudentMasteryMatrix
 from api.mastery_dashboard.domain.student_mastery_entity import StudentMastery
@@ -29,7 +29,7 @@ class PublishedModelMastery:
         self,
         assignments: IAssignmentRepository,
         classrooms: IClassroomRepository,
-        cleaned_submissions: CleanedSubmissionsStore,
+        cleaned_submissions: ICleanedSubmissionsStore,
         trained_models: TrainedModelRepository,
         qmatrix: QMatrixRepository,
         student_masteries: StudentMasteryRepository,

@@ -10,7 +10,7 @@ from dataclasses import dataclass
 
 import pandas as pd
 
-from api.classroom_import.domain.submission_event import COMPILE_ERROR, RUN_PROGRAM
+from api.classroom_import.domain.services.submission_event import COMPILE_ERROR, RUN_PROGRAM
 
 
 @dataclass(frozen=True)

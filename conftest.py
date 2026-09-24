@@ -70,7 +70,7 @@ def _typed(df: pd.DataFrame) -> pd.DataFrame:
 def _as_progsnap_upload(cleaned: pd.DataFrame) -> pd.DataFrame:
     """Cleaned events back to the shape of the teacher's upload: the ProgSnap2 column names and
     no derived `is_correct`. Input for the tests of the import boundary (ingestion/clean)."""
-    from api.classroom_import.domain.submission_cleaning import PROGSNAP_TO_CLEANED_COLUMNS
+    from api.classroom_import.domain.services.submission_cleaning import PROGSNAP_TO_CLEANED_COLUMNS
 
     to_progsnap = {new: old for old, new in PROGSNAP_TO_CLEANED_COLUMNS.items()}
     return cleaned.drop(columns=["is_correct"]).rename(columns=to_progsnap)
