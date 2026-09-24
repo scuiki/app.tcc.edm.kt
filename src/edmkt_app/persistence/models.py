@@ -16,20 +16,6 @@ from dataclasses import dataclass
 from typing import Optional
 
 
-@dataclass
-class KC:
-    id: Optional[int]
-    assignment_id: int
-    name: str
-    kc_index: Optional[int] = None  # id do cluster 0..N por-assignment; fidelidade c/ artefatos TCC (D-06)
-
-
-@dataclass
-class QMatrix:
-    id: Optional[int]
-    assignment_id: int
-    kc_id: int
-    problem_id: int
 
 
 @dataclass(frozen=True)
@@ -70,18 +56,3 @@ class TrainingJob:
     # Taxa de parse javalang por-assignment (D-06 estendido/MODEL-05): nasce None; o subprocess
     # de treino grava no sucesso. Sobrevive ao término do processo filho (SC-3).
     parse_rate: Optional[float] = None
-
-
-@dataclass
-class KCJob:
-    id: Optional[int]
-    assignment_id: int
-    status: str
-    created_at: str
-    # Estágio textual do pipeline KCGen-KT (D-05): nasce None; o subprocess grava sample/generate/
-    # cluster/label/qmatrix via update_stage. Espelha o progresso por-época do TrainingJob, mas o
-    # KC-gen tem estágios nomeados em vez de épocas numéricas.
-    stage: Optional[str] = None
-    started_at: Optional[str] = None
-    updated_at: Optional[str] = None
-    error_message: Optional[str] = None

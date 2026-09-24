@@ -392,16 +392,27 @@ def trained_artifact(tmp_db, tmp_path, tiny_vocab, tiny_config):
 
     # Q-matrix determinística: problemas 1,2,3 → KC1/KC2; o problema 3 liga AMBOS os KCs,
     # forçando a média problem→KC (Pitfall 2: KC-mastery = mean sobre os problemas do KC).
-    kc_repo = repos.KCRepository(conn)
-    kc1 = kc_repo.insert(models.KC(id=None, assignment_id=assignment_id, name="Laços", kc_index=0))
-    kc2 = kc_repo.insert(
-        models.KC(id=None, assignment_id=assignment_id, name="Condicionais", kc_index=1)
+    from api.knowledge_components.domain.knowledge_component_entity import KnowledgeComponent
+    from api.knowledge_components.domain.qmatrix_binding_entity import QMatrixBinding
+    from api.knowledge_components.infrastructure.sqlite_knowledge_component_repository import (
+        SqliteKnowledgeComponentRepository,
     )
-    qm_repo = repos.QMatrixRepository(conn)
+    from api.knowledge_components.infrastructure.sqlite_qmatrix_repository import (
+        SqliteQMatrixRepository,
+    )
+
+    kc_repo = SqliteKnowledgeComponentRepository(conn)
+    kc1 = kc_repo.add(
+        KnowledgeComponent(id=None, assignment_id=assignment_id, name="Laços", group_index=0)
+    )
+    kc2 = kc_repo.add(
+        KnowledgeComponent(id=None, assignment_id=assignment_id, name="Condicionais", group_index=1)
+    )
+    qm_repo = SqliteQMatrixRepository(conn)
     bindings = [(kc1, 1), (kc1, 3), (kc2, 2), (kc2, 3)]
     for kc_id, problem_id in bindings:
-        qm_repo.insert(
-            models.QMatrix(id=None, assignment_id=assignment_id, kc_id=kc_id, problem_id=problem_id)
+        qm_repo.add(
+            QMatrixBinding(id=None, assignment_id=assignment_id, kc_id=kc_id, problem_id=problem_id)
         )
 
     kcs = kc_repo.list_by_assignment(assignment_id)

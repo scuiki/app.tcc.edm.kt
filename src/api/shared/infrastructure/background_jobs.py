@@ -25,6 +25,16 @@ from api.shared.infrastructure.database.sqlite_connection import connect
 from api.shared.infrastructure.one_job_at_a_time_lock import OneJobAtATimeLock
 
 
+class SubprocessJobLauncher:
+    """BackgroundJobLauncher: `python -m <worker_module> --assignment N --job-id J`."""
+
+    def __init__(self, worker_module: str) -> None:
+        self._worker_module = worker_module
+
+    def launch(self, assignment_id: int, job_id: int) -> None:
+        launch_worker(self._worker_module, assignment_id, job_id)
+
+
 def launch_worker(module: str, assignment_id: int, job_id: int) -> None:
     """Dispara `python -m <module> --assignment N --job-id J` e retorna sem esperar."""
     # List-form, SEM shell=True, ids inteiros validados pelo DTO — nunca interpolados numa string

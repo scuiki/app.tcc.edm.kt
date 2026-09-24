@@ -1,0 +1,49 @@
+"""O professor aprova a Q-matrix que o LLM rascunhou. É o ÚNICO caminho que libera o treino."""
+
+from __future__ import annotations
+
+from api.assignments.domain.assignment_entity import AssignmentStatus
+from api.assignments.domain.assignment_repository import AssignmentRepository
+from api.assignments.domain.existing_assignment import get_existing_assignment
+from api.knowledge_components.application.edit_qmatrix_dto import (
+    ApprovedQMatrixDTO,
+    ApproveQMatrixDTO,
+)
+from api.knowledge_components.domain.assignment_has_knowledge_components_rule import (
+    AssignmentHasKnowledgeComponentsRule,
+)
+from api.knowledge_components.domain.assignment_is_kc_draft_rule import AssignmentIsKcDraftRule
+from api.knowledge_components.domain.knowledge_component_repository import (
+    KnowledgeComponentRepository,
+)
+from api.shared.application.unit_of_work import UnitOfWork
+from api.shared.application.write_use_case import WriteUseCase
+from api.shared.domain.business_rule import BusinessRule
+
+
+class ApproveQMatrixUseCase(WriteUseCase):
+    def __init__(
+        self,
+        assignments: AssignmentRepository,
+        knowledge_components: KnowledgeComponentRepository,
+        unit_of_work: UnitOfWork,
+    ) -> None:
+        self._assignments = assignments
+        self._knowledge_components = knowledge_components
+        self._unit_of_work = unit_of_work
+
+    def rules(self) -> list[BusinessRule]:
+        return [
+            AssignmentIsKcDraftRule(self._assignments),
+            AssignmentHasKnowledgeComponentsRule(self._knowledge_components),
+        ]
+
+    def execute(self, dto: ApproveQMatrixDTO) -> ApprovedQMatrixDTO:
+        # A inexistência é 404 e não entra no acúmulo: sem alvo, não há regra a aplicar.
+        get_existing_assignment(self._assignments, dto.assignment_id)
+        return super().execute(dto)
+
+    def _run(self, dto: ApproveQMatrixDTO) -> ApprovedQMatrixDTO:
+        with self._unit_of_work:
+            self._assignments.set_status(dto.assignment_id, AssignmentStatus.KC_APPROVED)
+        return ApprovedQMatrixDTO(assignment_id=dto.assignment_id, status=AssignmentStatus.KC_APPROVED)

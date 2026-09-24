@@ -19,3 +19,11 @@ class AcquiredJobLock(Protocol):
 
 class JobLock(Protocol):
     def acquire(self, operation: str, job_id: int | None) -> AcquiredJobLock: ...
+
+    def is_another_job_running(self) -> bool:
+        """Pré-check barato e NÃO autoritativo, para o web recusar cedo o "ocupado" óbvio.
+
+        O gate autoritativo é o `acquire` dentro do próprio job: se dois pedidos correrem, o
+        segundo perde o acquire lá e marca o próprio job como failed.
+        """
+        ...
