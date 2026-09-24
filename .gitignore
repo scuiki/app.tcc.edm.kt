@@ -15,3 +15,21 @@ app.db-wal
 # turma nem o CSEDM grande do D-12). tests/data/ é raiz hermética dos testes.
 !tests/data/
 !tests/data/**
+
+# Lixo de sistema e segredos locais
+.DS_Store
+.env
+.env.*
+*.egg-info/
+
+# Skills de agente instaladas só nesta máquina (as do projeto ficam em .claude/skills/ versionadas)
+.agents/
+.cursor/
+.windsurf/
+.claude/skills/frontend-design/
+.claude/skills/web-design-guidelines/
+
+# Diagramas de trabalho do schema (ficam no diretório, fora do repositório)
+gen_excalidraw.py
+schema-edmkt.excalidraw
+schema-edmkt.html
