@@ -1,11 +1,4 @@
-"""O worker da geração de KCs: trava como primeiro ato, estados do job e "nada parcial é gravado".
-
-Roda `run_kc_generation(conn, assignment_id, job_id, llm=...)` sobre `tmp_db` + `data_root`
-herméticos, com um LLM falso injetado: nenhum `claude` real, nenhuma cota gasta. Pina as transições
-do job (pending → running → done), a trava pega no corpo e liberada ao sair, e a falha dura de
-conteúdo: o job vira failed e não sobra KC nem Q-matrix parcial. Os testes pinam ESTADO.
-"""
-
+# Worker da geração de KCs, trava como primeiro ato, estados do job, nada parcial é gravado.
 from __future__ import annotations
 
 import os
@@ -36,9 +29,8 @@ from api.shared.infrastructure import settings
 from tests.fixtures.job_lock import lock_holder_pid
 
 
+# LLMClient falso, devolve o que `respond()` mandar, sem tocar o `claude`.
 class _FakeLLM:
-    """LLMClient falso: devolve o que `respond()` mandar, sem tocar o `claude`."""
-
     def __init__(self, respond) -> None:
         self._respond = respond
 
@@ -92,7 +84,7 @@ def _canonical_df() -> pd.DataFrame:
 
 
 def _seed_kc_ready(conn, data_root) -> tuple[int, int]:
-    """turma + assignment trainable + dado limpo + kc_job pending. Devolve (aid, job)."""
+    # Turma + assignment trainable + dado limpo + kc_job pending. Devolve (aid, job).
     created = "2026-06-21T00:00:00Z"
     classroom_id = SqliteClassroomRepository(conn).add(
         Classroom(id=None, name="Turma X", created_at=created)
@@ -135,8 +127,7 @@ def test_lock_busy_marks_failed_and_does_not_persist(tmp_db, data_root):
 
 
 def test_content_hard_fail_marks_failed_nothing_persisted(tmp_db, data_root):
-    # O LLM devolve 0 KCs → após N tentativas o job inteiro marca failed e NADA é
-    # persistido (nem kc, nem qmatrix, nem flip de status do assignment).
+    # LLM devolve 0 KCs, após N tentativas o job marca failed e nada é persistido.
     conn = tmp_db
     assignment_id, job_id = _seed_kc_ready(conn, data_root)
 
@@ -155,9 +146,7 @@ def test_content_hard_fail_marks_failed_nothing_persisted(tmp_db, data_root):
 
 
 def test_small_dataset_skips_clustering_no_crash(tmp_db, data_root):
-    # 2..10 nomes únicos de KC — abaixo do menor candidato {10,12,15}. O caminho real
-    # é NÃO clusterizar (cada nome único = seu próprio cluster), sem tocar SBERT/silhouette.
-    # Antes do fix: choose_kc_group_count estourava ValueError em max() de dict vazio → job failed.
+    # Poucos nomes pulam SBERT/silhouette (cada nome vira seu cluster), evita o ValueError de antes.
     conn = tmp_db
     assignment_id, job_id = _seed_kc_ready(conn, data_root)
 
@@ -178,9 +167,7 @@ def test_small_dataset_skips_clustering_no_crash(tmp_db, data_root):
 
 
 def test_mark_done_failure_is_atomic_with_persist(tmp_db, data_root, monkeypatch):
-    # Se mark_done falhar, a flip para kc_draft NÃO pode persistir sozinha. Com mark_done
-    # DENTRO da txn, o raise dá ROLLBACK do flip também → assignment segue 'trainable', job 'failed'
-    # (estado consistente). Antes do fix: assignment 'kc_draft' + job 'failed' (inconsistente).
+    # mark_done dentro da mesma txn do flip, se falhar os dois dão rollback (evita inconsistência).
     conn = tmp_db
     assignment_id, job_id = _seed_kc_ready(conn, data_root)
     llm = _llm_ok()
@@ -194,7 +181,7 @@ def test_mark_done_failure_is_atomic_with_persist(tmp_db, data_root, monkeypatch
 
     asg = SqliteAssignmentRepository(conn).get(assignment_id)
     job = _jobs(conn).get(job_id)
-    # Sem inconsistência: ou tudo persiste com job done, ou nada (aqui: rollback → trainable+failed).
+    # Sem inconsistência, ou tudo persiste com job done, ou nada (rollback pra trainable+failed).
     assert not (asg.status == "kc_draft" and job.status == "failed")
     assert asg.status == "ready_for_kc_generation"
     assert conn.execute("SELECT COUNT(*) FROM kc;").fetchone()[0] == 0
@@ -202,8 +189,7 @@ def test_mark_done_failure_is_atomic_with_persist(tmp_db, data_root, monkeypatch
 
 
 def test_success_transitions_job_and_acquires_lock(tmp_db, data_root):
-    # Caminho feliz: lock adquirido como 1º ato, job pending→running→done, status vira kc_draft,
-    # lock liberado ao sair. LLM mockado (nunca chama `claude`).
+    # Caminho feliz, lock adquirido como 1º ato, job pending→running→done, status vira kc_draft.
     conn = tmp_db
     assignment_id, job_id = _seed_kc_ready(conn, data_root)
     llm = _llm_ok()
@@ -220,16 +206,14 @@ def test_success_transitions_job_and_acquires_lock(tmp_db, data_root):
 
 
 def test_main_resolves_paths_from_env_and_runs_pipeline(tmp_path, monkeypatch):
-    # O entrypoint do subprocess (`python -m api.knowledge_components.presentation.workers.kc_generation_worker`) nunca era exercitado: os
-    # testes acima chamam o runner direto. Um erro em main() mata o processo antes de marcar o
-    # job, e o kc_job fica 'pending' para sempre — sem nenhum teste falhar.
+    # Só isso cobre main() de fato, um bug nele deixaria o job pending pra sempre sem teste falhar.
     kc_main = kc_generation_worker
     from api.shared.infrastructure.database.migrations.runner import run_migrations
     from api.shared.infrastructure.database.sqlite_connection import connect
 
     db_path = tmp_path / "app.db"
     run_migrations(connect(str(db_path)))
-    # setattr antes de main() mutar os globais: o teardown do monkeypatch os restaura.
+    # setattr antes de main() mutar os globais, o teardown do monkeypatch os restaura.
     monkeypatch.setattr(settings, "DB_PATH", "app.db")
     monkeypatch.setattr(settings, "DATA_ROOT", settings.DATA_ROOT)
     monkeypatch.setenv("EDMKT_DB_PATH", str(db_path))

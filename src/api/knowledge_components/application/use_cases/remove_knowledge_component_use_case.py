@@ -1,5 +1,4 @@
-"""O professor remove um KC e seus vínculos, desde que nenhum problema fique sem KC."""
-
+# O professor remove um KC e seus vínculos, desde que nenhum problema fique sem KC.
 from __future__ import annotations
 
 from api.assignments.domain.interfaces.assignment_repository import IAssignmentRepository
@@ -37,13 +36,13 @@ class RemoveKnowledgeComponentUseCase(WriteUseCase):
         knowledge_component = self._knowledge_components.get(dto.kc_id)
         if knowledge_component is None:
             raise NotFound("KC inexistente")
-        # Os problemas que este KC liga, colhidos ANTES de remover: só eles podem ficar sem KC.
+        # Problemas que este KC liga, colhidos antes de remover, só eles podem ficar sem KC.
         affected_problems = self._qmatrix.problems_of(dto.kc_id)
         with self._unit_of_work:
             self._qmatrix.delete_bindings_of(dto.kc_id)
             self._knowledge_components.delete(dto.kc_id)
             ensure_every_problem_keeps_a_kc(
                 self._qmatrix, knowledge_component.assignment_id, affected_problems
-            )  # levanta dentro da transação: desfaz a remoção
+            )  # levanta dentro da transação, o que desfaz a remoção
             revert_approval_after_edit(self._assignments, knowledge_component.assignment_id)
         return RemovedKnowledgeComponentDTO(deleted_kc_id=dto.kc_id)

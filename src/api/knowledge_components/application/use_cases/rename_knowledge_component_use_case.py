@@ -1,5 +1,4 @@
-"""O professor renomeia um KC. Não mexe na Q-matrix, então nenhum problema pode ficar sem KC."""
-
+# O professor renomeia um KC, não mexe na Q-matrix, então nenhum problema fica sem KC.
 from __future__ import annotations
 
 from api.assignments.domain.interfaces.assignment_repository import IAssignmentRepository

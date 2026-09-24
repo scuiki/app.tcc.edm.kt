@@ -1,10 +1,4 @@
-"""IKnowledgeComponentGenerator sobre o KCGen-KT do ml/: amostra → gera → agrupa/nomeia → Q-matrix.
-
-As etapas, a ordem e os dados de entrada de cada uma são os do TCC 1; mudar qualquer um muda os
-KCs. Em particular os problemas são ordenados COMO TEXTO ("10" antes de "2"): essa ordem define a
-ordem dos nomes de KC que entram no SBERT e, portanto, os grupos.
-"""
-
+# IKnowledgeComponentGenerator sobre o KCGen-KT, amostra, gera, agrupa/nomeia, Q-matrix.
 from __future__ import annotations
 
 from pathlib import Path
@@ -48,12 +42,12 @@ class KcGenKtGenerator:
     ) -> GeneratedKnowledgeComponents:
         cache_dir = data_layout.llm_cache_dir(classroom_slug, progsnap_assignment_id.value)
 
-        # O KCGen-KT vê só código CORRETO: mostrar código errado ao LLM ensinaria o KC errado.
+        # O KCGen-KT vê só código correto, mostrar código errado ao LLM ensinaria o KC errado.
         correct = cleaned_submissions[cleaned_submissions["is_correct"] == 1]
+        # Ordenado como texto de propósito ("10" antes de "2"), fiel ao TCC 1, não "corrigir".
         problem_ids = sorted(str(p) for p in correct["problem_id"].dropna().unique())
 
-        # Etapas 1-2 (por problema): amostra diversa → KCs candidatos pelo LLM. Um problema sem
-        # nenhum KC levanta NoCandidateKCsError: o job inteiro falha.
+        # Etapas 1-2 por problema, amostra diversa e KCs candidatos pelo LLM, sem KC é erro duro.
         on_stage("generate")
         generate_llm = CachedLLMClient(self._llm, cache_dir, stage="generate")
         candidate_kcs_by_problem: dict = {}
@@ -64,9 +58,7 @@ class KcGenKtGenerator:
                 int(problem_id), [s["code"] for s in samples], generate_llm
             )
 
-        # Etapas 3-4: nomes únicos de KC → grupos. Com menos nomes únicos que o MENOR candidato
-        # de número de grupos, o silhouette não se aplica: cada nome vira o próprio grupo, sem
-        # SBERT e sem chamada de nomeação (o caminho real das turmas pequenas).
+        # Etapas 3-4, nomes únicos de KC viram grupos; poucos nomes pulam SBERT e a nomeação.
         unique_names: list[str] = []
         for problem_id in problem_ids:
             for kc in candidate_kcs_by_problem[problem_id]["kcs"]:
@@ -81,7 +73,7 @@ class KcGenKtGenerator:
         else:
             n_groups, group_of_name, group_names = self._group_and_name(unique_names, cache_dir)
 
-        # Etapa 5: a Q-matrix binária problema × grupo.
+        # Etapa 5, a Q-matrix binária problema × grupo.
         on_stage("qmatrix")
         qmatrix = build_qmatrix(
             problem_ids,
@@ -100,10 +92,7 @@ class KcGenKtGenerator:
     def _group_and_name(
         self, unique_names: list[str], cache_dir: Path
     ) -> tuple[int, dict[str, int], dict[int, str]]:
-        """SBERT → silhouette/HAC → o LLM nomeia cada grupo. Devolve (n, grupo por nome, nomes).
-
-        O SBERT é importado só aqui: só é carregado quando há nomes suficientes para agrupar.
-        """
+        # SBERT, silhouette/HAC, o LLM nomeia cada grupo; import local, só carrega se for agrupar.
         from sentence_transformers import SentenceTransformer
 
         embeddings = SentenceTransformer(SBERT_MODEL).encode(unique_names)

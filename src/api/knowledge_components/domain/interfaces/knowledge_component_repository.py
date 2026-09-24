@@ -1,5 +1,4 @@
-"""A interface de persistência dos KCs."""
-
+# Interface de persistência dos KCs.
 from __future__ import annotations
 
 from typing import Protocol

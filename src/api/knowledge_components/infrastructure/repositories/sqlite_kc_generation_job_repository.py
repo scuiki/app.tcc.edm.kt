@@ -1,5 +1,4 @@
-"""IKnowledgeComponentGenerationJobRepository sobre SQLite (tabela `kc_job`)."""
-
+# IKnowledgeComponentGenerationJobRepository sobre SQLite (tabela `kc_job`).
 from __future__ import annotations
 
 import sqlite3

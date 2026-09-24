@@ -1,5 +1,4 @@
-"""GeneratedKnowledgeComponents: uma Q-matrix gerada com um problema sem KC não pode ser gravada."""
-
+# GeneratedKnowledgeComponents, uma Q-matrix gerada com um problema sem KC não pode ser gravada.
 from __future__ import annotations
 
 import pytest

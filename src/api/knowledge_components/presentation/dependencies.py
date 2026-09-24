@@ -1,5 +1,4 @@
-"""Composition root de knowledge_components: qual implementação cada use case recebe."""
-
+# Composition root de knowledge_components, qual implementação cada use case recebe.
 from __future__ import annotations
 
 import sqlite3
@@ -140,7 +139,7 @@ def approve_qmatrix_use_case(
 def build_run_kc_generation_use_case(
     conn: sqlite3.Connection, llm=None
 ) -> RunKnowledgeComponentGenerationUseCase:
-    """O corpo do worker. `llm` troca o cliente real do `claude` (os testes passam um falso)."""
+    # `llm` troca o cliente real do `claude`, os testes passam um falso.
     return RunKnowledgeComponentGenerationUseCase(
         assignments=SqliteAssignmentRepository(conn),
         classrooms=SqliteClassroomRepository(conn),

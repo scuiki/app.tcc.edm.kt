@@ -1,5 +1,4 @@
-"""KnowledgeComponentGenerationJob: uma geração de KCs em andamento ou concluída."""
-
+# KnowledgeComponentGenerationJob, uma geração de KCs em andamento ou concluída.
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -13,8 +12,7 @@ class KnowledgeComponentGenerationJob:
     assignment_id: int
     status: JobStatus
     created_at: str
-    # A etapa do KCGen-KT em que o job está (generate, cluster, qmatrix): o progresso aqui tem
-    # etapas nomeadas, não épocas.
+    # Etapa do KCGen-KT (generate, cluster, qmatrix), progresso nomeado, não são épocas.
     stage: str | None = None
     started_at: str | None = None
     updated_at: str | None = None

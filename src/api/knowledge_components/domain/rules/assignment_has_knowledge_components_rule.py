@@ -1,5 +1,4 @@
-"""Regra: um rascunho sem nenhum KC não tem Q-matrix a aprovar."""
-
+# Um rascunho sem nenhum KC não tem Q-matrix a aprovar.
 from __future__ import annotations
 
 from typing import Any

@@ -1,9 +1,4 @@
-"""call_claude: roda `claude -p` em list-form (nunca shell=True, nunca --bare, que quebraria a
-autenticação OAuth da assinatura), lê o `structured_output` do envelope JSON e classifica exit≠0,
-is_error e timeout como TransientLLMError. O subprocess é sempre substituído: nenhum teste chama o
-`claude` real nem gasta cota.
-"""
-
+# call_claude roda `claude -p`; o subprocess é sempre substituído, nenhum teste gasta cota real.
 from __future__ import annotations
 
 import json
@@ -30,9 +25,8 @@ _SCHEMA = {
 _PARSED = {"problem_description": "soma", "kcs": [{"name": "laços", "reasoning": "usa for"}]}
 
 
+# Stand-in de subprocess.CompletedProcess sem spawnar processo, claude real nunca roda.
 class _FakeCompleted:
-    """Stand-in de subprocess.CompletedProcess sem spawnar processo (claude real nunca roda)."""
-
     def __init__(self, stdout: str = "", stderr: str = "", returncode: int = 0):
         self.stdout = stdout
         self.stderr = stderr
@@ -65,14 +59,14 @@ def test_invokes_list_form_claude_print_with_schema(monkeypatch, fake_claude_env
     call_claude(model=MODEL_ID, system="SYS", prompt="P", schema=_SCHEMA)
 
     args = capture["args"]
-    # list-form de str puras (sem shell=True / sem interpolação — command injection).
+    # list-form de str puras, sem shell=True e sem interpolação, fecha command injection.
     assert isinstance(args, list)
     assert all(isinstance(a, str) for a in args)
     assert args[0] == "claude"
     assert "-p" in args
     assert "--json-schema" in args
     assert "--disallowedTools" in args
-    # --bare força ANTHROPIC_API_KEY e pula OAuth → quebraria D-01. NUNCA presente.
+    # --bare força ANTHROPIC_API_KEY e pula a autenticação OAuth da assinatura, nunca presente.
     assert "--bare" not in args
     # shell=True nunca é passado ao subprocess.run.
     assert capture["kwargs"].get("shell") is not True
@@ -105,14 +99,11 @@ def test_non_success_subtype_raises_transient(monkeypatch):
 
 
 def test_empty_structured_output_is_recognized(monkeypatch, fake_claude_envelope):
-    """Envelope success mas com structured_output vazio/sem 'kcs' → o transporte não pode
-    devolver silenciosamente algo inválido (a validação de conteúdo é exercida em
-    test_kc_validation; aqui só garantimos que o transporte não inventa dados)."""
+    # structured_output vazio, o transporte só não pode inventar dado nem mascarar erro.
     capture: dict = {}
     _patch_run(monkeypatch, _FakeCompleted(stdout=json.dumps(fake_claude_envelope({}))), capture)
 
-    # Conteúdo vazio é falha-dura (EmptyContentError) OU devolve {} para a validação a jusante
-    # decidir — qualquer um dos dois é aceitável; o que NÃO pode é mascarar como sucesso pleno.
+    # Falha-dura (EmptyContentError) ou {} para a validação a jusante decidir, ambos aceitáveis.
     try:
         out = call_claude(model=MODEL_ID, system="s", prompt="p", schema=_SCHEMA)
         assert out == {} or out == {"kcs": []}

@@ -1,5 +1,4 @@
-"""O progresso de uma geração de KCs: a etapa nomeada em que o job está."""
-
+# O progresso de uma geração de KCs, a etapa nomeada em que o job está.
 from __future__ import annotations
 
 from api.knowledge_components.application.dtos.get_kc_generation_job_dto import (

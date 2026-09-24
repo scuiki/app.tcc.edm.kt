@@ -1,5 +1,4 @@
-"""A resposta de GET /knowledge-components/generation-jobs/{job_id}."""
-
+# Resposta de GET /knowledge-components/generation-jobs/{job_id}.
 from __future__ import annotations
 
 from pydantic import BaseModel

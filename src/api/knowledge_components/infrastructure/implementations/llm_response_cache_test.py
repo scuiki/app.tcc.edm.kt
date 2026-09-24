@@ -1,7 +1,4 @@
-"""O cache de respostas do LLM: a chave é o hash de tudo que determina a resposta, um acerto não
-chama o LLM, e o cache é isolado por problema (gravar um não muda o outro).
-"""
-
+# Chave é o hash de tudo que determina a resposta, um acerto não chama o LLM, isolado por problema.
 from __future__ import annotations
 
 from api.knowledge_components.infrastructure.implementations.llm_response_cache import (
@@ -70,8 +67,7 @@ def test_hit_does_not_call_llm(tmp_path):
 
 
 def test_per_problem_isolation(tmp_path):
-    # gravar o problema "1" NÃO cria entrada para o problema "2" — re-rodar 1 problema
-    # não aproveita/invalida o outro indevidamente.
+    # Gravar o problema 1 não cria entrada pro 2, re-rodar um problema não invalida o outro.
     key1 = kc_input_hash(_MODEL, _PV, "amostras-1")
     cache_put(tmp_path, problem_id="1", key=key1, record={"parsed": {"kcs": [{"name": "a"}]}})
 
