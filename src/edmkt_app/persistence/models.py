@@ -17,18 +17,6 @@ from typing import Optional
 
 
 @dataclass
-class Submission:
-    id: Optional[int]
-    assignment_id: int
-    code_state_id: str
-    subject_id: Optional[str]
-    problem_id: Optional[int]
-    score: Optional[float]
-    created_at: str
-    event_type: Optional[str] = None  # tipo do evento do stream canônico (D-13): Run.Program | Compile.Error
-
-
-@dataclass
 class KC:
     id: Optional[int]
     assignment_id: int

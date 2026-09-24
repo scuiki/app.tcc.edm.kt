@@ -10,7 +10,6 @@ from __future__ import annotations
 import sqlite3
 
 from edmkt_app import mastery_service
-from edmkt_app.persistence import models
 from edmkt_app.persistence import repositories as repos
 from api.assignments.domain.assignment_entity import Assignment
 

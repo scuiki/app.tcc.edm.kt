@@ -11,7 +11,7 @@ from edmkt_app.persistence import repositories as repos
 from api.shared.infrastructure.one_job_at_a_time_lock import is_another_job_running
 from api.shared.domain.errors import AnotherJobRunning
 from edmkt_app.use_cases.base import BaseWriteUseCase
-from api.shared.infrastructure.clock import utc_now_iso
+from api.shared.application.clock import utc_now_iso
 
 
 class StartTrainingDto(BaseModel):

@@ -1,42 +1,42 @@
-"""Testes herméticos do gate de viabilidade por-assignment (D-08/D-09 RESOLVIDO).
+"""Testes herméticos do gate de viabilidade por-assignment.
 
 Pinam a política RESOLVIDA: o único bloqueio duro (trainable=False / EDA-only) é a ausência de
 ambas as classes nos first-attempts (AUC matematicamente indefinido). Pisos de problemas/amostra
 NUNCA derrubam trainable — viram avisos graduados severity="viability". A fixture de classe única
-(`ingest_single_class_df`) exercita o caso intestável no dataset de referência (Pitfall 2).
+(`ingest_single_class_df`) exercita o caso intestável no dataset de referência.
 """
 
 from __future__ import annotations
 
 import pandas as pd
 
-from edmkt_app.ingestion.report import AssignmentSummary, ReportItem
-from edmkt_app.ingestion.viability import assess_viability
+from api.classroom_import.domain.import_report import AssignmentTrainability, ImportCheck
+from api.classroom_import.domain.trainability_check import check_assignment_trainability
 
 
-def _item(items: list[ReportItem], check: str) -> ReportItem | None:
+def _item(items: list[ImportCheck], check: str) -> ImportCheck | None:
     return next((i for i in items if i.check == check), None)
 
 
 def test_a439_mini_ambas_as_classes_e_trainable(a439_mini):
-    summaries, items = assess_viability(a439_mini)
+    summaries, items = check_assignment_trainability(a439_mini)
 
     assert len(summaries) == 1
     s = summaries[0]
-    assert isinstance(s, AssignmentSummary)
-    assert s.assignment_id == 439
+    assert isinstance(s, AssignmentTrainability)
+    assert s.progsnap_assignment_id == 439
     assert s.both_classes_present is True
-    # both_classes_present é o ÚNICO bloqueio duro (D-09): presentes => trainable.
+    # both_classes_present é o ÚNICO bloqueio duro: presentes => trainable.
     assert s.trainable is True
 
 
 def test_classe_unica_bloqueia_duro_com_reason(ingest_single_class_df):
-    summaries, items = assess_viability(ingest_single_class_df)
+    summaries, items = check_assignment_trainability(ingest_single_class_df)
 
     assert len(summaries) == 1
     s = summaries[0]
     assert s.both_classes_present is False
-    # Único bloqueio científico: AUC indefinido => EDA-only (D-09).
+    # Único bloqueio científico: AUC indefinido => EDA-only.
     assert s.trainable is False
     # A reason precisa nomear a causa (classe ausente / AUC indefinido) — anti-silencioso.
     assert any("classe" in r.lower() or "auc" in r.lower() for r in s.reasons)
@@ -67,7 +67,7 @@ def test_few_problems_avisa_mas_nao_bloqueia():
     df["progsnap_assignment_id"] = df["progsnap_assignment_id"].astype("Int64")
     df["problem_id"] = df["problem_id"].astype("Int64")
 
-    summaries, items = assess_viability(df)
+    summaries, items = check_assignment_trainability(df)
     s = summaries[0]
 
     fp = _item(items, "few_problems")
@@ -80,7 +80,7 @@ def test_few_problems_avisa_mas_nao_bloqueia():
 
 def test_small_sample_avisa_mas_nao_bloqueia():
     # Poucos alunos elegíveis (3), ambas as classes presentes => aviso small_sample,
-    # trainable inalterado (governado só por classe — D-09).
+    # trainable inalterado (governado só por classe).
     base = pd.Timestamp("2019-03-01T08:00:00Z")
     rows = []
     for i, (sid, score) in enumerate([("S1", 0.0), ("S2", 1.0), ("S3", 1.0)]):
@@ -104,7 +104,7 @@ def test_small_sample_avisa_mas_nao_bloqueia():
     df["progsnap_assignment_id"] = df["progsnap_assignment_id"].astype("Int64")
     df["problem_id"] = df["problem_id"].astype("Int64")
 
-    summaries, items = assess_viability(df)
+    summaries, items = check_assignment_trainability(df)
     s = summaries[0]
 
     ss = _item(items, "small_sample")
@@ -150,7 +150,7 @@ def test_n_students_eligible_conta_so_min_3_run_program():
     df["progsnap_assignment_id"] = df["progsnap_assignment_id"].astype("Int64")
     df["problem_id"] = df["problem_id"].astype("Int64")
 
-    summaries, _ = assess_viability(df)
+    summaries, _ = check_assignment_trainability(df)
     s = summaries[0]
     # Só S1 tem >=3 Run.Program; S2 é excluído da contagem de elegíveis (não bloqueia).
     assert s.n_students_eligible == 1
@@ -195,7 +195,7 @@ def test_gate_por_assignment_independente():
     df["progsnap_assignment_id"] = df["progsnap_assignment_id"].astype("Int64")
     df["problem_id"] = df["problem_id"].astype("Int64")
 
-    summaries, _ = assess_viability(df)
-    by_id = {s.assignment_id: s for s in summaries}
+    summaries, _ = check_assignment_trainability(df)
+    by_id = {s.progsnap_assignment_id: s for s in summaries}
     assert by_id[439].trainable is True
     assert by_id[492].trainable is False

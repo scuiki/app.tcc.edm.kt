@@ -2,12 +2,12 @@
 
 Pinam o contrato de `edmkt_app.eda` antes de existir (Wave 0): taxa de acerto por assignment,
 curva de aprendizado (média de `correct` por número de tentativa) e taxa de compile-error,
-computados direto do Parquet canônico da Fase 3 (CANONICAL_COLUMNS de clean.py) — nenhum
+computados direto do Parquet canônico da Fase 3 (CLEANED_COLUMNS de clean.py) — nenhum
 artefato de modelo é tocado (D-06: EDA disponível antes de qualquer treino). Todos FALHAM
 agora com ImportError em `edmkt_app.eda`.
 
 O Parquet sintético é derivado do fixture a439_mini (synthetic/hermético, NUNCA o CSEDM real):
-escrevemos as CANONICAL_COLUMNS num .parquet sob tmp_path e apontamos as funções de EDA p/ ele.
+escrevemos as CLEANED_COLUMNS num .parquet sob tmp_path e apontamos as funções de EDA p/ ele.
 """
 
 from __future__ import annotations
@@ -18,10 +18,10 @@ import pytest
 
 def _write_canonical_parquet(df: pd.DataFrame, path) -> None:
     # a439_mini já traz SubjectID/AssignmentID/ProblemID/CodeStateID/Code/Score/ServerTimestamp/
-    # EventType/correct — exatamente as CANONICAL_COLUMNS que o clean emite (clean.py:26).
-    from edmkt_app.ingestion.clean import CANONICAL_COLUMNS
+    # EventType/correct — exatamente as CLEANED_COLUMNS que o clean emite (clean.py:26).
+    from api.classroom_import.domain.submission_cleaning import CLEANED_COLUMNS
 
-    canonical = df[CANONICAL_COLUMNS].copy()
+    canonical = df[CLEANED_COLUMNS].copy()
     canonical.to_parquet(path, index=False)
 
 

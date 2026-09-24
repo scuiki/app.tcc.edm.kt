@@ -15,8 +15,6 @@ Contratos pinados:
 
 from __future__ import annotations
 
-from edmkt_app.persistence import models
-from edmkt_app.persistence import repositories as repos
 from api.assignments.infrastructure.sqlite_classroom_repository import SqliteClassroomRepository
 from api.assignments.infrastructure.sqlite_assignment_repository import SqliteAssignmentRepository
 from api.assignments.domain.classroom_entity import Classroom
@@ -91,8 +89,6 @@ def test_recommendations_shape(api_client):
     resp = client.get(f"/dashboard/recommendations/{aid}")
     assert resp.status_code == 200
     assert isinstance(resp.json()["recommendations"], list)
-
-
 
 
 def test_mastery_unknown_assignment_404(api_client):

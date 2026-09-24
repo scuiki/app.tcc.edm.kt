@@ -20,7 +20,8 @@ from api.shared.infrastructure.database.sqlite_connection import connect
 from api.shared.infrastructure.one_job_at_a_time_lock import release_lock_of_dead_holder
 from api.shared.presentation.http.error_handlers import install_error_handlers
 from api.assignments.presentation import assignments_controller
-from edmkt_app.api import dashboard, ingestion, kc, training
+from api.classroom_import.presentation import classroom_import_controller
+from edmkt_app.api import dashboard, kc, training
 
 
 def _resolve_db_path() -> str:
@@ -47,7 +48,7 @@ def create_app() -> FastAPI:
     install_error_handlers(app)
     app.include_router(assignments_controller.router)
     app.include_router(training.router)
-    app.include_router(ingestion.router)
+    app.include_router(classroom_import_controller.router)
     app.include_router(kc.router)
     app.include_router(dashboard.router)
     return app

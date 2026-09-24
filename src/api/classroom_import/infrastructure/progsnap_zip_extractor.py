@@ -1,14 +1,11 @@
-"""Estágio A da ingestão — descoberta de layout + extração sandbox do upload (D-01/02/03).
+"""Abre o .zip do professor num diretório controlado e encontra as tabelas do ProgSnap2.
 
-Fronteira de impureza entre o `.zip` arbitrário do professor e o núcleo puro. Toda função
-aqui é read-only sobre o FS de upload OU escreve apenas sob um `dest` interno controlado; a
-detecção NÃO adquire a trava do pipeline nem importa o núcleo científico (Lock Timing,
-Pitfall 5): prendê-la aqui a manteria presa durante a escolha humana de variante (D-03).
+Fronteira entre um zip arbitrário e o resto do sistema: tudo aqui só lê o upload ou escreve sob
+um destino interno. A detecção NÃO pega a trava de job: prendê-la aqui a manteria presa enquanto o
+professor escolhe qual MainTable importar.
 
-`find_code_states`/`find_main_tables` substituem o `_SPLITS` hard-coded do TCC1 por glob
-tolerante (D-02: CodeStates pode viver em CodeStates/ ou LinkTables/; D-03: N MainTable viram
-variantes para o professor escolher, sem adivinhar). `extract_zip` espelha a defesa de
-path-traversal de `values.ConfinedPath`.
+O layout é tolerante: o CodeStates.csv pode morar em CodeStates/ ou LinkTables/, e N MainTable.csv
+viram opções para o professor escolher, sem adivinhar.
 """
 
 from __future__ import annotations
@@ -16,9 +13,12 @@ from __future__ import annotations
 import zipfile
 from pathlib import Path
 
+from api.assignments.domain.classroom_slug import ClassroomSlug
+from api.classroom_import.domain.progsnap_upload import DetectedUpload
+from api.shared.infrastructure import data_layout
 from api.shared.infrastructure.confined_path import ConfinedPath
 
-# Tetos conservadores contra zip-bomb (DoS — RESEARCH §Security): o limite exato é detalhe
+# Tetos conservadores contra zip-bomb (DoS): o limite exato é detalhe
 # operacional; escolhidos folgados o bastante para um ProgSnap2 real (≈milhares de CodeStates),
 # apertados o bastante para barrar um zip patológico antes de exaurir disco/inodes.
 _MAX_MEMBERS = 20_000
@@ -26,10 +26,10 @@ _MAX_TOTAL_UNCOMPRESSED = 2 * 1024 * 1024 * 1024  # 2 GiB descomprimidos somados
 _CHUNK = 1024 * 1024  # 1 MiB por leitura: limita a RAM por membro durante a descompressão
 
 
-def find_code_states(root: Path) -> Path | None:
+def find_code_snapshots_file(root: Path) -> Path | None:
     candidates = (
         root / "CodeStates" / "CodeStates.csv",
-        root / "LinkTables" / "CodeStates.csv",  # variante CodeWorkout de referência (D-02)
+        root / "LinkTables" / "CodeStates.csv",  # a variante CodeWorkout de referência
         *sorted(root.rglob("CodeStates.csv")),  # fallback tolerante, ordem estável
     )
     for cand in candidates:
@@ -39,16 +39,8 @@ def find_code_states(root: Path) -> Path | None:
 
 
 def find_main_tables(root: Path) -> list[Path]:
-    # Ordenado e read-only: N caminhos => o professor escolhe (D-03); discover não adivinha.
+    # Ordenado e só leitura: N caminhos são N opções para o professor; aqui não se adivinha.
     return sorted(root.rglob("MainTable.csv"))
-
-
-def detect_variants(root: Path) -> dict:
-    # Insumo do fluxo detectar→escolher→processar (D-03); a orquestração FastAPI vive no plano 05.
-    return {
-        "main_tables": find_main_tables(root),
-        "code_states": find_code_states(root),
-    }
 
 
 def extract_zip(zip_path: Path, dest: Path) -> Path:
@@ -70,7 +62,7 @@ def extract_zip(zip_path: Path, dest: Path) -> Path:
         written_total = 0
         for info in infos:
             # O nome do membro NÃO é caminho confiável: resolve sob base e valida ANTES de
-            # escrever (mesma disciplina do _version_dir). Path absoluto ou ../ escapa => rejeita.
+            # escrever. Caminho absoluto ou ../ que escapa é recusado.
             try:
                 resolved = Path(ConfinedPath(base / info.filename, root=base))
             except ValueError:
@@ -94,3 +86,15 @@ def extract_zip(zip_path: Path, dest: Path) -> Path:
                     out.write(chunk)
 
     return base
+
+
+class ProgSnapZipExtractor:
+    """ProgSnapUploadExtractor: extrai em data/<turma>/raw/ e lista o que encontrou."""
+
+    def extract(self, zip_path: Path, classroom_slug: ClassroomSlug) -> DetectedUpload:
+        raw_dir = extract_zip(Path(zip_path), data_layout.raw_upload_dir(classroom_slug))
+        return DetectedUpload(
+            raw_dir=raw_dir,
+            main_tables=find_main_tables(raw_dir),
+            code_snapshots=find_code_snapshots_file(raw_dir),
+        )

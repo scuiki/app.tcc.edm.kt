@@ -19,6 +19,9 @@ from api.assignments.infrastructure.sqlite_assignment_repository import SqliteAs
 from api.assignments.domain.classroom_entity import Classroom
 from api.assignments.domain.assignment_entity import Assignment
 
+# Fixtures que montam cada funcionalidade com a infraestrutura real (ver tests/fixtures/).
+pytest_plugins = ["tests.fixtures.classroom_import"]
+
 ASSIGNMENT_ID = 439
 
 
@@ -63,7 +66,7 @@ def _typed(df: pd.DataFrame) -> pd.DataFrame:
 def _as_progsnap_upload(cleaned: pd.DataFrame) -> pd.DataFrame:
     """Cleaned events back to the shape of the teacher's upload: the ProgSnap2 column names and
     no derived `is_correct`. Input for the tests of the import boundary (ingestion/clean)."""
-    from edmkt_app.ingestion.clean import PROGSNAP_TO_CLEANED_COLUMNS
+    from api.classroom_import.domain.submission_cleaning import PROGSNAP_TO_CLEANED_COLUMNS
 
     to_progsnap = {new: old for old, new in PROGSNAP_TO_CLEANED_COLUMNS.items()}
     return cleaned.drop(columns=["is_correct"]).rename(columns=to_progsnap)
@@ -126,6 +129,15 @@ def a439_mini() -> pd.DataFrame:
 def a439_mini_progsnap(a439_mini) -> pd.DataFrame:
     """The same events as `a439_mini`, as they arrive in the teacher's ProgSnap2 upload."""
     return _as_progsnap_upload(a439_mini)
+
+
+@pytest.fixture
+def data_root(tmp_path, monkeypatch) -> Path:
+    """Aponta a raiz de dados para tmp_path: tudo o que se grava em data/ fica hermético."""
+    from api.shared.infrastructure import settings
+
+    monkeypatch.setattr(settings, "DATA_ROOT", tmp_path)
+    return tmp_path
 
 
 @pytest.fixture

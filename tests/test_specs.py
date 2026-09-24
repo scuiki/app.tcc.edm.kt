@@ -9,7 +9,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-import pytest
 
 from edmkt_app import specs
 from edmkt_app.persistence import models
@@ -142,16 +141,3 @@ def test_kcs_belong_to_assignment_passes_when_both_are_local(tmp_db):
     assert specs.KCsBelongToAssignment().check(tmp_db, dto) is None
 
 
-def test_turma_not_duplicated_refuses_a_slug_that_already_exists(tmp_db):
-    _assignment(tmp_db, "ready_for_kc_generation")  # cria a turma "Turma X"
-
-    # Nome diferente, MESMO slug ("turma-x") — é o diretório que colide, não a string.
-    msg = specs.TurmaNotDuplicated().check(tmp_db, _IngestDto(turma_name="  turma   x  "))
-
-    assert msg is not None and "re-ingestão" in msg
-
-
-def test_turma_not_duplicated_allows_a_new_turma(tmp_db):
-    _assignment(tmp_db, "ready_for_kc_generation")
-
-    assert specs.TurmaNotDuplicated().check(tmp_db, _IngestDto(turma_name="Turma Y")) is None

@@ -15,7 +15,6 @@ from __future__ import annotations
 import os
 
 import pandas as pd
-import pytest
 
 # RED: o entrypoint CLI do KC ainda não existe (gate da Wave 1/3).
 from api.shared.infrastructure import settings  # noqa: E402
@@ -62,13 +61,6 @@ def _canonical_df() -> pd.DataFrame:
     df["progsnap_assignment_id"] = df["progsnap_assignment_id"].astype("Int64")
     df["problem_id"] = df["problem_id"].astype("Int64")
     return df
-
-
-@pytest.fixture
-def data_root(tmp_path, monkeypatch):
-    """Aponta a raiz de dados do KC-gen para tmp_path — FS hermético (sem CSEDM real)."""
-    monkeypatch.setattr(settings, "DATA_ROOT", tmp_path)
-    return tmp_path
 
 
 def _seed_kc_ready(conn, data_root) -> tuple[int, int]:

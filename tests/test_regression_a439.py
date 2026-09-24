@@ -103,7 +103,7 @@ def csedm_main_table() -> pd.DataFrame:
     df["Code"] = df["CodeStateID"].astype(str).map(code_map).fillna("")
 
     # Same translation the import applies (ingestion/clean): from here on, glossary names.
-    from edmkt_app.ingestion.clean import PROGSNAP_TO_CLEANED_COLUMNS
+    from api.classroom_import.domain.submission_cleaning import PROGSNAP_TO_CLEANED_COLUMNS
 
     df = df.rename(columns={**PROGSNAP_TO_CLEANED_COLUMNS, "correct": "is_correct"})
     return df.reset_index(drop=True)

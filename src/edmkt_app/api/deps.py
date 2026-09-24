@@ -32,7 +32,6 @@ from edmkt_app.use_cases.get_recommendations import GetRecommendationsUseCase
 from edmkt_app.use_cases.get_training_history import GetTrainingHistoryUseCase
 from edmkt_app.use_cases.get_training_status import GetTrainingStatusUseCase
 from edmkt_app.use_cases.merge_kc import MergeKCUseCase
-from edmkt_app.use_cases.process_ingestion import ProcessIngestionUseCase
 from edmkt_app.use_cases.remove_kc import RemoveKCUseCase
 from edmkt_app.use_cases.rename_kc import RenameKCUseCase
 from edmkt_app.use_cases.start_training import StartTrainingUseCase
@@ -75,12 +74,6 @@ def remove_kc_uc(conn: sqlite3.Connection = Depends(get_conn)) -> RemoveKCUseCas
 
 def merge_kc_uc(conn: sqlite3.Connection = Depends(get_conn)) -> MergeKCUseCase:
     return MergeKCUseCase(conn)
-
-
-def process_ingestion_uc(
-    conn: sqlite3.Connection = Depends(get_conn),
-) -> ProcessIngestionUseCase:
-    return ProcessIngestionUseCase(conn)
 
 
 # --- leitura (não estendem a base de escrita) -------------------------------------

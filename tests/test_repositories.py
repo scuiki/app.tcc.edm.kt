@@ -8,9 +8,6 @@ CPU-only, sobre a fixture tmp_db de 02-01 (schema em user_version=1).
 
 from __future__ import annotations
 
-import sqlite3
-
-import pytest
 
 from edmkt_app.persistence import models
 from edmkt_app.persistence import repositories as repos
@@ -43,24 +40,6 @@ def _seed_turma_assignment(conn) -> tuple[int, int]:
 def test_entities_roundtrip(tmp_db):
     conn = tmp_db
     classroom_id, assignment_id = _seed_turma_assignment(conn)
-
-    submission = models.Submission(
-        id=None,
-        assignment_id=assignment_id,
-        code_state_id="cs1",
-        subject_id="S1",
-        problem_id=1,
-        score=1.0,
-        created_at="2026-06-21T00:00:00Z",
-    )
-    sub_id = repos.SubmissionRepository(conn).insert(submission)
-    # Sem get(): a produção só insere submissões; o round-trip é conferido direto na tabela.
-    row = conn.execute(
-        "SELECT assignment_id, code_snapshot_id, student_id, problem_id, score, created_at "
-        "FROM submission WHERE id = ?;",
-        (sub_id,),
-    ).fetchone()
-    assert tuple(row) == (assignment_id, "cs1", "S1", 1, 1.0, "2026-06-21T00:00:00Z")
 
     kc = models.KC(id=None, assignment_id=assignment_id, name="laços")
     kc_id = repos.KCRepository(conn).insert(kc)
@@ -132,43 +111,6 @@ def test_model_artifact_references_fs_by_path(tmp_db):
     # Nenhuma coluna da tabela carrega bytes/blob (todas TEXT/INTEGER/REAL).
     types = {row["name"]: row["type"] for row in conn.execute("PRAGMA table_info(model_artifact);")}
     assert all(t.upper() != "BLOB" for t in types.values())
-
-
-def test_fk_enforced(tmp_db):
-    # foreign_keys=ON (herdado de 02-01): Submission com assignment_id órfão -> IntegrityError.
-    conn = tmp_db
-    orphan = models.Submission(
-        id=None,
-        assignment_id=999999,
-        code_state_id="cs",
-        subject_id="S1",
-        problem_id=1,
-        score=0.0,
-        created_at="2026-06-21T00:00:00Z",
-    )
-    with pytest.raises(sqlite3.IntegrityError):
-        repos.SubmissionRepository(conn).insert(orphan)
-
-
-
-
-def test_submission_event_type_roundtrip(tmp_db):
-    # event_type vem do filtro do stream canônico (D-10/D-13): Run.Program | Compile.Error.
-    conn = tmp_db
-    _, assignment_id = _seed_turma_assignment(conn)
-    sub = models.Submission(
-        id=None,
-        assignment_id=assignment_id,
-        code_state_id="cs1",
-        subject_id="S1",
-        problem_id=1,
-        score=1.0,
-        created_at="2026-06-21T00:00:00Z",
-        event_type="Run.Program",
-    )
-    sub_id = repos.SubmissionRepository(conn).insert(sub)
-    row = conn.execute("SELECT event_type FROM submission WHERE id = ?;", (sub_id,)).fetchone()
-    assert row["event_type"] == "Run.Program"
 
 
 def test_kc_index_roundtrip(tmp_db):
