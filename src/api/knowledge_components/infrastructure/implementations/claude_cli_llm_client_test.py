@@ -18,7 +18,7 @@ from api.knowledge_components.infrastructure.implementations.llm_call_retry impo
     EmptyContentError,
     TransientLLMError,
 )
-from api.knowledge_components.infrastructure.implementations.llm_response_cache import (
+from api.knowledge_components.infrastructure.implementations.kc_generation_model import (
     KC_GENERATION_MODEL_ID as MODEL_ID,
 )
 

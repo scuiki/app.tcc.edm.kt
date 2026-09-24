@@ -23,7 +23,6 @@ from api.shared.infrastructure import settings
 # O slug da turma (ClassroomSlug) e o AssignmentID do dataset chegam como value objects de
 # assignments; aqui basta que virem componentes de caminho.
 Slug = str | os.PathLike
-ProgSnapId = object  # qualquer valor cujo str() é o AssignmentID (int ou ProgSnapAssignmentId)
 
 
 def classroom_dir(classroom_slug: Slug) -> Path:
@@ -38,8 +37,8 @@ def ast_path_cache_dir(classroom_slug: Slug) -> Path:
     return classroom_dir(classroom_slug) / "cache" / "paths"
 
 
-def llm_cache_dir(classroom_slug: Slug, progsnap_aid: ProgSnapId) -> Path:
-    return classroom_dir(classroom_slug) / "kc" / f"assignment_{progsnap_aid}"
+def llm_cache_dir(classroom_slug: Slug, progsnap_assignment_id: int) -> Path:
+    return classroom_dir(classroom_slug) / "kc" / f"assignment_{progsnap_assignment_id}"
 
 
 def trained_models_dir(classroom_slug: Slug) -> Path:

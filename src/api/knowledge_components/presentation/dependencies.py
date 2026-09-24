@@ -45,7 +45,7 @@ from api.knowledge_components.infrastructure.implementations.claude_cli_llm_clie
 from api.knowledge_components.infrastructure.implementations.kcgen_kt_generator import (
     KcGenKtGenerator,
 )
-from api.knowledge_components.infrastructure.implementations.llm_response_cache import (
+from api.knowledge_components.infrastructure.implementations.kc_generation_model import (
     KC_GENERATION_MODEL_ID,
 )
 from api.knowledge_components.infrastructure.repositories.sqlite_kc_generation_job_repository import (

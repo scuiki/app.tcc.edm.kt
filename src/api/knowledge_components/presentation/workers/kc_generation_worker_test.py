@@ -33,6 +33,7 @@ from api.knowledge_components.presentation.workers import kc_generation_worker
 from api.knowledge_components.presentation.workers.kc_generation_worker import run_kc_generation
 from api.shared.domain.value_objects.job_status import JobStatus
 from api.shared.infrastructure import settings
+from tests.fixtures.job_lock import lock_holder_pid
 
 
 class _FakeLLM:
@@ -116,12 +117,6 @@ def _seed_kc_ready(conn, data_root) -> tuple[int, int]:
     return assignment_id, job_id
 
 
-def _holder_pid(conn):
-    return conn.execute("SELECT holder_pid FROM pipeline_lock WHERE id=1;").fetchone()["holder_pid"]
-
-
-
-
 def test_lock_busy_marks_failed_and_does_not_persist(tmp_db, data_root):
     # Dono vivo (este processo) segura o lock → a aquisição da CLI é negada.
     conn = tmp_db
@@ -136,7 +131,7 @@ def test_lock_busy_marks_failed_and_does_not_persist(tmp_db, data_root):
     job = _jobs(conn).get(job_id)
     assert job.status == "failed"
     assert "busy" in (job.error_message or "").lower()
-    assert _holder_pid(conn) == os.getpid()  # lock segue do dono vivo
+    assert lock_holder_pid(conn) == os.getpid()  # lock segue do dono vivo
 
 
 def test_content_hard_fail_marks_failed_nothing_persisted(tmp_db, data_root):
@@ -156,7 +151,7 @@ def test_content_hard_fail_marks_failed_nothing_persisted(tmp_db, data_root):
     assert conn.execute("SELECT COUNT(*) FROM qmatrix;").fetchone()[0] == 0
     asg = SqliteAssignmentRepository(conn).get(assignment_id)
     assert asg.status == "ready_for_kc_generation"  # não avançou para kc_draft
-    assert _holder_pid(conn) is None  # lock liberado mesmo na falha (with lock)
+    assert lock_holder_pid(conn) is None  # lock liberado mesmo na falha (with lock)
 
 
 def test_small_dataset_skips_clustering_no_crash(tmp_db, data_root):
@@ -179,7 +174,7 @@ def test_small_dataset_skips_clustering_no_crash(tmp_db, data_root):
     assert asg.status == "kc_draft"
     # 3 nomes únicos → 3 KCs (um cluster por nome, sem labeling LLM).
     assert conn.execute("SELECT COUNT(*) FROM kc;").fetchone()[0] == 3
-    assert _holder_pid(conn) is None
+    assert lock_holder_pid(conn) is None
 
 
 def test_mark_done_failure_is_atomic_with_persist(tmp_db, data_root, monkeypatch):
@@ -203,7 +198,7 @@ def test_mark_done_failure_is_atomic_with_persist(tmp_db, data_root, monkeypatch
     assert not (asg.status == "kc_draft" and job.status == "failed")
     assert asg.status == "ready_for_kc_generation"
     assert conn.execute("SELECT COUNT(*) FROM kc;").fetchone()[0] == 0
-    assert _holder_pid(conn) is None
+    assert lock_holder_pid(conn) is None
 
 
 def test_success_transitions_job_and_acquires_lock(tmp_db, data_root):
@@ -221,7 +216,7 @@ def test_success_transitions_job_and_acquires_lock(tmp_db, data_root):
     asg = SqliteAssignmentRepository(conn).get(assignment_id)
     assert asg.status == "kc_draft"  # pipeline conclui em kc_draft
     assert conn.execute("SELECT COUNT(*) FROM kc;").fetchone()[0] >= 1  # KCs persistidos
-    assert _holder_pid(conn) is None  # release garantido
+    assert lock_holder_pid(conn) is None  # release garantido
 
 
 def test_main_resolves_paths_from_env_and_runs_pipeline(tmp_path, monkeypatch):

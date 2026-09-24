@@ -46,7 +46,7 @@ class KcGenKtGenerator:
         progsnap_assignment_id: ProgSnapAssignmentId,
         on_stage: Callable[[str], None],
     ) -> GeneratedKnowledgeComponents:
-        cache_dir = data_layout.llm_cache_dir(classroom_slug, progsnap_assignment_id)
+        cache_dir = data_layout.llm_cache_dir(classroom_slug, progsnap_assignment_id.value)
 
         # O KCGen-KT vê só código CORRETO: mostrar código errado ao LLM ensinaria o KC errado.
         correct = cleaned_submissions[cleaned_submissions["is_correct"] == 1]

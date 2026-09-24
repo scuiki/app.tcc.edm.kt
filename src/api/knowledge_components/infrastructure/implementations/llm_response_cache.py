@@ -12,15 +12,12 @@ import hashlib
 import json
 from pathlib import Path
 
+from api.knowledge_components.infrastructure.implementations.kc_generation_model import (
+    KC_GENERATION_MODEL_ID,
+    PROMPT_VERSION,
+)
 from api.knowledge_components.infrastructure.implementations.llm_call_retry import call_with_retry
 from ml.kc_generation.llm_client import LLMClient
-
-# O modelo congelado do TCC 1: o id pinado, não o alias `haiku`, por fidelidade científica. Faz
-# parte da chave do cache junto com a versão do prompt.
-KC_GENERATION_MODEL_ID = "claude-haiku-4-5-20251001"
-
-# Incremente quando o prompt mudar: um prompt novo é uma entrada nova, não um acerto do antigo.
-PROMPT_VERSION = "kcgen-v1"
 
 # Nome do arquivo por-estágio sob o diretório de KC. Componente fixo do código, nunca string
 # controlada pelo usuário.

@@ -38,6 +38,7 @@ from api.model_training.infrastructure.repositories.sqlite_training_job_reposito
 from api.model_training.presentation.workers.training_worker import run_training
 from api.shared.domain.value_objects.job_status import JobStatus
 from ml.reproducibility.code_dkt_hyperparameters import CODE_DKT_HYPERPARAMETERS
+from tests.fixtures.job_lock import lock_holder_pid
 
 ASSIGNMENT_ID = 439
 
@@ -156,10 +157,6 @@ def _seed_approved(conn, data_root, df: pd.DataFrame | None = None) -> tuple[int
     return assignment_id, job_id
 
 
-def _holder_pid(conn):
-    return conn.execute("SELECT holder_pid FROM pipeline_lock WHERE id=1;").fetchone()["holder_pid"]
-
-
 def _dead_pid() -> int:
     # PID com altíssima probabilidade de não existir (espelha test_lock._dead_pid).
     return 2**22
@@ -181,7 +178,7 @@ def test_end_to_end_trains_persists_and_flips_status(tmp_db, data_root, fast_tra
     assert artifact is not None and artifact.assignment_id == assignment_id
     job = SqliteTrainingJobRepository(conn).get(job_id)
     assert job.status == "done"
-    assert _holder_pid(conn) is None  # release garantido ao sair do `with lock`
+    assert lock_holder_pid(conn) is None  # release garantido ao sair do `with lock`
 
 
 # --- caso 2: lock por PID vivo -> job failed "pipeline busy", sem treino ---
@@ -204,7 +201,7 @@ def test_lock_busy_marks_failed_and_does_not_train(tmp_db, data_root, fast_train
     asg = SqliteAssignmentRepository(conn).get(assignment_id)
     assert asg.status == "kc_approved"  # não treinou
     assert asg.published_model_id is None
-    assert _holder_pid(conn) == os.getpid()  # o lock segue do dono vivo
+    assert lock_holder_pid(conn) == os.getpid()  # o lock segue do dono vivo
 
 
 # --- caso 3: on_epoch grava current_epoch + train_loss no TrainingJob ---
@@ -242,7 +239,7 @@ def test_training_failure_releases_lock_and_keeps_kc_approved(tmp_db, data_root)
     asg = SqliteAssignmentRepository(conn).get(assignment_id)
     assert asg.status == "kc_approved"
     assert asg.published_model_id is None
-    assert _holder_pid(conn) is None  # liberado mesmo sob exceção
+    assert lock_holder_pid(conn) is None  # liberado mesmo sob exceção
 
 
 # --- caso 5: CUDA OOM -> job failed com mensagem de VRAM, lock liberado ---
@@ -264,7 +261,7 @@ def test_cuda_oom_fails_gracefully(tmp_db, data_root):
     assert "VRAM" in (job.error_message or "")
     asg = SqliteAssignmentRepository(conn).get(assignment_id)
     assert asg.status == "kc_approved"
-    assert _holder_pid(conn) is None
+    assert lock_holder_pid(conn) is None
 
 
 # --- caso 6: taxa de parse 3-vias recordada/recuperável ---

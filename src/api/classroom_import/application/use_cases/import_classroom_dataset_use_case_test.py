@@ -13,6 +13,7 @@ from pathlib import Path
 import pytest
 
 from api.classroom_import.domain.services.submission_cleaning import CLEANED_COLUMNS
+from tests.fixtures.job_lock import lock_holder_pid
 
 # MainTable com DUAS classes nos first-attempts (≥1 acerto E ≥1 erro) ⇒ assignment trainable
 #. CodeStateID casa 1:1 com o CodeStates.csv abaixo (sem órfãos neste fixture base).
@@ -45,7 +46,6 @@ def _make_raw(root: Path, main_table: str = _MAIN_TABLE) -> tuple[Path, Path]:
     return raw, main
 
 
-
 def _counts(conn) -> tuple[int, int, int]:
     t = conn.execute("SELECT COUNT(*) AS n FROM classroom;").fetchone()["n"]
     a = conn.execute("SELECT COUNT(*) AS n FROM assignment;").fetchone()["n"]
@@ -62,10 +62,6 @@ class _FailsAfterWriting:
     def add_many(self, assignment_id, events) -> None:
         self._real.add_many(assignment_id, events)
         raise RuntimeError("disk full depois dos INSERTs (simulado)")
-
-
-def _holder_pid(conn):
-    return conn.execute("SELECT holder_pid FROM pipeline_lock WHERE id=1;").fetchone()["holder_pid"]
 
 
 # --- caminho feliz: grava turma + assignments + submissões ------------------------------
@@ -127,7 +123,7 @@ def test_atomicity_failure_mid_persist_leaves_nothing(import_classroom, sqlite_s
     # SQLite inalterado: 0 turmas/assignments/submissions (ROLLBACK).
     assert _counts(conn) == (0, 0, 0)
     # Release garantido mesmo sob exceção: a trava voltou a NULL.
-    assert _holder_pid(conn) is None
+    assert lock_holder_pid(conn) is None
 
 
 def test_fatal_preflight_persists_nothing(import_classroom, tmp_db, data_root):
@@ -165,7 +161,7 @@ def test_lock_busy_does_not_persist(import_classroom, tmp_db, data_root):
     assert any(c.check == "another_job_running" for c in report.checks)
     assert _counts(conn) == (0, 0, 0)
     # A trava do dono vivo NÃO foi tocada por nós.
-    assert _holder_pid(conn) == os.getpid()
+    assert lock_holder_pid(conn) == os.getpid()
 
 
 def test_lock_released_after_successful_ingest(import_classroom, tmp_db, data_root):
@@ -173,5 +169,5 @@ def test_lock_released_after_successful_ingest(import_classroom, tmp_db, data_ro
     conn = tmp_db
     raw, main = _make_raw(data_root)
     import_classroom(raw, "Turma X", main)
-    assert _holder_pid(conn) is None
+    assert lock_holder_pid(conn) is None
 
