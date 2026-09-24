@@ -78,6 +78,9 @@ class OneJobAtATimeLock:
         self._conn = conn
         self._held = False
 
+    def is_another_job_running(self) -> bool:
+        return is_another_job_running(self._conn)
+
     def acquire(self, operation: str, job_id: int | None) -> "OneJobAtATimeLock":
         """Toma a trava se livre ou se o dono atual está morto (stale). Atômico.
 

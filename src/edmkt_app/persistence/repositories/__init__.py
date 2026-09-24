@@ -10,20 +10,14 @@ Os nomes são reexportados aqui para que `SqliteClassroomRepository` siga funcio
 — a divisão é de arquivo, não de contrato.
 """
 
-from edmkt_app.persistence.repositories.kc import KCRepository
-from edmkt_app.persistence.repositories.kc_job import KCJobRepository
 from edmkt_app.persistence.repositories.mastery_prediction import MasteryPredictionRepository
 from edmkt_app.persistence.repositories.model_artifact import ModelArtifactRepository
-from edmkt_app.persistence.repositories.qmatrix import QMatrixRepository
 from edmkt_app.persistence.repositories.training_job import TrainingJobRepository
 from edmkt_app.persistence.repositories.training_metric import TrainingMetricRepository
 
 __all__ = [
-    "KCJobRepository",
-    "KCRepository",
     "MasteryPredictionRepository",
     "ModelArtifactRepository",
-    "QMatrixRepository",
     "TrainingJobRepository",
     "TrainingMetricRepository",
 ]

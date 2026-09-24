@@ -22,18 +22,11 @@ from typing import Iterator
 from fastapi import Depends, Request
 
 from api.shared.infrastructure.database.sqlite_connection import connect
-from edmkt_app.use_cases.add_kc import AddKCUseCase
-from edmkt_app.use_cases.approve_qmatrix import ApproveQMatrixUseCase
-from edmkt_app.use_cases.generate_kcs import GenerateKCsUseCase
 from edmkt_app.use_cases.get_eda import GetEdaUseCase
-from edmkt_app.use_cases.get_kc_job_status import GetKCJobStatusUseCase
 from edmkt_app.use_cases.get_mastery import GetMasteryUseCase
 from edmkt_app.use_cases.get_recommendations import GetRecommendationsUseCase
 from edmkt_app.use_cases.get_training_history import GetTrainingHistoryUseCase
 from edmkt_app.use_cases.get_training_status import GetTrainingStatusUseCase
-from edmkt_app.use_cases.merge_kc import MergeKCUseCase
-from edmkt_app.use_cases.remove_kc import RemoveKCUseCase
-from edmkt_app.use_cases.rename_kc import RenameKCUseCase
 from edmkt_app.use_cases.start_training import StartTrainingUseCase
 
 
@@ -50,30 +43,6 @@ def get_conn(request: Request) -> Iterator[sqlite3.Connection]:
 
 def start_training_uc(conn: sqlite3.Connection = Depends(get_conn)) -> StartTrainingUseCase:
     return StartTrainingUseCase(conn)
-
-
-def generate_kcs_uc(conn: sqlite3.Connection = Depends(get_conn)) -> GenerateKCsUseCase:
-    return GenerateKCsUseCase(conn)
-
-
-def approve_qmatrix_uc(conn: sqlite3.Connection = Depends(get_conn)) -> ApproveQMatrixUseCase:
-    return ApproveQMatrixUseCase(conn)
-
-
-def rename_kc_uc(conn: sqlite3.Connection = Depends(get_conn)) -> RenameKCUseCase:
-    return RenameKCUseCase(conn)
-
-
-def add_kc_uc(conn: sqlite3.Connection = Depends(get_conn)) -> AddKCUseCase:
-    return AddKCUseCase(conn)
-
-
-def remove_kc_uc(conn: sqlite3.Connection = Depends(get_conn)) -> RemoveKCUseCase:
-    return RemoveKCUseCase(conn)
-
-
-def merge_kc_uc(conn: sqlite3.Connection = Depends(get_conn)) -> MergeKCUseCase:
-    return MergeKCUseCase(conn)
 
 
 # --- leitura (não estendem a base de escrita) -------------------------------------
@@ -97,12 +66,6 @@ def get_training_status_uc(
     conn: sqlite3.Connection = Depends(get_conn),
 ) -> GetTrainingStatusUseCase:
     return GetTrainingStatusUseCase(conn)
-
-
-def get_kc_job_status_uc(
-    conn: sqlite3.Connection = Depends(get_conn),
-) -> GetKCJobStatusUseCase:
-    return GetKCJobStatusUseCase(conn)
 
 
 def get_training_history_uc(

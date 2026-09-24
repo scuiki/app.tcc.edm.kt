@@ -5,6 +5,7 @@ agregação em si é do seam PURO `ml.mastery`; aqui só há orquestração e I/
 """
 
 from __future__ import annotations
+from api.knowledge_components.infrastructure.sqlite_qmatrix_repository import SqliteQMatrixRepository
 
 import sqlite3
 
@@ -20,7 +21,7 @@ def _qmatrix_dict(conn: sqlite3.Connection, assignment_id: int) -> dict[int, lis
     # Q-matrix aprovada (problem_id → [kc_id...]) no shape que o seam puro aggregate_student_mastery
     # consome. Um problema pode ligar vários KCs (a média problem→KC é do core, Pitfall 2).
     qdict: dict[int, list[int]] = {}
-    for binding in repos.QMatrixRepository(conn).list_by_assignment(assignment_id):
+    for binding in SqliteQMatrixRepository(conn).list_by_assignment(assignment_id):
         qdict.setdefault(binding.problem_id, []).append(binding.kc_id)
     return qdict
 
