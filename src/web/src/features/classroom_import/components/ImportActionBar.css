@@ -1,0 +1,19 @@
+/* Encosta nas bordas da área principal, desfazendo o respiro dela, e fica visível ao rolar */
+.import-action-bar {
+  position: sticky;
+  bottom: 0;
+  margin: auto -28px -28px;
+  height: 64px;
+  flex-shrink: 0;
+  padding: 0 28px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-menu-rule);
+}
+
+.import-action-bar__message {
+  flex-grow: 1;
+  color: var(--color-text-secondary);
+}

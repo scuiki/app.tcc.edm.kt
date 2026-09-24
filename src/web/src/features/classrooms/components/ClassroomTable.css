@@ -43,10 +43,6 @@
   border-bottom: none;
 }
 
-.classroom-table .classroom-table__number {
-  text-align: right;
-}
-
 .classroom-table .classroom-table__name {
   min-width: 120px;
   font-weight: 600;

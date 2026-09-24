@@ -54,7 +54,7 @@ export function ClassroomTable({ query, onCreate, onRename, onRemove }: Classroo
           <EmptyState
             icon={Users}
             title="Nenhuma turma ainda"
-            text="Cadastre a primeira turma. Depois você importa o dataset ProgSnap2 dela e segue para a extração de conceitos."
+            text="Cadastre a primeira turma. Depois você importa os dados ProgSnap2 dela e segue para a extração de conceitos."
             action={
               <Button variant="primary" icon={Plus} onClick={onCreate}>
                 Nova turma
@@ -69,12 +69,8 @@ export function ClassroomTable({ query, onCreate, onRename, onRemove }: Classroo
               <thead>
                 <tr>
                   <th scope="col">Turma</th>
-                  <th scope="col" className="classroom-table__number">
-                    Problemas
-                  </th>
-                  <th scope="col" className="classroom-table__number">
-                    Alunos
-                  </th>
+                  <th scope="col">Problemas</th>
+                  <th scope="col">Alunos</th>
                   <th scope="col">Criada em</th>
                   <th scope="col">Situação</th>
                   <th scope="col">
@@ -146,7 +142,7 @@ function ClassroomRow({ classroom, onRename, onRemove }: ClassroomRowProps) {
 // Traço no lugar de zero, porque a turma sem dados ainda não tem o que contar
 function CountCell({ value }: { value: number }) {
   return (
-    <td className="mono classroom-table__number">
+    <td className="mono">
       {value === 0 ? <span className="classroom-table__missing">—</span> : formatCount(value)}
     </td>
   )

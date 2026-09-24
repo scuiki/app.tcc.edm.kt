@@ -1,0 +1,36 @@
+.outcome {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.outcome__icon {
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: var(--color-text-muted);
+}
+
+.outcome--danger .outcome__icon {
+  color: var(--color-danger);
+}
+
+.outcome__text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.outcome__title {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.outcome--danger .outcome__title {
+  color: var(--color-danger-text);
+}
+
+.outcome__body {
+  color: var(--color-text-body);
+  line-height: 1.55;
+}

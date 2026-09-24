@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from 'vitest'
 
 import { Button, IconButton } from './Button'
 import { Dialog, DialogBody } from './Dialog'
+import { SelectField } from './SelectField'
 import { TextField } from './TextField'
 
 describe('Button and IconButton', () => {
@@ -108,5 +109,44 @@ describe('TextField', () => {
     expect(input).toHaveAttribute('aria-invalid', 'true')
     expect(input).toHaveAccessibleDescription('Você já tem uma turma com esse nome.')
     expect(screen.queryByText('Ajuda')).not.toBeInTheDocument()
+  })
+})
+
+describe('SelectField', () => {
+  const options = [
+    { value: '1', label: 'Turma A' },
+    { value: '2', label: 'Turma B' },
+  ]
+
+  it('starts on the placeholder and reports the chosen value', () => {
+    const onChange = vi.fn()
+    render(
+      <SelectField
+        label="Turma"
+        placeholder="Escolha a turma"
+        value=""
+        options={options}
+        onChange={onChange}
+        hint="Ajuda"
+      />,
+    )
+    const select = screen.getByLabelText('Turma')
+    expect(select).toHaveDisplayValue('Escolha a turma')
+    expect(select).toHaveAccessibleDescription('Ajuda')
+    fireEvent.change(select, { target: { value: '2' } })
+    expect(onChange).toHaveBeenCalledWith('2')
+  })
+
+  it('never offers the placeholder as a choice', () => {
+    render(
+      <SelectField
+        label="Turma"
+        placeholder="Escolha a turma"
+        value="1"
+        options={options}
+        onChange={() => {}}
+      />,
+    )
+    expect(screen.getByRole('option', { name: 'Escolha a turma' })).toBeDisabled()
   })
 })

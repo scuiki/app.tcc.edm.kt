@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { ApiError, getJson, isApiError, sendJson } from './client'
+import { ApiError, getJson, isApiError, sendForm, sendJson } from './client'
 
 function respond(status: number, body?: unknown) {
   return vi
@@ -53,5 +53,15 @@ describe('sendJson', () => {
       headers: undefined,
       body: undefined,
     })
+  })
+})
+
+describe('sendForm', () => {
+  it('posts the form as is, leaving the multipart header to the browser', async () => {
+    const fetchSpy = respond(200, { classroom_id: 1 })
+    const form = new FormData()
+    form.append('classroom_id', '1')
+    await sendForm('/classroom-imports', form)
+    expect(fetchSpy).toHaveBeenCalledWith('/classroom-imports', { method: 'POST', body: form })
   })
 })

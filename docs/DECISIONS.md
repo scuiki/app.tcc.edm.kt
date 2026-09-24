@@ -245,3 +245,20 @@ funcionam. O `.npmrc` já relaxa os peers por causa do `openapi-typescript`.
 **O `PageHeader` nasceu antes da terceira cópia.** A regra do guia é promover um padrão na terceira
 ocorrência, mas toda página do desenho abre com o mesmo cabeçalho, então ele nasce promovido, pelo
 mesmo motivo dos quatro estados de tela.
+
+**A importação recusa o pacote sem `CodeStates.csv` antes de processar.** O upload já diz o que
+veio no zip, e sem o código dos alunos não há como extrair conceitos nem treinar. Recusar ali poupa
+o professor de esperar o processamento para descobrir o que falta.
+
+**Toda falha do upload vira a mesma mensagem, por enquanto.** Um zip corrompido, um zip bomb e um
+path traversal chegam hoje como 500, porque o controller não trata o `BadZipFile` nem os
+`ValueError` do extrator, e a tela não distingue isso de uma api fora do ar. Quando o controller
+devolver um 400 com `detail`, a tela passa a separar os dois casos. O limite de 512 MB é conferido
+na tela, antes de enviar.
+
+**Os avisos da importação ganham um título na tela.** As mensagens do backend são técnicas e o
+DTO descarta o `count` e o `location`, então a tela dá um título em pt-BR a cada código conhecido e
+mostra a mensagem como veio. Por isso um aviso de viabilidade ainda não diz de qual exercício é.
+
+**Um segundo envio para a mesma turma segue, com aviso.** O backend cria exercícios novos em vez de
+substituir, e a tela avisa isso antes de processar, sem impedir.

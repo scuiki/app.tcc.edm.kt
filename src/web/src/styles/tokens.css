@@ -85,6 +85,13 @@ a {
   }
 }
 
+/* O giro dos indicadores de carregamento, desligado para quem pede menos movimento */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* A escala tipográfica fechada, em quatro níveis */
 .t-page-title {
   margin: 0;

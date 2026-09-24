@@ -63,3 +63,28 @@
   font-size: 13px;
   color: var(--color-text);
 }
+
+.field__input:disabled {
+  background: var(--color-surface-subtle);
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+}
+
+.select-field {
+  position: relative;
+}
+
+.select-field__input {
+  width: 100%;
+  padding-right: 36px;
+  appearance: none;
+  cursor: pointer;
+}
+
+.select-field__chevron {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  color: var(--color-text-muted);
+  pointer-events: none;
+}

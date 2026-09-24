@@ -28,6 +28,11 @@ export function sendJson<T>(method: 'POST' | 'PUT' | 'DELETE', path: string, bod
   })
 }
 
+// O navegador monta o multipart e o boundary sozinho, então não se passa Content-Type
+export function sendForm<T>(path: string, form: FormData) {
+  return request<T>(path, { method: 'POST', body: form })
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(path, init)
   if (!response.ok) throw new ApiError(response.status, await readDetail(response))
