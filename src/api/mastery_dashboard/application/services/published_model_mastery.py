@@ -1,10 +1,4 @@
-"""A matriz aluno × KC da versão publicada: calculada UMA vez por versão e servida do banco.
-
-Na primeira leitura do dashboard, prevê e grava; nas seguintes, lê o que foi gravado. A versão é
-resolvida uma única vez por chamada: as linhas gravadas e o modelo carregado são sempre da MESMA
-versão, mesmo que um treino publique outra entre as duas leituras. Sem modelo publicado, a matriz
-vem vazia e o TrainedModelInfo vazio: "ainda não treinado" é um estado legítimo.
-"""
+# A matriz é calculada uma vez por versão publicada e servida do banco nas leituras seguintes.
 
 from __future__ import annotations
 
@@ -65,8 +59,7 @@ class PublishedModelMastery:
                 for m in self._student_masteries.list_by_model(model.id)
             }
 
-        # O mesmo recorte do treino (só Run.Program): inferir sobre outro dado produziria a matriz
-        # de uma distribuição diferente da que o AUC exibido mediu.
+        # O mesmo recorte do treino, só Run.Program, senão a matriz sairia de outra distribuição.
         dataset = load_training_dataset(
             assignment.id, self._assignments, self._classrooms, self._submissions
         )
@@ -75,8 +68,7 @@ class PublishedModelMastery:
             kcs_by_problem.setdefault(binding.problem_id, []).append(binding.kc_id)
         matrix = self._predictor.predict_mastery(model, dataset, kcs_by_problem)
 
-        # Numa transação: uma falha no meio deixaria uma matriz parcial que as próximas leituras
-        # serviriam para sempre como se fosse a completa.
+        # Em transação, senão uma falha no meio serviria a matriz parcial para sempre como completa.
         with self._unit_of_work:
             for (student_id, kc_id), mastery in matrix.items():
                 self._student_masteries.add(

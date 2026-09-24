@@ -1,9 +1,4 @@
-"""Calcula as PreTrainingStatistics: as estatísticas das submissões que existem ANTES de qualquer
-treino.
-
-O professor tem estas estatísticas desde a importação: são calculadas direto do dado limpo e nunca
-tocam um modelo. Funções puras (DataFrame entra, dicionário sai); ler o dado limpo é do use case.
-"""
+# Calcula as PreTrainingStatistics direto do dado limpo, sem tocar em nenhum modelo.
 
 from __future__ import annotations
 
@@ -23,14 +18,14 @@ def compute_pre_training_statistics(cleaned_submissions: pd.DataFrame) -> PreTra
 
 
 def success_rate_by_assignment(cleaned: pd.DataFrame) -> dict[int, float]:
-    """A média de `is_correct` sobre os eventos Run.Program, por assignment."""
+    # A média de `is_correct` sobre os eventos Run.Program, por assignment.
     runs = cleaned[cleaned["event_type"] == RUN_PROGRAM]
     rates = runs.groupby("progsnap_assignment_id")["is_correct"].mean()
     return {int(aid): float(rate) for aid, rate in rates.items()}
 
 
 def learning_curve(cleaned: pd.DataFrame) -> dict[int, float]:
-    """A média de `is_correct` pelo número da tentativa (a n-ésima Run.Program de cada aluno)."""
+    # A média de `is_correct` pelo número da tentativa (a n-ésima Run.Program de cada aluno).
     runs = cleaned[cleaned["event_type"] == RUN_PROGRAM].sort_values("submitted_at")
     attempt = runs.groupby(["student_id", "progsnap_assignment_id"]).cumcount()
     curve = runs.assign(attempt_num=attempt).groupby("attempt_num")["is_correct"].mean()
@@ -38,11 +33,7 @@ def learning_curve(cleaned: pd.DataFrame) -> dict[int, float]:
 
 
 def compile_error_rate_by_assignment(cleaned: pd.DataFrame) -> dict[int, float]:
-    """Erros de compilação POR tentativa de execução (CE / Run), por assignment.
-
-    Não é CE / (CE + Run): a média sobre todos os eventos misturava os dois tipos e variava com
-    quantas execuções o aluno teve, o que tornava a métrica incomparável com a convenção.
-    """
+    # Erros de compilação por tentativa de execução (CE / Run), não CE / (CE + Run).
     runs = cleaned[cleaned["event_type"] == RUN_PROGRAM]
     compile_errors = cleaned[cleaned["event_type"] == COMPILE_ERROR]
     run_counts = runs.groupby("progsnap_assignment_id").size()

@@ -1,8 +1,4 @@
-"""As regras de produto do dashboard: faixas de mastery, KCs críticos e alunos em risco.
-
-Não são ciência do modelo: são heurísticas do protótipo para o professor ler a matriz (os limiares
-0,40 / 0,70 e "3 ou mais KCs em nível baixo"). Funções puras e determinísticas.
-"""
+# Heurísticas de produto do dashboard, não ciência do modelo, para faixas de mastery e KCs críticos.
 
 from __future__ import annotations
 
@@ -23,7 +19,7 @@ def classify_mastery_level(mastery: float) -> MasteryLevel:
 
 
 def find_critical_knowledge_components(matrix: StudentMasteryMatrix) -> list[tuple[int, float]]:
-    """(kc_id, mastery média da turma), do KC mais fraco ao mais forte."""
+    # (kc_id, mastery média da turma), do KC mais fraco ao mais forte.
     by_kc: dict[int, list[float]] = {}
     for (_student_id, kc_id), mastery in matrix.items():
         by_kc.setdefault(kc_id, []).append(mastery)
@@ -36,7 +32,7 @@ def find_critical_knowledge_components(matrix: StudentMasteryMatrix) -> list[tup
 def find_students_at_risk(
     matrix: StudentMasteryMatrix, min_low_kcs: int = AT_RISK_LOW_KC_COUNT
 ) -> list[str]:
-    """Os alunos com `min_low_kcs` ou mais KCs em nível baixo, em ordem."""
+    # Os alunos com `min_low_kcs` ou mais KCs em nível baixo, em ordem.
     low_counts: dict[str, int] = {}
     for (student_id, _kc_id), mastery in matrix.items():
         if classify_mastery_level(mastery) is MasteryLevel.LOW:

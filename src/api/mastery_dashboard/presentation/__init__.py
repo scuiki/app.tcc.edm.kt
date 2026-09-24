@@ -1,1 +1,1 @@
-"""Controllers HTTP, workers dos subprocessos e a montagem (composition root)."""
+# Controllers HTTP, workers dos subprocessos e a montagem (composition root).

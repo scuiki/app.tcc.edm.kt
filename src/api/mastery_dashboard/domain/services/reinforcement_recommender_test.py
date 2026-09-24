@@ -1,4 +1,4 @@
-"""recommend_reinforcement: os KCs de menor mastery primeiro, com texto em pt-BR, sem LLM."""
+# recommend_reinforcement traz os KCs de menor mastery primeiro, com texto em pt-BR, sem LLM.
 
 from __future__ import annotations
 

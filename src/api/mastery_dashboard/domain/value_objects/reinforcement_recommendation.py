@@ -1,4 +1,4 @@
-"""Uma recomendação de reforço para um KC. Quem monta é `services/reinforcement_recommender.py`."""
+# Uma recomendação de reforço para um KC.
 
 from __future__ import annotations
 

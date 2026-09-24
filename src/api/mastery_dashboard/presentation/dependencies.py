@@ -1,8 +1,4 @@
-"""Composition root de mastery_dashboard: qual implementação cada use case recebe.
-
-É aqui que o dashboard recebe o preditor de model_training (a infraestrutura de outra
-funcionalidade só entra pela presentation, ligada a uma interface do domínio dela).
-"""
+# Composition root de mastery_dashboard, qual implementação concreta cada use case recebe.
 
 from __future__ import annotations
 
@@ -50,7 +46,7 @@ from api.shared.presentation.http.database_session import open_database_session
 
 
 def build_published_model_mastery(conn: sqlite3.Connection, predictor=None) -> PublishedModelMastery:
-    """`predictor` troca o preditor real (os testes o espionam)."""
+    # `predictor` troca o preditor real, os testes o espionam.
     return PublishedModelMastery(
         assignments=SqliteAssignmentRepository(conn),
         classrooms=SqliteClassroomRepository(conn),

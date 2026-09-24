@@ -1,8 +1,4 @@
-"""TrainedModelInfo: o que acompanha todo número que vem do modelo.
-
-O first-attempt AUC e a data do treino, para o professor saber o quanto confiar na mastery. Sem
-modelo publicado, vem vazio, e isso é uma resposta legítima ("ainda não treinado"), não um 404.
-"""
+# TrainedModelInfo acompanha todo número vindo do modelo (first-attempt AUC e data do treino).
 
 from __future__ import annotations
 

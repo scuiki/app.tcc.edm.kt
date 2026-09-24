@@ -1,10 +1,4 @@
-"""Monta as ReinforcementRecommendation: o que reforçar em aula, do KC mais fraco ao mais forte.
-
-Sem LLM.
-
-O texto usa as mesmas faixas que classificam a matriz, então a recomendação e o dashboard sempre
-concordam.
-"""
+# Monta as ReinforcementRecommendation (sem LLM), do KC mais fraco ao mais forte.
 
 from __future__ import annotations
 
@@ -22,8 +16,8 @@ _GUIDANCE = {
 def recommend_reinforcement(
     kc_means: list[tuple[int, str, float]],
 ) -> list[ReinforcementRecommendation]:
-    """(kc_id, nome, mastery média) por KC → recomendações, da menor mastery para a maior."""
-    ranked = sorted(kc_means, key=lambda item: (item[2], item[0]))  # mastery crescente; id desempata
+    # (kc_id, nome, mastery média) por KC → recomendações, da menor mastery para a maior.
+    ranked = sorted(kc_means, key=lambda item: (item[2], item[0]))  # mastery cresce, id desempata
     return [
         ReinforcementRecommendation(
             kc_id=kc_id,

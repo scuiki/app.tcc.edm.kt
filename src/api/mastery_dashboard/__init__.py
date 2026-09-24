@@ -1,1 +1,1 @@
-"""Mastery, recomendações de reforço e estatísticas pré-treino."""
+# Mastery, recomendações de reforço e estatísticas pré-treino.

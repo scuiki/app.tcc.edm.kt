@@ -1,4 +1,4 @@
-"""IStudentMasteryRepository sobre SQLite (tabela `mastery_prediction`)."""
+# IStudentMasteryRepository sobre SQLite (tabela `mastery_prediction`).
 
 from __future__ import annotations
 

@@ -1,4 +1,4 @@
-"""SqliteStudentMasteryRepository: a matriz aluno × KC gravada por versão de modelo."""
+# SqliteStudentMasteryRepository grava a matriz aluno × KC por versão de modelo.
 
 from __future__ import annotations
 

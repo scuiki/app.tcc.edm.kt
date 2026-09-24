@@ -1,4 +1,4 @@
-"""Classroom: a turma do professor, dona dos dados enviados."""
+# Classroom, a turma do professor, dona dos dados enviados.
 
 from __future__ import annotations
 

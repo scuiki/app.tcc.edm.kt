@@ -1,4 +1,4 @@
-"""AssignmentInStatusRule: recusa um assignment fora dos status permitidos, ou inexistente."""
+# AssignmentInStatusRule recusa um assignment fora dos status permitidos, ou inexistente.
 
 from __future__ import annotations
 

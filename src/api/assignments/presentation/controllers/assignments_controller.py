@@ -1,4 +1,4 @@
-"""GET /assignments: HTTP puro. Recebe, delega ao use case, devolve."""
+# GET /assignments, HTTP puro; recebe, delega ao use case, devolve.
 
 from __future__ import annotations
 

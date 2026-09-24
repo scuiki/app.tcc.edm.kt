@@ -1,4 +1,4 @@
-"""O assignment alvo de um pedido, ou NotFound: o 404 que todo use case sobre um assignment começa por."""
+# O assignment alvo de um pedido, ou NotFound, o 404 com que todo use case começa.
 
 from __future__ import annotations
 
