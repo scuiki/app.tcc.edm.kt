@@ -19,7 +19,7 @@ from api.assignments.presentation.controllers import assignments_controller
 from api.classroom_import.presentation.controllers import classroom_import_controller
 from api.knowledge_components.presentation.controllers import knowledge_components_controller
 from api.mastery_dashboard.presentation import mastery_dashboard_controller
-from api.model_training.presentation import training_controller
+from api.model_training.presentation.controllers import training_controller
 from api.shared.infrastructure.database.migrations.runner import run_migrations
 from api.shared.infrastructure.database.sqlite_connection import connect
 from api.shared.infrastructure.implementations.one_job_at_a_time_lock import (

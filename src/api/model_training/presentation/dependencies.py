@@ -15,26 +15,28 @@ from api.assignments.infrastructure.repositories.sqlite_classroom_repository imp
 from api.classroom_import.infrastructure.implementations.parquet_cleaned_submissions_store import (
     ParquetCleanedSubmissionsStore,
 )
-from api.model_training.application.get_training_job_use_case import GetTrainingJobUseCase
-from api.model_training.application.get_training_loss_history_use_case import (
+from api.model_training.application.use_cases.get_training_job_use_case import GetTrainingJobUseCase
+from api.model_training.application.use_cases.get_training_loss_history_use_case import (
     GetTrainingLossHistoryUseCase,
 )
-from api.model_training.application.run_training_use_case import RunTrainingUseCase
-from api.model_training.application.start_training_use_case import StartTrainingUseCase
-from api.model_training.infrastructure.ml_code_dkt_trainer import MlCodeDktTrainer
-from api.model_training.infrastructure.sqlite_training_epoch_metric_repository import (
+from api.model_training.application.use_cases.run_training_use_case import RunTrainingUseCase
+from api.model_training.application.use_cases.start_training_use_case import StartTrainingUseCase
+from api.model_training.infrastructure.implementations.ml_code_dkt_trainer import MlCodeDktTrainer
+from api.model_training.infrastructure.repositories.sqlite_training_epoch_metric_repository import (
     SqliteTrainingEpochMetricRepository,
 )
-from api.model_training.infrastructure.sqlite_training_job_repository import (
+from api.model_training.infrastructure.repositories.sqlite_training_job_repository import (
     SqliteTrainingJobRepository,
 )
-from api.model_training.infrastructure.trained_model_file_store import TrainedModelFileStore
+from api.model_training.infrastructure.implementations.trained_model_file_store import (
+    TrainedModelFileStore,
+)
 from api.shared.infrastructure.implementations.background_jobs import SubprocessJobLauncher
 from api.shared.infrastructure.implementations.sqlite_unit_of_work import SqliteUnitOfWork
 from api.shared.infrastructure.implementations.one_job_at_a_time_lock import OneJobAtATimeLock
 from api.shared.presentation.http.database_session import open_database_session
 
-TRAINING_WORKER = "api.model_training.presentation.training_worker"
+TRAINING_WORKER = "api.model_training.presentation.workers.training_worker"
 
 
 def start_training_use_case(

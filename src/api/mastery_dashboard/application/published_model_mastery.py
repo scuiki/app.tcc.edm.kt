@@ -17,10 +17,10 @@ from api.mastery_dashboard.domain.mastery_level import StudentMasteryMatrix
 from api.mastery_dashboard.domain.student_mastery_entity import StudentMastery
 from api.mastery_dashboard.domain.student_mastery_repository import StudentMasteryRepository
 from api.mastery_dashboard.domain.trained_model_info import TrainedModelInfo
-from api.model_training.domain.student_mastery_predictor import StudentMasteryPredictor
-from api.model_training.domain.trained_model_entity import TrainedModel
-from api.model_training.domain.trained_model_repository import TrainedModelRepository
-from api.model_training.domain.training_dataset import load_training_dataset
+from api.model_training.domain.interfaces.student_mastery_predictor import IStudentMasteryPredictor
+from api.model_training.domain.entities.trained_model_entity import TrainedModel
+from api.model_training.domain.interfaces.trained_model_repository import ITrainedModelRepository
+from api.model_training.domain.services.training_dataset_loading import load_training_dataset
 from api.shared.application.interfaces.unit_of_work import IUnitOfWork
 
 
@@ -30,10 +30,10 @@ class PublishedModelMastery:
         assignments: IAssignmentRepository,
         classrooms: IClassroomRepository,
         cleaned_submissions: ICleanedSubmissionsStore,
-        trained_models: TrainedModelRepository,
+        trained_models: ITrainedModelRepository,
         qmatrix: IQMatrixRepository,
         student_masteries: StudentMasteryRepository,
-        predictor: StudentMasteryPredictor,
+        predictor: IStudentMasteryPredictor,
         unit_of_work: IUnitOfWork,
     ) -> None:
         self._assignments = assignments
