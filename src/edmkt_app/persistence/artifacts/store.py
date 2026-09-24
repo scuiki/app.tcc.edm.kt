@@ -16,6 +16,7 @@ from edmkt_core.models.code_dkt import CodeDKTModel
 
 from edmkt_app.persistence.artifacts.versioning import next_version_number
 from edmkt_app.persistence.db import transaction
+from edmkt_app.values import ConfinedPath
 from edmkt_app.clock import utc_now_iso
 
 
@@ -37,12 +38,8 @@ class ArtifactStore:
         # A base JÁ termina em .../<turma_slug>/models (é assim que os dois chamadores a
         # constroem), então aqui não se acrescenta nem a turma nem outro "models": era essa
         # dupla contagem que produzia `data/<turma>/models/1/1/models/v1` (999.1).
-        base = self._base.resolve()
-        vdir = base / str(int(assignment_id)) / f"v{int(version_number)}"
-        resolved = (base / vdir.relative_to(base)).resolve()
-        if base not in resolved.parents and resolved != base:
-            raise ValueError(f"path traversal: {resolved} fora de {base}")
-        return vdir
+        vdir = self._base / str(int(assignment_id)) / f"v{int(version_number)}"
+        return Path(ConfinedPath(vdir, root=self._base))
 
     def save_version(
         self,
@@ -105,11 +102,8 @@ class ArtifactStore:
         # CR-02: vdir vem de model_artifact.artifact_dir (DB-owned), mas o vocab.pkl é lido com
         # pickle.load IRRESTRITO (≠ torch.load weights_only=True do .pt). Um artifact_dir
         # adulterado/fora-da-árvore apontaria a desserialização para um .pkl arbitrário ⇒ RCE.
-        # Mesma guarda resolve-depois-confere de _version_dir/save_version ANTES de abrir o .pkl.
-        base = self._base.resolve()
-        path = Path(vdir).resolve()
-        if base not in path.parents and path != base:
-            raise ValueError(f"path traversal: {path} fora de {base}")
+        # Mesma guarda resolve-depois-confere de _version_dir ANTES de abrir o .pkl.
+        path = Path(ConfinedPath(vdir, root=self._base))
         meta = json.loads((path / "config.json").read_text())
         with open(path / "vocab.pkl", "rb") as f:
             vocab = pickle.load(f)
