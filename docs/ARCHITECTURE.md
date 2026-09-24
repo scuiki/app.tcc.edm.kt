@@ -48,7 +48,9 @@ quando tem conteúdo:
 ```
 
 Uma interface do `domain/interfaces/` é implementada ou em `infrastructure/repositories/` (se é
-um repositório) ou em `infrastructure/implementations/` (todo o resto).
+um repositório) ou em `infrastructure/implementations/` (todo o resto). A única exceção é um
+Protocol privado (`_IFailableJobRepository`): detalhe de tipagem do único arquivo que o usa, mora
+ao lado dele, mas também leva o `I`.
 
 O `shared/` não é uma funcionalidade, e por isso tem três exceções: `domain/errors/` (os erros,
 um por arquivo), `infrastructure/database/` (conexão e migrations, uma pasta de tecnologia) e
@@ -136,6 +138,7 @@ start_training_use_case_test.py
 
 ## Jobs em background
 
-Treino e geração de KCs rodam em subprocess (`python -m api.<funcionalidade>.presentation.workers.<…>_worker`),
-serializados pelo `OneJobAtATimeLock`, uma linha no banco validada pela vida do PID do dono. O banco
-é o canal entre os processos: o estado do job vive em `training_job` / `kc_job`.
+Treino e geração de KCs rodam em subprocess
+(`python -m api.<funcionalidade>.presentation.workers.<…>_worker`), serializados pelo
+`OneJobAtATimeLock`, uma linha no banco validada pela vida do PID do dono. O banco é o canal entre
+os processos: o estado do job vive em `training_job` / `kc_job`.
