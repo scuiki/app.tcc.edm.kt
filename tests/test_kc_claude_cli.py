@@ -18,6 +18,7 @@ import subprocess
 import pytest
 
 # RED: edmkt_app.llm.claude_cli não existe ainda (gate da Wave 1).
+from edmkt_app.kc_pipeline.settings import MODEL_ID  # noqa: E402
 from edmkt_app.llm.claude_cli import (  # noqa: E402
     EmptyContentError,
     TransientLLMError,
@@ -55,7 +56,7 @@ def test_returns_structured_output(monkeypatch, fake_claude_envelope):
     env = fake_claude_envelope(_PARSED)
     _patch_run(monkeypatch, _FakeCompleted(stdout=json.dumps(env)), capture)
 
-    out = call_claude(system="sys", prompt="prompt", schema=_SCHEMA)
+    out = call_claude(model=MODEL_ID, system="sys", prompt="prompt", schema=_SCHEMA)
 
     assert out == _PARSED
 
@@ -64,7 +65,7 @@ def test_invokes_list_form_claude_print_with_schema(monkeypatch, fake_claude_env
     capture: dict = {}
     _patch_run(monkeypatch, _FakeCompleted(stdout=json.dumps(fake_claude_envelope(_PARSED))), capture)
 
-    call_claude(system="SYS", prompt="P", schema=_SCHEMA)
+    call_claude(model=MODEL_ID, system="SYS", prompt="P", schema=_SCHEMA)
 
     args = capture["args"]
     # list-form de str puras (sem shell=True / sem interpolação — T-05-02 command injection).
@@ -85,7 +86,7 @@ def test_nonzero_exit_raises_transient(monkeypatch):
     _patch_run(monkeypatch, _FakeCompleted(stderr="boom", returncode=1), capture)
 
     with pytest.raises(TransientLLMError):
-        call_claude(system="s", prompt="p", schema=_SCHEMA)
+        call_claude(model=MODEL_ID, system="s", prompt="p", schema=_SCHEMA)
 
 
 def test_is_error_envelope_raises_transient(monkeypatch):
@@ -94,7 +95,7 @@ def test_is_error_envelope_raises_transient(monkeypatch):
     _patch_run(monkeypatch, _FakeCompleted(stdout=json.dumps(env)), capture)
 
     with pytest.raises(TransientLLMError):
-        call_claude(system="s", prompt="p", schema=_SCHEMA)
+        call_claude(model=MODEL_ID, system="s", prompt="p", schema=_SCHEMA)
 
 
 def test_non_success_subtype_raises_transient(monkeypatch):
@@ -103,7 +104,7 @@ def test_non_success_subtype_raises_transient(monkeypatch):
     _patch_run(monkeypatch, _FakeCompleted(stdout=json.dumps(env)), capture)
 
     with pytest.raises(TransientLLMError):
-        call_claude(system="s", prompt="p", schema=_SCHEMA)
+        call_claude(model=MODEL_ID, system="s", prompt="p", schema=_SCHEMA)
 
 
 def test_empty_structured_output_is_recognized(monkeypatch, fake_claude_envelope):
@@ -116,7 +117,7 @@ def test_empty_structured_output_is_recognized(monkeypatch, fake_claude_envelope
     # Conteúdo vazio é falha-dura (EmptyContentError) OU devolve {} para a validação a jusante
     # decidir — qualquer um dos dois é aceitável; o que NÃO pode é mascarar como sucesso pleno.
     try:
-        out = call_claude(system="s", prompt="p", schema=_SCHEMA)
+        out = call_claude(model=MODEL_ID, system="s", prompt="p", schema=_SCHEMA)
         assert out == {} or out == {"kcs": []}
     except EmptyContentError:
         pass
