@@ -11,7 +11,7 @@ from api.assignments.domain.interfaces.assignment_repository import IAssignmentR
 from api.assignments.domain.interfaces.classroom_repository import IClassroomRepository
 from api.assignments.domain.value_objects.classroom_slug import ClassroomSlug
 from api.assignments.domain.value_objects.progsnap_assignment_id import ProgSnapAssignmentId
-from api.classroom_import.domain.interfaces.cleaned_submissions_store import ICleanedSubmissionsStore
+from api.classroom_import.domain.interfaces.submission_repository import ISubmissionRepository
 from api.knowledge_components.domain.interfaces.kc_generation_job_repository import (
     IKnowledgeComponentGenerationJobRepository,
 )
@@ -33,7 +33,7 @@ class RunKnowledgeComponentGenerationUseCase:
         self,
         assignments: IAssignmentRepository,
         classrooms: IClassroomRepository,
-        cleaned_submissions: ICleanedSubmissionsStore,
+        submissions: ISubmissionRepository,
         generator: IKnowledgeComponentGenerator,
         knowledge_components: IKnowledgeComponentRepository,
         qmatrix: IQMatrixRepository,
@@ -42,7 +42,7 @@ class RunKnowledgeComponentGenerationUseCase:
     ) -> None:
         self._assignments = assignments
         self._classrooms = classrooms
-        self._cleaned_submissions = cleaned_submissions
+        self._submissions = submissions
         self._generator = generator
         self._knowledge_components = knowledge_components
         self._qmatrix = qmatrix
@@ -59,7 +59,7 @@ class RunKnowledgeComponentGenerationUseCase:
 
         self._jobs.mark_running(job_id, started_at=utc_now_iso())
         generated = self._generator.generate(
-            self._cleaned_submissions.read(slug, progsnap_id),
+            self._submissions.list_by_assignment(assignment_id),
             slug,
             progsnap_id,
             on_stage=lambda stage: self._jobs.update_stage(job_id, stage, utc_now_iso()),

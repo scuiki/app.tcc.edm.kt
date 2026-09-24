@@ -11,7 +11,7 @@ from api.classroom_import.domain.services import submission_event
 
 
 def _mixed_stream() -> pd.DataFrame:
-    # Espelha o Parquet canônico da Fase 3: ALLOWED_EVENTS = {Run.Program, Compile.Error}.
+    # Espelha o dado limpo da Fase 3: ALLOWED_EVENTS = {Run.Program, Compile.Error}.
     return pd.DataFrame(
         [
             {"student_id": "S1", "event_type": "Run.Program", "is_correct": 1},

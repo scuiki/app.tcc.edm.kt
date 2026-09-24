@@ -27,7 +27,6 @@ dependencies = [
     # embeddings com results/kc_clusters_A*.json (Open Q1, KC-01). Transporte/embeddings, NÃO
     # toca a numérica de treino do Code-DKT (não afeta a banda ±3pp do teste de regressão).
     "sentence-transformers==5.4.1",
-    "pyarrow==24.0.0",  # engine de DataFrame.to_parquet — stream canônico em Parquet (D-13)
     # HTTP/I/O stack (waves 2-3): camada de transporte, NÃO toca a numérica de treino —
     # a banda ±3pp segue ancorada na tag fixa da imagem torch, não nestes pins.
     "fastapi==0.138.0",

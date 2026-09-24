@@ -16,7 +16,7 @@ from api.classroom_import.domain.value_objects.import_report import ImportCheck
 from api.classroom_import.domain.services.submission_event import KEPT_EVENTS, RUN_PROGRAM
 
 # A tradução ProgSnap2 -> glossário acontece AQUI e só aqui: o CSV do professor chega com os
-# nomes do padrão, e tudo o que vem depois (Parquet, estatísticas, treino, inferência) lê os nomes do
+# nomes do padrão, e tudo o que vem depois (banco, estatísticas, treino, inferência) lê os nomes do
 # glossário (docs/GLOSSARY.md, "Colunas do dado limpo").
 PROGSNAP_TO_CLEANED_COLUMNS = {
     "SubjectID": "student_id",
@@ -30,7 +30,7 @@ PROGSNAP_TO_CLEANED_COLUMNS = {
 }
 
 # Contrato de colunas do dado limpo: exatamente o que build_student_sequences/train_and_evaluate consomem.
-# A ordem é estável para o Parquet.
+# A ordem é estável: é a ordem em que o repositório devolve as colunas.
 CLEANED_COLUMNS = [*PROGSNAP_TO_CLEANED_COLUMNS.values(), "is_correct"]
 
 

@@ -16,8 +16,8 @@ from api.assignments.infrastructure.repositories.sqlite_assignment_repository im
 from api.assignments.infrastructure.repositories.sqlite_classroom_repository import (
     SqliteClassroomRepository,
 )
-from api.classroom_import.infrastructure.implementations.parquet_cleaned_submissions_store import (
-    ParquetCleanedSubmissionsStore,
+from api.classroom_import.infrastructure.repositories.sqlite_submission_repository import (
+    SqliteSubmissionRepository,
 )
 from api.knowledge_components.infrastructure.repositories.sqlite_knowledge_component_repository import (
     SqliteKnowledgeComponentRepository,
@@ -54,7 +54,7 @@ def build_published_model_mastery(conn: sqlite3.Connection, predictor=None) -> P
     return PublishedModelMastery(
         assignments=SqliteAssignmentRepository(conn),
         classrooms=SqliteClassroomRepository(conn),
-        cleaned_submissions=ParquetCleanedSubmissionsStore(),
+        submissions=SqliteSubmissionRepository(conn),
         trained_models=SqliteTrainedModelRepository(conn),
         qmatrix=SqliteQMatrixRepository(conn),
         student_masteries=SqliteStudentMasteryRepository(conn),
@@ -84,6 +84,5 @@ def get_pre_training_statistics_use_case(
 ) -> GetPreTrainingStatisticsUseCase:
     return GetPreTrainingStatisticsUseCase(
         SqliteAssignmentRepository(conn),
-        SqliteClassroomRepository(conn),
-        ParquetCleanedSubmissionsStore(),
+        SqliteSubmissionRepository(conn),
     )

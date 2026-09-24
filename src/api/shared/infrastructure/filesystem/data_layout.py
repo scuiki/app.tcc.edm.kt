@@ -1,8 +1,7 @@
 """Onde cada coisa de uma turma mora em disco. O único lugar que monta caminhos sob `data/`.
 
-    data/<classroom_slug>/
+    data/<classroom_slug>/            (o dado limpo não mora aqui: fica na tabela submission)
         raw/                              o .zip do professor extraído, intocado
-        clean/assignment_<N>.parquet      o dado limpo, um arquivo por assignment
         cache/paths/<code_state_id>.pkl   paths de AST já extraídos
         kc/assignment_<N>/                respostas do LLM guardadas da geração de KCs
         models/<assignment_id>/v<K>/      as versões de modelo treinadas
@@ -33,16 +32,6 @@ def classroom_dir(classroom_slug: Slug) -> Path:
 
 def raw_upload_dir(classroom_slug: Slug) -> Path:
     return classroom_dir(classroom_slug) / "raw"
-
-
-def cleaned_submissions_dir(classroom_slug: Slug) -> Path:
-    return classroom_dir(classroom_slug) / "clean"
-
-
-def cleaned_submissions_path(
-    classroom_slug: Slug, progsnap_aid: ProgSnapId
-) -> Path:
-    return cleaned_submissions_dir(classroom_slug) / f"assignment_{progsnap_aid}.parquet"
 
 
 def ast_path_cache_dir(classroom_slug: Slug) -> Path:

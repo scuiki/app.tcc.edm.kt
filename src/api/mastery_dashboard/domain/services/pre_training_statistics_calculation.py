@@ -2,7 +2,7 @@
 treino.
 
 O professor tem estas estatísticas desde a importação: são calculadas direto do dado limpo e nunca
-tocam um modelo. Funções puras (DataFrame entra, dicionário sai); ler o Parquet é do use case.
+tocam um modelo. Funções puras (DataFrame entra, dicionário sai); ler o dado limpo é do use case.
 """
 
 from __future__ import annotations

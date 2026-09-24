@@ -1,4 +1,4 @@
-"""A proveniência de um treino: qual código (commit) e qual dado (hash do Parquet) geraram a versão.
+"""A proveniência de um treino: qual código (commit) e qual dado (hash do dado) geraram a versão.
 
 O banco chegou a guardar duas versões do A439 com AUC diferente (0,6959 e 0,7452) e nenhum registro
 do que mudou entre elas. Duas colunas transformam a anedota em evidência auditável.
@@ -10,6 +10,8 @@ from __future__ import annotations
 
 import hashlib
 from pathlib import Path
+
+import pandas as pd
 
 
 def git_commit(repo_root: Path) -> str | None:
@@ -35,9 +37,10 @@ def git_commit(repo_root: Path) -> str | None:
     return None
 
 
-def file_hash(path: Path) -> str | None:
-    """SHA-256 do Parquet canônico que alimentou o treino — a identidade do DADO de entrada."""
-    try:
-        return hashlib.sha256(Path(path).read_bytes()).hexdigest()
-    except OSError:
-        return None
+def dataset_hash(events: pd.DataFrame) -> str:
+    """SHA-256 do dado que entrou no treino (o recorte do TrainingDataset), em CSV.
+
+    É o conteúdo, não um arquivo: dois treinos sobre o mesmo dado têm o mesmo hash, e qualquer
+    linha, coluna ou valor diferente muda o hash.
+    """
+    return hashlib.sha256(events.to_csv(index=False).encode()).hexdigest()

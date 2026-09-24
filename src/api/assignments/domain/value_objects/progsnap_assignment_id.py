@@ -17,7 +17,7 @@ class ProgSnapAssignmentId:
     value: int
 
     def __post_init__(self) -> None:
-        # bool é subclasse de int e passaria calado; None chegaria como "assignment_None.parquet".
+        # bool é subclasse de int e passaria calado; None chegaria como "kc/assignment_None/".
         if isinstance(self.value, bool) or not isinstance(self.value, int):
             raise ValueError(f"AssignmentID do ProgSnap2 precisa ser int: {self.value!r}")
 

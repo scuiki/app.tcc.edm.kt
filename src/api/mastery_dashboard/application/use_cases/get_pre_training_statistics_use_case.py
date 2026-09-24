@@ -3,11 +3,8 @@
 from __future__ import annotations
 
 from api.assignments.domain.interfaces.assignment_repository import IAssignmentRepository
-from api.assignments.domain.interfaces.classroom_repository import IClassroomRepository
-from api.assignments.domain.value_objects.classroom_slug import ClassroomSlug
 from api.assignments.domain.services.existing_assignment import get_existing_assignment
-from api.assignments.domain.value_objects.progsnap_assignment_id import ProgSnapAssignmentId
-from api.classroom_import.domain.interfaces.cleaned_submissions_store import ICleanedSubmissionsStore
+from api.classroom_import.domain.interfaces.submission_repository import ISubmissionRepository
 from api.mastery_dashboard.application.dtos.mastery_dashboard_dto import (
     PreTrainingStatisticsResponseDTO,
 )
@@ -15,35 +12,27 @@ from api.mastery_dashboard.domain.value_objects.pre_training_statistics import P
 from api.mastery_dashboard.domain.services.pre_training_statistics_calculation import (
     compute_pre_training_statistics,
 )
-from api.shared.domain.errors.not_found import NotFound
 
 
 class GetPreTrainingStatisticsUseCase:
     def __init__(
         self,
         assignments: IAssignmentRepository,
-        classrooms: IClassroomRepository,
-        cleaned_submissions: ICleanedSubmissionsStore,
+        submissions: ISubmissionRepository,
     ) -> None:
         self._assignments = assignments
-        self._classrooms = classrooms
-        self._cleaned_submissions = cleaned_submissions
+        self._submissions = submissions
 
     def execute(self, assignment_id: int) -> PreTrainingStatisticsResponseDTO:
-        assignment = get_existing_assignment(self._assignments, assignment_id)
-        classroom = self._classrooms.get(assignment.classroom_id)
-        if classroom is None:  # turma órfã: 404 explícito, não AttributeError em .name
-            raise NotFound("turma inexistente")
-
-        slug = ClassroomSlug.from_name(classroom.name)
-        progsnap_id = ProgSnapAssignmentId(assignment.progsnap_assignment_id)
-        # Sem o dado limpo ainda, estatísticas vazias: a tela resiste à falta de dado, não só de
-        # modelo. Leem o dado INTEIRO (com Compile.Error): a taxa de erro de compilação depende
-        # justamente do que o recorte de treino remove.
+        get_existing_assignment(self._assignments, assignment_id)
+        # Leem o dado INTEIRO (com Compile.Error): a taxa de erro de compilação depende justamente
+        # do que o recorte de treino remove. Sem dado ainda, estatísticas vazias: a tela resiste à
+        # falta de dado, não só de modelo.
+        submissions = self._submissions.list_by_assignment(assignment_id)
         statistics = (
-            compute_pre_training_statistics(self._cleaned_submissions.read(slug, progsnap_id))
-            if self._cleaned_submissions.exists(slug, progsnap_id)
-            else PreTrainingStatistics.empty()
+            PreTrainingStatistics.empty()
+            if submissions.empty
+            else compute_pre_training_statistics(submissions)
         )
         return PreTrainingStatisticsResponseDTO(
             assignment_id=assignment_id,

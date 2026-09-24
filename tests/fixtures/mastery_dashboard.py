@@ -11,8 +11,9 @@ from api.assignments.infrastructure.repositories.sqlite_assignment_repository im
 from api.assignments.infrastructure.repositories.sqlite_classroom_repository import (
     SqliteClassroomRepository,
 )
-from api.classroom_import.infrastructure.implementations.parquet_cleaned_submissions_store import (
-    ParquetCleanedSubmissionsStore,
+from api.classroom_import.domain.services.submission_cleaning import CLEANED_COLUMNS
+from api.classroom_import.infrastructure.repositories.sqlite_submission_repository import (
+    SqliteSubmissionRepository,
 )
 from api.knowledge_components.infrastructure.repositories.sqlite_qmatrix_repository import (
     SqliteQMatrixRepository,
@@ -34,11 +35,9 @@ from api.model_training.infrastructure.implementations.trained_model_file_store 
 from api.shared.infrastructure.implementations.sqlite_unit_of_work import SqliteUnitOfWork
 
 
-def _write_cleaned_submissions(data_root, with_compile_errors: bool) -> None:
-    # O Parquet limpo no caminho que o trained_artifact usa ("Turma 6" → turma-6, A439 → 439).
-    # Os problemas 1/2/3 batem com a Q-matrix da fixture (o problema 3 liga os dois KCs).
-    from api.classroom_import.domain.services.submission_cleaning import CLEANED_COLUMNS
-
+def _cleaned_submissions(with_compile_errors: bool) -> pd.DataFrame:
+    # O dado limpo do assignment do trained_artifact (A439). Os problemas 1/2/3 batem com a
+    # Q-matrix da fixture (o problema 3 liga os dois KCs).
     base = pd.Timestamp("2019-03-01T08:00:00Z")
     java_a = "public int f(int x) { return x + 1; }"
     java_b = "public int g(int a, int b) { int s = a + b; return s; }"
@@ -65,7 +64,7 @@ def _write_cleaned_submissions(data_root, with_compile_errors: bool) -> None:
             rows.append(_row(subj, pid, si * 10 + step, score, code, f"c{si}_{step}"))
         if with_compile_errors:
             # Como a importação grava de fato: Compile.Error com Java quebrado convive com os
-            # Run.Program no MESMO Parquet.
+            # Run.Program no MESMO assignment.
             broken = _row(subj, 1, si * 10 + 5, 0.0, "public int oops( { return ;;; }", "")
             broken["code_snapshot_id"] = f"e{si}"
             broken["event_type"] = "Compile.Error"
@@ -75,21 +74,18 @@ def _write_cleaned_submissions(data_root, with_compile_errors: bool) -> None:
     df["submitted_at"] = pd.to_datetime(df["submitted_at"], utc=True)
     df["progsnap_assignment_id"] = df["progsnap_assignment_id"].astype("Int64")
     df["problem_id"] = df["problem_id"].astype("Int64")
-
-    clean_dir = data_root / "turma-6" / "clean"
-    clean_dir.mkdir(parents=True, exist_ok=True)
-    df[CLEANED_COLUMNS].to_parquet(
-        clean_dir / "assignment_439.parquet", engine="pyarrow", index=False
-    )
+    return df[CLEANED_COLUMNS]
 
 
 @pytest.fixture
-def seed_cleaned_submissions(data_root):
-    """Grava o Parquet limpo do assignment do trained_artifact; `with_compile_errors` mistura
+def seed_cleaned_submissions(trained_artifact):
+    """Grava o dado limpo do assignment do trained_artifact; `with_compile_errors` mistura
     Compile.Error como a importação faz."""
 
     def seed(with_compile_errors: bool = False) -> None:
-        _write_cleaned_submissions(data_root, with_compile_errors)
+        SqliteSubmissionRepository(trained_artifact.conn).add_many(
+            trained_artifact.assignment_id, _cleaned_submissions(with_compile_errors)
+        )
 
     return seed
 
@@ -113,7 +109,7 @@ def published_model_mastery(trained_artifact, real_mastery_predictor, sqlite_stu
         return PublishedModelMastery(
             assignments=SqliteAssignmentRepository(conn),
             classrooms=SqliteClassroomRepository(conn),
-            cleaned_submissions=ParquetCleanedSubmissionsStore(),
+            submissions=SqliteSubmissionRepository(conn),
             trained_models=SqliteTrainedModelRepository(conn),
             qmatrix=SqliteQMatrixRepository(conn),
             student_masteries=student_masteries or sqlite_student_masteries,
@@ -132,7 +128,7 @@ def published_assignment(trained_artifact):
 
 @pytest.fixture
 def training_dataset_of(trained_artifact):
-    """load_training_dataset(assignment_id) com os repositórios e o Parquet reais."""
+    """load_training_dataset(assignment_id) com os repositórios reais."""
     conn = trained_artifact.conn
 
     def load(assignment_id: int):
@@ -140,7 +136,7 @@ def training_dataset_of(trained_artifact):
             assignment_id,
             SqliteAssignmentRepository(conn),
             SqliteClassroomRepository(conn),
-            ParquetCleanedSubmissionsStore(),
+            SqliteSubmissionRepository(conn),
         )
 
     return load

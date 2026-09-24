@@ -12,8 +12,8 @@ from api.assignments.infrastructure.repositories.sqlite_assignment_repository im
 from api.assignments.infrastructure.repositories.sqlite_classroom_repository import (
     SqliteClassroomRepository,
 )
-from api.classroom_import.infrastructure.implementations.parquet_cleaned_submissions_store import (
-    ParquetCleanedSubmissionsStore,
+from api.classroom_import.infrastructure.repositories.sqlite_submission_repository import (
+    SqliteSubmissionRepository,
 )
 from api.model_training.application.use_cases.get_training_job_use_case import GetTrainingJobUseCase
 from api.model_training.application.use_cases.get_training_loss_history_use_case import (
@@ -73,7 +73,7 @@ def build_run_training_use_case(
     return RunTrainingUseCase(
         assignments=SqliteAssignmentRepository(conn),
         classrooms=SqliteClassroomRepository(conn),
-        cleaned_submissions=ParquetCleanedSubmissionsStore(),
+        submissions=SqliteSubmissionRepository(conn),
         trainer=trainer or MlCodeDktTrainer(),
         model_store=TrainedModelFileStore(conn),
         jobs=SqliteTrainingJobRepository(conn),

@@ -47,7 +47,6 @@ Todo `Protocol` da `api/` começa com `I` e fica numa pasta `interfaces/` (ver
 | Interface | Quem implementa | O que é | Nome antigo |
 |---|---|---|---|
 | `I<Entidade>Repository` (`IAssignmentRepository`, `IClassroomRepository`, `ISubmissionRepository`, `IKnowledgeComponentRepository`, `IKnowledgeComponentGenerationJobRepository`, `IQMatrixRepository`, `ITrainingJobRepository`, `ITrainedModelRepository`, `ITrainingEpochMetricRepository`, `IStudentMasteryRepository`) | `Sqlite<Entidade>Repository` | Ler e gravar uma entidade | sem o `I` |
-| `ICleanedSubmissionsStore` / `IStagedCleanedSubmissions` | `ParquetCleanedSubmissionsStore` | Gravar e ler o dado limpo, em duas fases (preparar e publicar) | sem o `I` |
 | `IProgSnapUploadExtractor` | `ProgSnapZipExtractor` | Extrair o `.zip` enviado e achar as tabelas | `ProgSnapUploadExtractor` |
 | `IProgSnapTableReader` | `ProgSnapCsvReader` | Ler as tabelas ProgSnap2 do CSV | `ProgSnapTableReader` |
 | `IKnowledgeComponentGenerator` | `KcGenKtGenerator` | Gerar os KCs de um assignment | `KnowledgeComponentGenerator` |
@@ -97,7 +96,7 @@ Os jobs (`TrainingJob`, `KnowledgeComponentGenerationJob`) têm os estados `pend
 | `classroom_import` | Receber o `.zip` ProgSnap2, validar, limpar e persistir | `ingestion` |
 | `ClassroomImportReport` / `ImportCheck` | O relatório da importação e cada item dele (fatal, aviso ou de treinabilidade) | `IngestReport` / `ReportItem` |
 | `check_assignment_trainability()` | Decide, por assignment, entre `ready_for_kc_generation` e `statistics_only` | `viability` |
-| `cleaned_submissions.parquet` | O dado limpo de onde tudo lê, um arquivo por assignment | Parquet canônico |
+| tabela `submission` | O dado limpo de onde tudo lê (`ISubmissionRepository.list_by_assignment()`), com o código Java | Parquet por assignment (`cleaned_submissions.parquet`) |
 | `TrainingDataset` | O recorte que treino e inferência consomem: só eventos `Run.Program` | `ModelingFrame` |
 | `load_training_dataset()` | Monta o `TrainingDataset` de um assignment (`services/training_dataset_loading.py`) | `load_modeling_frame` |
 | `TrainingOutcome` | O que um treino devolve: o modelo, o vocabulário, os hiperparâmetros, o first-attempt AUC e o `java_parse_rate` | — |

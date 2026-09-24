@@ -12,8 +12,8 @@ from api.assignments.infrastructure.repositories.sqlite_assignment_repository im
 from api.assignments.infrastructure.repositories.sqlite_classroom_repository import (
     SqliteClassroomRepository,
 )
-from api.classroom_import.infrastructure.implementations.parquet_cleaned_submissions_store import (
-    ParquetCleanedSubmissionsStore,
+from api.classroom_import.infrastructure.repositories.sqlite_submission_repository import (
+    SqliteSubmissionRepository,
 )
 from api.knowledge_components.application.use_cases.add_knowledge_component_use_case import (
     AddKnowledgeComponentUseCase,
@@ -144,7 +144,7 @@ def build_run_kc_generation_use_case(
     return RunKnowledgeComponentGenerationUseCase(
         assignments=SqliteAssignmentRepository(conn),
         classrooms=SqliteClassroomRepository(conn),
-        cleaned_submissions=ParquetCleanedSubmissionsStore(),
+        submissions=SqliteSubmissionRepository(conn),
         generator=KcGenKtGenerator(llm or ClaudeCliLLMClient(model=KC_GENERATION_MODEL_ID)),
         knowledge_components=SqliteKnowledgeComponentRepository(conn),
         qmatrix=SqliteQMatrixRepository(conn),

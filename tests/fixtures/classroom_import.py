@@ -18,9 +18,6 @@ from api.classroom_import.application.dtos.import_classroom_dataset_dto import (
 from api.classroom_import.application.use_cases.import_classroom_dataset_use_case import (
     ImportClassroomDatasetUseCase,
 )
-from api.classroom_import.infrastructure.implementations.parquet_cleaned_submissions_store import (
-    ParquetCleanedSubmissionsStore,
-)
 from api.classroom_import.infrastructure.implementations.progsnap_csv_reader import (
     ProgSnapCsvReader,
 )
@@ -48,7 +45,6 @@ def import_classroom(tmp_db, sqlite_submissions):
             unit_of_work=SqliteUnitOfWork(tmp_db),
             job_lock=OneJobAtATimeLock(tmp_db),
             tables=ProgSnapCsvReader(),
-            cleaned_submissions=ParquetCleanedSubmissionsStore(),
         )
         return use_case.execute(
             ImportClassroomDatasetDTO(

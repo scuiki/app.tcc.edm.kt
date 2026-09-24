@@ -20,6 +20,9 @@ from api.assignments.infrastructure.repositories.sqlite_assignment_repository im
 from api.assignments.infrastructure.repositories.sqlite_classroom_repository import (
     SqliteClassroomRepository,
 )
+from api.classroom_import.infrastructure.repositories.sqlite_submission_repository import (
+    SqliteSubmissionRepository,
+)
 from api.knowledge_components.domain.entities.kc_generation_job_entity import (
     KnowledgeComponentGenerationJob,
 )
@@ -88,7 +91,7 @@ def _canonical_df() -> pd.DataFrame:
 
 
 def _seed_kc_ready(conn, data_root) -> tuple[int, int]:
-    """turma + assignment trainable + Parquet canônico + kc_job pending. Devolve (aid, job)."""
+    """turma + assignment trainable + dado limpo + kc_job pending. Devolve (aid, job)."""
     created = "2026-06-21T00:00:00Z"
     classroom_id = SqliteClassroomRepository(conn).add(
         Classroom(id=None, name="Turma X", created_at=created)
@@ -104,11 +107,7 @@ def _seed_kc_ready(conn, data_root) -> tuple[int, int]:
             status="ready_for_kc_generation",
         )
     )
-    clean_dir = data_root / "turma-x" / "clean"
-    clean_dir.mkdir(parents=True, exist_ok=True)
-    _canonical_df().to_parquet(
-        clean_dir / f"assignment_{ASSIGNMENT_ID}.parquet", engine="pyarrow", index=False
-    )
+    SqliteSubmissionRepository(conn).add_many(assignment_id, _canonical_df())
     job_id = _jobs(conn).add(
         KnowledgeComponentGenerationJob(
             id=None, assignment_id=assignment_id, status=JobStatus.PENDING, created_at=created

@@ -43,8 +43,8 @@ class _Classrooms:
         return Classroom(id=1, name="Turma X", created_at="t0")
 
 
-class _CleanedSubmissions:
-    def read(self, classroom_slug, progsnap_assignment_id):
+class _Submissions:
+    def list_by_assignment(self, assignment_id):
         return pd.DataFrame({"event_type": ["Run.Program"]})
 
 
@@ -96,7 +96,7 @@ def _use_case(log) -> RunTrainingUseCase:
     return RunTrainingUseCase(
         assignments=_Assignments(log),
         classrooms=_Classrooms(),
-        cleaned_submissions=_CleanedSubmissions(),
+        submissions=_Submissions(),
         trainer=_Trainer(log),
         model_store=_ModelStore(log),
         jobs=_Jobs(log),

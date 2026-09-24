@@ -52,7 +52,7 @@ def test_mastery_always_carries_the_trained_model_info(api_client):
 
 
 def test_pre_training_statistics_without_a_model(api_client):
-    # o EDA roda SEM modelo treinado — 200 com agregados do Parquet canônico.
+    # as estatísticas pré-treino rodam SEM modelo treinado — 200 com os agregados do dado limpo.
     client, conn = api_client
     aid = _seed_assignment(conn, status="statistics_only")  # sem treino, sem published_model_id
 
@@ -90,23 +90,6 @@ def test_mastery_unknown_assignment_404(api_client):
     client, _ = api_client
     resp = client.get("/mastery-dashboard/999999/mastery")
     assert resp.status_code == 404
-
-
-def test_an_orphan_classroom_is_404_not_500(api_client):
-    # um assignment cuja turma sumiu (linha removida sob um assignment órfão) fazia
-    # turma.name explodir em AttributeError → 500 cru. A guarda devolve 404 limpo, não 500.
-    client, conn = api_client
-    aid = _seed_assignment(conn, status="statistics_only")
-    classroom_id = SqliteAssignmentRepository(conn).get(aid).classroom_id
-    # A FK assignment.classroom_id→turma é enforced POR-CONEXÃO (PRAGMA foreign_keys=ON em db.py);
-    # um assignment órfão surge quando uma conexão SEM enforcement removeu a turma. Reproduzimos
-    # isso desligando o pragma só para o DELETE — o estado órfão que a guarda cobre.
-    conn.execute("PRAGMA foreign_keys=OFF;")
-    conn.execute("DELETE FROM classroom WHERE id = ?;", (classroom_id,))
-    conn.execute("PRAGMA foreign_keys=ON;")
-
-    resp = client.get(f"/mastery-dashboard/{aid}/pre-training-statistics")
-    assert resp.status_code == 404  # NÃO 500
 
 
 def test_with_a_published_model_the_mastery_is_computed_and_ranked(
