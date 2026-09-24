@@ -15,6 +15,7 @@ import torch
 from edmkt_core.models.code_dkt import CodeDKTModel
 
 from edmkt_app.persistence.artifacts.versioning import _now_iso, next_version_number
+from edmkt_app.persistence.db import transaction
 
 
 class ArtifactStore:
@@ -161,30 +162,29 @@ class ArtifactStore:
             turma_id, assignment_id, version_number, model, vocab, config
         )
 
-        conn.execute("BEGIN IMMEDIATE;")
         try:
-            cur = conn.execute(
-                "INSERT INTO model_artifact "
-                "(assignment_id, version_number, content_hash, artifact_dir, created_at, "
-                "first_auc, git_commit, data_hash) "
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?);",
-                (
-                    assignment_id,
-                    version_number,
-                    saved["content_hash"],
-                    saved["dir"],
-                    _now_iso(),
-                    first_auc,  # DASH-05: o AUC do treino entra na linha junto do blob (D-05)
-                    # Proveniência (0008): qual código e qual dado produziram esta versão.
-                    git_commit,
-                    data_hash,
-                ),
-            )
-            artifact_id = cur.lastrowid
-            conn.execute("COMMIT;")
+            with transaction(conn):
+                cur = conn.execute(
+                    "INSERT INTO model_artifact "
+                    "(assignment_id, version_number, content_hash, artifact_dir, created_at, "
+                    "first_auc, git_commit, data_hash) "
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?);",
+                    (
+                        assignment_id,
+                        version_number,
+                        saved["content_hash"],
+                        saved["dir"],
+                        _now_iso(),
+                        first_auc,  # DASH-05: o AUC do treino entra na linha junto do blob (D-05)
+                        # Proveniência (0008): qual código e qual dado produziram esta versão.
+                        git_commit,
+                        data_hash,
+                    ),
+                )
+                artifact_id = cur.lastrowid
         except BaseException:
-            conn.execute("ROLLBACK;")
-            # Desfaz o blob do passo 1 para o slot de versão não ficar bloqueado (CR-01).
+            # O transaction() já deu ROLLBACK; aqui se desfaz o blob do passo 1 para o slot de
+            # versão não ficar bloqueado (CR-01).
             vdir = Path(saved["dir"])
             if vdir.exists():
                 shutil.rmtree(vdir)

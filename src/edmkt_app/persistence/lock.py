@@ -14,6 +14,8 @@ import os
 import sqlite3
 from datetime import datetime, timezone
 
+from edmkt_app.persistence.db import transaction
+
 
 def pid_alive(pid: int) -> bool:
     """True se o processo `pid` existe e é acessível (liveness probe via os.kill)."""
@@ -57,21 +59,15 @@ def reclaim_orphan_lock(conn: sqlite3.Connection) -> None:
     para um segundo treino na mesma GPU.
 
     A cláusula de PID no UPDATE mantém a operação atômica: nada de ler-depois-escrever."""
-    conn.execute("BEGIN IMMEDIATE;")
-    try:
+    with transaction(conn):
         row = conn.execute("SELECT holder_pid FROM pipeline_lock WHERE id=1;").fetchone()
         holder = None if row is None else row["holder_pid"]
         if holder is not None and pid_alive(holder):
-            conn.execute("COMMIT;")  # dono vivo: a trava é legítima, não órfã
-            return
+            return  # dono vivo: a trava é legítima, não órfã
         conn.execute(
             "UPDATE pipeline_lock SET holder_pid=NULL, operation=NULL, "
             "job_id=NULL, acquired_at=NULL WHERE id=1;"
         )
-        conn.execute("COMMIT;")
-    except BaseException:
-        conn.execute("ROLLBACK;")
-        raise
 
 
 class PipelineLock:
@@ -93,25 +89,19 @@ class PipelineLock:
         contra TOCTOU (Pitfall 4): pega o write-lock no início, não na 1ª escrita, fechando
         a janela em que outro escritor entraria entre a leitura e o UPDATE."""
         conn = self._conn
-        conn.execute("BEGIN IMMEDIATE;")
-        try:
+        with transaction(conn):
             row = conn.execute(
                 "SELECT holder_pid FROM pipeline_lock WHERE id=1;"
             ).fetchone()
             held = row is not None and row["holder_pid"] is not None
             if held and pid_alive(row["holder_pid"]):
-                conn.execute("ROLLBACK;")  # ocupado por pipeline vivo — caller surfaces "busy"
-                return _DENIED
+                return _DENIED  # ocupado por pipeline vivo — caller surfaces "busy"
             # livre OU dono morto (stale) → tomamos a trava
             conn.execute(
                 "UPDATE pipeline_lock SET holder_pid=?, operation=?, job_id=?, "
                 "acquired_at=? WHERE id=1;",
                 (os.getpid(), operation, job_id, _now_iso()),
             )
-            conn.execute("COMMIT;")
-        except BaseException:
-            conn.execute("ROLLBACK;")
-            raise
         self._held = True
         return self
 
@@ -122,18 +112,12 @@ class PipelineLock:
         de uma trava que já foi roubada por estar stale) zeraria a trava de OUTRO pipeline em
         andamento. A condição no próprio UPDATE mantém a operação atômica.
         """
-        conn = self._conn
-        conn.execute("BEGIN IMMEDIATE;")
-        try:
-            conn.execute(
+        with transaction(self._conn):
+            self._conn.execute(
                 "UPDATE pipeline_lock SET holder_pid=NULL, operation=NULL, "
                 "job_id=NULL, acquired_at=NULL WHERE id=1 AND holder_pid=?;",
                 (os.getpid(),),
             )
-            conn.execute("COMMIT;")
-        except BaseException:
-            conn.execute("ROLLBACK;")
-            raise
         self._held = False
 
     def __bool__(self) -> bool:

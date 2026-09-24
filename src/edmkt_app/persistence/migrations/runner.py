@@ -12,6 +12,8 @@ import pathlib
 import sqlite3
 from typing import Optional
 
+from edmkt_app.persistence.db import transaction
+
 
 def _default_migrations_dir() -> pathlib.Path:
     """The package-local migrations/ folder (where the .sql steps live)."""
@@ -57,14 +59,9 @@ def run_migrations(conn: sqlite3.Connection, migrations_dir: Optional[pathlib.Pa
         version = int(script.name[:4])
         if version <= current:
             continue
-        conn.execute("BEGIN IMMEDIATE;")
-        try:
+        with transaction(conn):
             for stmt in _split_statements(script.read_text()):
                 conn.execute(stmt)
             # `version` is an int derived from the migration FILENAME (internal), never from
             # external input — the one controlled exception to "never interpolate SQL" (V5).
             conn.execute(f"PRAGMA user_version = {version};")
-            conn.execute("COMMIT;")
-        except BaseException:
-            conn.execute("ROLLBACK;")
-            raise
