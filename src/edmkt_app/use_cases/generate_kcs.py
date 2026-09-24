@@ -2,12 +2,10 @@
 
 from __future__ import annotations
 
-import subprocess
-import sys
-
 from pydantic import BaseModel
 
 from edmkt_app import specs
+from edmkt_app.background_jobs import launch_worker
 from edmkt_app.persistence import models
 from edmkt_app.persistence import repositories as repos
 from edmkt_app.persistence.lock import pipeline_busy
@@ -39,18 +37,5 @@ class GenerateKCsUseCase(BaseWriteUseCase):
                 created_at=utc_now_iso(),
             )
         )
-        subprocess.Popen(
-            [
-                sys.executable,
-                "-m",
-                "edmkt_app.kc_pipeline",
-                "--assignment",
-                str(dto.assignment_id),
-                "--job-id",
-                str(job_id),
-            ],
-            stdin=subprocess.DEVNULL,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-        )
+        launch_worker("edmkt_app.kc_pipeline", dto.assignment_id, job_id)
         return {"job_id": job_id, "status": "pending"}

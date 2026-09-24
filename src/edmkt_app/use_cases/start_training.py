@@ -2,12 +2,10 @@
 
 from __future__ import annotations
 
-import subprocess
-import sys
-
 from pydantic import BaseModel
 
 from edmkt_app import specs
+from edmkt_app.background_jobs import launch_worker
 from edmkt_app.persistence import models
 from edmkt_app.persistence import repositories as repos
 from edmkt_app.persistence.lock import pipeline_busy
@@ -41,21 +39,5 @@ class StartTrainingUseCase(BaseWriteUseCase):
                 created_at=utc_now_iso(),
             )
         )
-        # Dispatch list-form, SEM shell=True, ids inteiros validados pelo DTO — nunca
-        # interpolados numa string (T-04-CMD). Retorna sem esperar: o treino roda fora do web.
-        subprocess.Popen(
-            [
-                sys.executable,
-                "-m",
-                "edmkt_app.train",
-                "--assignment",
-                str(dto.assignment_id),
-                "--job-id",
-                str(job_id),
-            ],
-            # IN-03: o filho não herda os fds do web — coordenação é só por SQLite/WAL.
-            stdin=subprocess.DEVNULL,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-        )
+        launch_worker("edmkt_app.train", dto.assignment_id, job_id)
         return {"job_id": job_id, "status": "pending"}
