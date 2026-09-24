@@ -27,6 +27,7 @@ from api.knowledge_components.presentation.workers.kc_generation_worker import r
 from api.shared.domain.value_objects.job_status import JobStatus
 from api.shared.infrastructure import settings
 from tests.fixtures.job_lock import lock_holder_pid
+from tests.fixtures.problems import add_problems
 
 
 # LLMClient falso, devolve o que `respond()` mandar, sem tocar o `claude`.
@@ -100,6 +101,7 @@ def _seed_kc_ready(conn, data_root) -> tuple[int, int]:
             status="ready_for_kc_generation",
         )
     )
+    add_problems(conn, assignment_id, _canonical_df()["problem_id"].unique())
     SqliteSubmissionRepository(conn).add_many(assignment_id, _canonical_df())
     job_id = _jobs(conn).add(
         KnowledgeComponentGenerationJob(
@@ -203,6 +205,23 @@ def test_success_transitions_job_and_acquires_lock(tmp_db, data_root):
     assert asg.status == "kc_draft"  # pipeline conclui em kc_draft
     assert conn.execute("SELECT COUNT(*) FROM kc;").fetchone()[0] >= 1  # KCs persistidos
     assert lock_holder_pid(conn) is None  # release garantido
+
+
+def test_the_description_the_llm_deduces_is_saved_on_each_problem(tmp_db, data_root):
+    conn = tmp_db
+    assignment_id, job_id = _seed_kc_ready(conn, data_root)
+    answer = {
+        "problem_description": "Soma dois números",
+        "kcs": [{"name": "laços", "reasoning": "x"}],
+    }
+    llm = _FakeLLM(lambda: answer)
+
+    run_kc_generation(conn, assignment_id, job_id, llm=llm)
+
+    descriptions = conn.execute(
+        "SELECT DISTINCT description FROM problem WHERE assignment_id = ?;", (assignment_id,)
+    ).fetchall()
+    assert [r[0] for r in descriptions] == ["Soma dois números"]
 
 
 def test_main_resolves_paths_from_env_and_runs_pipeline(tmp_path, monkeypatch):

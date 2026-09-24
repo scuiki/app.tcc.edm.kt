@@ -24,6 +24,7 @@ from api.knowledge_components.infrastructure.repositories.sqlite_qmatrix_reposit
     SqliteQMatrixRepository,
 )
 from api.knowledge_components.presentation.dependencies import KC_GENERATION_WORKER
+from tests.fixtures.problems import add_problems
 
 _NOW = "2026-06-21T00:00:00Z"
 
@@ -52,6 +53,7 @@ def _seed_kc(conn, assignment_id, name, kc_index=None) -> int:
 
 
 def _bind(conn, assignment_id, kc_id, problem_id) -> None:
+    add_problems(conn, assignment_id, [problem_id])
     SqliteQMatrixRepository(conn).add(
         QMatrixBinding(id=None, assignment_id=assignment_id, kc_id=kc_id, problem_id=problem_id)
     )

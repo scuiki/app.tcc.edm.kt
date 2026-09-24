@@ -7,8 +7,13 @@ from pathlib import Path
 import pytest
 
 API = Path(__file__).parent
-FEATURES = sorted(p for p in API.iterdir() if p.is_dir() and (p / "__init__.py").exists())
 LAYERS = ("domain", "application", "infrastructure", "presentation")
+_TOP_FEATURES = [p for p in API.iterdir() if p.is_dir() and (p / "__init__.py").exists()]
+# Sub-funcionalidade (como assignments/problems) é uma pasta com camadas próprias
+FEATURES = sorted(
+    _TOP_FEATURES
+    + [s for f in _TOP_FEATURES for s in f.iterdir() if s.name not in LAYERS and (s / "domain").is_dir()]
+)
 
 ALLOWED_SUBFOLDERS = {
     "domain": {"entities", "value_objects", "interfaces", "rules", "services"},
@@ -47,9 +52,11 @@ def _python_files():
 # Devolve ('domain', 'entities') para domain/entities/x.py, (None, None) fora das camadas.
 def _layer_and_subfolder(path: Path) -> tuple[str | None, str | None]:
     parts = path.relative_to(API).parts
-    if len(parts) < 3 or parts[1] not in LAYERS:
+    layer_index = next((i for i, part in enumerate(parts[:-1]) if part in LAYERS), None)
+    if layer_index is None:
         return None, None
-    return parts[1], (parts[2] if len(parts) > 3 else None)
+    rest = parts[layer_index + 1 :]
+    return parts[layer_index], (rest[0] if len(rest) > 1 else None)
 
 
 def _protocols(path: Path) -> list[str]:
@@ -62,7 +69,7 @@ def _protocols(path: Path) -> list[str]:
     ]
 
 
-@pytest.mark.parametrize("feature", FEATURES, ids=lambda p: p.name)
+@pytest.mark.parametrize("feature", FEATURES, ids=lambda p: str(p.relative_to(API)))
 def test_each_layer_holds_only_its_role_subfolders(feature):
     is_shared = feature.name == "shared"
     for layer in LAYERS:

@@ -103,6 +103,27 @@ O teto contra zip-bomb conta os bytes realmente descomprimidos, porque o tamanho
 compara ids, então um id que voltasse como texto ou um horário sem fuso mudaria a numérica sem
 erro. Por isso o teste do repositório compara com `assert_frame_equal` em dtype estrito.
 
+## Problemas
+
+**A chave de `problem` é (`assignment_id`, `problem_id`).** O `ProblemID` do dataset só é único
+dentro do assignment, e sem um id próprio do banco a `submission` e a `qmatrix` continuaram com o
+`problem_id` que já tinham, sem renumerar nada.
+
+**Quem junta problema e KC é `knowledge_components`.** A chave estrangeira vai da `qmatrix` para
+`problem`, então o problema não sabe quais KCs apontam para ele, e a entidade `Problem` não carrega
+KCs. A rota `/assignments/{assignment_id}/qmatrix` fica na `presentation/` de `problems`, mas a
+lógica dela é um use case de `knowledge_components`. Fazer `problems` buscar os KCs criaria um
+ciclo entre as duas funcionalidades.
+
+**Um KC novo só liga problemas do próprio assignment.** Antes da FK, um `problem_id` qualquer era
+aceito em silêncio. Com ela, viraria um erro do banco (500). A regra recusa o pedido antes, com a
+lista dos problemas que não existem.
+
+**A descrição de cada problema vem do LLM.** O CSEDM não traz enunciado, e na geração de KCs o LLM
+deduz uma descrição a partir das soluções corretas. Ela é gravada junto com os KCs. Os problemas do
+A439 estão sem descrição, porque os KCs dele foram gerados antes da tabela existir, e o cache do LLM
+não guarda o `problem_id` de cada resposta. Só uma nova geração, que gasta cota, preenche.
+
 ## Dashboard
 
 **A matriz de mastery é calculada uma vez por versão.** A versão publicada é resolvida uma vez por

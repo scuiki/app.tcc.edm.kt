@@ -17,6 +17,7 @@ Os nomes seguem o [glossário](GLOSSARY.md).
 |---|---|
 | `api/classrooms/` | `Classroom`, a turma do professor, e o `ClassroomSlug` que vira o diretório dela em `data/` |
 | `api/assignments/` | `Assignment` e o ciclo de `AssignmentStatus`. O assignment pertence a uma turma, e todas as outras funcionalidades dependem dele |
+| `api/assignments/problems/` | `Problem`, os problemas de cada assignment e a descrição que o LLM deduz. É uma sub-funcionalidade de `assignments`, com camadas próprias |
 | `api/classroom_import/` | Upload do ProgSnap2, validação, limpeza, checagem de treinabilidade |
 | `api/knowledge_components/` | Gerar KCs com o LLM, editar e aprovar a Q-matrix |
 | `api/model_training/` | Disparar e acompanhar o treino do Code-DKT, guardar os modelos |
@@ -75,6 +76,13 @@ presentation → application → domain ← infrastructure
 - **Entre funcionalidades, só se importa o `domain/` da outra.** Quando uma funcionalidade precisa
   de infraestrutura de outra (o dashboard precisa carregar o modelo treinado), ela usa uma interface
   declarada no `domain/` da dona, ligada no composition root.
+- **A relação entre duas funcionalidades fica com quem tem a chave estrangeira.** A `qmatrix` aponta
+  para `problem`, então quem junta problema e KC é `knowledge_components`, e não
+  `assignments/problems`. Fazer o contrário andaria contra a seta e criaria um ciclo. Uma rota que
+  mostra as duas coisas juntas pode morar em qualquer uma das duas `presentation/`, que monta peças
+  de outras funcionalidades.
+- **Uma sub-funcionalidade** (como `assignments/problems/`) é uma pasta com as quatro camadas
+  próprias dentro de uma funcionalidade. Para as regras, ela conta como uma funcionalidade à parte.
 
 Essas regras são verificadas pelo `import-linter` (contratos em `pyproject.toml`). Uma violação
 reprova a verificação, então a regra não depende de lembrar dela. As convenções de pasta e de

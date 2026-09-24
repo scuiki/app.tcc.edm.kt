@@ -4,6 +4,7 @@ from __future__ import annotations
 from types import SimpleNamespace
 
 from api.assignments.domain.entities.assignment_entity import Assignment, AssignmentStatus
+from api.assignments.problems.domain.entities.problem_entity import Problem
 from api.knowledge_components.domain.rules.assignment_has_knowledge_components_rule import (
     AssignmentHasKnowledgeComponentsRule,
 )
@@ -13,6 +14,9 @@ from api.knowledge_components.domain.rules.assignment_is_kc_draft_rule import (
 from api.knowledge_components.domain.entities.knowledge_component_entity import KnowledgeComponent
 from api.knowledge_components.domain.rules.knowledge_components_are_distinct_rule import (
     KnowledgeComponentsAreDistinctRule,
+)
+from api.knowledge_components.domain.rules.problems_belong_to_assignment_rule import (
+    ProblemsBelongToAssignmentRule,
 )
 from api.knowledge_components.domain.rules.knowledge_components_belong_to_assignment_rule import (
     KnowledgeComponentsBelongToAssignmentRule,
@@ -87,3 +91,21 @@ def test_only_a_draft_can_be_approved_and_the_refusal_names_the_status():
     )
     assert rule.check(SimpleNamespace(assignment_id=2)) is None
     assert rule.check(SimpleNamespace(assignment_id=99)) is None  # inexistência é NotFound
+
+
+class _InMemoryProblems:
+    def __init__(self, *problems: Problem) -> None:
+        self._problems = problems
+
+    def list_by_assignment(self, assignment_id: int) -> list[Problem]:
+        return [p for p in self._problems if p.assignment_id == assignment_id]
+
+
+def test_a_new_kc_can_only_bind_problems_of_its_assignment():
+    problems = _InMemoryProblems(Problem(7, 1), Problem(7, 2), Problem(8, 3))
+    rule = ProblemsBelongToAssignmentRule(problems)
+
+    assert rule.check(SimpleNamespace(assignment_id=7, problem_ids=[1, 2])) is None
+    assert rule.check(SimpleNamespace(assignment_id=7, problem_ids=[2, 3, 9])) == (
+        "problemas que não existem no assignment [3, 9]"
+    )

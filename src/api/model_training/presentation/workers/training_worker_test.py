@@ -34,6 +34,7 @@ from api.model_training.presentation.workers.training_worker import run_training
 from api.shared.domain.value_objects.job_status import JobStatus
 from ml.reproducibility.code_dkt_hyperparameters import CODE_DKT_HYPERPARAMETERS
 from tests.fixtures.job_lock import lock_holder_pid
+from tests.fixtures.problems import add_problems
 
 ASSIGNMENT_ID = 439
 
@@ -136,9 +137,9 @@ def _seed_approved(conn, data_root, df: pd.DataFrame | None = None) -> tuple[int
             status="kc_approved",
         )
     )
-    SqliteSubmissionRepository(conn).add_many(
-        assignment_id, _canonical_df() if df is None else df
-    )
+    events = _canonical_df() if df is None else df
+    add_problems(conn, assignment_id, events["problem_id"].dropna().unique())
+    SqliteSubmissionRepository(conn).add_many(assignment_id, events)
     job_id = SqliteTrainingJobRepository(conn).add(
         TrainingJob(id=None, assignment_id=assignment_id, status=JobStatus.PENDING, created_at=created)
     )

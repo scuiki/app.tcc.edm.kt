@@ -8,6 +8,7 @@ from pathlib import Path
 from fastapi import FastAPI
 
 from api.assignments.presentation.controllers import assignments_controller
+from api.assignments.problems.presentation.controllers import problems_controller
 from api.classroom_import.presentation.controllers import classroom_import_controller
 from api.knowledge_components.presentation.controllers import knowledge_components_controller
 from api.mastery_dashboard.presentation.controllers import mastery_dashboard_controller
@@ -45,6 +46,7 @@ def create_app() -> FastAPI:
     install_error_handlers(app)
     # Na ordem do fluxo do professor, importar, gerar e aprovar KCs, treinar, acompanhar.
     app.include_router(assignments_controller.router)
+    app.include_router(problems_controller.router)
     app.include_router(classroom_import_controller.router)
     app.include_router(knowledge_components_controller.router)
     app.include_router(training_controller.router)

@@ -43,6 +43,7 @@ from tests.fixtures.sample_data import (
     JAVA_OK_B,
     JAVA_OK_C,
 )
+from tests.fixtures.problems import add_problems
 
 
 @pytest.fixture
@@ -156,6 +157,7 @@ def trained_artifact(tmp_db, data_root, tiny_vocab, tiny_config):
     kc2 = kc_repo.add(
         KnowledgeComponent(id=None, assignment_id=assignment_id, name="Condicionais", group_index=1)
     )
+    add_problems(conn, assignment_id, [1, 2, 3])
     qm_repo = SqliteQMatrixRepository(conn)
     for kc_id, problem_id in [(kc1, 1), (kc1, 3), (kc2, 2), (kc2, 3)]:
         qm_repo.add(
