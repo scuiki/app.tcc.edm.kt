@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 
 import { AtRiskList } from './AtRiskList'
 
-// DASH-03: at_risk_students is string[] of subject_ids (Pitfall 1 — NOT objects). Render as a plain
+// DASH-03: students_at_risk is string[] of student_ids (Pitfall 1 — NOT objects). Render as a plain
 // list; an empty array is an empty list, never a crash.
 
 describe('AtRiskList', () => {

@@ -173,12 +173,12 @@ function MasteryTab({ assignmentId }: { assignmentId: number }) {
     // generous separation. Surfaces are selective (the grid + lists sit on panels; the banner does not).
     <div className="stack-xl">
       {/* DASH-05: the uncertainty frame is ALWAYS rendered above the grid — never suppressed. */}
-      <UncertaintyFrame firstAuc={data.first_auc} trainedAt={data.trained_at} />
+      <UncertaintyFrame firstAuc={data.first_attempt_auc} trainedAt={data.trained_at} />
       <div className="panel">
-        <HeatmapGrid matrix={data.matrix} firstAuc={data.first_auc} />
+        <HeatmapGrid matrix={data.matrix} firstAuc={data.first_attempt_auc} />
       </div>
       <CriticalKCList criticalKcs={data.critical_kcs} />
-      <AtRiskList atRiskStudents={data.at_risk_students} />
+      <AtRiskList atRiskStudents={data.students_at_risk} />
     </div>
   )
 }

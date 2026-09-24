@@ -3,11 +3,11 @@
 // The canonical generator is `npx openapi-typescript http://127.0.0.1:8099/openapi.json`, but the
 // FastAPI app only runs inside the Docker image (container-only isolation: the nitro host is kept
 // clean, no host venv/pip — STATE.md). With no importable uvicorn here, these types are transcribed
-// by hand DIRECTLY from src/edmkt_app/api/dashboard.py — the source of truth, not the UI-SPEC
-// abbreviations. Regenerate from /openapi.json once the api service is up to remove drift.
+// by hand DIRECTLY from the backend DTOs (e.g. src/api/mastery_dashboard/application/
+// mastery_dashboard_dto.py) — the source of truth, not the UI-SPEC abbreviations. Regenerate from /openapi.json once the api service is up to remove drift.
 //
-// Pitfall 1 (RESEARCH): `at_risk_students` is `string[]` (subject_ids), NOT object[]. dashboard.py
-// returns edmkt_core.mastery.at_risk_students(matrix) -> list[str].
+// Pitfall 1 (RESEARCH): `students_at_risk` is `string[]` (student_ids), NOT object[]. The backend
+// returns find_students_at_risk(matrix) -> list[str] (mastery_level.py).
 
 // GET /assignments -> api/assignments/application/list_assignments_dto.py
 export interface AssignmentSummary {
@@ -27,7 +27,7 @@ export interface AssignmentsResponse {
 
 // One student x KC cell of the flattened mastery matrix (DASH-01).
 export interface MasteryCell {
-  subject_id: string;
+  student_id: string;
   kc_id: number;
   mastery: number;
 }
@@ -38,24 +38,24 @@ export interface CriticalKC {
   mean_mastery: number;
 }
 
-// GET /dashboard/mastery/{assignment_id} -> dashboard.py::get_mastery
+// GET /mastery-dashboard/{assignment_id}/mastery -> MasteryResponseDTO
 export interface MasteryResponse {
   assignment_id: number;
   /** DASH-05/D-08 uncertainty frame — null when no model is published (untrained) */
-  first_auc: number | null;
+  first_attempt_auc: number | null;
   /** model_artifact.created_at; null when untrained */
   trained_at: string | null;
   matrix: MasteryCell[];
   critical_kcs: CriticalKC[];
-  /** Pitfall 1: subject_ids as plain strings, not objects (DASH-03) */
-  at_risk_students: string[];
+  /** Pitfall 1: student_ids as plain strings, not objects (DASH-03) */
+  students_at_risk: string[];
 }
 
-// EDA aggregates: dashboard.py serializes dict[int, float]; int keys become JSON string keys.
+// Pre-training statistics: the backend serializes dict[int, float]; int keys become JSON string keys.
 // Each is `{}` when the canonical Parquet is absent (DASH-04, no model needed).
 export type EdaAggregate = Record<string, number>;
 
-// GET /dashboard/eda/{assignment_id} -> dashboard.py::get_eda
+// GET /mastery-dashboard/{assignment_id}/pre-training-statistics -> PreTrainingStatisticsResponseDTO
 export interface EdaResponse {
   assignment_id: number;
   success_rate: EdaAggregate;
@@ -71,7 +71,7 @@ export interface Recommendation {
   text: string;
 }
 
-// GET /dashboard/recommendations/{assignment_id} -> dashboard.py::get_recommendations
+// GET /mastery-dashboard/{assignment_id}/recommendations -> RecommendationsResponseDTO
 export interface RecommendationsResponse {
   assignment_id: number;
   recommendations: Recommendation[];

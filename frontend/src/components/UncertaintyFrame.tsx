@@ -1,5 +1,5 @@
 // Uncertainty frame (DASH-05/D-08): the mastery view's epistemic guardrail. It is derived from two
-// fields present in EVERY mastery response (first_auc, trained_at) and MUST always render — never
+// fields present in EVERY mastery response (first_attempt_auc, trained_at) and MUST always render — never
 // suppressed, never collapsed into a bare number — so an untrained model is never read as a verdict.
 
 import { formatPercent } from '../lib/format'

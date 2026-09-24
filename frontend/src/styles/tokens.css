@@ -16,7 +16,7 @@
   --color-text: #0f172a; /* slate-900 body/headings */
   --color-text-muted: #64748b; /* slate-500 labels, captions, "dados de" timestamp */
 
-  /* --- Mastery band fills (data semantics from edmkt_core.mastery — the only warm color in the UI) ---
+  /* --- Mastery band fills (data semantics from classify_mastery_level — the only warm color in the UI) ---
    * cutoffs: low < 0.40, medium [0.40, 0.70], high > 0.70 */
   --band-low: #dc2626; /* red-600 */
   --band-medium: #f59e0b; /* amber-500 */

@@ -10,7 +10,7 @@ import type { MasteryCell } from '../api/schema'
 
 describe('HeatmapGrid', () => {
   it('bands a 0.30 cell as Baixo with a non-color cue carrying the band word + percent', () => {
-    const matrix: MasteryCell[] = [{ subject_id: 's1', kc_id: 7, mastery: 0.3 }]
+    const matrix: MasteryCell[] = [{ student_id: 's1', kc_id: 7, mastery: 0.3 }]
     render(<HeatmapGrid matrix={matrix} firstAuc={0.76} />)
     const cell = screen.getByRole('gridcell')
     expect(cell).toHaveAttribute('aria-label', expect.stringContaining('Baixo'))
@@ -19,7 +19,7 @@ describe('HeatmapGrid', () => {
   })
 
   it('bands a 0.70 cell as Médio (boundary inclusive)', () => {
-    const matrix: MasteryCell[] = [{ subject_id: 's1', kc_id: 7, mastery: 0.7 }]
+    const matrix: MasteryCell[] = [{ student_id: 's1', kc_id: 7, mastery: 0.7 }]
     render(<HeatmapGrid matrix={matrix} firstAuc={0.76} />)
     expect(screen.getByRole('gridcell')).toHaveAttribute(
       'aria-label',
@@ -28,7 +28,7 @@ describe('HeatmapGrid', () => {
   })
 
   it('bands a 0.90 cell as Alto', () => {
-    const matrix: MasteryCell[] = [{ subject_id: 's1', kc_id: 7, mastery: 0.9 }]
+    const matrix: MasteryCell[] = [{ student_id: 's1', kc_id: 7, mastery: 0.9 }]
     render(<HeatmapGrid matrix={matrix} firstAuc={0.76} />)
     expect(screen.getByRole('gridcell')).toHaveAttribute(
       'aria-label',
@@ -37,14 +37,14 @@ describe('HeatmapGrid', () => {
   })
 
   it('always renders the legend', () => {
-    const matrix: MasteryCell[] = [{ subject_id: 's1', kc_id: 7, mastery: 0.5 }]
+    const matrix: MasteryCell[] = [{ student_id: 's1', kc_id: 7, mastery: 0.5 }]
     render(<HeatmapGrid matrix={matrix} firstAuc={0.76} />)
     expect(
       screen.getByText('Baixo (<40%) · Médio (40–70%) · Alto (>70%)'),
     ).toBeInTheDocument()
   })
 
-  it('renders the untrained empty-state (no gridcells) for matrix=[] + first_auc=null', () => {
+  it('renders the untrained empty-state (no gridcells) for matrix=[] + first_attempt_auc=null', () => {
     render(<HeatmapGrid matrix={[]} firstAuc={null} />)
     expect(
       screen.getByText(

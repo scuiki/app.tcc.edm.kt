@@ -13,7 +13,7 @@ import {
 // empty matrix must never collapse into "zero mastery" (Pitfall 2, the all-red trap).
 
 describe('masteryViewState', () => {
-  it('reports untrained when first_auc is null and the matrix is empty', () => {
+  it('reports untrained when first_attempt_auc is null and the matrix is empty', () => {
     expect(masteryViewState(masteryUntrained)).toBe('untrained')
   })
 

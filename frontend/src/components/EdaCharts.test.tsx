@@ -15,7 +15,7 @@ import type { EdaResponse } from '../api/schema'
 
 // DASH-04: three backend aggregates → success-rate (Bar), learning-curve (Line),
 // compile-error-rate (Bar). An empty ({}) aggregate degrades to the eda empty-state for THAT panel,
-// never a blank canvas (Pitfall 2). EDA is training-independent — it takes no first_auc/model input.
+// never a blank canvas (Pitfall 2). EDA is training-independent — it takes no first_attempt_auc/model input.
 
 function eda(overrides: Partial<EdaResponse> = {}): EdaResponse {
   return {
@@ -60,8 +60,8 @@ describe('EdaCharts', () => {
     expect(screen.getByTestId('chart-line')).toBeInTheDocument()
   })
 
-  it('renders without a model/first_auc input (training-independent) — all {} shows no-data, no chart', () => {
-    // The prop is just the EDA payload: no first_auc, no version id. All-{} → no-data empty-state.
+  it('renders without a model/first_attempt_auc input (training-independent) — all {} shows no-data, no chart', () => {
+    // The prop is just the EDA payload: no first_attempt_auc, no version id. All-{} → no-data empty-state.
     render(<EdaCharts eda={eda()} />)
     expect(screen.queryByTestId('chart-bar')).not.toBeInTheDocument()
     expect(screen.queryByTestId('chart-line')).not.toBeInTheDocument()

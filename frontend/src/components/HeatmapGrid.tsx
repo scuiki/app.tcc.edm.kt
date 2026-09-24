@@ -28,9 +28,9 @@ export function HeatmapGrid({ matrix, firstAuc }: Props) {
     return <EmptyState kind="mastery-untrained" />
   }
 
-  const subjects = [...new Set(matrix.map((c) => c.subject_id))]
+  const subjects = [...new Set(matrix.map((c) => c.student_id))]
   const kcs = [...new Set(matrix.map((c) => c.kc_id))]
-  const cellAt = new Map(matrix.map((c) => [`${c.subject_id}:${c.kc_id}`, c]))
+  const cellAt = new Map(matrix.map((c) => [`${c.student_id}:${c.kc_id}`, c]))
 
   return (
     <div className="stack-lg">

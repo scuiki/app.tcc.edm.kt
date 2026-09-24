@@ -20,7 +20,7 @@ from api.assignments.domain.classroom_entity import Classroom
 from api.assignments.domain.assignment_entity import Assignment
 
 # Fixtures que montam cada funcionalidade com a infraestrutura real (ver tests/fixtures/).
-pytest_plugins = ["tests.fixtures.classroom_import"]
+pytest_plugins = ["tests.fixtures.classroom_import", "tests.fixtures.mastery_dashboard"]
 
 ASSIGNMENT_ID = 439
 
@@ -320,28 +320,34 @@ def api_client(tmp_path, monkeypatch):
 
 # --- Phase 6 mastery fixtures (plan 06-01) ----------------------------------------
 # Cross-cutting Wave 0 dependency: o fixture trained_artifact persiste um CodeDKTModel
-# MINÚSCULO via ArtifactStore (não o tiny_model stand-in — load_version reconstrói um
+# MINÚSCULO via TrainedModelFileStore (não o tiny_model stand-in — load_version reconstrói um
 # CodeDKTModel de verdade), semeia uma Q-matrix determinística (problem→KC) + KCs, e
 # expõe tudo que os planos de mastery-core/API precisam p/ uma matriz aluno×KC
 # determinística. Sintético/hermético: CPU-only, sob tmp_path, NUNCA o CSEDM real.
 
 
 @pytest.fixture
-def trained_artifact(tmp_db, tmp_path, tiny_vocab, tiny_config):
+def trained_artifact(tmp_db, data_root, tiny_vocab, tiny_config):
     """Artefato Code-DKT minúsculo persistido + Q-matrix/KC determinísticos (DASH-01/02/03/05).
 
-    NÃO é treinado: os pesos vêm de seed fixa (seed_all_random_generators), não de um treino real — a
-    matriz aluno×KC daqui é determinística e reproduzível, não um AUC realista (o teste de regressão
-    é o oráculo de numerics). Persiste via ArtifactStore.persist para que load_version
-    (artifacts.py:142) reconstrua o CodeDKTModel com weights_only=True. Q-matrix: 3 problemas
-    (1,2,3) → 2 KCs, com o problema 3 ligado a ambos os KCs, exercitando a média problem→KC.
+    NÃO é treinado: os pesos vêm de semente fixa, não de um treino real; a matriz aluno × KC daqui
+    é determinística, não um AUC realista (o oráculo da numérica é o teste de regressão). Grava pela
+    TrainedModelFileStore real, para a leitura reconstruir o CodeDKTModel com weights_only=True.
+    Q-matrix: 3 problemas → 2 KCs, com o problema 3 ligado aos dois (a média problema → KC).
 
-    Devolve um namespace com: conn (DB migrado), classroom_id, assignment_id (id DB), artifact_id,
-    version_number, artifact_dir, kcs (list[KC] com ids DB), qmatrix (list[QMatrix]) e o store.
+    Devolve um namespace com: conn, classroom_id, assignment_id (id do banco), artifact_id,
+    version_number, artifact_dir, kcs, qmatrix, store, model, vocab e config.
     """
-    from edmkt_app.persistence import models
-    from edmkt_app.persistence import repositories as repos
-    from edmkt_app.persistence.artifacts import ArtifactStore
+    import pandas as pd
+
+    from api.assignments.domain.classroom_slug import ClassroomSlug
+    from api.assignments.domain.progsnap_assignment_id import ProgSnapAssignmentId
+    from api.model_training.domain.code_dkt_trainer import TrainingOutcome
+    from api.model_training.domain.training_dataset import TrainingDataset
+    from api.model_training.infrastructure.sqlite_trained_model_repository import (
+        SqliteTrainedModelRepository,
+    )
+    from api.model_training.infrastructure.trained_model_file_store import TrainedModelFileStore
     from ml.code_dkt.model import CodeDKTModel
     from ml.reproducibility.random_seed import seed_all_random_generators
 
@@ -379,16 +385,24 @@ def trained_artifact(tmp_db, tmp_path, tiny_vocab, tiny_config):
         path_embed_dim=tiny_config["path_embed_dim"],
     )
 
-    # Mesma raiz que train.py/mastery_service montam: DATA_ROOT/<turma_slug>/models. Os testes
-    # apontam DATA_ROOT para tmp_path, e a turma "Turma 6" vira o slug "turma-6".
-    store = ArtifactStore(str(tmp_path / "turma-6" / "models"))
-    persisted = store.persist(conn, classroom_id, assignment_id, model, tiny_vocab, tiny_config)
-    artifact_id = persisted["artifact_id"]
-    # Publica o ponteiro published_model_id — o caminho de leitura do dashboard segue daqui
-    # (assignment.published_model_id → model_artifact → artifact_dir → load_version).
-    from edmkt_app.persistence.artifacts import flip_current
-
-    flip_current(conn, assignment_id, artifact_id)
+    # DATA_ROOT aponta para tmp_path (data_root), e a turma "Turma 6" vira o slug "turma-6".
+    store = TrainedModelFileStore(conn)
+    artifact_id = store.save(
+        TrainingDataset(
+            events=pd.DataFrame(),
+            classroom_slug=ClassroomSlug.from_name("Turma 6"),
+            progsnap_assignment_id=ProgSnapAssignmentId(439),
+            classroom_id=classroom_id,
+        ),
+        assignment_id,
+        TrainingOutcome(
+            model=model, vocab=tiny_vocab, hyperparameters=tiny_config,
+            first_attempt_auc=None, java_parse_rate=1.0,
+        ),
+    )
+    trained_model = SqliteTrainedModelRepository(conn).get(artifact_id)
+    # Publica a versão: é por aqui que o dashboard a encontra.
+    SqliteAssignmentRepository(conn).set_published_model(assignment_id, artifact_id)
 
     # Q-matrix determinística: problemas 1,2,3 → KC1/KC2; o problema 3 liga AMBOS os KCs,
     # forçando a média problem→KC (Pitfall 2: KC-mastery = mean sobre os problemas do KC).
@@ -426,8 +440,9 @@ def trained_artifact(tmp_db, tmp_path, tiny_vocab, tiny_config):
     ns.classroom_id = classroom_id
     ns.assignment_id = assignment_id
     ns.artifact_id = artifact_id
-    ns.version_number = persisted["version_number"]
-    ns.artifact_dir = persisted["dir"]
+    ns.version_number = trained_model.version_number
+    ns.artifact_dir = trained_model.model_dir
+    ns.trained_model = trained_model
     ns.kcs = kcs
     ns.qmatrix = qmatrix
     ns.store = store
