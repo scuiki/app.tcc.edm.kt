@@ -46,9 +46,7 @@ isto precisa funcionar: dados → KCs → Code-DKT treinado → dashboard de mas
 
 ## Stack (o que está construído)
 
-> Esta seção descreve o sistema **como ele é**. O relatório de pesquisa de stack que a
-> precedeu — anterior às decisões tomadas, e divergente delas — segue em
-> `.planning/research/STACK.md` como histórico.
+> Esta seção descreve o sistema **como ele é**.
 
 ### Backend — Python
 
@@ -143,10 +141,6 @@ e a de imports entre funcionalidades estão em `docs/ARCHITECTURE.md` e são ver
 | tdd | Test-driven development with red-green-refactor loop. Use when user wants to build features or fix bugs using TDD, mentions "red-green-refactor", wants integration tests, or asks for test-first development. | `.claude/skills/tdd/SKILL.md` |
 <!-- GSD:skills-end -->
 
-## Planning artifacts
-
-`.planning/` é **histórico**, não estado vivo: registra as decisões e o caminho das Fases 1–6.1
-sob o GSD, que foi desinstalado. Vale como referência de *por que* algo é do jeito que é —
-mas `STATE.md` e `ROADMAP.md` não descrevem mais o presente e não devem ser atualizados.
+## Ritmo de trabalho
 
 Ritmo de trabalho: discutir → planejar → aprovar → executar (ver CLAUDE.md global).

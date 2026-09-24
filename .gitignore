@@ -22,12 +22,11 @@ app.db-wal
 .env.*
 *.egg-info/
 
-# Skills de agente instaladas só nesta máquina (as do projeto ficam em .claude/skills/ versionadas)
+# Configuração e skills de agentes: locais desta máquina, nunca versionadas
+.claude/
 .agents/
 .cursor/
 .windsurf/
-.claude/skills/frontend-design/
-.claude/skills/web-design-guidelines/
 
 # Diagramas de trabalho do schema (ficam no diretório, fora do repositório)
 gen_excalidraw.py
