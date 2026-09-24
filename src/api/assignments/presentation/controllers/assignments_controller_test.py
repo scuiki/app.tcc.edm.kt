@@ -1,4 +1,4 @@
-"""GET /assignments expõe os dois ids de cada assignment: o do banco e o do dataset."""
+# GET /assignments expõe os dois ids de cada assignment, o do banco e o do dataset.
 
 from __future__ import annotations
 

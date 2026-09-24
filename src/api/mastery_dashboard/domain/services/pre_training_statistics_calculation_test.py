@@ -1,4 +1,4 @@
-"""As estatísticas pré-treino saem do dado limpo, sem nenhum modelo."""
+# As estatísticas pré-treino saem do dado limpo, sem nenhum modelo.
 
 from __future__ import annotations
 

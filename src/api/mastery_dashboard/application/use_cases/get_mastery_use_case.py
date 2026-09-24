@@ -1,4 +1,4 @@
-"""A matriz aluno × KC, os KCs críticos e os alunos em risco, com o TrainedModelInfo junto."""
+# A matriz aluno × KC, os KCs críticos e os alunos em risco, com o TrainedModelInfo junto.
 
 from __future__ import annotations
 

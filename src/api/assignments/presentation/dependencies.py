@@ -1,4 +1,4 @@
-"""Composition root de assignments: qual implementação cada use case recebe."""
+# Composition root de assignments; qual implementação cada use case recebe.
 
 from __future__ import annotations
 

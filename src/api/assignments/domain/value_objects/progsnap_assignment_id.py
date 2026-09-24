@@ -1,4 +1,4 @@
-"""ProgSnapAssignmentId: o AssignmentID do dataset (ex.: 439), distinto do id do banco."""
+# ProgSnapAssignmentId, o AssignmentID do dataset (por exemplo 439), distinto do id do banco.
 
 from __future__ import annotations
 
@@ -7,12 +7,7 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class ProgSnapAssignmentId:
-    """AssignmentID do ProgSnap2 — o id do DATASET, não o id do banco.
-
-    Os dois são inteiros e significam coisas diferentes; confundi-los já custou uma consulta
-    manual ao app.db. Como tipo distinto, passar um no lugar do outro deixa de ser um int que passa
-    despercebido.
-    """
+    # AssignmentID do ProgSnap2 (o id do dataset), tipo distinto do id do banco.
 
     value: int
 

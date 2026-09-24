@@ -1,4 +1,4 @@
-"""Assignment: uma lista de exercícios (ex.: A439), a unidade de treino: um modelo por assignment."""
+# Assignment, uma lista de exercícios (por exemplo A439); a unidade de treino é um modelo por ele.
 
 from __future__ import annotations
 
@@ -7,9 +7,9 @@ from enum import StrEnum
 
 
 class AssignmentStatus(StrEnum):
-    """Até onde o assignment chegou. Cada transição tem um único dono (docs/GLOSSARY.md)."""
+    # Até onde o assignment chegou; cada transição tem um único dono.
 
-    # Os first-attempts têm uma classe só: o AUC é indefinido, não dá para treinar.
+    # Os first-attempts têm uma classe só, então o AUC é indefinido e não dá para treinar.
     STATISTICS_ONLY = "statistics_only"
     READY_FOR_KC_GENERATION = "ready_for_kc_generation"
     KC_DRAFT = "kc_draft"  # KCs gerados pelo LLM, aguardando o professor

@@ -1,4 +1,4 @@
-"""StudentMastery: a probabilidade de domínio de um aluno em um KC, segundo uma versão de modelo."""
+# StudentMastery, a probabilidade de domínio de um aluno em um KC, segundo uma versão de modelo.
 
 from __future__ import annotations
 

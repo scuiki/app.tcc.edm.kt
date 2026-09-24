@@ -1,4 +1,4 @@
-"""As estatísticas pré-treino de um assignment: disponíveis desde a importação, sem modelo."""
+# As estatísticas pré-treino de um assignment, disponíveis desde a importação, sem modelo.
 
 from __future__ import annotations
 
@@ -25,9 +25,7 @@ class GetPreTrainingStatisticsUseCase:
 
     def execute(self, assignment_id: int) -> PreTrainingStatisticsResponseDTO:
         get_existing_assignment(self._assignments, assignment_id)
-        # Leem o dado INTEIRO (com Compile.Error): a taxa de erro de compilação depende justamente
-        # do que o recorte de treino remove. Sem dado ainda, estatísticas vazias: a tela resiste à
-        # falta de dado, não só de modelo.
+        # Lê o dado inteiro, com Compile.Error, do qual a taxa de erro de compilação depende.
         submissions = self._submissions.list_by_assignment(assignment_id)
         statistics = (
             PreTrainingStatistics.empty()

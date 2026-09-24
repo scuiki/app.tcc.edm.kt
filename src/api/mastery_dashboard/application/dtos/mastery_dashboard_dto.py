@@ -1,4 +1,4 @@
-"""As respostas de /mastery-dashboard/{assignment_id}/..."""
+# As respostas de /mastery-dashboard/{assignment_id}/...
 
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ class CriticalKnowledgeComponentDTO(BaseModel):
 
 class MasteryResponseDTO(BaseModel):
     assignment_id: int
-    # TrainedModelInfo: sempre presente; None quando não há modelo publicado
+    # TrainedModelInfo sempre presente; None quando não há modelo publicado
     first_attempt_auc: float | None
     trained_at: str | None
     matrix: list[StudentMasteryDTO]

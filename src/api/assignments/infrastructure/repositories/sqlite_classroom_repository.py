@@ -1,4 +1,4 @@
-"""IClassroomRepository sobre SQLite: a turma é a raiz por professor; tudo pende dela."""
+# IClassroomRepository sobre SQLite; a turma é a raiz por professor, tudo pende dela.
 
 from __future__ import annotations
 

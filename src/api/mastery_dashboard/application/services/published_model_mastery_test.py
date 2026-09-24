@@ -1,9 +1,4 @@
-"""PublishedModelMastery com a infraestrutura real (fixtures de tests/fixtures/mastery_dashboard.py).
-
-Pinam: a matriz vem do preditor e é gravada UMA vez por versão; uma falha no meio não deixa matriz
-parcial; a versão é resolvida uma vez (o modelo que prevê é o que chaveia as linhas); e a inferência
-recebe só os eventos Run.Program, o mesmo recorte do treino.
-"""
+# PublishedModelMastery com a infraestrutura real; cobre o cálculo por versão e as falhas parciais.
 
 from __future__ import annotations
 
@@ -11,7 +6,7 @@ import pytest
 
 
 class _SpyPredictor:
-    """Repassa ao preditor real e registra o que ele recebeu."""
+    # Repassa ao preditor real e registra o que ele recebeu.
 
     def __init__(self, real) -> None:
         self._real = real
@@ -83,8 +78,7 @@ def test_a_failure_while_saving_leaves_no_partial_matrix(
     published_model_mastery, published_assignment, sqlite_student_masteries,
     seed_cleaned_submissions, trained_artifact,
 ):
-    # Sem a transação, a 1ª linha já teria sido gravada, e o "calcula uma vez" serviria para sempre
-    # uma matriz truncada como se fosse a completa.
+    # Sem a transação, a 1ª linha já gravada serviria para sempre uma matriz truncada como completa.
     seed_cleaned_submissions()
 
     with pytest.raises(RuntimeError):
@@ -114,8 +108,7 @@ def test_the_version_that_predicts_is_the_version_that_keys_the_rows(
 def test_inference_sees_only_program_runs(
     published_model_mastery, published_assignment, real_mastery_predictor, seed_cleaned_submissions
 ):
-    # Treinar só com Run.Program e depois inferir sobre o dado misto alimentaria o modelo com
-    # eventos que ele nunca viu, e a matriz sairia de outra distribuição que a do AUC exibido.
+    # Inferir sobre dado misto traria eventos que o modelo nunca viu no treino.
     seed_cleaned_submissions(with_compile_errors=True)
     spy = _SpyPredictor(real_mastery_predictor)
 

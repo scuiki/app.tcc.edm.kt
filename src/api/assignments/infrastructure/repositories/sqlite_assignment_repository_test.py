@@ -1,4 +1,4 @@
-"""SqliteAssignmentRepository: ida e volta fiel, estados e o modelo publicado."""
+# SqliteAssignmentRepository, ida e volta fiel, estados e o modelo publicado.
 
 from __future__ import annotations
 

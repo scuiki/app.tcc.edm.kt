@@ -1,8 +1,4 @@
-"""As rotas de /mastery-dashboard: HTTP puro, só leitura.
-
-A única escrita do dashboard é a matriz aluno × KC gravada na primeira leitura, e ela é do use
-case, não daqui. Os ids são int no caminho; nenhum caminho de disco vem do cliente.
-"""
+# As rotas de /mastery-dashboard são HTTP puro e só leitura; a única escrita é do use case.
 
 from __future__ import annotations
 

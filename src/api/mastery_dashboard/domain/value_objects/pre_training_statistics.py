@@ -1,7 +1,4 @@
-"""As estatísticas das submissões disponíveis antes de qualquer treino.
-
-Quem calcula é `services/pre_training_statistics_calculation.py`, direto do dado limpo.
-"""
+# As estatísticas das submissões disponíveis antes de qualquer treino, direto do dado limpo.
 
 from __future__ import annotations
 
@@ -16,5 +13,5 @@ class PreTrainingStatistics:
 
     @classmethod
     def empty(cls) -> "PreTrainingStatistics":
-        """Sem dado limpo ainda: estatísticas vazias, não um erro."""
+        # Sem dado limpo ainda, estatísticas vazias, não um erro.
         return cls(success_rate={}, learning_curve={}, compile_error_rate={})

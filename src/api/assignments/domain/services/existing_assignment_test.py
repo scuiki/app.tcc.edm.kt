@@ -1,4 +1,4 @@
-"""get_existing_assignment: o assignment alvo, ou NotFound (o 404 do use case)."""
+# get_existing_assignment devolve o assignment alvo, ou levanta NotFound (o 404 do use case).
 
 from __future__ import annotations
 

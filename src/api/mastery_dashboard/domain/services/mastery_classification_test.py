@@ -1,4 +1,4 @@
-"""As faixas de mastery, os KCs críticos e os alunos em risco."""
+# As faixas de mastery, os KCs críticos e os alunos em risco.
 
 from __future__ import annotations
 

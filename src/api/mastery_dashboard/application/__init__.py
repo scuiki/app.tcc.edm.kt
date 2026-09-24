@@ -1,1 +1,1 @@
-"""Use cases e DTOs. Só enxergam as interfaces do domínio."""
+# Use cases e DTOs. Só enxergam as interfaces do domínio.

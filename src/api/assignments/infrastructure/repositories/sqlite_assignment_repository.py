@@ -1,4 +1,4 @@
-"""IAssignmentRepository sobre SQLite. Todo SQL é parametrizado; nenhum dado é interpolado."""
+# IAssignmentRepository sobre SQLite. Todo SQL é parametrizado; nenhum dado é interpolado.
 
 from __future__ import annotations
 
@@ -50,7 +50,7 @@ class SqliteAssignmentRepository:
         return None if row is None else _to_entity(row)
 
     def list_all(self) -> list[Assignment]:
-        # Ordenado por id: payload determinístico.
+        # Ordenado por id, para um payload determinístico.
         rows = self._conn.execute(f"SELECT {_COLUMNS} FROM assignment ORDER BY id;").fetchall()
         return [_to_entity(r) for r in rows]
 

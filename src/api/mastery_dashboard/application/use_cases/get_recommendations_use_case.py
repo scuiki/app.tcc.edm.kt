@@ -1,4 +1,4 @@
-"""As recomendações de reforço: os KCs de menor mastery primeiro, com texto em pt-BR e sem LLM."""
+# As recomendações de reforço, os KCs de menor mastery primeiro, com texto em pt-BR e sem LLM.
 
 from __future__ import annotations
 

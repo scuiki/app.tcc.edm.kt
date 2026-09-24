@@ -1,4 +1,4 @@
-"""A interface de persistência das turmas. A implementação SQLite fica na infraestrutura."""
+# A interface de persistência das turmas. A implementação SQLite fica na infraestrutura.
 
 from __future__ import annotations
 

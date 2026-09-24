@@ -1,9 +1,4 @@
-"""As rotas de /mastery-dashboard: formato das respostas, sem modelo e com assignment inexistente.
-
-Pinam que a mastery sempre vem com o TrainedModelInfo (first_attempt_auc + trained_at), que as
-estatísticas pré-treino respondem sem modelo, e que um id inexistente ou uma turma órfã viram 404
-(nunca 500). Herméticos via api_client.
-"""
+# As rotas de /mastery-dashboard, formato das respostas, sem modelo e com assignment inexistente.
 
 from __future__ import annotations
 
@@ -39,7 +34,7 @@ def _seed_assignment(
 
 
 def test_mastery_always_carries_the_trained_model_info(api_client):
-    # a resposta de mastery NUNCA é um veredito cru — carrega first_auc + trained_at.
+    # a resposta de mastery nunca é um veredito cru, carrega first_auc + trained_at.
     client, conn = api_client
     aid = _seed_assignment(conn)
 
@@ -52,14 +47,14 @@ def test_mastery_always_carries_the_trained_model_info(api_client):
 
 
 def test_pre_training_statistics_without_a_model(api_client):
-    # as estatísticas pré-treino rodam SEM modelo treinado — 200 com os agregados do dado limpo.
+    # as estatísticas pré-treino rodam sem modelo treinado, 200 com os agregados do dado limpo.
     client, conn = api_client
     aid = _seed_assignment(conn, status="statistics_only")  # sem treino, sem published_model_id
 
     resp = client.get(f"/mastery-dashboard/{aid}/pre-training-statistics")
     assert resp.status_code == 200
     body = resp.json()
-    # os três agregados DASH-04 estão no payload.
+    # os três agregados de estatísticas pré-treino estão no payload.
     assert "success_rate" in body
     assert "learning_curve" in body
     assert "compile_error_rate" in body
@@ -95,8 +90,7 @@ def test_mastery_unknown_assignment_404(api_client):
 def test_with_a_published_model_the_mastery_is_computed_and_ranked(
     api_client, trained_artifact, seed_cleaned_submissions
 ):
-    # O caminho completo com um modelo de verdade (minúsculo): matriz, KCs críticos e o AUC. O
-    # trained_artifact grava no mesmo app.db (tmp_path) que o api_client serve.
+    # Caminho completo com um modelo de verdade (mínimo), a matriz, os KCs críticos e o AUC juntos.
     client, _ = api_client
     seed_cleaned_submissions()
 

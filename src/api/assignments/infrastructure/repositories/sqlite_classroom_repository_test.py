@@ -1,4 +1,4 @@
-"""SqliteClassroomRepository: ida e volta fiel, e SQL parametrizado."""
+# SqliteClassroomRepository, ida e volta fiel, e SQL parametrizado.
 
 from __future__ import annotations
 

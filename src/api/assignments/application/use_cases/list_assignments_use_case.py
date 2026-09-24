@@ -1,4 +1,4 @@
-"""Lista os assignments para o professor escolher qual acompanhar."""
+# Lista os assignments para o professor escolher qual acompanhar.
 
 from __future__ import annotations
 

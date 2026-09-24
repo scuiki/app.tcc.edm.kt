@@ -1,4 +1,4 @@
-"""A faixa de domínio que o dashboard mostra. Quem classifica é `services/mastery_classification.py`."""
+# A faixa de domínio mostrada no dashboard (baixo, médio, alto).
 
 from __future__ import annotations
 

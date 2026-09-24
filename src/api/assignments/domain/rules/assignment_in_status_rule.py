@@ -1,9 +1,4 @@
-"""Regra: o assignment existe E está num dos status permitidos.
-
-Herdado, não desenho: um assignment inexistente recebe a MESMA mensagem de status errado (409), como
-no contrato original do treino e da geração de KCs. Separar daria 404 para um id inexistente, mais
-correto, mas é uma mudança de contrato a decidir à parte.
-"""
+# Um id inexistente cai na mesma mensagem de status errado (409), por design herdado.
 
 from __future__ import annotations
 

@@ -1,4 +1,4 @@
-"""A interface de persistência da matriz aluno × KC, materializada uma vez por versão de modelo."""
+# A interface de persistência da matriz aluno × KC, materializada uma vez por versão de modelo.
 
 from __future__ import annotations
 

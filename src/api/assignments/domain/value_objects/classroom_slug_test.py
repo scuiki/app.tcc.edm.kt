@@ -1,4 +1,4 @@
-"""ClassroomSlug: o nome arbitrário da turma vira um componente de caminho seguro."""
+# ClassroomSlug transforma o nome arbitrário da turma num componente de caminho seguro.
 
 from __future__ import annotations
 
@@ -13,8 +13,7 @@ def test_classroom_slug_normalizes():
 
 
 def test_classroom_slug_collapses_unsafe_characters():
-    # O nome vem do professor: qualquer coisa fora de [a-z0-9] colapsa em "-", então nenhum
-    # separador de caminho, "..", ou byte exótico sobrevive para virar diretório.
+    # Qualquer caractere fora de [a-z0-9] colapsa em "-", então nada sobrevive para virar diretório.
     slug = str(ClassroomSlug.from_name("../etc/passwd"))
     assert "/" not in slug and ".." not in slug
 
@@ -25,15 +24,12 @@ def test_classroom_slug_falls_back_when_nothing_survives():
 
 
 def test_classroom_slug_is_idempotent():
-    # Idempotente: slugificar um slug devolve ele mesmo, então aplicar duas vezes é inofensivo.
+    # Idempotente, slugificar um slug devolve ele mesmo, então aplicar duas vezes é inofensivo.
     once = ClassroomSlug.from_name("Turma 6")
     twice = ClassroomSlug.from_name(str(once))
     assert str(once) == str(twice)
 
 
 def test_classroom_slug_composes_into_a_path():
-    # Usável direto em `DATA_ROOT / slug` (os.PathLike) — sem str() em cada call site.
+    # Usável direto em `DATA_ROOT / slug` (os.PathLike), sem precisar de str() em cada call site.
     assert Path("data") / ClassroomSlug.from_name("Turma 6") == Path("data/turma-6")
-
-
-# --- CodeStateId: id do ProgSnap2 que vira NOME DE ARQUIVO no cache ------------------------
