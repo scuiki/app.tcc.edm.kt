@@ -23,8 +23,6 @@ from edmkt_app.llm.validation import EmptyContentError, TransientLLMError
 # latência — fecha também a injeção de prompt via código de aluno (T-05-03).
 DISALLOWED_TOOLS = "Bash,Read,Edit,Write,WebSearch,WebFetch,Glob,Grep"
 
-_DEFAULT_MODEL = "claude-haiku-4-5-20251001"  # pin científico (fidelidade TCC 1); não o alias `haiku`
-
 
 def _neutral_cwd() -> str:
     # `claude` carrega o CLAUDE.md do cwd no contexto; rodar dentro do repo inflaria cada chamada
@@ -56,10 +54,13 @@ def call_claude(
     system: str,
     prompt: str,
     schema: dict,
-    model: str = _DEFAULT_MODEL,
+    model: str,
     timeout_s: int = 120,
 ) -> dict:
     """Chama `claude -p` uma vez e devolve a saída estruturada validada por schema.
+
+    `model` é obrigatório: o pin científico é de quem chama (kc_pipeline/settings.MODEL_ID),
+    não deste transporte.
 
     Levanta TransientLLMError em exit≠0 / is_error / subtype≠success (retentável); o conteúdo
     vazio/malformado vira EmptyContentError (falha-dura, NÃO retentável).
@@ -115,7 +116,7 @@ class ClaudeCLIClient:
     transporte (ex.: mock nos testes) é trocar a instância.
     """
 
-    def __init__(self, model: str = _DEFAULT_MODEL, timeout_s: int = 120) -> None:
+    def __init__(self, model: str, timeout_s: int = 120) -> None:
         self._model = model
         self._timeout_s = timeout_s
 
