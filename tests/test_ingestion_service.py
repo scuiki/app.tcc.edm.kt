@@ -17,7 +17,7 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from edmkt_app import settings
+from api.shared.infrastructure import settings
 from edmkt_app.ingestion import clean, service
 from edmkt_app.persistence import repositories as repos
 
@@ -220,7 +220,7 @@ def test_lock_busy_does_not_persist(tmp_db, data_root):
     report = service.ingest(conn, raw, "Turma X", main)
 
     assert report.has_fatal  # relatório "busy" carrega um item fatal
-    assert any(i.check == "pipeline_busy" for i in report.items)
+    assert any(i.check == "is_another_job_running" for i in report.items)
     assert _counts(conn) == (0, 0, 0)
     # A trava do dono vivo NÃO foi tocada por nós.
     assert _holder_pid(conn) == os.getpid()

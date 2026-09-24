@@ -15,12 +15,13 @@ from ml.code_dkt.student_split import split_students_into_train_and_test
 from ml.code_dkt.train_and_evaluate import code_by_snapshot_id, train_and_evaluate
 from ml.reproducibility.random_seed import seed_all_random_generators
 
-from edmkt_app import data_layout, provenance
+from api.shared.infrastructure import data_layout
+from edmkt_app import provenance
 from edmkt_app.features_cache import build_cache_on_disk, parse_rate
 from edmkt_app.modeling_frame import load_modeling_frame
 from edmkt_app.persistence import repositories as repos
 from edmkt_app.persistence.artifacts import ArtifactStore, flip_current
-from edmkt_app.clock import utc_now_iso
+from api.shared.infrastructure.clock import utc_now_iso
 
 
 

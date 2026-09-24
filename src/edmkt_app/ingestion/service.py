@@ -1,7 +1,7 @@
 """Estágio E da ingestão — o ÚNICO módulo impuro: orquestra A→E e persiste atomicamente.
 
 Costura os 4 estágios puros (discover/validate/clean/viability/summary) com a camada de
-persistência da Fase 2 (repos + PipelineLock + Parquet). É aqui que o "validar tudo, depois
+persistência da Fase 2 (repos + OneJobAtATimeLock + Parquet). É aqui que o "validar tudo, depois
 persistir" (D-06) e o "cru preservado + stream limpo normalizado" (D-13) viram comportamento
 observável: pré-voo completo SEM tocar SQLite/Parquet, e só se `not report.has_fatal` a
 persistência acontece.
@@ -16,11 +16,11 @@ from pathlib import Path
 
 import pandas as pd
 
-from edmkt_app import data_layout
+from api.shared.infrastructure import data_layout
 from edmkt_app.ingestion import clean, discover, summary, validate, viability
 from edmkt_app.ingestion.persist import _persist_atomic
 from edmkt_app.ingestion.report import IngestReport, ReportItem
-from edmkt_app.persistence.lock import PipelineLock
+from api.shared.infrastructure.one_job_at_a_time_lock import OneJobAtATimeLock
 
 
 def _empty_report(items: list[ReportItem]) -> IngestReport:
@@ -36,7 +36,7 @@ def _empty_report(items: list[ReportItem]) -> IngestReport:
 def detect_variants(zip_path: Path, turma_slug: str) -> dict:
     """Extrai o `.zip` em data/<turma_slug>/raw/ e devolve as variantes de layout (D-03).
 
-    READ-ONLY do ponto de vista do estado COMPARTILHADO: NÃO adquire a PipelineLock (Lock
+    READ-ONLY do ponto de vista do estado COMPARTILHADO: NÃO adquire a OneJobAtATimeLock (Lock
     Timing) — prendê-la aqui a manteria presa durante a escolha humana de variante. Só escreve
     em data/<turma_slug>/raw/, estado privado deste upload (preserva o cru — D-13). Devolve o
     dict de discover.detect_variants acrescido de `raw_dir` para o caminho de processamento.
@@ -67,19 +67,19 @@ def ingest(
 ) -> IngestReport:
     """Caminho de PROCESSAMENTO: A→E sob a trava, com commit atômico (D-06/D-13/Lock Timing).
 
-    Adquire a PipelineLock AQUI (não na detecção): a trava protege o estado COMPARTILHADO
+    Adquire a OneJobAtATimeLock AQUI (não na detecção): a trava protege o estado COMPARTILHADO
     (SQLite/FS), que só é tocado a partir da persistência. Trava ocupada por dono vivo ⇒
     devolve relatório "busy" sem persistir. Dentro do `with lock:` roda validate → (fatal ⇒
     aborta sem persistir, D-06) → clean → assess_viability → build_summary, depois
     persiste atomicamente. O `with` garante release ao sair, inclusive sob exceção (SC3).
     """
-    lock = PipelineLock(conn).acquire("ingestion", job_id=None)
+    lock = OneJobAtATimeLock(conn).acquire("ingestion", job_id=None)
     if not lock:
-        # _DENIED é falsy ⇒ "pipeline busy"; nada persiste, nenhuma trava setada por nós.
+        # _LOCK_DENIED é falsy ⇒ "pipeline busy"; nada persiste, nenhuma trava setada por nós.
         return _empty_report(
             [
                 ReportItem(
-                    check="pipeline_busy",
+                    check="is_another_job_running",
                     severity="fatal",
                     message="Já existe um processamento em andamento. Aguarde a conclusão e tente novamente.",
                 )

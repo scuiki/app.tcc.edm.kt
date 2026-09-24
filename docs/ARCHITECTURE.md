@@ -49,7 +49,21 @@ presentation → application → domain ← infrastructure
   declarada no `domain/` da dona, ligada no composition root.
 
 Essas regras são verificadas pelo `import-linter` (contratos em `pyproject.toml`). Uma violação
-reprova a verificação, então a regra não depende de lembrar dela.
+reprova a verificação, então a regra não depende de lembrar dela:
+
+```bash
+docker run --rm --security-opt label=disable -v "$PWD":/app -w /app edmkt-core:dev lint-imports
+```
+
+## Transações e regras
+
+- Um use case que grava recebe um `UnitOfWork` (`shared/application/unit_of_work.py`): tudo dentro
+  do `with` é gravado junto, ou nada é. A implementação SQLite fica na infraestrutura.
+- Uma regra de negócio (`shared/domain/business_rule.py`) recebe no construtor as interfaces de
+  repositório de que precisa, e `check(dto)` devolve a mensagem de recusa ou `None`. Os use cases de
+  escrita estendem `WriteUseCase`, que roda todas as regras e acumula as recusas.
+- Os erros do domínio (`NotFound`, `BusinessRuleViolation`, `AnotherJobRunning`) não conhecem HTTP;
+  `shared/presentation/http/error_handlers.py` os traduz para 404 e 409.
 
 ## Nomes
 

@@ -39,6 +39,7 @@ dependencies = [
 dev = [
     "pytest==9.1.1",
     "httpx==0.28.1",  # transport do fastapi.testclient.TestClient
+    "import-linter==2.15",  # verifica a regra de dependência de docs/ARCHITECTURE.md
 ]
 
 [tool.setuptools.packages.find]
@@ -55,3 +56,149 @@ markers = [
 ]
 # importlib: dois *_test.py com o mesmo nome em pastas diferentes não colidem.
 addopts = "-m 'not regression' --import-mode=importlib"
+
+# A regra de dependência de docs/ARCHITECTURE.md, verificada: `lint-imports` (no container).
+[tool.importlinter]
+root_packages = ["api", "ml"]
+include_external_packages = true
+
+[[tool.importlinter.contracts]]
+name = "ml/ é uma biblioteca: não conhece a aplicação"
+type = "forbidden"
+source_modules = ["ml"]
+forbidden_modules = ["api", "fastapi", "sqlite3"]
+
+[[tool.importlinter.contracts]]
+name = "Camadas de cada funcionalidade: presentation > infrastructure > application > domain"
+type = "layers"
+containers = [
+    "api.shared",
+    "api.assignments",
+    "api.classroom_import",
+    "api.knowledge_components",
+    "api.model_training",
+    "api.mastery_dashboard",
+]
+layers = ["presentation", "infrastructure", "application", "domain"]
+exhaustive = false
+
+[[tool.importlinter.contracts]]
+name = "O domínio não depende de framework, banco, disco nem do ml/"
+type = "forbidden"
+source_modules = ["api.*.domain"]
+forbidden_modules = [
+    "api.*.application",
+    "api.*.infrastructure",
+    "api.*.presentation",
+    "fastapi",
+    "sqlite3",
+    "torch",
+    "ml",
+]
+
+[[tool.importlinter.contracts]]
+name = "A aplicação só enxerga as interfaces do domínio"
+type = "forbidden"
+source_modules = ["api.*.application"]
+forbidden_modules = ["api.*.infrastructure", "api.*.presentation", "fastapi", "sqlite3", "torch", "ml"]
+
+[[tool.importlinter.contracts]]
+name = "assignments: de outra funcionalidade, só o domain/ (a presentation/ monta tudo e fica de fora)"
+type = "forbidden"
+source_modules = ["api.assignments.domain", "api.assignments.application", "api.assignments.infrastructure"]
+forbidden_modules = [
+    "api.classroom_import.application",
+    "api.classroom_import.infrastructure",
+    "api.classroom_import.presentation",
+    "api.knowledge_components.application",
+    "api.knowledge_components.infrastructure",
+    "api.knowledge_components.presentation",
+    "api.model_training.application",
+    "api.model_training.infrastructure",
+    "api.model_training.presentation",
+    "api.mastery_dashboard.application",
+    "api.mastery_dashboard.infrastructure",
+    "api.mastery_dashboard.presentation",
+]
+
+[[tool.importlinter.contracts]]
+name = "classroom_import: de outra funcionalidade, só o domain/ (a presentation/ monta tudo e fica de fora)"
+type = "forbidden"
+source_modules = ["api.classroom_import.domain", "api.classroom_import.application", "api.classroom_import.infrastructure"]
+forbidden_modules = [
+    "api.assignments.application",
+    "api.assignments.infrastructure",
+    "api.assignments.presentation",
+    "api.knowledge_components.application",
+    "api.knowledge_components.infrastructure",
+    "api.knowledge_components.presentation",
+    "api.model_training.application",
+    "api.model_training.infrastructure",
+    "api.model_training.presentation",
+    "api.mastery_dashboard.application",
+    "api.mastery_dashboard.infrastructure",
+    "api.mastery_dashboard.presentation",
+]
+
+[[tool.importlinter.contracts]]
+name = "knowledge_components: de outra funcionalidade, só o domain/ (a presentation/ monta tudo e fica de fora)"
+type = "forbidden"
+source_modules = ["api.knowledge_components.domain", "api.knowledge_components.application", "api.knowledge_components.infrastructure"]
+forbidden_modules = [
+    "api.assignments.application",
+    "api.assignments.infrastructure",
+    "api.assignments.presentation",
+    "api.classroom_import.application",
+    "api.classroom_import.infrastructure",
+    "api.classroom_import.presentation",
+    "api.model_training.application",
+    "api.model_training.infrastructure",
+    "api.model_training.presentation",
+    "api.mastery_dashboard.application",
+    "api.mastery_dashboard.infrastructure",
+    "api.mastery_dashboard.presentation",
+]
+
+[[tool.importlinter.contracts]]
+name = "model_training: de outra funcionalidade, só o domain/ (a presentation/ monta tudo e fica de fora)"
+type = "forbidden"
+source_modules = ["api.model_training.domain", "api.model_training.application", "api.model_training.infrastructure"]
+forbidden_modules = [
+    "api.assignments.application",
+    "api.assignments.infrastructure",
+    "api.assignments.presentation",
+    "api.classroom_import.application",
+    "api.classroom_import.infrastructure",
+    "api.classroom_import.presentation",
+    "api.knowledge_components.application",
+    "api.knowledge_components.infrastructure",
+    "api.knowledge_components.presentation",
+    "api.mastery_dashboard.application",
+    "api.mastery_dashboard.infrastructure",
+    "api.mastery_dashboard.presentation",
+]
+
+[[tool.importlinter.contracts]]
+name = "mastery_dashboard: de outra funcionalidade, só o domain/ (a presentation/ monta tudo e fica de fora)"
+type = "forbidden"
+source_modules = ["api.mastery_dashboard.domain", "api.mastery_dashboard.application", "api.mastery_dashboard.infrastructure"]
+forbidden_modules = [
+    "api.assignments.application",
+    "api.assignments.infrastructure",
+    "api.assignments.presentation",
+    "api.classroom_import.application",
+    "api.classroom_import.infrastructure",
+    "api.classroom_import.presentation",
+    "api.knowledge_components.application",
+    "api.knowledge_components.infrastructure",
+    "api.knowledge_components.presentation",
+    "api.model_training.application",
+    "api.model_training.infrastructure",
+    "api.model_training.presentation",
+]
+
+[[tool.importlinter.contracts]]
+name = "shared/ não conhece nenhuma funcionalidade"
+type = "forbidden"
+source_modules = ["api.shared"]
+forbidden_modules = ["api.assignments", "api.classroom_import", "api.knowledge_components", "api.model_training", "api.mastery_dashboard"]

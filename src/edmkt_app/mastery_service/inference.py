@@ -17,7 +17,7 @@ from ml.code_dkt.train_and_evaluate import code_by_snapshot_id, code_snapshot_id
 from ml.code_dkt.prediction import predict_code_dkt
 from ml.code_dkt.student_sequences import build_student_sequences
 
-from edmkt_app import data_layout
+from api.shared.infrastructure import data_layout
 from edmkt_app.features_cache import build_cache_on_disk
 from edmkt_app.modeling_frame import load_modeling_frame
 from edmkt_app.persistence import models

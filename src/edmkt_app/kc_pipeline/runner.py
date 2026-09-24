@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from edmkt_app.background_jobs import run_under_lock
+from api.shared.infrastructure.background_jobs import run_under_lock
 from edmkt_app.kc_pipeline.stages import _kc_body
 from edmkt_app.persistence import repositories as repos
 

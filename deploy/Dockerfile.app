@@ -13,5 +13,8 @@ RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTr
 
 # Container binds 0.0.0.0; the host-side `-p 127.0.0.1:PORT` bind in run-app.sh is the real
 # network gate (nitro-env: never publish a bare port — loopback publish = local-only).
+# ml/ e api/ são importados de src/ (a instalação editável da imagem base é anterior a eles).
+ENV PYTHONPATH=/app/src
+
 EXPOSE 8099
-CMD ["uvicorn", "edmkt_app.api:create_app", "--factory", "--host", "0.0.0.0", "--port", "8099", "--workers", "1"]
+CMD ["uvicorn", "api.main:create_app", "--factory", "--host", "0.0.0.0", "--port", "8099", "--workers", "1"]

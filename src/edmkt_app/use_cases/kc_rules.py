@@ -11,11 +11,8 @@ from __future__ import annotations
 import sqlite3
 from collections.abc import Iterable
 
+from api.shared.domain.errors import BusinessRuleViolation
 from edmkt_app.persistence import repositories as repos
-
-
-class EmptyProblemError(Exception):
-    """A invariante 0-KC seria violada (D-07): levantada DENTRO da txn → ROLLBACK."""
 
 
 def assert_no_empty_problem(
@@ -24,8 +21,9 @@ def assert_no_empty_problem(
     qrepo = repos.QMatrixRepository(conn)
     for problem_id in problems:
         if qrepo.kc_count_for_problem(assignment_id, problem_id) == 0:
-            raise EmptyProblemError(
-                f"problema {problem_id} ficaria com 0 KCs — edição bloqueada (D-07)"
+            # Levantada DENTRO da transação: a exceção é o que faz o ROLLBACK da edição.
+            raise BusinessRuleViolation(
+                [f"problema {problem_id} ficaria com 0 KCs — edição bloqueada (D-07)"]
             )
 
 

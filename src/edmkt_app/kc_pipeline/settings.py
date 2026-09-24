@@ -1,4 +1,4 @@
-"""Constante científica do KC-gen. A raiz de dados vive em `edmkt_app.settings` (compartilhada)."""
+"""Constante científica do KC-gen. A raiz de dados vive em `api.shared.infrastructure.settings`."""
 
 from __future__ import annotations
 

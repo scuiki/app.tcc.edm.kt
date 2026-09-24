@@ -18,7 +18,8 @@ import inspect
 import pandas as pd
 import pytest
 
-from edmkt_app import modeling_frame, settings
+from api.shared.infrastructure import settings
+from edmkt_app import modeling_frame
 from edmkt_app.persistence import models
 from edmkt_app.persistence import repositories as repos
 

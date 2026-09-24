@@ -3,7 +3,7 @@
 Espelha test_train_cli.py: chama `_run_kc_pipeline(conn, assignment_id, job_id)` direto sobre
 `tmp_db` + `data_root` herméticos, com o transporte LLM SEMPRE monkeypatchado (nenhum `claude`
 real, nenhuma cota gasta — T-05-01). Pina as transições de estado do job (pending→running→done),
-a aquisição do PipelineLock como 1º ato (holder_pid setado no corpo, liberado ao sair), e o
+a aquisição do OneJobAtATimeLock como 1º ato (holder_pid setado no corpo, liberado ao sair), e o
 hard-fail de conteúdo (D-04): após falha de conteúdo o job marca `failed` e NADA é persistido
 (sem kc/qmatrix parciais). Asserções pinam ESTADO, não numerics.
 
@@ -18,7 +18,7 @@ import pandas as pd
 import pytest
 
 # RED: o entrypoint CLI do KC ainda não existe (gate da Wave 1/3).
-from edmkt_app import settings  # noqa: E402
+from api.shared.infrastructure import settings  # noqa: E402
 from edmkt_app.kc_pipeline import runner, transport  # noqa: E402
 from edmkt_app.persistence import models
 from edmkt_app.persistence import repositories as repos
@@ -221,7 +221,8 @@ def test_main_resolves_paths_from_env_and_runs_pipeline(tmp_path, monkeypatch):
     # testes acima chamam o runner direto. Um erro em main() mata o processo antes de marcar o
     # job, e o kc_job fica 'pending' para sempre — sem nenhum teste falhar.
     from edmkt_app.kc_pipeline import __main__ as kc_main
-    from edmkt_app.persistence import connect, run_migrations
+    from api.shared.infrastructure.database.migrations.runner import run_migrations
+    from api.shared.infrastructure.database.sqlite_connection import connect
 
     db_path = tmp_path / "app.db"
     run_migrations(connect(str(db_path)))

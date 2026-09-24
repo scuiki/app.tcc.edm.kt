@@ -17,10 +17,11 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 
 from edmkt_app.api.deps import get_conn
 from edmkt_app.api.deps import process_ingestion_uc
-from edmkt_app import settings
+from api.shared.infrastructure import settings
 from edmkt_app.ingestion import service
 from edmkt_app.use_cases.process_ingestion import ProcessIngestionDto, ProcessIngestionUseCase
-from edmkt_app.values import ConfinedPath, TurmaSlug
+from api.shared.infrastructure.confined_path import ConfinedPath
+from edmkt_app.values import TurmaSlug
 
 router = APIRouter(tags=["ingestion"])
 

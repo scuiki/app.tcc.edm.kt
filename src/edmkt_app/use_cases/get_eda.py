@@ -4,10 +4,11 @@ from __future__ import annotations
 
 import sqlite3
 
-from edmkt_app import data_layout
+from api.shared.infrastructure import data_layout
 from edmkt_app import eda as eda_module
 from edmkt_app.persistence import repositories as repos
-from edmkt_app.use_cases.base import NotFound, require_assignment
+from api.shared.domain.errors import NotFound
+from edmkt_app.use_cases.base import require_assignment
 from edmkt_app.values import ProgSnapAssignmentId, TurmaSlug
 
 

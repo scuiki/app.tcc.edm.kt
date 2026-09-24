@@ -11,14 +11,14 @@ from ml.kc_generation.group_naming import name_kc_group
 from ml.kc_generation.kc_grouping import CANDIDATE_GROUP_COUNTS, choose_kc_group_count
 from ml.kc_generation.qmatrix_builder import build_qmatrix
 from ml.kc_generation.solution_sampling import select_sample_solutions
-from edmkt_app import data_layout
+from api.shared.infrastructure import data_layout
 from edmkt_app.kc_pipeline.qmatrix_validation import _validate_qmatrix
 from edmkt_app.kc_pipeline.transport import _CachedLLM
 from edmkt_app.persistence import models
 from edmkt_app.persistence import repositories as repos
-from edmkt_app.persistence.db import transaction
+from api.shared.infrastructure.database.sqlite_connection import transaction
 from edmkt_app.values import ProgSnapAssignmentId, TurmaSlug
-from edmkt_app.clock import utc_now_iso
+from api.shared.infrastructure.clock import utc_now_iso
 
 
 

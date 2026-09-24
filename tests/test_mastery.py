@@ -126,7 +126,7 @@ def test_service_matrix_equals_pure_seam(trained_artifact, tmp_path, monkeypatch
     # o serviço orquestra, não re-implementa a agregação.
     from edmkt_app import mastery_service
     from edmkt_app.mastery_service import inference
-    from edmkt_app import settings
+    from api.shared.infrastructure import settings
     from ml.mastery.mastery_aggregation import aggregate_student_mastery
 
     monkeypatch.setattr(settings, "DATA_ROOT", tmp_path)
@@ -156,7 +156,7 @@ def test_service_persists_compute_once(trained_artifact, tmp_path, monkeypatch):
     # na mastery_prediction keyed ao artifact; a 2ª chamada NÃO recomputa nem duplica.
     from edmkt_app import mastery_service
     from edmkt_app.mastery_service import inference
-    from edmkt_app import settings
+    from api.shared.infrastructure import settings
 
     monkeypatch.setattr(settings, "DATA_ROOT", tmp_path)
     _seed_clean_parquet(trained_artifact, tmp_path)
@@ -187,7 +187,7 @@ def test_persist_failure_leaves_no_partial_cache(trained_artifact, tmp_path, mon
     # sem ela, a 1ª linha já commitou e fica órfã (>=1 linha) — este teste RED pega exatamente isso.
     from edmkt_app import mastery_service
     from edmkt_app.mastery_service import inference
-    from edmkt_app import settings
+    from api.shared.infrastructure import settings
     from edmkt_app.persistence import repositories as repos
 
     monkeypatch.setattr(settings, "DATA_ROOT", tmp_path)
@@ -238,7 +238,7 @@ def test_compute_mastery_resolves_artifact_once(trained_artifact, tmp_path, monk
     # que o modelo carregado (via load_version) seja o MESMO que keya as linhas persistidas.
     from edmkt_app import mastery_service
     from edmkt_app.mastery_service import inference
-    from edmkt_app import settings
+    from api.shared.infrastructure import settings
     from edmkt_app.persistence import models
     from edmkt_app.persistence.artifacts import ArtifactStore
 
@@ -298,7 +298,7 @@ def test_infer_predictions_orphan_turma_raises_valueerror(trained_artifact, tmp_
     # AttributeError opaco. A guarda levanta um ValueError claro ("turma N inexistente").
     from edmkt_app import mastery_service
     from edmkt_app.mastery_service import inference
-    from edmkt_app import settings
+    from api.shared.infrastructure import settings
 
     monkeypatch.setattr(settings, "DATA_ROOT", tmp_path)
     _seed_clean_parquet(trained_artifact, tmp_path)
@@ -323,7 +323,7 @@ def test_inference_stream_excludes_compile_errors(trained_artifact, tmp_path, mo
     """
     from edmkt_app import mastery_service
     from edmkt_app.mastery_service import inference
-    from edmkt_app import settings
+    from api.shared.infrastructure import settings
 
     monkeypatch.setattr(settings, "DATA_ROOT", tmp_path)
     _seed_clean_parquet(trained_artifact, tmp_path, with_compile_errors=True)

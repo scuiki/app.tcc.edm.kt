@@ -17,7 +17,7 @@ import pandas as pd
 import pytest
 import torch
 
-from edmkt_app import settings
+from api.shared.infrastructure import settings
 from edmkt_app.train import runner, stages
 from edmkt_app.persistence import models
 from edmkt_app.persistence import repositories as repos
