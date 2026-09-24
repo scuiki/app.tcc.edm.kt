@@ -21,7 +21,7 @@ def _build_inputs(a439_mini):
     cache = {
         csid: extract_paths_javalang(code)
         for csid, code in zip(
-            a439_mini["CodeStateID"].astype(str), a439_mini["Code"]
+            a439_mini["code_snapshot_id"].astype(str), a439_mini["code"]
         )
     }
     token_to_idx, path_to_idx = build_vocab(cache)
@@ -67,5 +67,5 @@ def test_predict_yields_expected_columns(a439_mini, cpu_device):
     pred_df = predict_code_dkt(
         model, sequences, problem_to_idx, vocab, cache, max_len=50, R=50
     )
-    for col in ("correct", "correct_predictions", "is_first_attempt"):
+    for col in ("is_correct", "predicted_correct_probability", "is_first_attempt"):
         assert col in pred_df.columns

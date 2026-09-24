@@ -59,7 +59,7 @@ def _train_body(conn, assignment_id: int, job_id: int) -> dict:
         train_df,
         config=config,
         test_df=test_df,
-        # Desembrulhado para int: edmkt_core é a camada congelada e compara com df["AssignmentID"]
+        # Desembrulhado para int: edmkt_core é a camada congelada e compara com df["progsnap_assignment_id"]
         # — um VO aqui casaria com zero linhas em silêncio.
         assignment_id=progsnap_aid.value,
         device=device,

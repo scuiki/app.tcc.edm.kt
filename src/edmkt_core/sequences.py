@@ -15,22 +15,22 @@ import pandas as pd
 def build_sequences(df: pd.DataFrame, assignment_id: int) -> list[dict]:
     #Constrói sequências KT por estudante para um assignment específico.
 
-    assign_df = df[df["AssignmentID"] == assignment_id].copy()
+    assign_df = df[df["progsnap_assignment_id"] == assignment_id].copy()
 
     # Ordenar cronologicamente antes de marcar a primeira tentativa
     assign_df = assign_df.sort_values(
-        ["SubjectID", "ServerTimestamp"], kind="stable"
+        ["student_id", "submitted_at"], kind="stable"
     )
 
     # is_first_attempt: primeira ocorrência de (SubjectID, ProblemID) no tempo
     assign_df["is_first_attempt"] = ~assign_df.duplicated(
-        subset=["SubjectID", "ProblemID"], keep="first"
+        subset=["student_id", "problem_id"], keep="first"
     )
 
     sequences = []
-    for subject_id, student_df in assign_df.groupby("SubjectID", sort=True):
+    for subject_id, student_df in assign_df.groupby("student_id", sort=True):
         sequences.append({
-            "subject_id": subject_id,
+            "student_id": subject_id,
             "assignment_id": int(assignment_id),
             "events": student_df.reset_index(drop=True),
         })
@@ -50,7 +50,7 @@ def truncate_sequences(sequences: list[dict], max_len: int = 50) -> list[dict]:
             events = events.iloc[-max_len:].copy()
             events = events.reset_index(drop=True)
         truncated.append({
-            "subject_id": seq["subject_id"],
+            "student_id": seq["student_id"],
             "assignment_id": seq["assignment_id"],
             "events": events,
         })

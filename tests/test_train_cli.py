@@ -44,15 +44,15 @@ _FAST_EPOCHS = 3
 def _row(subject, problem, ts, score, code, csid):
     correct = int(score == 1.0)
     return {
-        "SubjectID": subject,
-        "AssignmentID": ASSIGNMENT_ID,
-        "ProblemID": problem,
-        "CodeStateID": csid,
-        "Code": code,
-        "Score": score,
-        "ServerTimestamp": ts,
-        "EventType": "Run.Program",
-        "correct": correct,
+        "student_id": subject,
+        "progsnap_assignment_id": ASSIGNMENT_ID,
+        "problem_id": problem,
+        "code_snapshot_id": csid,
+        "code": code,
+        "score": score,
+        "submitted_at": ts,
+        "event_type": "Run.Program",
+        "is_correct": correct,
     }
 
 
@@ -66,9 +66,9 @@ def _canonical_df() -> pd.DataFrame:
             ts = base + pd.Timedelta(hours=s) + pd.Timedelta(minutes=step)
             rows.append(_row(f"S{s}", pid, ts, score, body, f"c{s}_{step}"))
     df = pd.DataFrame(rows)
-    df["ServerTimestamp"] = pd.to_datetime(df["ServerTimestamp"], utc=True)
-    df["AssignmentID"] = df["AssignmentID"].astype("Int64")
-    df["ProblemID"] = df["ProblemID"].astype("Int64")
+    df["submitted_at"] = pd.to_datetime(df["submitted_at"], utc=True)
+    df["progsnap_assignment_id"] = df["progsnap_assignment_id"].astype("Int64")
+    df["problem_id"] = df["problem_id"].astype("Int64")
     return df
 
 
@@ -106,14 +106,14 @@ def _canonical_df_with_compile_errors() -> pd.DataFrame:
         for step in range(3):
             ts = base + pd.Timedelta(hours=s) + pd.Timedelta(minutes=30 + step)
             row = _row(f"S{s}", 1, ts, 0.0, "public int oops( { return ;;; }", f"e{s}_{step}")
-            row["EventType"] = "Compile.Error"
-            row["correct"] = 0  # clean.py: correct exige Run.Program AND Score == 1.0
+            row["event_type"] = "Compile.Error"
+            row["is_correct"] = 0  # clean.py: correct exige Run.Program AND Score == 1.0
             broken.append(row)
     out = pd.concat([df, pd.DataFrame(broken)], ignore_index=True)
-    out["ServerTimestamp"] = pd.to_datetime(out["ServerTimestamp"], utc=True)
-    out["AssignmentID"] = out["AssignmentID"].astype("Int64")
-    out["ProblemID"] = out["ProblemID"].astype("Int64")
-    return out.sort_values(["SubjectID", "ServerTimestamp"]).reset_index(drop=True)
+    out["submitted_at"] = pd.to_datetime(out["submitted_at"], utc=True)
+    out["progsnap_assignment_id"] = out["progsnap_assignment_id"].astype("Int64")
+    out["problem_id"] = out["problem_id"].astype("Int64")
+    return out.sort_values(["student_id", "submitted_at"]).reset_index(drop=True)
 
 
 def _seed_trainable(conn, data_root, df: pd.DataFrame | None = None) -> tuple[int, int]:

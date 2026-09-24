@@ -30,4 +30,4 @@ def run_program_only(df: pd.DataFrame) -> pd.DataFrame:
     NÃO altera o DataFrame recebido: o canônico segue inteiro para a EDA, que precisa dos
     compile errors. O índice é reconstruído porque o que consome isto adiante itera por posição.
     """
-    return df[df["EventType"] == submission_events.RUN_PROGRAM].copy().reset_index(drop=True)
+    return df[df["event_type"] == submission_events.RUN_PROGRAM].copy().reset_index(drop=True)

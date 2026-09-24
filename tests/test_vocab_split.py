@@ -42,15 +42,15 @@ _JAVA_OK_C = "public int h(int n) { try { return 10 / n; } catch (Exception e) {
 
 def _row(subject, problem, ts, score, code, csid):
     return {
-        "SubjectID": subject,
-        "ProblemID": problem,
-        "AssignmentID": ASSIGNMENT_ID,
-        "ServerTimestamp": ts,
-        "EventType": "Run.Program",
-        "Score": score,
-        "CodeStateID": csid,
-        "Code": code,
-        "correct": int(score == 1.0),
+        "student_id": subject,
+        "problem_id": problem,
+        "progsnap_assignment_id": ASSIGNMENT_ID,
+        "submitted_at": ts,
+        "event_type": "Run.Program",
+        "score": score,
+        "code_snapshot_id": csid,
+        "code": code,
+        "is_correct": int(score == 1.0),
     }
 
 
@@ -85,17 +85,17 @@ def split_df() -> pd.DataFrame:
     ]
 
     df = pd.DataFrame(rows)
-    df["ServerTimestamp"] = pd.to_datetime(df["ServerTimestamp"], utc=True)
-    df["AssignmentID"] = df["AssignmentID"].astype("Int64")
-    df["ProblemID"] = df["ProblemID"].astype("Int64")
+    df["submitted_at"] = pd.to_datetime(df["submitted_at"], utc=True)
+    df["progsnap_assignment_id"] = df["progsnap_assignment_id"].astype("Int64")
+    df["problem_id"] = df["problem_id"].astype("Int64")
     return df
 
 
 def test_split_by_subject_random_state_1(split_df):
     train_df, test_df = pipeline.split_by_subject(split_df)
 
-    train_students = set(train_df["SubjectID"])
-    test_students = set(test_df["SubjectID"])
+    train_students = set(train_df["student_id"])
+    test_students = set(test_df["student_id"])
 
     # Disjoint by student: no SubjectID leaks across the partition boundary.
     assert train_students.isdisjoint(test_students)
@@ -107,8 +107,8 @@ def test_split_by_subject_random_state_1(split_df):
 
     # Deterministic: re-running with the same random_state reproduces the partition.
     train_df2, test_df2 = pipeline.split_by_subject(split_df)
-    assert set(train_df2["SubjectID"]) == train_students
-    assert set(test_df2["SubjectID"]) == test_students
+    assert set(train_df2["student_id"]) == train_students
+    assert set(test_df2["student_id"]) == test_students
 
     # Default random_state is 1, NOT 42 (Pitfall 3).
     sig = inspect.signature(pipeline.split_by_subject)
@@ -119,14 +119,14 @@ def test_vocab_train_only(split_df):
     train_df, test_df = pipeline.split_by_subject(split_df)
 
     code_states = dict(
-        zip(split_df["CodeStateID"].astype(str), split_df["Code"])
+        zip(split_df["code_snapshot_id"].astype(str), split_df["code"])
     )
     cache_raw = {
         csid: extract_paths_javalang(code) for csid, code in code_states.items()
     }
 
-    train_csids = set(train_df["CodeStateID"].astype(str))
-    test_csids = set(test_df["CodeStateID"].astype(str))
+    train_csids = set(train_df["code_snapshot_id"].astype(str))
+    test_csids = set(test_df["code_snapshot_id"].astype(str))
 
     # Contract by signature: the vocab helper takes only the train cache/csids.
     token_to_idx, path_to_idx = pipeline.build_train_vocab(cache_raw, train_csids)
@@ -153,12 +153,12 @@ def test_oov_positive(split_df):
     train_df, test_df = pipeline.split_by_subject(split_df)
 
     code_states = dict(
-        zip(split_df["CodeStateID"].astype(str), split_df["Code"])
+        zip(split_df["code_snapshot_id"].astype(str), split_df["code"])
     )
     cache_raw = {
         csid: extract_paths_javalang(code) for csid, code in code_states.items()
     }
-    train_csids = set(train_df["CodeStateID"].astype(str))
+    train_csids = set(train_df["code_snapshot_id"].astype(str))
     token_to_idx, path_to_idx = pipeline.build_train_vocab(cache_raw, train_csids)
 
     # Held-out snippet with structure unseen in train (while-loop) -> OOV paths.

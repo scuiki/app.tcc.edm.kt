@@ -14,7 +14,7 @@ def build_problem_index(sequences_all: list[dict]) -> dict[int, int]:
 
     problem_ids: set[int] = set()
     for seq in sequences_all:
-        for pid in seq["events"]["ProblemID"].unique():
+        for pid in seq["events"]["problem_id"].unique():
             problem_ids.add(int(pid))
     return {pid: idx for idx, pid in enumerate(sorted(problem_ids))}
 
@@ -26,8 +26,8 @@ def compute_auc(pred_df: pd.DataFrame, first_attempt_only: bool = False) -> floa
     if first_attempt_only:
         df = df[df["is_first_attempt"] == True]
 
-    df = df.dropna(subset=["correct_predictions"])
-    if len(df) == 0 or df["correct"].nunique() < 2:
+    df = df.dropna(subset=["predicted_correct_probability"])
+    if len(df) == 0 or df["is_correct"].nunique() < 2:
         return np.nan
 
-    return float(roc_auc_score(df["correct"].astype(int), df["correct_predictions"]))
+    return float(roc_auc_score(df["is_correct"].astype(int), df["predicted_correct_probability"]))

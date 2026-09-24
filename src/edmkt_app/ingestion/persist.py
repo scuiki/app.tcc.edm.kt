@@ -52,7 +52,7 @@ def _persist_atomic(
     clean_dir.mkdir(parents=True, exist_ok=True)
     staged: list[tuple[Path, Path]] = []  # (tmp, destino final)
     try:
-        for aid, group in canonical.groupby("AssignmentID", sort=True):
+        for aid, group in canonical.groupby("progsnap_assignment_id", sort=True):
             pq_path = data_layout.cleaned_submissions_path(turma_slug, int(aid))
             tmp_path = pq_path.with_suffix(".parquet.tmp")
             # to_parquet via pyarrow; index=False mantém só as colunas canônicas no arquivo.
@@ -67,7 +67,7 @@ def _persist_atomic(
             assignment_repo = repos.AssignmentRepository(conn)
             submission_repo = repos.SubmissionRepository(conn)
 
-            for aid, group in canonical.groupby("AssignmentID", sort=True):
+            for aid, group in canonical.groupby("progsnap_assignment_id", sort=True):
                 aid_int = int(aid)
                 assignment_id = assignment_repo.insert(
                     models.Assignment(
@@ -86,14 +86,14 @@ def _persist_atomic(
                         models.Submission(
                             id=None,
                             assignment_id=assignment_id,
-                            code_state_id=str(row.CodeStateID),
-                            subject_id=None if pd.isna(row.SubjectID) else str(row.SubjectID),
-                            problem_id=None if pd.isna(row.ProblemID) else int(row.ProblemID),
+                            code_state_id=str(row.code_snapshot_id),
+                            subject_id=None if pd.isna(row.student_id) else str(row.student_id),
+                            problem_id=None if pd.isna(row.problem_id) else int(row.problem_id),
                             # Score REAL cru CONTÍNUO (Pitfall 4) — NUNCA o binário, NUNCA o Code
                             # (o snapshot fica só no Parquet/FS — Information Disclosure T-03-16).
-                            score=None if pd.isna(row.Score) else float(row.Score),
+                            score=None if pd.isna(row.score) else float(row.score),
                             created_at=created_at,
-                            event_type=str(row.EventType),
+                            event_type=str(row.event_type),
                         )
                     )
     except BaseException:

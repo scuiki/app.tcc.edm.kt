@@ -55,12 +55,12 @@ def test_build_code_input_tensor_has_documented_last_dim(a439_mini):
     cache = {
         csid: extract_paths_javalang(code)
         for csid, code in zip(
-            a439_mini["CodeStateID"].astype(str), a439_mini["Code"]
+            a439_mini["code_snapshot_id"].astype(str), a439_mini["code"]
         )
     }
     token_to_idx, path_to_idx = build_vocab(cache)
 
-    problem_ids = sorted(int(p) for p in a439_mini["ProblemID"].unique())
+    problem_ids = sorted(int(p) for p in a439_mini["problem_id"].unique())
     problem_to_idx = {pid: i for i, pid in enumerate(problem_ids)}
     M = len(problem_to_idx)
     R = 50

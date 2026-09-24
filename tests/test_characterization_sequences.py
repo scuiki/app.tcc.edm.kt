@@ -12,7 +12,7 @@ from edmkt_core.sequences import build_sequences, truncate_sequences
 
 def test_build_sequences_returns_one_dict_per_student(a439_mini):
     sequences = build_sequences(a439_mini, 439)
-    subject_ids = {seq["subject_id"] for seq in sequences}
+    subject_ids = {seq["student_id"] for seq in sequences}
     assert subject_ids == {"S1", "S2", "S_long"}
     for seq in sequences:
         assert seq["assignment_id"] == 439
@@ -41,9 +41,9 @@ def test_truncate_first_attempt_counts(a439_mini):
     # where the in-window recompute relabeled global 2nd-occurrences as first attempts.
     # The corrected invariant slices only, so the flag is carried, never recomputed.
     sequences = build_sequences(a439_mini, 439)
-    full = {s["subject_id"]: s["events"]["is_first_attempt"].sum() for s in sequences}
+    full = {s["student_id"]: s["events"]["is_first_attempt"].sum() for s in sequences}
     truncated = truncate_sequences(sequences, max_len=5)
-    trunc = {s["subject_id"]: s["events"]["is_first_attempt"].sum() for s in truncated}
+    trunc = {s["student_id"]: s["events"]["is_first_attempt"].sum() for s in truncated}
 
     # Untruncated students keep their counts unchanged.
     assert trunc["S1"] == full["S1"]

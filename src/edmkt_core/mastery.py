@@ -26,27 +26,27 @@ def classify_band(mastery: float) -> str:
 def build_mastery_matrix(
     pred_df: pd.DataFrame, qmatrix: dict[int, list[int]]
 ) -> dict[tuple[str, int], float]:
-    """student×KC matrix {(subject_id, kc_id): mastery} from predict_code_dkt output + Q-matrix.
+    """student×KC matrix {(student_id, kc_id): mastery} from predict_code_dkt output + Q-matrix.
 
-    A problem's mastery is the LAST `correct_predictions` per (user_id, ProblemID); a KC's mastery
-    is the mean over the problems that KC tags (D-04). `skill_name` is str(ProblemID); the qmatrix
-    keys are int problem ids, so we coerce to int to join the two.
+    A problem's mastery is the LAST `predicted_correct_probability` per (student_id, problem_id);
+    a KC's mastery is the mean over the problems that KC tags (D-04).
     """
     if pred_df.empty:
         return {}
 
-    # Last row wins per (user, problem) — a later attempt overrides an earlier first attempt.
-    last = pred_df.groupby(["user_id", "skill_name"], sort=False)["correct_predictions"].last()
+    # Last row wins per (student, problem) — a later attempt overrides an earlier first attempt.
+    last = pred_df.groupby(["student_id", "problem_id"], sort=False)[
+        "predicted_correct_probability"
+    ].last()
 
     matrix: dict[tuple[str, int], float] = {}
-    # accumulate per (user, kc): list of the problem masteries that KC tags
-    by_user_kc: dict[tuple[str, int], list[float]] = {}
-    for (user_id, skill_name), mastery in last.items():
-        problem_id = int(skill_name)
-        for kc_id in qmatrix.get(problem_id, []):
-            by_user_kc.setdefault((user_id, kc_id), []).append(float(mastery))
+    # accumulate per (student, kc): list of the problem masteries that KC tags
+    by_student_kc: dict[tuple[str, int], list[float]] = {}
+    for (student_id, problem_id), mastery in last.items():
+        for kc_id in qmatrix.get(int(problem_id), []):
+            by_student_kc.setdefault((student_id, kc_id), []).append(float(mastery))
 
-    for key, values in by_user_kc.items():
+    for key, values in by_student_kc.items():
         matrix[key] = sum(values) / len(values)
     return matrix
 

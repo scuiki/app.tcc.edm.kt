@@ -29,18 +29,18 @@ def split_by_subject(
     keep students with >= min_attempts Run.Program events, split the unique student
     set, then partition rows by membership so no SubjectID spans both partitions.
     """
-    run = df[df["EventType"] == "Run.Program"]
-    attempts = run.groupby("SubjectID").size()
+    run = df[df["event_type"] == "Run.Program"]
+    attempts = run.groupby("student_id").size()
     eligible = attempts[attempts >= min_attempts].index
-    df_filtered = df[df["SubjectID"].isin(eligible)]
+    df_filtered = df[df["student_id"].isin(eligible)]
 
-    students = df_filtered["SubjectID"].unique()
+    students = df_filtered["student_id"].unique()
     train_s, test_s = train_test_split(
         students, test_size=test_size, random_state=random_state
     )
 
-    train_df = df_filtered[df_filtered["SubjectID"].isin(train_s)].reset_index(drop=True)
-    test_df = df_filtered[df_filtered["SubjectID"].isin(test_s)].reset_index(drop=True)
+    train_df = df_filtered[df_filtered["student_id"].isin(train_s)].reset_index(drop=True)
+    test_df = df_filtered[df_filtered["student_id"].isin(test_s)].reset_index(drop=True)
     return train_df, test_df
 
 

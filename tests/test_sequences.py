@@ -13,7 +13,7 @@ from edmkt_core.sequences import build_sequences, truncate_sequences
 
 
 def _events_for(sequences, subject_id):
-    return next(s["events"] for s in sequences if s["subject_id"] == subject_id)
+    return next(s["events"] for s in sequences if s["student_id"] == subject_id)
 
 
 def test_first_attempt_immutable(a439_mini):
@@ -24,7 +24,7 @@ def test_first_attempt_immutable(a439_mini):
     # True. The buggy in-window recompute instead flips l5 (P2) and l7 (P1) to True.
     sequences = build_sequences(a439_mini, 439)
     truncated = truncate_sequences(sequences, max_len=5)
-    window = _events_for(truncated, "S_long").set_index("CodeStateID")["is_first_attempt"]
+    window = _events_for(truncated, "S_long").set_index("code_snapshot_id")["is_first_attempt"]
     assert len(window) == 5
     assert bool(window.loc["l5"]) is False  # P2 global-first (l2) outside window
     assert bool(window.loc["l7"]) is False  # P1 global-first (l1) outside window
@@ -37,7 +37,7 @@ def test_truncated_count_le_full(a439_mini):
     truncated = truncate_sequences(sequences, max_len=5)
     for seq in sequences:
         full = seq["events"]["is_first_attempt"].sum()
-        trunc = _events_for(truncated, seq["subject_id"])["is_first_attempt"].sum()
+        trunc = _events_for(truncated, seq["student_id"])["is_first_attempt"].sum()
         assert trunc <= full
 
 
@@ -47,9 +47,9 @@ def test_no_recompute_preserves_column(a439_mini):
     sequences = build_sequences(a439_mini, 439)
     truncated = truncate_sequences(sequences, max_len=5)
     for seq in sequences:
-        full = seq["events"].set_index("CodeStateID")["is_first_attempt"]
-        window = _events_for(truncated, seq["subject_id"])
-        for csid, flag in zip(window["CodeStateID"], window["is_first_attempt"]):
+        full = seq["events"].set_index("code_snapshot_id")["is_first_attempt"]
+        window = _events_for(truncated, seq["student_id"])
+        for csid, flag in zip(window["code_snapshot_id"], window["is_first_attempt"]):
             assert bool(flag) == bool(full.loc[csid])
 
 

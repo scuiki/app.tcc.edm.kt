@@ -1,6 +1,6 @@
 """Shared pytest fixtures for the edmkt_core suite.
 
-The `a439_mini` fixture is a SYNTHETIC, hermetic ProgSnap2-shaped DataFrame (D-11/D-12):
+The `a439_mini` fixture is a SYNTHETIC, hermetic cleaned-events DataFrame (D-11/D-12):
 it is generated in code, never loaded from the real CSEDM, and no test asserts a specific
 AUC against it. The real-data check lives in the regression test against the TCC 1 reference
 run (plan 06, marked `regression`, gated on EDMKT_CSEDM_PATH).
@@ -51,20 +51,37 @@ _JAVA_EMPTY_CLASS = "class C {}"
 
 
 def _row(subject, problem, ts, event, score, code, csid):
-    """One ProgSnap2 event row. `correct` follows the Code-DKT label rule:
-    Run.Program with Score == 1.0 (Compile.Error never counts as correct)."""
-    correct = int(event == "Run.Program" and score == 1.0)
+    """One cleaned event row (glossary column names). `is_correct` follows the Code-DKT label
+    rule: Run.Program with score == 1.0 (Compile.Error never counts as correct)."""
+    is_correct = int(event == "Run.Program" and score == 1.0)
     return {
-        "SubjectID": subject,
-        "ProblemID": problem,
-        "AssignmentID": ASSIGNMENT_ID,
-        "ServerTimestamp": ts,
-        "EventType": event,
-        "Score": score,
-        "CodeStateID": csid,
-        "Code": code,
-        "correct": correct,
+        "student_id": subject,
+        "problem_id": problem,
+        "progsnap_assignment_id": ASSIGNMENT_ID,
+        "submitted_at": ts,
+        "event_type": event,
+        "score": score,
+        "code_snapshot_id": csid,
+        "code": code,
+        "is_correct": is_correct,
     }
+
+
+def _typed(df: pd.DataFrame) -> pd.DataFrame:
+    """The dtypes the cleaned events carry (UTC timestamps, nullable ints for the ids)."""
+    df["submitted_at"] = pd.to_datetime(df["submitted_at"], utc=True)
+    df["progsnap_assignment_id"] = df["progsnap_assignment_id"].astype("Int64")
+    df["problem_id"] = df["problem_id"].astype("Int64")
+    return df
+
+
+def _as_progsnap_upload(cleaned: pd.DataFrame) -> pd.DataFrame:
+    """Cleaned events back to the shape of the teacher's upload: the ProgSnap2 column names and
+    no derived `is_correct`. Input for the tests of the import boundary (ingestion/clean)."""
+    from edmkt_app.ingestion.clean import PROGSNAP_TO_CLEANED_COLUMNS
+
+    to_progsnap = {new: old for old, new in PROGSNAP_TO_CLEANED_COLUMNS.items()}
+    return cleaned.drop(columns=["is_correct"]).rename(columns=to_progsnap)
 
 
 @pytest.fixture
@@ -117,11 +134,13 @@ def a439_mini() -> pd.DataFrame:
     for step, (pid, event, score, code, csid) in enumerate(long_plan):
         rows.append(_row("S_long", pid, ts(2, step), event, score, code, csid))
 
-    df = pd.DataFrame(rows)
-    df["ServerTimestamp"] = pd.to_datetime(df["ServerTimestamp"], utc=True)
-    df["AssignmentID"] = df["AssignmentID"].astype("Int64")
-    df["ProblemID"] = df["ProblemID"].astype("Int64")
-    return df
+    return _typed(pd.DataFrame(rows))
+
+
+@pytest.fixture
+def a439_mini_progsnap(a439_mini) -> pd.DataFrame:
+    """The same events as `a439_mini`, as they arrive in the teacher's ProgSnap2 upload."""
+    return _as_progsnap_upload(a439_mini)
 
 
 @pytest.fixture
@@ -157,6 +176,10 @@ def csedm_main_table() -> pd.DataFrame:
     code_map = dict(zip(code_states["CodeStateID"].astype(str), code_states["Code"].fillna("")))
     df["Code"] = df["CodeStateID"].astype(str).map(code_map).fillna("")
 
+    # Same translation the import applies (ingestion/clean): from here on, glossary names.
+    from edmkt_app.ingestion.clean import PROGSNAP_TO_CLEANED_COLUMNS
+
+    df = df.rename(columns={**PROGSNAP_TO_CLEANED_COLUMNS, "correct": "is_correct"})
     return df.reset_index(drop=True)
 
 
@@ -241,11 +264,7 @@ def ingest_orphan_df() -> tuple[pd.DataFrame, dict[str, str]]:
         _row("S1", 2, "2019-03-01T08:01:00Z", "Run.Program", 0.0, _JAVA_OK_B, "c2"),
         _row("S2", 1, "2019-03-01T08:02:00Z", "Run.Program", 1.0, "", "c_orphan"),  # órfão
     ]
-    df = pd.DataFrame(rows)
-    df["ServerTimestamp"] = pd.to_datetime(df["ServerTimestamp"], utc=True)
-    df["AssignmentID"] = df["AssignmentID"].astype("Int64")
-    df["ProblemID"] = df["ProblemID"].astype("Int64")
-    return df, code_states
+    return _as_progsnap_upload(_typed(pd.DataFrame(rows))), code_states
 
 
 @pytest.fixture
@@ -258,11 +277,7 @@ def ingest_single_class_df() -> pd.DataFrame:
         _row("S2", 1, "2019-03-01T08:01:00Z", "Run.Program", 1.0, _JAVA_OK_A, "c2"),
         _row("S3", 2, "2019-03-01T08:02:00Z", "Run.Program", 1.0, _JAVA_OK_B, "c3"),
     ]
-    df = pd.DataFrame(rows)
-    df["ServerTimestamp"] = pd.to_datetime(df["ServerTimestamp"], utc=True)
-    df["AssignmentID"] = df["AssignmentID"].astype("Int64")
-    df["ProblemID"] = df["ProblemID"].astype("Int64")
-    return df
+    return _typed(pd.DataFrame(rows))
 
 
 @pytest.fixture

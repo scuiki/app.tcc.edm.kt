@@ -127,9 +127,9 @@ def test_parquet_roundtrip_columns_and_score_continuous(tmp_db, data_root):
     # As 9 colunas do seam edmkt_core, exatamente (D-13).
     assert set(back.columns) == set(clean.CANONICAL_COLUMNS)
     # Score contínuo preservado: o 0.5 não foi destruído na binarização (Pitfall 4).
-    assert 0.5 in set(back["Score"].tolist())
+    assert 0.5 in set(back["score"].tolist())
     # Code presente no Parquet (é o snapshot do treino/EDA).
-    assert back["Code"].notna().all()
+    assert back["code"].notna().all()
 
 
 def test_code_absent_from_sqlite_submission(tmp_db, data_root):

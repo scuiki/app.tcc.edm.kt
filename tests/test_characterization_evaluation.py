@@ -18,11 +18,11 @@ def _pred_df():
     # and all-rows AUC differ.
     return pd.DataFrame(
         [
-            {"correct": 1, "is_first_attempt": True, "correct_predictions": 0.9},
-            {"correct": 0, "is_first_attempt": True, "correct_predictions": 0.2},
-            {"correct": 1, "is_first_attempt": True, "correct_predictions": 0.4},
-            {"correct": 0, "is_first_attempt": False, "correct_predictions": 0.8},
-            {"correct": 1, "is_first_attempt": False, "correct_predictions": 0.3},
+            {"is_correct": 1, "is_first_attempt": True, "predicted_correct_probability": 0.9},
+            {"is_correct": 0, "is_first_attempt": True, "predicted_correct_probability": 0.2},
+            {"is_correct": 1, "is_first_attempt": True, "predicted_correct_probability": 0.4},
+            {"is_correct": 0, "is_first_attempt": False, "predicted_correct_probability": 0.8},
+            {"is_correct": 1, "is_first_attempt": False, "predicted_correct_probability": 0.3},
         ]
     )
 
@@ -39,8 +39,8 @@ def test_single_class_input_returns_nan():
     # Only one class present -> roc_auc undefined -> NaN guard.
     df = pd.DataFrame(
         [
-            {"correct": 1, "is_first_attempt": True, "correct_predictions": 0.9},
-            {"correct": 1, "is_first_attempt": True, "correct_predictions": 0.5},
+            {"is_correct": 1, "is_first_attempt": True, "predicted_correct_probability": 0.9},
+            {"is_correct": 1, "is_first_attempt": True, "predicted_correct_probability": 0.5},
         ]
     )
     assert math.isnan(compute_auc(df))
@@ -48,6 +48,6 @@ def test_single_class_input_returns_nan():
 
 def test_empty_input_returns_nan():
     df = pd.DataFrame(
-        {"correct": [], "is_first_attempt": [], "correct_predictions": []}
+        {"is_correct": [], "is_first_attempt": [], "predicted_correct_probability": []}
     )
     assert math.isnan(compute_auc(df))

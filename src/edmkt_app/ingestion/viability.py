@@ -51,25 +51,25 @@ def assess_viability(
     summaries: list[AssignmentSummary] = []
     items: list[ReportItem] = []
 
-    for assignment_id, group in canonical_df.groupby("AssignmentID", sort=True):
+    for assignment_id, group in canonical_df.groupby("progsnap_assignment_id", sort=True):
         reasons: list[str] = []
 
         # Elegibilidade min_attempts>=3 Run.Program por aluno (espelha o núcleo): alunos abaixo
         # do piso não contam como elegíveis, mas a sua presença não derruba o assignment.
-        run = group[group["EventType"] == RUN_PROGRAM]
-        attempts = run.groupby("SubjectID").size()
+        run = group[group["event_type"] == RUN_PROGRAM]
+        attempts = run.groupby("student_id").size()
         eligible = attempts[attempts >= MIN_ATTEMPTS].index
         n_students_eligible = int(len(eligible))
 
-        n_problems = int(group["ProblemID"].nunique())
+        n_problems = int(group["problem_id"].nunique())
         n_submissions = int(len(group))
 
         # both_classes_present: nos first-attempts (primeira ocorrência temporal de cada par
         # SubjectID×ProblemID) precisa haver ≥1 correct==1 E ≥1 correct==0 — sem isso o AUC é
         # indefinido. Ordena por ServerTimestamp e pega a 1ª linha de cada par.
-        ordered = group.sort_values("ServerTimestamp")
-        first_attempts = ordered.drop_duplicates(subset=["SubjectID", "ProblemID"], keep="first")
-        classes = set(first_attempts["correct"].unique())
+        ordered = group.sort_values("submitted_at")
+        first_attempts = ordered.drop_duplicates(subset=["student_id", "problem_id"], keep="first")
+        classes = set(first_attempts["is_correct"].unique())
         both_classes_present = {0, 1}.issubset(classes)
 
         # trainable = both_classes_present — A POLÍTICA RESOLVIDA (D-09). É o ÚNICO bloqueio duro:

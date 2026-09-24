@@ -22,14 +22,14 @@ from edmkt_core.sequences import build_sequences, truncate_sequences
 
 def code_states_from_df(df: pd.DataFrame) -> dict[str, str]:
     """CodeStateID -> Code, last write wins (a CodeStateID maps to one snapshot)."""
-    return dict(zip(df["CodeStateID"].astype(str), df["Code"].fillna("")))
+    return dict(zip(df["code_snapshot_id"].astype(str), df["code"].fillna("")))
 
 
 def code_state_ids(sequences: list[dict]) -> list[str]:
     """Every CodeStateID across the sequences' events, in order (duplicates kept)."""
     out: list[str] = []
     for seq in sequences:
-        out.extend(seq["events"]["CodeStateID"].astype(str).tolist())
+        out.extend(seq["events"]["code_snapshot_id"].astype(str).tolist())
     return out
 
 

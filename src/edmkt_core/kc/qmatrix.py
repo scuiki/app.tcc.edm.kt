@@ -28,5 +28,5 @@ def build_qmatrix(problem_ids, kc_raw: dict, kc_clusters: dict) -> pd.DataFrame:
         rows[problem_id] = row
 
     df = pd.DataFrame.from_dict(rows, orient="index", columns=col_names)
-    df.index.name = "ProblemID"
+    df.index.name = "problem_id"
     return df

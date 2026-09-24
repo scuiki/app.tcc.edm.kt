@@ -44,8 +44,8 @@ def test_success_rate_by_assignment_no_model(canonical_parquet):
     assert 0.0 <= rates[439] <= 1.0
     # invariante de coerência: bate com a média de `correct` nos Run.Program do próprio fixture.
     df = pd.read_parquet(canonical_parquet)
-    runs = df[df["EventType"] == "Run.Program"]
-    assert rates[439] == pytest.approx(runs["correct"].mean())
+    runs = df[df["event_type"] == "Run.Program"]
+    assert rates[439] == pytest.approx(runs["is_correct"].mean())
 
 
 def test_learning_curve_mean_correct_by_attempt(canonical_parquet):
@@ -74,10 +74,10 @@ def test_compile_error_rate_by_assignment(canonical_parquet):
     assert 439 in ce
     assert ce[439] > 0.0  # o fixture tem ao menos um Compile.Error
     df = pd.read_parquet(canonical_parquet)
-    ce_count = (df["EventType"] == "Compile.Error").sum()
-    run_count = (df["EventType"] == "Run.Program").sum()
+    ce_count = (df["event_type"] == "Compile.Error").sum()
+    run_count = (df["event_type"] == "Run.Program").sum()
     expected = ce_count / run_count  # WR-03: denominador são SÓ os Run.Program
     assert ce[439] == pytest.approx(expected)
     # E a métrica corrigida NÃO coincide com a fórmula antiga (mistura de tipos): prova o fix.
-    old_formula = (df["EventType"] == "Compile.Error").mean()
+    old_formula = (df["event_type"] == "Compile.Error").mean()
     assert ce[439] != pytest.approx(old_formula)
