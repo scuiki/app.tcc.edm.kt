@@ -8,11 +8,9 @@ from __future__ import annotations
 
 import multiprocessing as mp
 import random
-from pathlib import Path
 from typing import Optional
 
 import numpy as np
-import pandas as pd
 import torch
 from torch import Tensor
 
@@ -20,16 +18,6 @@ import javalang
 from anytree import Node
 from anytree.search import findall_by_attr
 from anytree.walker import Walker
-
-
-# ---------------------------------------------------------------------------
-# Carregamento de CodeStates
-# ---------------------------------------------------------------------------
-
-def load_code_states(data_dir: Path) -> dict[str, str]:
-    """Carrega CodeStates.csv como dict {CodeStateID: code_string}."""
-    df = pd.read_csv(Path(data_dir) / "CodeStates" / "CodeStates.csv")
-    return dict(zip(df["CodeStateID"].astype(str), df["Code"].fillna("")))
 
 
 # ---------------------------------------------------------------------------

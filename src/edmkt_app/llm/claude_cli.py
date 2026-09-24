@@ -7,8 +7,7 @@ restringe a saída por `--json-schema` e desabilita todo tool, depois parseia
 `anthropic` NUNCA é importado: a auth é a credencial OAuth de subscription resolvida pelo CLI.
 
 A classificação de falhas (`TransientLLMError` vs `EmptyContentError`) e o retry com backoff
-limitado vivem em `validation.py`; reexportados aqui porque os testes importam o contrato inteiro
-deste módulo.
+limitado vivem em `validation.py`.
 """
 
 from __future__ import annotations
@@ -18,12 +17,7 @@ import os
 import subprocess
 import tempfile
 
-from edmkt_app.llm.validation import (
-    EmptyContentError,
-    TransientLLMError,
-    call_with_retry,
-    validate_kc_result,
-)
+from edmkt_app.llm.validation import EmptyContentError, TransientLLMError
 
 # Tarefa de texto pura: sem nenhum tool o LLM não faz I/O (não vaza arquivo/credencial) nem infla
 # latência — fecha também a injeção de prompt via código de aluno (T-05-03).
@@ -134,13 +128,3 @@ class ClaudeCLIClient:
             timeout_s=self._timeout_s,
         )
 
-
-__all__ = [
-    "DISALLOWED_TOOLS",
-    "ClaudeCLIClient",
-    "EmptyContentError",
-    "TransientLLMError",
-    "call_claude",
-    "call_with_retry",
-    "validate_kc_result",
-]

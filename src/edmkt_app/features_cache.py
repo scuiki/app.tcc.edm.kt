@@ -9,7 +9,6 @@ Análogo de `ingestion/service.py` (app embrulha core puro) + `persistence/artif
 from __future__ import annotations
 
 import pickle
-from pathlib import Path
 from typing import Optional
 
 import javalang

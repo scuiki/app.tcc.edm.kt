@@ -44,7 +44,6 @@ class IngestReport:
     items: list[ReportItem]
     dataset_summary: dict  # alunos/assignments/problemas/submissões (INGEST-02)
     per_assignment: list[AssignmentSummary]
-    main_table_preview: list[dict]  # primeiras N linhas cruas da MainTable (INGEST-02)
 
     @property
     def has_fatal(self) -> bool:

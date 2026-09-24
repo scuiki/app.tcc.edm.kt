@@ -9,7 +9,6 @@
 # sequence and carried immutably through truncate_sequences, which now slices only.
 # (The verbatim port recomputed the flag in-window — the +13.6pp inflation bug; fixed.)
 
-from pathlib import Path  # noqa: F401 — retained from source; harmless, kept for verbatim fidelity
 import pandas as pd
 
 

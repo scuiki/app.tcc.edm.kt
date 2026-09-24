@@ -8,12 +8,10 @@ Reexporta o transporte (`call_claude`, `ClaudeCLIClient`), as exceções de clas
 
 from __future__ import annotations
 
-from edmkt_app.llm.claude_cli import (
-    DISALLOWED_TOOLS,
-    ClaudeCLIClient,
+from edmkt_app.llm.claude_cli import DISALLOWED_TOOLS, ClaudeCLIClient, call_claude
+from edmkt_app.llm.validation import (
     EmptyContentError,
     TransientLLMError,
-    call_claude,
     call_with_retry,
     validate_kc_result,
 )
