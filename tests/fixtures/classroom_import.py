@@ -19,8 +19,8 @@ from api.classroom_import.infrastructure.progsnap_csv_reader import ProgSnapCsvR
 from api.classroom_import.infrastructure.sqlite_submission_repository import (
     SqliteSubmissionRepository,
 )
-from api.shared.infrastructure.database.sqlite_unit_of_work import SqliteUnitOfWork
-from api.shared.infrastructure.one_job_at_a_time_lock import OneJobAtATimeLock
+from api.shared.infrastructure.implementations.sqlite_unit_of_work import SqliteUnitOfWork
+from api.shared.infrastructure.implementations.one_job_at_a_time_lock import OneJobAtATimeLock
 
 
 @pytest.fixture

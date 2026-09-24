@@ -24,8 +24,8 @@ from api.knowledge_components.domain.knowledge_component_repository import (
 )
 from api.knowledge_components.domain.qmatrix_binding_entity import QMatrixBinding
 from api.knowledge_components.domain.qmatrix_repository import QMatrixRepository
-from api.shared.application.clock import utc_now_iso
-from api.shared.application.unit_of_work import UnitOfWork
+from api.shared.application.services.clock import utc_now_iso
+from api.shared.application.interfaces.unit_of_work import IUnitOfWork
 
 
 class RunKnowledgeComponentGenerationUseCase:
@@ -38,7 +38,7 @@ class RunKnowledgeComponentGenerationUseCase:
         knowledge_components: KnowledgeComponentRepository,
         qmatrix: QMatrixRepository,
         jobs: KnowledgeComponentGenerationJobRepository,
-        unit_of_work: UnitOfWork,
+        unit_of_work: IUnitOfWork,
     ) -> None:
         self._assignments = assignments
         self._classrooms = classrooms

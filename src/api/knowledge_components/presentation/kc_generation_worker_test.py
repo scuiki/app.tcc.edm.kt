@@ -24,7 +24,7 @@ from api.knowledge_components.infrastructure.sqlite_kc_generation_job_repository
 )
 from api.knowledge_components.presentation import kc_generation_worker
 from api.knowledge_components.presentation.kc_generation_worker import run_kc_generation
-from api.shared.domain.job_status import JobStatus
+from api.shared.domain.value_objects.job_status import JobStatus
 from api.shared.infrastructure import settings
 
 

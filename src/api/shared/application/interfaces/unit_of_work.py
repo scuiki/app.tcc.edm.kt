@@ -9,7 +9,7 @@ from __future__ import annotations
 from typing import Protocol
 
 
-class UnitOfWork(Protocol):
-    def __enter__(self) -> "UnitOfWork": ...
+class IUnitOfWork(Protocol):
+    def __enter__(self) -> "IUnitOfWork": ...
 
     def __exit__(self, exc_type, exc, tb) -> bool | None: ...

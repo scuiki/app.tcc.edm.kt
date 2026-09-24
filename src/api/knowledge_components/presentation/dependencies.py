@@ -45,9 +45,9 @@ from api.knowledge_components.infrastructure.sqlite_knowledge_component_reposito
 from api.knowledge_components.infrastructure.sqlite_qmatrix_repository import (
     SqliteQMatrixRepository,
 )
-from api.shared.infrastructure.background_jobs import SubprocessJobLauncher
-from api.shared.infrastructure.database.sqlite_unit_of_work import SqliteUnitOfWork
-from api.shared.infrastructure.one_job_at_a_time_lock import OneJobAtATimeLock
+from api.shared.infrastructure.implementations.background_jobs import SubprocessJobLauncher
+from api.shared.infrastructure.implementations.sqlite_unit_of_work import SqliteUnitOfWork
+from api.shared.infrastructure.implementations.one_job_at_a_time_lock import OneJobAtATimeLock
 from api.shared.presentation.http.database_session import open_database_session
 
 KC_GENERATION_WORKER = "api.knowledge_components.presentation.kc_generation_worker"

@@ -9,7 +9,9 @@ from __future__ import annotations
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
-from api.shared.domain.errors import AnotherJobRunning, BusinessRuleViolation, NotFound
+from api.shared.domain.errors.another_job_running import AnotherJobRunning
+from api.shared.domain.errors.business_rule_violation import BusinessRuleViolation
+from api.shared.domain.errors.not_found import NotFound
 
 
 def install_error_handlers(app: FastAPI) -> None:

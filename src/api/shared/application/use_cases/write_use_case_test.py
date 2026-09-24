@@ -8,8 +8,8 @@ from __future__ import annotations
 
 import pytest
 
-from api.shared.application.write_use_case import WriteUseCase
-from api.shared.domain.errors import BusinessRuleViolation
+from api.shared.application.use_cases.write_use_case import WriteUseCase
+from api.shared.domain.errors.business_rule_violation import BusinessRuleViolation
 
 
 class _Rule:

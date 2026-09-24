@@ -22,11 +22,11 @@ from typing import Callable, Protocol
 
 from api.shared.infrastructure import settings
 from api.shared.infrastructure.database.sqlite_connection import connect
-from api.shared.infrastructure.one_job_at_a_time_lock import OneJobAtATimeLock
+from api.shared.infrastructure.implementations.one_job_at_a_time_lock import OneJobAtATimeLock
 
 
 class SubprocessJobLauncher:
-    """BackgroundJobLauncher: `python -m <worker_module> --assignment N --job-id J`."""
+    """IBackgroundJobLauncher: `python -m <worker_module> --assignment N --job-id J`."""
 
     def __init__(self, worker_module: str) -> None:
         self._worker_module = worker_module
@@ -76,7 +76,7 @@ def worker_main(
     return 0 if result is not None else 1
 
 
-class _FailableJobRepository(Protocol):
+class _IFailableJobRepository(Protocol):
     def mark_failed(self, job_id: int, error_message: str) -> None: ...
 
 
@@ -84,7 +84,7 @@ def run_under_lock(
     conn: sqlite3.Connection,
     operation: str,
     job_id: int,
-    job_repo: _FailableJobRepository,
+    job_repo: _IFailableJobRepository,
     body: Callable[[], dict],
     describe_failure: Callable[[Exception], str] = str,
 ) -> dict | None:

@@ -33,7 +33,7 @@ from api.classroom_import.presentation.dependencies import (
     upload_classroom_dataset_use_case,
 )
 from api.shared.infrastructure import settings
-from api.shared.infrastructure.confined_path import ConfinedPath
+from api.shared.infrastructure.filesystem.confined_path import ConfinedPath
 
 router = APIRouter(tags=["classroom_import"])
 

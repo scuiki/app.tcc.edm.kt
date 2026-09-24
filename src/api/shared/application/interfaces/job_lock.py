@@ -9,16 +9,16 @@ from __future__ import annotations
 from typing import Protocol
 
 
-class AcquiredJobLock(Protocol):
+class IAcquiredJobLock(Protocol):
     def __bool__(self) -> bool: ...
 
-    def __enter__(self) -> "AcquiredJobLock": ...
+    def __enter__(self) -> "IAcquiredJobLock": ...
 
     def __exit__(self, exc_type, exc, tb) -> bool | None: ...
 
 
-class JobLock(Protocol):
-    def acquire(self, operation: str, job_id: int | None) -> AcquiredJobLock: ...
+class IJobLock(Protocol):
+    def acquire(self, operation: str, job_id: int | None) -> IAcquiredJobLock: ...
 
     def is_another_job_running(self) -> bool:
         """Pré-check barato e NÃO autoritativo, para o web recusar cedo o "ocupado" óbvio.

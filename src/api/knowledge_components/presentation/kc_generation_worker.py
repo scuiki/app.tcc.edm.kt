@@ -17,7 +17,7 @@ from api.knowledge_components.presentation.dependencies import (
     KC_GENERATION_WORKER,
     build_run_kc_generation_use_case,
 )
-from api.shared.infrastructure.background_jobs import run_under_lock, worker_main
+from api.shared.infrastructure.implementations.background_jobs import run_under_lock, worker_main
 
 
 def run_kc_generation(conn: sqlite3.Connection, assignment_id: int, job_id: int, llm=None) -> dict | None:

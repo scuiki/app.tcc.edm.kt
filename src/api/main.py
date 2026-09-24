@@ -22,7 +22,9 @@ from api.mastery_dashboard.presentation import mastery_dashboard_controller
 from api.model_training.presentation import training_controller
 from api.shared.infrastructure.database.migrations.runner import run_migrations
 from api.shared.infrastructure.database.sqlite_connection import connect
-from api.shared.infrastructure.one_job_at_a_time_lock import release_lock_of_dead_holder
+from api.shared.infrastructure.implementations.one_job_at_a_time_lock import (
+    release_lock_of_dead_holder,
+)
 from api.shared.presentation.http.error_handlers import install_error_handlers
 
 

@@ -18,7 +18,7 @@ from api.model_training.presentation.dependencies import (
     TRAINING_WORKER,
     build_run_training_use_case,
 )
-from api.shared.infrastructure.background_jobs import run_under_lock, worker_main
+from api.shared.infrastructure.implementations.background_jobs import run_under_lock, worker_main
 
 
 def describe_training_failure(error: Exception) -> str:

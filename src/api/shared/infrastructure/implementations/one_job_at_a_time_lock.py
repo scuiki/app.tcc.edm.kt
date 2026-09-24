@@ -14,7 +14,7 @@ import os
 import sqlite3
 
 from api.shared.infrastructure.database.sqlite_connection import transaction
-from api.shared.application.clock import utc_now_iso
+from api.shared.application.services.clock import utc_now_iso
 
 
 def is_process_alive(pid: int) -> bool:

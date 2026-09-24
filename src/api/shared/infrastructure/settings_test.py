@@ -47,7 +47,7 @@ def test_a_single_monkeypatch_redirects_every_path(monkeypatch, tmp_path):
     Que ninguém guarde a própria cópia da raiz é o que test_data_root_is_defined_exactly_once
     garante; aqui se prova que data_layout lê a raiz em tempo de chamada, não no import.
     """
-    from api.shared.infrastructure import data_layout
+    from api.shared.infrastructure.filesystem import data_layout
 
     monkeypatch.setattr(settings, "DATA_ROOT", tmp_path)
 

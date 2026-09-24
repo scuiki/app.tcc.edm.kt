@@ -9,5 +9,5 @@ from __future__ import annotations
 from typing import Protocol
 
 
-class BackgroundJobLauncher(Protocol):
+class IBackgroundJobLauncher(Protocol):
     def launch(self, assignment_id: int, job_id: int) -> None: ...

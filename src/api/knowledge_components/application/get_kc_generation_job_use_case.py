@@ -8,7 +8,7 @@ from api.knowledge_components.application.get_kc_generation_job_dto import (
 from api.knowledge_components.domain.kc_generation_job_repository import (
     KnowledgeComponentGenerationJobRepository,
 )
-from api.shared.domain.errors import NotFound
+from api.shared.domain.errors.not_found import NotFound
 
 
 class GetKnowledgeComponentGenerationJobUseCase:

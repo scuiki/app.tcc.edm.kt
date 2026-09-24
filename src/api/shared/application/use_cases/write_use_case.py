@@ -9,12 +9,12 @@ from __future__ import annotations
 
 from typing import Any
 
-from api.shared.domain.business_rule import BusinessRule
-from api.shared.domain.errors import BusinessRuleViolation
+from api.shared.domain.interfaces.business_rule import IBusinessRule
+from api.shared.domain.errors.business_rule_violation import BusinessRuleViolation
 
 
 class WriteUseCase:
-    def rules(self) -> list[BusinessRule]:
+    def rules(self) -> list[IBusinessRule]:
         """As regras que o pedido tem de satisfazer antes de `_run`. Default: nenhuma."""
         return []
 
