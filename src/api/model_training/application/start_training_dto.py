@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pydantic import BaseModel
 
-from api.shared.domain.job_status import JobStatus
+from api.shared.domain.value_objects.job_status import JobStatus
 
 
 class StartTrainingDTO(BaseModel):

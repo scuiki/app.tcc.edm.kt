@@ -12,7 +12,7 @@ from typing import Optional
 
 from ml.code_dkt.ast_paths import extract_ast_paths_for_snapshots
 
-from api.shared.infrastructure import data_layout
+from api.shared.infrastructure.filesystem import data_layout
 from api.model_training.infrastructure.code_snapshot_id import CodeSnapshotId
 from api.assignments.domain.classroom_slug import ClassroomSlug
 

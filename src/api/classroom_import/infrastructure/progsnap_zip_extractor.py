@@ -15,8 +15,8 @@ from pathlib import Path
 
 from api.assignments.domain.classroom_slug import ClassroomSlug
 from api.classroom_import.domain.progsnap_upload import DetectedUpload
-from api.shared.infrastructure import data_layout
-from api.shared.infrastructure.confined_path import ConfinedPath
+from api.shared.infrastructure.filesystem import data_layout
+from api.shared.infrastructure.filesystem.confined_path import ConfinedPath
 
 # Tetos conservadores contra zip-bomb (DoS): o limite exato é detalhe
 # operacional; escolhidos folgados o bastante para um ProgSnap2 real (≈milhares de CodeStates),

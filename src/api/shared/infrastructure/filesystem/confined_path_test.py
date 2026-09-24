@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from api.shared.infrastructure.confined_path import ConfinedPath
+from api.shared.infrastructure.filesystem.confined_path import ConfinedPath
 
 
 def test_confined_path_accepts_a_path_under_the_root(tmp_path):

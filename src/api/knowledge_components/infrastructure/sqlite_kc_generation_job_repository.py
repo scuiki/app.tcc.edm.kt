@@ -7,7 +7,7 @@ import sqlite3
 from api.knowledge_components.domain.kc_generation_job_entity import (
     KnowledgeComponentGenerationJob,
 )
-from api.shared.domain.job_status import JobStatus
+from api.shared.domain.value_objects.job_status import JobStatus
 
 
 class SqliteKnowledgeComponentGenerationJobRepository:

@@ -12,7 +12,7 @@ from api.mastery_dashboard.application.mastery_dashboard_dto import (
     PreTrainingStatisticsResponseDTO,
 )
 from api.mastery_dashboard.domain.pre_training_statistics import PreTrainingStatistics
-from api.shared.domain.errors import NotFound
+from api.shared.domain.errors.not_found import NotFound
 
 
 class GetPreTrainingStatisticsUseCase:

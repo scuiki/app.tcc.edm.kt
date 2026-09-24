@@ -21,10 +21,10 @@ from api.knowledge_components.domain.qmatrix_edit import (
     revert_approval_after_edit,
 )
 from api.knowledge_components.domain.qmatrix_repository import QMatrixRepository
-from api.shared.application.unit_of_work import UnitOfWork
-from api.shared.application.write_use_case import WriteUseCase
-from api.shared.domain.business_rule import BusinessRule
-from api.shared.domain.errors import NotFound
+from api.shared.application.interfaces.unit_of_work import IUnitOfWork
+from api.shared.application.use_cases.write_use_case import WriteUseCase
+from api.shared.domain.interfaces.business_rule import IBusinessRule
+from api.shared.domain.errors.not_found import NotFound
 
 
 class MergeKnowledgeComponentsUseCase(WriteUseCase):
@@ -33,14 +33,14 @@ class MergeKnowledgeComponentsUseCase(WriteUseCase):
         assignments: AssignmentRepository,
         knowledge_components: KnowledgeComponentRepository,
         qmatrix: QMatrixRepository,
-        unit_of_work: UnitOfWork,
+        unit_of_work: IUnitOfWork,
     ) -> None:
         self._assignments = assignments
         self._knowledge_components = knowledge_components
         self._qmatrix = qmatrix
         self._unit_of_work = unit_of_work
 
-    def rules(self) -> list[BusinessRule]:
+    def rules(self) -> list[IBusinessRule]:
         return [
             KnowledgeComponentsAreDistinctRule(),
             KnowledgeComponentsBelongToAssignmentRule(self._knowledge_components),

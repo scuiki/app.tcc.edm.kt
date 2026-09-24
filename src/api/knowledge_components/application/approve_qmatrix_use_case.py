@@ -16,9 +16,9 @@ from api.knowledge_components.domain.assignment_is_kc_draft_rule import Assignme
 from api.knowledge_components.domain.knowledge_component_repository import (
     KnowledgeComponentRepository,
 )
-from api.shared.application.unit_of_work import UnitOfWork
-from api.shared.application.write_use_case import WriteUseCase
-from api.shared.domain.business_rule import BusinessRule
+from api.shared.application.interfaces.unit_of_work import IUnitOfWork
+from api.shared.application.use_cases.write_use_case import WriteUseCase
+from api.shared.domain.interfaces.business_rule import IBusinessRule
 
 
 class ApproveQMatrixUseCase(WriteUseCase):
@@ -26,13 +26,13 @@ class ApproveQMatrixUseCase(WriteUseCase):
         self,
         assignments: AssignmentRepository,
         knowledge_components: KnowledgeComponentRepository,
-        unit_of_work: UnitOfWork,
+        unit_of_work: IUnitOfWork,
     ) -> None:
         self._assignments = assignments
         self._knowledge_components = knowledge_components
         self._unit_of_work = unit_of_work
 
-    def rules(self) -> list[BusinessRule]:
+    def rules(self) -> list[IBusinessRule]:
         return [
             AssignmentIsKcDraftRule(self._assignments),
             AssignmentHasKnowledgeComponentsRule(self._knowledge_components),

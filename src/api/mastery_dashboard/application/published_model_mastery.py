@@ -21,7 +21,7 @@ from api.model_training.domain.student_mastery_predictor import StudentMasteryPr
 from api.model_training.domain.trained_model_entity import TrainedModel
 from api.model_training.domain.trained_model_repository import TrainedModelRepository
 from api.model_training.domain.training_dataset import load_training_dataset
-from api.shared.application.unit_of_work import UnitOfWork
+from api.shared.application.interfaces.unit_of_work import IUnitOfWork
 
 
 class PublishedModelMastery:
@@ -34,7 +34,7 @@ class PublishedModelMastery:
         qmatrix: QMatrixRepository,
         student_masteries: StudentMasteryRepository,
         predictor: StudentMasteryPredictor,
-        unit_of_work: UnitOfWork,
+        unit_of_work: IUnitOfWork,
     ) -> None:
         self._assignments = assignments
         self._classrooms = classrooms

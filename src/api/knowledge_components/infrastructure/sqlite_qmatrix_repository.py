@@ -1,4 +1,4 @@
-"""QMatrixRepository sobre SQLite. Nenhum método abre transação: roda na UnitOfWork de quem chama."""
+"""QMatrixRepository sobre SQLite. Nenhum método abre transação: roda na IUnitOfWork de quem chama."""
 
 from __future__ import annotations
 

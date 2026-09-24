@@ -12,5 +12,5 @@ from __future__ import annotations
 from typing import Any, Protocol
 
 
-class BusinessRule(Protocol):
+class IBusinessRule(Protocol):
     def check(self, dto: Any) -> str | None: ...

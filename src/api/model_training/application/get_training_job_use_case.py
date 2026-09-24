@@ -7,7 +7,7 @@ from api.model_training.domain.training_epoch_metric_repository import (
     TrainingEpochMetricRepository,
 )
 from api.model_training.domain.training_job_repository import TrainingJobRepository
-from api.shared.domain.errors import NotFound
+from api.shared.domain.errors.not_found import NotFound
 
 
 class GetTrainingJobUseCase:

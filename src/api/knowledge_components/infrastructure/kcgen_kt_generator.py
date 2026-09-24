@@ -18,7 +18,7 @@ from api.knowledge_components.domain.knowledge_component_generator import (
     GeneratedKnowledgeComponents,
 )
 from api.knowledge_components.infrastructure.llm_response_cache import CachedLLMClient
-from api.shared.infrastructure import data_layout
+from api.shared.infrastructure.filesystem import data_layout
 from ml.kc_generation.candidate_generation import generate_candidate_kcs
 from ml.kc_generation.group_naming import name_kc_group
 from ml.kc_generation.kc_grouping import (

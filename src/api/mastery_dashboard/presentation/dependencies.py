@@ -39,7 +39,7 @@ from api.model_training.infrastructure.sqlite_trained_model_repository import (
     SqliteTrainedModelRepository,
 )
 from api.model_training.infrastructure.trained_model_file_store import TrainedModelFileStore
-from api.shared.infrastructure.database.sqlite_unit_of_work import SqliteUnitOfWork
+from api.shared.infrastructure.implementations.sqlite_unit_of_work import SqliteUnitOfWork
 from api.shared.presentation.http.database_session import open_database_session
 
 

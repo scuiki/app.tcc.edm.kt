@@ -12,7 +12,7 @@ from collections.abc import Iterable
 from api.assignments.domain.assignment_entity import AssignmentStatus
 from api.assignments.domain.assignment_repository import AssignmentRepository
 from api.knowledge_components.domain.qmatrix_repository import QMatrixRepository
-from api.shared.domain.errors import BusinessRuleViolation
+from api.shared.domain.errors.business_rule_violation import BusinessRuleViolation
 
 
 def ensure_every_problem_keeps_a_kc(

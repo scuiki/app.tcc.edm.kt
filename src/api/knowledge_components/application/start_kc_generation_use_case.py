@@ -15,13 +15,13 @@ from api.knowledge_components.domain.kc_generation_job_entity import (
 from api.knowledge_components.domain.kc_generation_job_repository import (
     KnowledgeComponentGenerationJobRepository,
 )
-from api.shared.application.background_job_launcher import BackgroundJobLauncher
-from api.shared.application.clock import utc_now_iso
-from api.shared.application.job_lock import JobLock
-from api.shared.application.write_use_case import WriteUseCase
-from api.shared.domain.business_rule import BusinessRule
-from api.shared.domain.errors import AnotherJobRunning
-from api.shared.domain.job_status import JobStatus
+from api.shared.application.interfaces.background_job_launcher import IBackgroundJobLauncher
+from api.shared.application.services.clock import utc_now_iso
+from api.shared.application.interfaces.job_lock import IJobLock
+from api.shared.application.use_cases.write_use_case import WriteUseCase
+from api.shared.domain.interfaces.business_rule import IBusinessRule
+from api.shared.domain.errors.another_job_running import AnotherJobRunning
+from api.shared.domain.value_objects.job_status import JobStatus
 
 
 class StartKnowledgeComponentGenerationUseCase(WriteUseCase):
@@ -29,15 +29,15 @@ class StartKnowledgeComponentGenerationUseCase(WriteUseCase):
         self,
         assignments: AssignmentRepository,
         jobs: KnowledgeComponentGenerationJobRepository,
-        job_lock: JobLock,
-        launcher: BackgroundJobLauncher,
+        job_lock: IJobLock,
+        launcher: IBackgroundJobLauncher,
     ) -> None:
         self._assignments = assignments
         self._jobs = jobs
         self._job_lock = job_lock
         self._launcher = launcher
 
-    def rules(self) -> list[BusinessRule]:
+    def rules(self) -> list[IBusinessRule]:
         # Gera KCs sobre um assignment com as duas classes e ainda sem rascunho.
         return [
             AssignmentInStatusRule(

@@ -5,7 +5,7 @@ from __future__ import annotations
 import sqlite3
 
 from api.model_training.domain.training_job_entity import TrainingJob
-from api.shared.domain.job_status import JobStatus
+from api.shared.domain.value_objects.job_status import JobStatus
 
 
 class SqliteTrainingJobRepository:

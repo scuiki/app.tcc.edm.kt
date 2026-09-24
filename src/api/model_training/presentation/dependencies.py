@@ -25,9 +25,9 @@ from api.model_training.infrastructure.sqlite_training_job_repository import (
     SqliteTrainingJobRepository,
 )
 from api.model_training.infrastructure.trained_model_file_store import TrainedModelFileStore
-from api.shared.infrastructure.background_jobs import SubprocessJobLauncher
-from api.shared.infrastructure.database.sqlite_unit_of_work import SqliteUnitOfWork
-from api.shared.infrastructure.one_job_at_a_time_lock import OneJobAtATimeLock
+from api.shared.infrastructure.implementations.background_jobs import SubprocessJobLauncher
+from api.shared.infrastructure.implementations.sqlite_unit_of_work import SqliteUnitOfWork
+from api.shared.infrastructure.implementations.one_job_at_a_time_lock import OneJobAtATimeLock
 from api.shared.presentation.http.database_session import open_database_session
 
 TRAINING_WORKER = "api.model_training.presentation.training_worker"

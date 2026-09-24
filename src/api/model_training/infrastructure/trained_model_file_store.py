@@ -24,9 +24,9 @@ from api.model_training.infrastructure import model_provenance
 from api.model_training.infrastructure.sqlite_trained_model_repository import (
     SqliteTrainedModelRepository,
 )
-from api.shared.application.clock import utc_now_iso
-from api.shared.infrastructure import data_layout
-from api.shared.infrastructure.confined_path import ConfinedPath
+from api.shared.application.services.clock import utc_now_iso
+from api.shared.infrastructure.filesystem import data_layout
+from api.shared.infrastructure.filesystem.confined_path import ConfinedPath
 from api.shared.infrastructure.database.sqlite_connection import transaction
 from ml.code_dkt.model import CodeDKTModel
 

@@ -17,8 +17,8 @@ from api.model_training.domain.training_epoch_metric_repository import (
     TrainingEpochMetricRepository,
 )
 from api.model_training.domain.training_job_repository import TrainingJobRepository
-from api.shared.application.clock import utc_now_iso
-from api.shared.application.unit_of_work import UnitOfWork
+from api.shared.application.services.clock import utc_now_iso
+from api.shared.application.interfaces.unit_of_work import IUnitOfWork
 
 
 class RunTrainingUseCase:
@@ -31,7 +31,7 @@ class RunTrainingUseCase:
         model_store: TrainedModelStore,
         jobs: TrainingJobRepository,
         epoch_metrics: TrainingEpochMetricRepository,
-        unit_of_work: UnitOfWork,
+        unit_of_work: IUnitOfWork,
     ) -> None:
         self._assignments = assignments
         self._classrooms = classrooms

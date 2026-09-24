@@ -6,7 +6,7 @@ import pytest
 
 from api.assignments.domain.assignment_entity import Assignment
 from api.assignments.domain.existing_assignment import get_existing_assignment
-from api.shared.domain.errors import NotFound
+from api.shared.domain.errors.not_found import NotFound
 
 
 class _InMemoryAssignments:

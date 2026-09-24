@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from api.assignments.domain.assignment_entity import Assignment
 from api.assignments.domain.assignment_repository import AssignmentRepository
-from api.shared.domain.errors import NotFound
+from api.shared.domain.errors.not_found import NotFound
 
 
 def get_existing_assignment(repository: AssignmentRepository, assignment_id: int) -> Assignment:

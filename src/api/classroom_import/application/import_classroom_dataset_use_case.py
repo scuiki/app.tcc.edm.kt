@@ -31,11 +31,11 @@ from api.classroom_import.domain.submission_cleaning import clean_submissions
 from api.classroom_import.domain.submission_entity import Submission
 from api.classroom_import.domain.submission_repository import SubmissionRepository
 from api.classroom_import.domain.trainability_check import check_assignment_trainability
-from api.shared.application.clock import utc_now_iso
-from api.shared.application.job_lock import JobLock
-from api.shared.application.unit_of_work import UnitOfWork
-from api.shared.application.write_use_case import WriteUseCase
-from api.shared.domain.business_rule import BusinessRule
+from api.shared.application.services.clock import utc_now_iso
+from api.shared.application.interfaces.job_lock import IJobLock
+from api.shared.application.interfaces.unit_of_work import IUnitOfWork
+from api.shared.application.use_cases.write_use_case import WriteUseCase
+from api.shared.domain.interfaces.business_rule import IBusinessRule
 
 ANOTHER_JOB_RUNNING = ImportCheck(
     check="another_job_running",
@@ -50,8 +50,8 @@ class ImportClassroomDatasetUseCase(WriteUseCase):
         classrooms: ClassroomRepository,
         assignments: AssignmentRepository,
         submissions: SubmissionRepository,
-        unit_of_work: UnitOfWork,
-        job_lock: JobLock,
+        unit_of_work: IUnitOfWork,
+        job_lock: IJobLock,
         tables: ProgSnapTableReader,
         cleaned_submissions: CleanedSubmissionsStore,
     ) -> None:
@@ -63,7 +63,7 @@ class ImportClassroomDatasetUseCase(WriteUseCase):
         self._tables = tables
         self._cleaned_submissions = cleaned_submissions
 
-    def rules(self) -> list[BusinessRule]:
+    def rules(self) -> list[IBusinessRule]:
         return [ClassroomNotImportedYetRule(self._classrooms)]
 
     def _run(self, dto: ImportClassroomDatasetDTO) -> ImportClassroomDatasetResponseDTO:

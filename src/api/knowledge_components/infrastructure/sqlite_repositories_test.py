@@ -18,7 +18,7 @@ from api.knowledge_components.infrastructure.sqlite_knowledge_component_reposito
 from api.knowledge_components.infrastructure.sqlite_qmatrix_repository import (
     SqliteQMatrixRepository,
 )
-from api.shared.domain.job_status import JobStatus
+from api.shared.domain.value_objects.job_status import JobStatus
 
 
 @pytest.fixture

@@ -14,7 +14,7 @@ import os
 
 import pytest
 
-from api.shared.infrastructure.one_job_at_a_time_lock import (
+from api.shared.infrastructure.implementations.one_job_at_a_time_lock import (
     OneJobAtATimeLock,
     is_process_alive,
     release_lock_of_dead_holder,

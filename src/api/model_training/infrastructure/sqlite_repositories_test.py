@@ -16,7 +16,7 @@ from api.model_training.infrastructure.sqlite_training_epoch_metric_repository i
 from api.model_training.infrastructure.sqlite_training_job_repository import (
     SqliteTrainingJobRepository,
 )
-from api.shared.domain.job_status import JobStatus
+from api.shared.domain.value_objects.job_status import JobStatus
 
 
 @pytest.fixture

@@ -29,7 +29,7 @@ from api.model_training.infrastructure.sqlite_training_job_repository import (
     SqliteTrainingJobRepository,
 )
 from api.model_training.presentation.training_worker import run_training
-from api.shared.domain.job_status import JobStatus
+from api.shared.domain.value_objects.job_status import JobStatus
 from ml.reproducibility.code_dkt_hyperparameters import CODE_DKT_HYPERPARAMETERS
 
 ASSIGNMENT_ID = 439
