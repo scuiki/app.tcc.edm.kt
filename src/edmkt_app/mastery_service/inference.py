@@ -23,24 +23,26 @@ from edmkt_app.modeling_frame import load_modeling_frame
 from edmkt_app.persistence import models
 from edmkt_app.persistence import repositories as repos
 from edmkt_app.persistence.artifacts import ArtifactStore
+from api.assignments.infrastructure.sqlite_assignment_repository import SqliteAssignmentRepository
+from api.assignments.domain.assignment_entity import Assignment
 
 
 def _resolve_current_artifact(
     conn: sqlite3.Connection, assignment_id: int
-) -> tuple[models.Assignment, models.ModelArtifact]:
-    """Resolve o assignment + o ModelArtifact apontado por current_version_id (D-06).
+) -> tuple[Assignment, models.ModelArtifact]:
+    """Resolve o assignment + o ModelArtifact apontado por published_model_id (D-06).
 
     Levanta ValueError se o assignment não existe ou ainda não tem um artefato publicado —
     o caminho de leitura do dashboard só faz sentido sobre um modelo treinado e flipado.
     """
-    asg = repos.AssignmentRepository(conn).get(assignment_id)
+    asg = SqliteAssignmentRepository(conn).get(assignment_id)
     if asg is None:
         raise ValueError(f"assignment {assignment_id} inexistente")
-    if asg.current_version_id is None:
-        raise ValueError(f"assignment {assignment_id} sem modelo publicado (current_version_id None)")
-    artifact = repos.ModelArtifactRepository(conn).get(asg.current_version_id)
+    if asg.published_model_id is None:
+        raise ValueError(f"assignment {assignment_id} sem modelo publicado (published_model_id None)")
+    artifact = repos.ModelArtifactRepository(conn).get(asg.published_model_id)
     if artifact is None:
-        raise ValueError(f"model_artifact {asg.current_version_id} inexistente")
+        raise ValueError(f"model_artifact {asg.published_model_id} inexistente")
     return asg, artifact
 
 
@@ -59,7 +61,7 @@ def infer_predictions(
 
     WR-02: aceita um `artifact` já resolvido. compute_mastery resolve UMA vez e o thread aqui,
     de modo que as linhas persistidas (keyed ao artifact.id) e o modelo carregado são sempre a
-    MESMA versão mesmo que um flip_current concorrente troque current_version_id entre as leituras
+    MESMA versão mesmo que um flip_current concorrente troque published_model_id entre as leituras
     (a conn está em autocommit). Sem ele, este método re-resolveria e poderia pegar outra versão.
     """
     if artifact is None:

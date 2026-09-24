@@ -9,7 +9,9 @@ from edmkt_app import eda as eda_module
 from edmkt_app.persistence import repositories as repos
 from api.shared.domain.errors import NotFound
 from edmkt_app.use_cases.base import require_assignment
-from edmkt_app.values import ProgSnapAssignmentId, TurmaSlug
+from api.assignments.domain.progsnap_assignment_id import ProgSnapAssignmentId
+from api.assignments.domain.classroom_slug import ClassroomSlug
+from api.assignments.infrastructure.sqlite_classroom_repository import SqliteClassroomRepository
 
 
 class GetEdaUseCase:
@@ -18,12 +20,12 @@ class GetEdaUseCase:
 
     def execute(self, assignment_id: int) -> dict:
         assignment = require_assignment(self._conn, assignment_id)
-        turma = repos.TurmaRepository(self._conn).get(assignment.turma_id)
+        turma = SqliteClassroomRepository(self._conn).get(assignment.classroom_id)
         if turma is None:  # WR-01: turma órfã → 404 explícito, não AttributeError em turma.name
             raise NotFound("turma inexistente")
 
         pq = data_layout.cleaned_submissions_path(
-            TurmaSlug.from_name(turma.name), ProgSnapAssignmentId(assignment.progsnap_assignment_id)
+            ClassroomSlug.from_name(turma.name), ProgSnapAssignmentId(assignment.progsnap_assignment_id)
         )
         if not pq.exists():
             # Degrada para agregados vazios quando a ingestão ainda não produziu o Parquet —

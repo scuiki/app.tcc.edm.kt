@@ -15,7 +15,9 @@ import sqlite3
 from dataclasses import dataclass
 
 from edmkt_app.persistence import repositories as repos
-from edmkt_app.values import TurmaSlug
+from api.assignments.domain.classroom_slug import ClassroomSlug
+from api.assignments.infrastructure.sqlite_classroom_repository import SqliteClassroomRepository
+from api.assignments.infrastructure.sqlite_assignment_repository import SqliteAssignmentRepository
 
 
 @dataclass(frozen=True)
@@ -32,7 +34,7 @@ class AssignmentInStatus:
     message: str
 
     def check(self, conn: sqlite3.Connection, dto) -> str | None:
-        assignment = repos.AssignmentRepository(conn).get(dto.assignment_id)
+        assignment = SqliteAssignmentRepository(conn).get(dto.assignment_id)
         if assignment is None or assignment.status not in self.allowed:
             return self.message
         return None
@@ -44,7 +46,7 @@ class AssignmentIsDraft:
     rodar sobre uma Q-matrix inexistente, burlando o gate humano."""
 
     def check(self, conn: sqlite3.Connection, dto) -> str | None:
-        assignment = repos.AssignmentRepository(conn).get(dto.assignment_id)
+        assignment = SqliteAssignmentRepository(conn).get(dto.assignment_id)
         if assignment is None:
             return None  # inexistência é NotFound, levantado antes — aqui não é regra violada
         if assignment.status != "kc_draft":
@@ -105,9 +107,9 @@ class TurmaNotDuplicated:
     """
 
     def check(self, conn: sqlite3.Connection, dto) -> str | None:
-        alvo = TurmaSlug.from_name(dto.turma_name)
-        for turma in repos.TurmaRepository(conn).list_all():
-            if TurmaSlug.from_name(turma.name) == alvo:
+        alvo = ClassroomSlug.from_name(dto.turma_name)
+        for turma in SqliteClassroomRepository(conn).list_all():
+            if ClassroomSlug.from_name(turma.name) == alvo:
                 return (
                     f"a turma {turma.name!r} já foi ingerida; re-ingestão ainda não é suportada "
                     "(use outro nome de turma ou remova a anterior)"

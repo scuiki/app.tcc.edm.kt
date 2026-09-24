@@ -231,7 +231,7 @@ def test_persist_failure_leaves_no_partial_cache(trained_artifact, tmp_path, mon
 
 def test_compute_mastery_resolves_artifact_once(trained_artifact, tmp_path, monkeypatch):
     # WR-02: compute_mastery resolve o artefato UMA vez e o thread em infer_predictions, em vez
-    # de deixar infer_predictions re-resolver current_version_id. Se um flip_current concorrente
+    # de deixar infer_predictions re-resolver published_model_id. Se um flip_current concorrente
     # trocasse a versão entre as duas leituras (conn em autocommit), as linhas seriam keyed ao
     # artefato A mas o modelo carregado viria de B — um mismatch silencioso. Simulamos isso
     # fazendo _resolve_current_artifact devolver um artefato DIFERENTE na 2ª chamada e exigimos
@@ -306,7 +306,7 @@ def test_infer_predictions_orphan_turma_raises_valueerror(trained_artifact, tmp_
 
     # Remove a turma (FK desligada só p/ o DELETE: o órfão surge de uma conexão sem enforcement).
     conn.execute("PRAGMA foreign_keys=OFF;")
-    conn.execute("DELETE FROM classroom WHERE id = ?;", (trained_artifact.turma_id,))
+    conn.execute("DELETE FROM classroom WHERE id = ?;", (trained_artifact.classroom_id,))
     conn.execute("PRAGMA foreign_keys=ON;")
 
     with pytest.raises(ValueError, match="turma .* inexistente"):

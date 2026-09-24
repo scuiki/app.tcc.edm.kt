@@ -41,27 +41,14 @@ def test_db_path_is_defined_exactly_once():
     assert definicoes == [Path("api/shared/infrastructure/settings.py")]
 
 
-def test_every_consumer_reads_the_shared_root(monkeypatch, tmp_path):
-    """Um único monkeypatch tem de redirecionar TODOS os consumidores.
+def test_a_single_monkeypatch_redirects_every_path(monkeypatch, tmp_path):
+    """Um único monkeypatch em settings.DATA_ROOT redireciona todo caminho sob data/.
 
-    Enquanto cada módulo tinha a sua cópia, redirecionar um não redirecionava os outros — e
-    nada avisava. Este teste é a rede: se alguém reintroduzir uma cópia local, ele quebra.
+    Que ninguém guarde a própria cópia da raiz é o que test_data_root_is_defined_exactly_once
+    garante; aqui se prova que data_layout lê a raiz em tempo de chamada, não no import.
     """
-    from edmkt_app import eda, features_cache
-    from edmkt_app.ingestion import service
-    from edmkt_app.kc_pipeline import transport
-    from edmkt_app.train import stages
+    from api.shared.infrastructure import data_layout
 
     monkeypatch.setattr(settings, "DATA_ROOT", tmp_path)
 
-    for modulo in (eda, features_cache, service, transport, stages):
-        assert not hasattr(modulo, "DATA_ROOT"), (
-            f"{modulo.__name__} voltou a ter a própria DATA_ROOT"
-        )
-
-    # E o caminho derivado de fato aponta para o tmp — não é só ausência de atributo.
-    from api.shared.infrastructure import data_layout
-    from edmkt_app.values import ProgSnapAssignmentId, TurmaSlug
-
-    path = data_layout.cleaned_submissions_path(TurmaSlug("turma-x"), ProgSnapAssignmentId(439))
-    assert tmp_path in path.parents
+    assert tmp_path in data_layout.cleaned_submissions_path("turma-x", 439).parents

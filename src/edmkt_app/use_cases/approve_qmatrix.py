@@ -8,6 +8,7 @@ from edmkt_app import specs
 from edmkt_app.persistence import repositories as repos
 from api.shared.infrastructure.database.sqlite_connection import transaction
 from edmkt_app.use_cases.base import BaseWriteUseCase, require_assignment
+from api.assignments.infrastructure.sqlite_assignment_repository import SqliteAssignmentRepository
 
 
 class ApproveQMatrixDto(BaseModel):
@@ -25,5 +26,5 @@ class ApproveQMatrixUseCase(BaseWriteUseCase):
 
     def _run(self, dto: ApproveQMatrixDto) -> dict:
         with transaction(self._conn):
-            repos.AssignmentRepository(self._conn).set_status(dto.assignment_id, "kc_approved")
+            SqliteAssignmentRepository(self._conn).set_status(dto.assignment_id, "kc_approved")
         return {"assignment_id": dto.assignment_id, "status": "kc_approved"}

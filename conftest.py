@@ -14,6 +14,10 @@ from types import SimpleNamespace
 import pandas as pd
 import pytest
 import torch
+from api.assignments.infrastructure.sqlite_classroom_repository import SqliteClassroomRepository
+from api.assignments.infrastructure.sqlite_assignment_repository import SqliteAssignmentRepository
+from api.assignments.domain.classroom_entity import Classroom
+from api.assignments.domain.assignment_entity import Assignment
 
 ASSIGNMENT_ID = 439
 
@@ -320,7 +324,7 @@ def trained_artifact(tmp_db, tmp_path, tiny_vocab, tiny_config):
     (artifacts.py:142) reconstrua o CodeDKTModel com weights_only=True. Q-matrix: 3 problemas
     (1,2,3) → 2 KCs, com o problema 3 ligado a ambos os KCs, exercitando a média problem→KC.
 
-    Devolve um namespace com: conn (DB migrado), turma_id, assignment_id (id DB), artifact_id,
+    Devolve um namespace com: conn (DB migrado), classroom_id, assignment_id (id DB), artifact_id,
     version_number, artifact_dir, kcs (list[KC] com ids DB), qmatrix (list[QMatrix]) e o store.
     """
     from edmkt_app.persistence import models
@@ -332,16 +336,16 @@ def trained_artifact(tmp_db, tmp_path, tiny_vocab, tiny_config):
     conn = tmp_db
     now = "2026-06-21T00:00:00Z"
 
-    turma_id = repos.TurmaRepository(conn).insert(
-        models.Turma(id=None, name="Turma 6", created_at=now)
+    classroom_id = SqliteClassroomRepository(conn).add(
+        Classroom(id=None, name="Turma 6", created_at=now)
     )
-    assignment_id = repos.AssignmentRepository(conn).insert(
-        models.Assignment(
+    assignment_id = SqliteAssignmentRepository(conn).add(
+        Assignment(
             id=None,
-            turma_id=turma_id,
+            classroom_id=classroom_id,
             name="A439",
             progsnap_assignment_id=439,
-            current_version_id=None,
+            published_model_id=None,
             created_at=now,
             status="kc_approved",
         )
@@ -366,10 +370,10 @@ def trained_artifact(tmp_db, tmp_path, tiny_vocab, tiny_config):
     # Mesma raiz que train.py/mastery_service montam: DATA_ROOT/<turma_slug>/models. Os testes
     # apontam DATA_ROOT para tmp_path, e a turma "Turma 6" vira o slug "turma-6".
     store = ArtifactStore(str(tmp_path / "turma-6" / "models"))
-    persisted = store.persist(conn, turma_id, assignment_id, model, tiny_vocab, tiny_config)
+    persisted = store.persist(conn, classroom_id, assignment_id, model, tiny_vocab, tiny_config)
     artifact_id = persisted["artifact_id"]
-    # Publica o ponteiro current_version_id — o caminho de leitura do dashboard segue daqui
-    # (assignment.current_version_id → model_artifact → artifact_dir → load_version).
+    # Publica o ponteiro published_model_id — o caminho de leitura do dashboard segue daqui
+    # (assignment.published_model_id → model_artifact → artifact_dir → load_version).
     from edmkt_app.persistence.artifacts import flip_current
 
     flip_current(conn, assignment_id, artifact_id)
@@ -396,7 +400,7 @@ def trained_artifact(tmp_db, tmp_path, tiny_vocab, tiny_config):
 
     ns = _TrainedArtifact()
     ns.conn = conn
-    ns.turma_id = turma_id
+    ns.classroom_id = classroom_id
     ns.assignment_id = assignment_id
     ns.artifact_id = artifact_id
     ns.version_number = persisted["version_number"]

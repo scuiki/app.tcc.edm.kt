@@ -22,20 +22,24 @@ from api.shared.infrastructure import settings
 from edmkt_app import modeling_frame
 from edmkt_app.persistence import models
 from edmkt_app.persistence import repositories as repos
+from api.assignments.infrastructure.sqlite_classroom_repository import SqliteClassroomRepository
+from api.assignments.infrastructure.sqlite_assignment_repository import SqliteAssignmentRepository
+from api.assignments.domain.classroom_entity import Classroom
+from api.assignments.domain.assignment_entity import Assignment
 
 
 def _seed(conn, data_root) -> int:
     created = "2019-03-01T00:00:00+00:00"
-    turma_id = repos.TurmaRepository(conn).insert(
-        models.Turma(id=None, name="Turma X", created_at=created)
+    classroom_id = SqliteClassroomRepository(conn).add(
+        Classroom(id=None, name="Turma X", created_at=created)
     )
-    assignment_id = repos.AssignmentRepository(conn).insert(
-        models.Assignment(
+    assignment_id = SqliteAssignmentRepository(conn).add(
+        Assignment(
             id=None,
-            turma_id=turma_id,
+            classroom_id=classroom_id,
             name="Assignment 439",
             progsnap_assignment_id=439,
-            current_version_id=None,
+            published_model_id=None,
             created_at=created,
             status="ready_for_kc_generation",
         )

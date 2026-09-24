@@ -20,21 +20,25 @@ import sys
 from edmkt_app.api import kc  # noqa: E402
 from edmkt_app.persistence import models
 from edmkt_app.persistence import repositories as repos
+from api.assignments.infrastructure.sqlite_classroom_repository import SqliteClassroomRepository
+from api.assignments.infrastructure.sqlite_assignment_repository import SqliteAssignmentRepository
+from api.assignments.domain.classroom_entity import Classroom
+from api.assignments.domain.assignment_entity import Assignment
 
 _NOW = "2026-06-21T00:00:00Z"
 
 
 def _seed_assignment(conn, status: str = "ready_for_kc_generation") -> int:
-    turma_id = repos.TurmaRepository(conn).insert(
-        models.Turma(id=None, name="Turma X", created_at=_NOW)
+    classroom_id = SqliteClassroomRepository(conn).add(
+        Classroom(id=None, name="Turma X", created_at=_NOW)
     )
-    return repos.AssignmentRepository(conn).insert(
-        models.Assignment(
+    return SqliteAssignmentRepository(conn).add(
+        Assignment(
             id=None,
-            turma_id=turma_id,
+            classroom_id=classroom_id,
             name="Assignment 439",
             progsnap_assignment_id=439,
-            current_version_id=None,
+            published_model_id=None,
             created_at=_NOW,
             status=status,
         )
@@ -230,7 +234,7 @@ def test_approve_sets_kc_approved(api_client):
     resp = client.post("/kc/approve", json={"assignment_id": aid})
     assert resp.status_code == 200
 
-    assert repos.AssignmentRepository(conn).get(aid).status == "kc_approved"
+    assert SqliteAssignmentRepository(conn).get(aid).status == "kc_approved"
 
 
 def test_approve_rejects_non_draft_assignment(api_client):
@@ -241,7 +245,7 @@ def test_approve_rejects_non_draft_assignment(api_client):
 
     resp = client.post("/kc/approve", json={"assignment_id": aid})
     assert resp.status_code == 409
-    assert repos.AssignmentRepository(conn).get(aid).status == "ready_for_kc_generation"  # não avançou
+    assert SqliteAssignmentRepository(conn).get(aid).status == "ready_for_kc_generation"  # não avançou
 
 
 def test_approve_rejects_draft_without_kcs(api_client):
@@ -251,7 +255,7 @@ def test_approve_rejects_draft_without_kcs(api_client):
 
     resp = client.post("/kc/approve", json={"assignment_id": aid})
     assert resp.status_code == 409
-    assert repos.AssignmentRepository(conn).get(aid).status == "kc_draft"
+    assert SqliteAssignmentRepository(conn).get(aid).status == "kc_draft"
 
 
 def test_editing_after_approval_reverts_status(api_client):
@@ -266,4 +270,4 @@ def test_editing_after_approval_reverts_status(api_client):
     resp = client.patch(f"/kc/{a}", json={"name": "a-editado"})
     assert resp.status_code == 200
 
-    assert repos.AssignmentRepository(conn).get(aid).status == "kc_draft"
+    assert SqliteAssignmentRepository(conn).get(aid).status == "kc_draft"

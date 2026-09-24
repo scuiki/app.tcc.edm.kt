@@ -19,8 +19,12 @@ from edmkt_app.ingestion import clean
 from api.shared.infrastructure.database.sqlite_connection import transaction
 from edmkt_app.persistence import models
 from edmkt_app.persistence import repositories as repos
-from edmkt_app.values import TurmaSlug
+from api.assignments.domain.classroom_slug import ClassroomSlug
 from api.shared.infrastructure.clock import utc_now_iso
+from api.assignments.infrastructure.sqlite_classroom_repository import SqliteClassroomRepository
+from api.assignments.infrastructure.sqlite_assignment_repository import SqliteAssignmentRepository
+from api.assignments.domain.classroom_entity import Classroom
+from api.assignments.domain.assignment_entity import Assignment
 
 
 
@@ -41,7 +45,7 @@ def _persist_atomic(
     escrito — sem dataset meio-gravado. O Parquet fica fora da txn porque um blob de FS não
     participa do ROLLBACK do SQLite; escrevê-lo dentro deixaria-o órfão num INSERT que falha.
     """
-    turma_slug = TurmaSlug.from_name(turma_name)
+    turma_slug = ClassroomSlug.from_name(turma_name)
     clean_dir = data_layout.cleaned_submissions_dir(turma_slug)
     created_at = utc_now_iso()
 
@@ -62,20 +66,20 @@ def _persist_atomic(
 
         # 2. INSERTs dentro de BEGIN IMMEDIATE/COMMIT (ROLLBACK-on-exception via db.transaction).
         with transaction(conn):
-            turma_id = repos.TurmaRepository(conn).insert(
-                models.Turma(id=None, name=turma_name, created_at=created_at)
+            classroom_id = SqliteClassroomRepository(conn).add(
+                Classroom(id=None, name=turma_name, created_at=created_at)
             )
-            assignment_repo = repos.AssignmentRepository(conn)
+            assignment_repo = SqliteAssignmentRepository(conn)
             submission_repo = repos.SubmissionRepository(conn)
 
             for aid, group in canonical.groupby("progsnap_assignment_id", sort=True):
                 aid_int = int(aid)
-                assignment_id = assignment_repo.insert(
-                    models.Assignment(
+                assignment_id = assignment_repo.add(
+                    Assignment(
                         id=None,
-                        turma_id=turma_id,
+                        classroom_id=classroom_id,
                         name=f"Assignment {aid_int}",
-                        current_version_id=None,
+                        published_model_id=None,
                         created_at=created_at,
                         # status do gate (D-08): pronto para gerar KCs se há as duas classes.
                         status=status_by_aid.get(aid_int, "statistics_only"),

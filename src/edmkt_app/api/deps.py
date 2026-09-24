@@ -31,7 +31,6 @@ from edmkt_app.use_cases.get_mastery import GetMasteryUseCase
 from edmkt_app.use_cases.get_recommendations import GetRecommendationsUseCase
 from edmkt_app.use_cases.get_training_history import GetTrainingHistoryUseCase
 from edmkt_app.use_cases.get_training_status import GetTrainingStatusUseCase
-from edmkt_app.use_cases.list_assignments import ListAssignmentsUseCase
 from edmkt_app.use_cases.merge_kc import MergeKCUseCase
 from edmkt_app.use_cases.process_ingestion import ProcessIngestionUseCase
 from edmkt_app.use_cases.remove_kc import RemoveKCUseCase
@@ -99,10 +98,6 @@ def get_recommendations_uc(
     conn: sqlite3.Connection = Depends(get_conn),
 ) -> GetRecommendationsUseCase:
     return GetRecommendationsUseCase(conn)
-
-
-def list_assignments_uc(conn: sqlite3.Connection = Depends(get_conn)) -> ListAssignmentsUseCase:
-    return ListAssignmentsUseCase(conn)
 
 
 def get_training_status_uc(

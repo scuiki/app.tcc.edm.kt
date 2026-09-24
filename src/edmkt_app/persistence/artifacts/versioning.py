@@ -1,4 +1,4 @@
-"""Numeração monótona de versão e o flip do ponteiro `current_version_id`.
+"""Numeração monótona de versão e o flip do ponteiro `published_model_id`.
 
 Separados do store porque são operações sobre o BANCO, não sobre o blob: `next_version_number`
 decide o próximo N e `flip_current` publica a versão. O flip é o ÚLTIMO passo da ordem
@@ -10,7 +10,7 @@ from __future__ import annotations
 import sqlite3
 
 from api.shared.infrastructure.database.sqlite_connection import transaction
-from edmkt_app.persistence.repositories import AssignmentRepository
+from api.assignments.infrastructure.sqlite_assignment_repository import SqliteAssignmentRepository
 
 
 
@@ -28,10 +28,10 @@ def next_version_number(conn: sqlite3.Connection, assignment_id: int) -> int:
 
 
 def flip_current(conn: sqlite3.Connection, assignment_id: int, new_version_id: int) -> None:
-    """Troca Assignment.current_version_id por um UPDATE atômico (Pattern 5 / D-06).
+    """Troca Assignment.published_model_id por um UPDATE atômico (Pattern 5 / D-06).
 
     O flip é o ÚLTIMO passo da ordem load-bearing (blob write-once → INSERT → flip): só
     aqui um leitor passa a enxergar a nova versão, e sempre uma já completa (Pitfall 2). O
     ponteiro no DB é a fonte única — este UPDATE nunca toca o diretório do artefato."""
     with transaction(conn):
-        AssignmentRepository(conn).set_current_version(assignment_id, new_version_id)
+        SqliteAssignmentRepository(conn).set_published_model(assignment_id, new_version_id)

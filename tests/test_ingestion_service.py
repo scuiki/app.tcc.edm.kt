@@ -20,6 +20,7 @@ import pytest
 from api.shared.infrastructure import settings
 from edmkt_app.ingestion import clean, service
 from edmkt_app.persistence import repositories as repos
+from api.assignments.domain.assignment_entity import Assignment
 
 # MainTable com DUAS classes nos first-attempts (≥1 acerto E ≥1 erro) ⇒ assignment trainable
 # (D-09). CodeStateID casa 1:1 com o CodeStates.csv abaixo (sem órfãos neste fixture base).

@@ -4,7 +4,7 @@
 inferência): dois call sites e uma razão que não pode se perder numa expressão solta repetida.
 
 Derivação de caminho e de id migrou para `values.py` — `slug`/`progsnap_aid` viraram
-`TurmaSlug`/`ProgSnapAssignmentId`, porque o problema nunca foi onde a função morava e sim
+`ClassroomSlug`/`ProgSnapAssignmentId`, porque o problema nunca foi onde a função morava e sim
 haver seis cópias dela; um tipo não se copia por engano.
 
 Mantido livre de torch/persistence (igual a eda.py): import barato, sem acoplar a stack de ML.

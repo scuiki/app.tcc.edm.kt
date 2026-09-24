@@ -76,22 +76,22 @@ export const recommendations: RecommendationsResponse = {
   ],
 }
 
-// Assignments list: one trained (current_version_id set), one untrained (null).
+// Assignments list: one trained (published_model_id set), one untrained (null).
 export const assignments: AssignmentsResponse = {
   assignments: [
     {
       id: 1,
-      progsnap_id: 439,
+      progsnap_assignment_id: 439,
       name: 'Assignment 439',
       status: 'trained',
-      current_version_id: 7,
+      published_model_id: 7,
     },
     {
       id: 2,
-      progsnap_id: 440,
+      progsnap_assignment_id: 440,
       name: 'Assignment 440',
       status: 'kc_approved',
-      current_version_id: null,
+      published_model_id: null,
     },
   ],
 }

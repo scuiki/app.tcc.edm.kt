@@ -1,4 +1,4 @@
-"""Flip atômico do ponteiro current_version_id (MODEL-04 / D-06 / Pitfall 2).
+"""Flip atômico do ponteiro published_model_id (MODEL-04 / D-06 / Pitfall 2).
 
 O ponteiro "current" de um Assignment é trocado por um único UPDATE transacional; o
 diretório do artefato nunca é tocado pelo flip (o ponteiro no DB é a fonte única — D-06), e
@@ -12,26 +12,30 @@ from __future__ import annotations
 from edmkt_app.persistence import models
 from edmkt_app.persistence import repositories as repos
 from edmkt_app.persistence.artifacts import ArtifactStore, flip_current
+from api.assignments.infrastructure.sqlite_classroom_repository import SqliteClassroomRepository
+from api.assignments.infrastructure.sqlite_assignment_repository import SqliteAssignmentRepository
+from api.assignments.domain.classroom_entity import Classroom
+from api.assignments.domain.assignment_entity import Assignment
 
 
 def _seed_turma_assignment(conn) -> int:
-    """Insere turma + assignment e devolve o assignment_id (current_version_id nasce NULL)."""
-    turma_id = repos.TurmaRepository(conn).insert(
-        models.Turma(id=None, name="Turma A", created_at="2026-06-21T00:00:00Z")
+    """Insere turma + assignment e devolve o assignment_id (published_model_id nasce NULL)."""
+    classroom_id = SqliteClassroomRepository(conn).add(
+        Classroom(id=None, name="Turma A", created_at="2026-06-21T00:00:00Z")
     )
-    return repos.AssignmentRepository(conn).insert(
-        models.Assignment(
+    return SqliteAssignmentRepository(conn).add(
+        Assignment(
             id=None,
-            turma_id=turma_id,
+            classroom_id=classroom_id,
             name="A1",
-            current_version_id=None,
+            published_model_id=None,
             created_at="2026-06-21T00:00:00Z",
         )
     )
 
 
 def test_flip_atomic_pointer(tmp_db):
-    # Após inserir um ModelArtifact, flip_current atualiza Assignment.current_version_id num
+    # Após inserir um ModelArtifact, flip_current atualiza Assignment.published_model_id num
     # UPDATE transacional; antes do flip o ponteiro é NULL, depois aponta para a nova versão.
     conn = tmp_db
     assignment_id = _seed_turma_assignment(conn)
@@ -48,13 +52,13 @@ def test_flip_atomic_pointer(tmp_db):
     )
 
     # antes do flip: o ponteiro current ainda é NULL (nasce assim — D-06).
-    before = repos.AssignmentRepository(conn).get(assignment_id)
-    assert before.current_version_id is None
+    before = SqliteAssignmentRepository(conn).get(assignment_id)
+    assert before.published_model_id is None
 
     flip_current(conn, assignment_id, art_id)
 
-    after = repos.AssignmentRepository(conn).get(assignment_id)
-    assert after.current_version_id == art_id
+    after = SqliteAssignmentRepository(conn).get(assignment_id)
+    assert after.published_model_id == art_id
 
 
 def test_flip_does_not_touch_artifact_dir(tmp_db, tmp_path, tiny_model, tiny_vocab, tiny_config):
@@ -73,7 +77,7 @@ def test_flip_does_not_touch_artifact_dir(tmp_db, tmp_path, tiny_model, tiny_voc
 
     # o flip não reescreveu nem removeu o blob.
     assert (vdir / "model.pt").read_bytes() == blob_before
-    assert repos.AssignmentRepository(conn).get(assignment_id).current_version_id == persisted[
+    assert SqliteAssignmentRepository(conn).get(assignment_id).published_model_id == persisted[
         "artifact_id"
     ]
 
@@ -87,13 +91,13 @@ def test_flip_is_last_step_order(tmp_db, tmp_path, tiny_model, tiny_vocab, tiny_
 
     persisted = store.persist(conn, 1, assignment_id, tiny_model, tiny_vocab, tiny_config)
     # blob completo + linha inserida, mas SEM flip ainda -> ponteiro continua NULL.
-    assert repos.AssignmentRepository(conn).get(assignment_id).current_version_id is None
+    assert SqliteAssignmentRepository(conn).get(assignment_id).published_model_id is None
     import pathlib
 
     assert (pathlib.Path(persisted["dir"]) / "model.pt").exists()
 
     flip_current(conn, assignment_id, persisted["artifact_id"])
     assert (
-        repos.AssignmentRepository(conn).get(assignment_id).current_version_id
+        SqliteAssignmentRepository(conn).get(assignment_id).published_model_id
         == persisted["artifact_id"]
     )

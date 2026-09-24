@@ -16,7 +16,8 @@ import javalang
 from ml.code_dkt.ast_paths import extract_ast_paths, extract_ast_paths_for_snapshots
 
 from api.shared.infrastructure import data_layout
-from edmkt_app.values import CodeStateId, TurmaSlug
+from edmkt_app.values import CodeStateId
+from api.assignments.domain.classroom_slug import ClassroomSlug
 
 def _extract(code: str, config: dict) -> list[tuple[str, str, str]]:
     return extract_ast_paths(
@@ -29,7 +30,7 @@ def _extract(code: str, config: dict) -> list[tuple[str, str, str]]:
 
 
 def build_cache_on_disk(
-    turma_slug: TurmaSlug,
+    turma_slug: ClassroomSlug,
     all_snapshot_ids: list[str],
     code_states: dict[str, str],
     config: dict,

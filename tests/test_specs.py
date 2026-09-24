@@ -14,6 +14,10 @@ import pytest
 from edmkt_app import specs
 from edmkt_app.persistence import models
 from edmkt_app.persistence import repositories as repos
+from api.assignments.infrastructure.sqlite_classroom_repository import SqliteClassroomRepository
+from api.assignments.infrastructure.sqlite_assignment_repository import SqliteAssignmentRepository
+from api.assignments.domain.classroom_entity import Classroom
+from api.assignments.domain.assignment_entity import Assignment
 
 
 @dataclass
@@ -30,15 +34,15 @@ class _Dto:
 
 def _assignment(conn, status: str) -> int:
     created = "2019-03-01T00:00:00+00:00"
-    turma_id = repos.TurmaRepository(conn).insert(
-        models.Turma(id=None, name="Turma X", created_at=created)
+    classroom_id = SqliteClassroomRepository(conn).add(
+        Classroom(id=None, name="Turma X", created_at=created)
     )
-    return repos.AssignmentRepository(conn).insert(
-        models.Assignment(
+    return SqliteAssignmentRepository(conn).add(
+        Assignment(
             id=None,
-            turma_id=turma_id,
+            classroom_id=classroom_id,
             name="Assignment 439",
-            current_version_id=None,
+            published_model_id=None,
             created_at=created,
             status=status,
             progsnap_assignment_id=439,
@@ -110,12 +114,12 @@ def test_kcs_are_distinct_refuses_self_merge(tmp_db):
 
 def test_kcs_belong_to_assignment_refuses_a_kc_from_another_assignment(tmp_db):
     a1 = _assignment(tmp_db, "kc_draft")
-    a2 = repos.AssignmentRepository(tmp_db).insert(
-        models.Assignment(
+    a2 = SqliteAssignmentRepository(tmp_db).add(
+        Assignment(
             id=None,
-            turma_id=1,
+            classroom_id=1,
             name="Assignment 487",
-            current_version_id=None,
+            published_model_id=None,
             created_at="2019-03-01T00:00:00+00:00",
             status="kc_draft",
         )

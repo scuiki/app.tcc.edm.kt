@@ -6,11 +6,10 @@ pré-3.35) e `get(id) -> dataclass | None`.
 
 TODO SQL é parametrizado com placeholders `?` (V5/T-02-04); nenhum dado é interpolado em string.
 
-Os nomes são reexportados aqui para que `repos.TurmaRepository` siga funcionando nos call sites
+Os nomes são reexportados aqui para que `SqliteClassroomRepository` siga funcionando nos call sites
 — a divisão é de arquivo, não de contrato.
 """
 
-from edmkt_app.persistence.repositories.assignment import AssignmentRepository
 from edmkt_app.persistence.repositories.kc import KCRepository
 from edmkt_app.persistence.repositories.kc_job import KCJobRepository
 from edmkt_app.persistence.repositories.mastery_prediction import MasteryPredictionRepository
@@ -19,10 +18,8 @@ from edmkt_app.persistence.repositories.qmatrix import QMatrixRepository
 from edmkt_app.persistence.repositories.submission import SubmissionRepository
 from edmkt_app.persistence.repositories.training_job import TrainingJobRepository
 from edmkt_app.persistence.repositories.training_metric import TrainingMetricRepository
-from edmkt_app.persistence.repositories.turma import TurmaRepository
 
 __all__ = [
-    "AssignmentRepository",
     "KCJobRepository",
     "KCRepository",
     "MasteryPredictionRepository",
@@ -31,5 +28,4 @@ __all__ = [
     "SubmissionRepository",
     "TrainingJobRepository",
     "TrainingMetricRepository",
-    "TurmaRepository",
 ]

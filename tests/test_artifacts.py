@@ -21,23 +21,27 @@ import torch
 from edmkt_app.persistence import models
 from edmkt_app.persistence import repositories as repos
 from edmkt_app.persistence.artifacts import ArtifactStore
+from api.assignments.infrastructure.sqlite_classroom_repository import SqliteClassroomRepository
+from api.assignments.infrastructure.sqlite_assignment_repository import SqliteAssignmentRepository
+from api.assignments.domain.classroom_entity import Classroom
+from api.assignments.domain.assignment_entity import Assignment
 
 
 def _seed_turma_assignment(conn) -> tuple[int, int]:
-    """Insere turma + assignment e devolve (turma_id, assignment_id) — pais para os artefatos."""
-    turma_id = repos.TurmaRepository(conn).insert(
-        models.Turma(id=None, name="Turma A", created_at="2026-06-21T00:00:00Z")
+    """Insere turma + assignment e devolve (classroom_id, assignment_id) — pais para os artefatos."""
+    classroom_id = SqliteClassroomRepository(conn).add(
+        Classroom(id=None, name="Turma A", created_at="2026-06-21T00:00:00Z")
     )
-    assignment_id = repos.AssignmentRepository(conn).insert(
-        models.Assignment(
+    assignment_id = SqliteAssignmentRepository(conn).add(
+        Assignment(
             id=None,
-            turma_id=turma_id,
+            classroom_id=classroom_id,
             name="A1",
-            current_version_id=None,
+            published_model_id=None,
             created_at="2026-06-21T00:00:00Z",
         )
     )
-    return turma_id, assignment_id
+    return classroom_id, assignment_id
 
 
 def test_save_writes_blob_and_sidecars(tmp_path, tiny_model, tiny_vocab, tiny_config):
@@ -50,7 +54,7 @@ def test_save_writes_blob_and_sidecars(tmp_path, tiny_model, tiny_vocab, tiny_co
 
     store = ArtifactStore(str(tmp_path / "data"))
     result = store.save_version(
-        turma_id=1,
+        classroom_id=1,
         assignment_id=1,
         version_number=1,
         model=tiny_model,
@@ -86,25 +90,25 @@ def test_version_monotonic_per_scope(tmp_db, tmp_path, tiny_model, tiny_vocab, t
     # transação do insert (Pitfall 5); UNIQUE(assignment_id, version_number) é a rede.
     conn = tmp_db
     store = ArtifactStore(str(tmp_path / "data"))
-    turma_id, assignment_a = _seed_turma_assignment(conn)
-    assignment_b = repos.AssignmentRepository(conn).insert(
-        models.Assignment(
+    classroom_id, assignment_a = _seed_turma_assignment(conn)
+    assignment_b = SqliteAssignmentRepository(conn).add(
+        Assignment(
             id=None,
-            turma_id=turma_id,
+            classroom_id=classroom_id,
             name="A2",
-            current_version_id=None,
+            published_model_id=None,
             created_at="2026-06-21T00:00:00Z",
         )
     )
 
     versions_a = [
-        store.persist(conn, turma_id, assignment_a, tiny_model, tiny_vocab, tiny_config)
+        store.persist(conn, classroom_id, assignment_a, tiny_model, tiny_vocab, tiny_config)
         for _ in range(3)
     ]
     assert [v["version_number"] for v in versions_a] == [1, 2, 3]
 
     # segundo assignment recomeça em v1 — escopo por (turma, assignment).
-    version_b = store.persist(conn, turma_id, assignment_b, tiny_model, tiny_vocab, tiny_config)
+    version_b = store.persist(conn, classroom_id, assignment_b, tiny_model, tiny_vocab, tiny_config)
     assert version_b["version_number"] == 1
 
     # as linhas estão de fato persistidas e ordenáveis pelo version_number.
@@ -120,14 +124,14 @@ def test_write_once_refuses_overwrite(tmp_path, tiny_model, tiny_vocab, tiny_con
     # nenhum byte do v<N> anterior é alterado.
     store = ArtifactStore(str(tmp_path / "data"))
     first = store.save_version(
-        turma_id=1, assignment_id=1, version_number=1,
+        classroom_id=1, assignment_id=1, version_number=1,
         model=tiny_model, vocab=tiny_vocab, config=tiny_config,
     )
     weights_before = (__import__("pathlib").Path(first["dir"]) / "model.pt").read_bytes()
 
     with pytest.raises(FileExistsError):
         store.save_version(
-            turma_id=1, assignment_id=1, version_number=1,
+            classroom_id=1, assignment_id=1, version_number=1,
             model=tiny_model, vocab=tiny_vocab, config=tiny_config,
         )
 
@@ -141,11 +145,11 @@ def test_content_hash_stable_and_dedup(tmp_path, tiny_model, tiny_vocab, tiny_co
     # NÃO bloqueia a nova versão (version_number ainda avança — D-05 mantém histórico).
     store = ArtifactStore(str(tmp_path / "data"))
     h1 = store.save_version(
-        turma_id=1, assignment_id=1, version_number=1,
+        classroom_id=1, assignment_id=1, version_number=1,
         model=tiny_model, vocab=tiny_vocab, config=tiny_config,
     )["content_hash"]
     h2 = store.save_version(
-        turma_id=1, assignment_id=1, version_number=2,
+        classroom_id=1, assignment_id=1, version_number=2,
         model=tiny_model, vocab=tiny_vocab, config=tiny_config,
     )["content_hash"]
 
@@ -178,7 +182,7 @@ def test_reload_contract_no_size_mismatch(tmp_path):
 
     store = ArtifactStore(str(tmp_path / "data"))
     result = store.save_version(
-        turma_id=1, assignment_id=1, version_number=1,
+        classroom_id=1, assignment_id=1, version_number=1,
         model=model, vocab=vocab, config=config,
     )
     # não deve levantar RuntimeError de shape mismatch ao reconstruir + load_state_dict.
@@ -201,7 +205,7 @@ def test_persist_failure_does_not_block_next_version(
 
     conn = tmp_db
     store = ArtifactStore(str(tmp_path / "data"))
-    turma_id, assignment_id = _seed_turma_assignment(conn)
+    classroom_id, assignment_id = _seed_turma_assignment(conn)
 
     # sqlite3.Connection.execute é read-only (objeto C) — então embrulhamos a conn num proxy
     # que delega tudo à conn real e intercepta só o INSERT do model_artifact, falhando uma
@@ -225,7 +229,7 @@ def test_persist_failure_does_not_block_next_version(
 
     # (a) a 1ª persist() propaga a exceção do INSERT.
     with pytest.raises(sqlite3.OperationalError):
-        store.persist(proxy, turma_id, assignment_id, tiny_model, tiny_vocab, tiny_config)
+        store.persist(proxy, classroom_id, assignment_id, tiny_model, tiny_vocab, tiny_config)
 
     # (b) nenhum diretório v1 órfão sobra no FS (rmtree desfez o blob do passo 1).
     # Layout pós-B5: <base>/<assignment_id>/v<N>. Antes esta linha apontava para o caminho
@@ -235,7 +239,7 @@ def test_persist_failure_does_not_block_next_version(
 
     # (c) a 2ª persist() (execute já restaurado) SUCEDE e devolve version_number == 1 — o slot
     # foi liberado, não ficou travado por dir órfão.
-    result = store.persist(conn, turma_id, assignment_id, tiny_model, tiny_vocab, tiny_config)
+    result = store.persist(conn, classroom_id, assignment_id, tiny_model, tiny_vocab, tiny_config)
     assert result["version_number"] == 1
 
     # (d) a única linha persistida tem version_number == 1.
@@ -250,7 +254,7 @@ def test_path_stays_under_base(tmp_path, tiny_model, tiny_vocab, tiny_config):
     # O path resolvido fica sob base (sem traversal). Componentes vêm de IDs inteiros internos.
     store = ArtifactStore(str(tmp_path / "data"))
     result = store.save_version(
-        turma_id=1, assignment_id=1, version_number=1,
+        classroom_id=1, assignment_id=1, version_number=1,
         model=tiny_model, vocab=tiny_vocab, config=tiny_config,
     )
     base = (tmp_path / "data").resolve()
@@ -300,10 +304,10 @@ def test_version_dir_has_no_repeated_models_segment(tmp_db, tmp_path, tiny_model
     inclusive sobre `data/<turma>/raw/`, onde aterrissa o conteúdo do zip do professor.
     """
     store = ArtifactStore(str(tmp_path / "turma-x" / "models"))
-    turma_id, assignment_id = _seed_turma_assignment(tmp_db)
+    classroom_id, assignment_id = _seed_turma_assignment(tmp_db)
 
     persisted = store.persist(
-        tmp_db, turma_id, assignment_id, tiny_model, tiny_vocab, tiny_config
+        tmp_db, classroom_id, assignment_id, tiny_model, tiny_vocab, tiny_config
     )
 
     vdir = Path(persisted["dir"])
@@ -332,7 +336,7 @@ def test_reader_and_writer_agree_on_the_root(tmp_path):
     data_root = tmp_path / "data"
     base = data_root / "turma-x" / "models"
     written = ArtifactStore(str(base)).save_version(
-        turma_id=1, assignment_id=1, version_number=1, model=model, vocab=vocab, config=config
+        classroom_id=1, assignment_id=1, version_number=1, model=model, vocab=vocab, config=config
     )
 
     # Mesma raiz: aceita.

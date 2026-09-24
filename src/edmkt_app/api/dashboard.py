@@ -20,12 +20,10 @@ from edmkt_app.api.deps import (
     get_eda_uc,
     get_mastery_uc,
     get_recommendations_uc,
-    list_assignments_uc,
 )
 from edmkt_app.use_cases.get_eda import GetEdaUseCase
 from edmkt_app.use_cases.get_mastery import GetMasteryUseCase
 from edmkt_app.use_cases.get_recommendations import GetRecommendationsUseCase
-from edmkt_app.use_cases.list_assignments import ListAssignmentsUseCase
 
 router = APIRouter(tags=["dashboard"])
 
@@ -45,8 +43,3 @@ def get_recommendations(
     assignment_id: int, uc: GetRecommendationsUseCase = Depends(get_recommendations_uc)
 ) -> dict:
     return uc.execute(assignment_id)
-
-
-@router.get("/assignments")
-def list_assignments(uc: ListAssignmentsUseCase = Depends(list_assignments_uc)) -> dict:
-    return uc.execute()

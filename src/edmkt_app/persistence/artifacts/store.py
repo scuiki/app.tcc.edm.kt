@@ -45,7 +45,7 @@ class ArtifactStore:
 
     def save_version(
         self,
-        turma_id: int,
+        classroom_id: int,
         assignment_id: int,
         version_number: int,
         model: torch.nn.Module,
@@ -134,7 +134,7 @@ class ArtifactStore:
     def persist(
         self,
         conn: sqlite3.Connection,
-        turma_id: int,
+        classroom_id: int,
         assignment_id: int,
         model: torch.nn.Module,
         vocab: dict,
@@ -156,7 +156,7 @@ class ArtifactStore:
         Pitfall 2). Devolve version_number, artifact_id, dir e content_hash."""
         version_number = next_version_number(conn, assignment_id)
         saved = self.save_version(
-            turma_id, assignment_id, version_number, model, vocab, config
+            classroom_id, assignment_id, version_number, model, vocab, config
         )
 
         try:

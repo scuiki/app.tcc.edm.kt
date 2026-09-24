@@ -1,6 +1,6 @@
 """Onde cada coisa de uma turma mora em disco. O único lugar que monta caminhos sob `data/`.
 
-    data/<turma_slug>/
+    data/<classroom_slug>/
         raw/                              o .zip do professor extraído, intocado
         clean/assignment_<N>.parquet      o dado limpo, um arquivo por assignment
         cache/paths/<code_state_id>.pkl   paths de AST já extraídos
@@ -16,37 +16,42 @@ partir do env) e o monkeypatch dos testes precisam alcançar estas funções.
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 from api.shared.infrastructure import settings
-from edmkt_app.values import ProgSnapAssignmentId, TurmaSlug
+
+# O slug da turma (ClassroomSlug) e o AssignmentID do dataset chegam como value objects de
+# assignments; aqui basta que virem componentes de caminho.
+Slug = str | os.PathLike
+ProgSnapId = object  # qualquer valor cujo str() é o AssignmentID (int ou ProgSnapAssignmentId)
 
 
-def classroom_dir(turma_slug: TurmaSlug) -> Path:
-    return settings.DATA_ROOT / turma_slug
+def classroom_dir(classroom_slug: Slug) -> Path:
+    return settings.DATA_ROOT / classroom_slug
 
 
-def raw_upload_dir(turma_slug: TurmaSlug) -> Path:
-    return classroom_dir(turma_slug) / "raw"
+def raw_upload_dir(classroom_slug: Slug) -> Path:
+    return classroom_dir(classroom_slug) / "raw"
 
 
-def cleaned_submissions_dir(turma_slug: TurmaSlug) -> Path:
-    return classroom_dir(turma_slug) / "clean"
+def cleaned_submissions_dir(classroom_slug: Slug) -> Path:
+    return classroom_dir(classroom_slug) / "clean"
 
 
 def cleaned_submissions_path(
-    turma_slug: TurmaSlug, progsnap_aid: ProgSnapAssignmentId | int
+    classroom_slug: Slug, progsnap_aid: ProgSnapId
 ) -> Path:
-    return cleaned_submissions_dir(turma_slug) / f"assignment_{progsnap_aid}.parquet"
+    return cleaned_submissions_dir(classroom_slug) / f"assignment_{progsnap_aid}.parquet"
 
 
-def ast_path_cache_dir(turma_slug: TurmaSlug) -> Path:
-    return classroom_dir(turma_slug) / "cache" / "paths"
+def ast_path_cache_dir(classroom_slug: Slug) -> Path:
+    return classroom_dir(classroom_slug) / "cache" / "paths"
 
 
-def llm_cache_dir(turma_slug: TurmaSlug, progsnap_aid: ProgSnapAssignmentId) -> Path:
-    return classroom_dir(turma_slug) / "kc" / f"assignment_{progsnap_aid}"
+def llm_cache_dir(classroom_slug: Slug, progsnap_aid: ProgSnapId) -> Path:
+    return classroom_dir(classroom_slug) / "kc" / f"assignment_{progsnap_aid}"
 
 
-def trained_models_dir(turma_slug: TurmaSlug) -> Path:
-    return classroom_dir(turma_slug) / "models"
+def trained_models_dir(classroom_slug: Slug) -> Path:
+    return classroom_dir(classroom_slug) / "models"

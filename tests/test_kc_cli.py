@@ -22,6 +22,10 @@ from api.shared.infrastructure import settings  # noqa: E402
 from edmkt_app.kc_pipeline import runner, transport  # noqa: E402
 from edmkt_app.persistence import models
 from edmkt_app.persistence import repositories as repos
+from api.assignments.infrastructure.sqlite_classroom_repository import SqliteClassroomRepository
+from api.assignments.infrastructure.sqlite_assignment_repository import SqliteAssignmentRepository
+from api.assignments.domain.classroom_entity import Classroom
+from api.assignments.domain.assignment_entity import Assignment
 
 ASSIGNMENT_ID = 439
 
@@ -70,16 +74,16 @@ def data_root(tmp_path, monkeypatch):
 def _seed_kc_ready(conn, data_root) -> tuple[int, int]:
     """turma + assignment trainable + Parquet canônico + kc_job pending. Devolve (aid, job)."""
     created = "2026-06-21T00:00:00Z"
-    turma_id = repos.TurmaRepository(conn).insert(
-        models.Turma(id=None, name="Turma X", created_at=created)
+    classroom_id = SqliteClassroomRepository(conn).add(
+        Classroom(id=None, name="Turma X", created_at=created)
     )
-    assignment_id = repos.AssignmentRepository(conn).insert(
-        models.Assignment(
+    assignment_id = SqliteAssignmentRepository(conn).add(
+        Assignment(
             id=None,
-            turma_id=turma_id,
+            classroom_id=classroom_id,
             name=f"Assignment {ASSIGNMENT_ID}",
             progsnap_assignment_id=ASSIGNMENT_ID,
-            current_version_id=None,
+            published_model_id=None,
             created_at=created,
             status="ready_for_kc_generation",
         )
@@ -143,7 +147,7 @@ def test_content_hard_fail_marks_failed_nothing_persisted(tmp_db, data_root, mon
     # Nada persistido (D-04: validar-tudo-depois-persistir; falha ⇒ rollback total).
     assert conn.execute("SELECT COUNT(*) FROM kc;").fetchone()[0] == 0
     assert conn.execute("SELECT COUNT(*) FROM qmatrix;").fetchone()[0] == 0
-    asg = repos.AssignmentRepository(conn).get(assignment_id)
+    asg = SqliteAssignmentRepository(conn).get(assignment_id)
     assert asg.status == "ready_for_kc_generation"  # não avançou para kc_draft
     assert _holder_pid(conn) is None  # lock liberado mesmo na falha (with lock)
 
@@ -167,7 +171,7 @@ def test_small_dataset_skips_clustering_no_crash(tmp_db, data_root, monkeypatch)
 
     job = repos.KCJobRepository(conn).get(job_id)
     assert job.status == "done"  # não falhou (sem crash de clustering)
-    asg = repos.AssignmentRepository(conn).get(assignment_id)
+    asg = SqliteAssignmentRepository(conn).get(assignment_id)
     assert asg.status == "kc_draft"
     # 3 nomes únicos → 3 KCs (um cluster por nome, sem labeling LLM).
     assert conn.execute("SELECT COUNT(*) FROM kc;").fetchone()[0] == 3
@@ -189,7 +193,7 @@ def test_mark_done_failure_is_atomic_with_persist(tmp_db, data_root, monkeypatch
 
     runner._run_kc_pipeline(conn, assignment_id, job_id)
 
-    asg = repos.AssignmentRepository(conn).get(assignment_id)
+    asg = SqliteAssignmentRepository(conn).get(assignment_id)
     job = repos.KCJobRepository(conn).get(job_id)
     # Sem inconsistência: ou tudo persiste com job done, ou nada (aqui: rollback → trainable+failed).
     assert not (asg.status == "kc_draft" and job.status == "failed")
@@ -210,7 +214,7 @@ def test_success_transitions_job_and_acquires_lock(tmp_db, data_root, monkeypatc
     job = repos.KCJobRepository(conn).get(job_id)
     assert job.status == "done"
     assert job.started_at is not None  # mark_running aconteceu
-    asg = repos.AssignmentRepository(conn).get(assignment_id)
+    asg = SqliteAssignmentRepository(conn).get(assignment_id)
     assert asg.status == "kc_draft"  # pipeline conclui em kc_draft (D-06)
     assert conn.execute("SELECT COUNT(*) FROM kc;").fetchone()[0] >= 1  # KCs persistidos
     assert _holder_pid(conn) is None  # release garantido

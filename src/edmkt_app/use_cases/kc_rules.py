@@ -13,6 +13,7 @@ from collections.abc import Iterable
 
 from api.shared.domain.errors import BusinessRuleViolation
 from edmkt_app.persistence import repositories as repos
+from api.assignments.infrastructure.sqlite_assignment_repository import SqliteAssignmentRepository
 
 
 def assert_no_empty_problem(
@@ -29,7 +30,7 @@ def assert_no_empty_problem(
 
 def revert_approval_if_approved(conn: sqlite3.Connection, assignment_id: int) -> None:
     # D-06: editar a Q-matrix após aprovar reverte kc_approved → kc_draft (re-aprovação exigida).
-    arepo = repos.AssignmentRepository(conn)
+    arepo = SqliteAssignmentRepository(conn)
     assignment = arepo.get(assignment_id)
     if assignment is not None and assignment.status == "kc_approved":
         arepo.set_status(assignment_id, "kc_draft")
