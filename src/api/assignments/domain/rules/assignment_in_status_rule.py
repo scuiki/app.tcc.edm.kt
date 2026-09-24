@@ -9,14 +9,14 @@ from __future__ import annotations
 
 from typing import Any
 
-from api.assignments.domain.assignment_entity import AssignmentStatus
-from api.assignments.domain.assignment_repository import AssignmentRepository
+from api.assignments.domain.entities.assignment_entity import AssignmentStatus
+from api.assignments.domain.interfaces.assignment_repository import IAssignmentRepository
 
 
 class AssignmentInStatusRule:
     def __init__(
         self,
-        repository: AssignmentRepository,
+        repository: IAssignmentRepository,
         allowed: tuple[AssignmentStatus, ...],
         message: str,
     ) -> None:

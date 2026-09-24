@@ -6,11 +6,11 @@ subprocess: o que sobrevive é o que fica gravado nas linhas do job, dos KCs e d
 
 from __future__ import annotations
 
-from api.assignments.domain.assignment_entity import AssignmentStatus
-from api.assignments.domain.assignment_repository import AssignmentRepository
-from api.assignments.domain.classroom_repository import ClassroomRepository
-from api.assignments.domain.classroom_slug import ClassroomSlug
-from api.assignments.domain.progsnap_assignment_id import ProgSnapAssignmentId
+from api.assignments.domain.entities.assignment_entity import AssignmentStatus
+from api.assignments.domain.interfaces.assignment_repository import IAssignmentRepository
+from api.assignments.domain.interfaces.classroom_repository import IClassroomRepository
+from api.assignments.domain.value_objects.classroom_slug import ClassroomSlug
+from api.assignments.domain.value_objects.progsnap_assignment_id import ProgSnapAssignmentId
 from api.classroom_import.domain.cleaned_submissions_store import CleanedSubmissionsStore
 from api.knowledge_components.domain.kc_generation_job_repository import (
     KnowledgeComponentGenerationJobRepository,
@@ -31,8 +31,8 @@ from api.shared.application.interfaces.unit_of_work import IUnitOfWork
 class RunKnowledgeComponentGenerationUseCase:
     def __init__(
         self,
-        assignments: AssignmentRepository,
-        classrooms: ClassroomRepository,
+        assignments: IAssignmentRepository,
+        classrooms: IClassroomRepository,
         cleaned_submissions: CleanedSubmissionsStore,
         generator: KnowledgeComponentGenerator,
         knowledge_components: KnowledgeComponentRepository,

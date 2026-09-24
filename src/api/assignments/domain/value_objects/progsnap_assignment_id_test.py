@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from api.assignments.domain.progsnap_assignment_id import ProgSnapAssignmentId
+from api.assignments.domain.value_objects.progsnap_assignment_id import ProgSnapAssignmentId
 
 
 def test_progsnap_assignment_id_wraps_the_dataset_int():

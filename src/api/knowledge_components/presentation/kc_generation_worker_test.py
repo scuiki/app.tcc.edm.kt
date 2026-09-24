@@ -12,10 +12,14 @@ import os
 
 import pandas as pd
 
-from api.assignments.domain.assignment_entity import Assignment
-from api.assignments.domain.classroom_entity import Classroom
-from api.assignments.infrastructure.sqlite_assignment_repository import SqliteAssignmentRepository
-from api.assignments.infrastructure.sqlite_classroom_repository import SqliteClassroomRepository
+from api.assignments.domain.entities.assignment_entity import Assignment
+from api.assignments.domain.entities.classroom_entity import Classroom
+from api.assignments.infrastructure.repositories.sqlite_assignment_repository import (
+    SqliteAssignmentRepository,
+)
+from api.assignments.infrastructure.repositories.sqlite_classroom_repository import (
+    SqliteClassroomRepository,
+)
 from api.knowledge_components.domain.kc_generation_job_entity import (
     KnowledgeComponentGenerationJob,
 )

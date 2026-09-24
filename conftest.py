@@ -14,10 +14,14 @@ from types import SimpleNamespace
 import pandas as pd
 import pytest
 import torch
-from api.assignments.infrastructure.sqlite_classroom_repository import SqliteClassroomRepository
-from api.assignments.infrastructure.sqlite_assignment_repository import SqliteAssignmentRepository
-from api.assignments.domain.classroom_entity import Classroom
-from api.assignments.domain.assignment_entity import Assignment
+from api.assignments.infrastructure.repositories.sqlite_classroom_repository import (
+    SqliteClassroomRepository,
+)
+from api.assignments.infrastructure.repositories.sqlite_assignment_repository import (
+    SqliteAssignmentRepository,
+)
+from api.assignments.domain.entities.classroom_entity import Classroom
+from api.assignments.domain.entities.assignment_entity import Assignment
 
 # Fixtures que montam cada funcionalidade com a infraestrutura real (ver tests/fixtures/).
 pytest_plugins = ["tests.fixtures.classroom_import", "tests.fixtures.mastery_dashboard"]
@@ -340,8 +344,8 @@ def trained_artifact(tmp_db, data_root, tiny_vocab, tiny_config):
     """
     import pandas as pd
 
-    from api.assignments.domain.classroom_slug import ClassroomSlug
-    from api.assignments.domain.progsnap_assignment_id import ProgSnapAssignmentId
+    from api.assignments.domain.value_objects.classroom_slug import ClassroomSlug
+    from api.assignments.domain.value_objects.progsnap_assignment_id import ProgSnapAssignmentId
     from api.model_training.domain.code_dkt_trainer import TrainingOutcome
     from api.model_training.domain.training_dataset import TrainingDataset
     from api.model_training.infrastructure.sqlite_trained_model_repository import (

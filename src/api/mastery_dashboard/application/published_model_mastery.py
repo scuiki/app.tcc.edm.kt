@@ -8,9 +8,9 @@ vem vazia e o TrainedModelInfo vazio: "ainda não treinado" é um estado legíti
 
 from __future__ import annotations
 
-from api.assignments.domain.assignment_entity import Assignment
-from api.assignments.domain.assignment_repository import AssignmentRepository
-from api.assignments.domain.classroom_repository import ClassroomRepository
+from api.assignments.domain.entities.assignment_entity import Assignment
+from api.assignments.domain.interfaces.assignment_repository import IAssignmentRepository
+from api.assignments.domain.interfaces.classroom_repository import IClassroomRepository
 from api.classroom_import.domain.cleaned_submissions_store import CleanedSubmissionsStore
 from api.knowledge_components.domain.qmatrix_repository import QMatrixRepository
 from api.mastery_dashboard.domain.mastery_level import StudentMasteryMatrix
@@ -27,8 +27,8 @@ from api.shared.application.interfaces.unit_of_work import IUnitOfWork
 class PublishedModelMastery:
     def __init__(
         self,
-        assignments: AssignmentRepository,
-        classrooms: ClassroomRepository,
+        assignments: IAssignmentRepository,
+        classrooms: IClassroomRepository,
         cleaned_submissions: CleanedSubmissionsStore,
         trained_models: TrainedModelRepository,
         qmatrix: QMatrixRepository,

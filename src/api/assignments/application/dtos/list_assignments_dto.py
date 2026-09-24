@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pydantic import BaseModel
 
-from api.assignments.domain.assignment_entity import AssignmentStatus
+from api.assignments.domain.entities.assignment_entity import AssignmentStatus
 
 
 class AssignmentSummaryDTO(BaseModel):

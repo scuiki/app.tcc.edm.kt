@@ -9,11 +9,11 @@ from __future__ import annotations
 
 import pandas as pd
 
-from api.assignments.domain.assignment_entity import Assignment, AssignmentStatus
-from api.assignments.domain.assignment_repository import AssignmentRepository
-from api.assignments.domain.classroom_entity import Classroom
-from api.assignments.domain.classroom_repository import ClassroomRepository
-from api.assignments.domain.classroom_slug import ClassroomSlug
+from api.assignments.domain.entities.assignment_entity import Assignment, AssignmentStatus
+from api.assignments.domain.interfaces.assignment_repository import IAssignmentRepository
+from api.assignments.domain.entities.classroom_entity import Classroom
+from api.assignments.domain.interfaces.classroom_repository import IClassroomRepository
+from api.assignments.domain.value_objects.classroom_slug import ClassroomSlug
 from api.classroom_import.application.import_classroom_dataset_dto import (
     ImportClassroomDatasetDTO,
     ImportClassroomDatasetResponseDTO,
@@ -47,8 +47,8 @@ ANOTHER_JOB_RUNNING = ImportCheck(
 class ImportClassroomDatasetUseCase(WriteUseCase):
     def __init__(
         self,
-        classrooms: ClassroomRepository,
-        assignments: AssignmentRepository,
+        classrooms: IClassroomRepository,
+        assignments: IAssignmentRepository,
         submissions: SubmissionRepository,
         unit_of_work: IUnitOfWork,
         job_lock: IJobLock,

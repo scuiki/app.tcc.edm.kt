@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-from api.assignments.domain.assignment_repository import AssignmentRepository
-from api.assignments.domain.classroom_repository import ClassroomRepository
-from api.assignments.domain.classroom_slug import ClassroomSlug
-from api.assignments.domain.existing_assignment import get_existing_assignment
-from api.assignments.domain.progsnap_assignment_id import ProgSnapAssignmentId
+from api.assignments.domain.interfaces.assignment_repository import IAssignmentRepository
+from api.assignments.domain.interfaces.classroom_repository import IClassroomRepository
+from api.assignments.domain.value_objects.classroom_slug import ClassroomSlug
+from api.assignments.domain.services.existing_assignment import get_existing_assignment
+from api.assignments.domain.value_objects.progsnap_assignment_id import ProgSnapAssignmentId
 from api.classroom_import.domain.cleaned_submissions_store import CleanedSubmissionsStore
 from api.mastery_dashboard.application.mastery_dashboard_dto import (
     PreTrainingStatisticsResponseDTO,
@@ -18,8 +18,8 @@ from api.shared.domain.errors.not_found import NotFound
 class GetPreTrainingStatisticsUseCase:
     def __init__(
         self,
-        assignments: AssignmentRepository,
-        classrooms: ClassroomRepository,
+        assignments: IAssignmentRepository,
+        classrooms: IClassroomRepository,
         cleaned_submissions: CleanedSubmissionsStore,
     ) -> None:
         self._assignments = assignments

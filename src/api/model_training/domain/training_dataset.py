@@ -11,10 +11,10 @@ from dataclasses import dataclass
 
 import pandas as pd
 
-from api.assignments.domain.assignment_repository import AssignmentRepository
-from api.assignments.domain.classroom_repository import ClassroomRepository
-from api.assignments.domain.classroom_slug import ClassroomSlug
-from api.assignments.domain.progsnap_assignment_id import ProgSnapAssignmentId
+from api.assignments.domain.interfaces.assignment_repository import IAssignmentRepository
+from api.assignments.domain.interfaces.classroom_repository import IClassroomRepository
+from api.assignments.domain.value_objects.classroom_slug import ClassroomSlug
+from api.assignments.domain.value_objects.progsnap_assignment_id import ProgSnapAssignmentId
 from api.classroom_import.domain.cleaned_submissions_store import CleanedSubmissionsStore
 from api.classroom_import.domain.submission_event import keep_only_program_runs
 
@@ -29,8 +29,8 @@ class TrainingDataset:
 
 def load_training_dataset(
     assignment_id: int,
-    assignments: AssignmentRepository,
-    classrooms: ClassroomRepository,
+    assignments: IAssignmentRepository,
+    classrooms: IClassroomRepository,
     cleaned_submissions: CleanedSubmissionsStore,
 ) -> TrainingDataset:
     """assignment (id do banco) → turma → Parquet limpo → recorte Run.Program."""

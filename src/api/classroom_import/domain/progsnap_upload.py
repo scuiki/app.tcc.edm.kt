@@ -11,7 +11,7 @@ from typing import Protocol
 
 import pandas as pd
 
-from api.assignments.domain.classroom_slug import ClassroomSlug
+from api.assignments.domain.value_objects.classroom_slug import ClassroomSlug
 
 from api.classroom_import.domain.import_report import ImportCheck
 

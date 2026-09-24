@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from api.assignments.domain.assignment_entity import AssignmentStatus
-from api.assignments.domain.assignment_repository import AssignmentRepository
-from api.assignments.domain.existing_assignment import get_existing_assignment
+from api.assignments.domain.entities.assignment_entity import AssignmentStatus
+from api.assignments.domain.interfaces.assignment_repository import IAssignmentRepository
+from api.assignments.domain.services.existing_assignment import get_existing_assignment
 from api.knowledge_components.application.edit_qmatrix_dto import (
     ApprovedQMatrixDTO,
     ApproveQMatrixDTO,
@@ -24,7 +24,7 @@ from api.shared.domain.interfaces.business_rule import IBusinessRule
 class ApproveQMatrixUseCase(WriteUseCase):
     def __init__(
         self,
-        assignments: AssignmentRepository,
+        assignments: IAssignmentRepository,
         knowledge_components: KnowledgeComponentRepository,
         unit_of_work: IUnitOfWork,
     ) -> None:

@@ -5,8 +5,8 @@ from __future__ import annotations
 import pandas as pd
 import pytest
 
-from api.assignments.domain.assignment_entity import Assignment
-from api.assignments.domain.classroom_entity import Classroom
+from api.assignments.domain.entities.assignment_entity import Assignment
+from api.assignments.domain.entities.classroom_entity import Classroom
 from api.model_training.domain.training_dataset import load_training_dataset
 
 

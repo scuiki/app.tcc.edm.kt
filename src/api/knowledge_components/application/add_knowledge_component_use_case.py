@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from api.assignments.domain.assignment_repository import AssignmentRepository
+from api.assignments.domain.interfaces.assignment_repository import IAssignmentRepository
 from api.knowledge_components.application.edit_qmatrix_dto import (
     AddKnowledgeComponentDTO,
     KnowledgeComponentDTO,
@@ -20,7 +20,7 @@ from api.shared.application.use_cases.write_use_case import WriteUseCase
 class AddKnowledgeComponentUseCase(WriteUseCase):
     def __init__(
         self,
-        assignments: AssignmentRepository,
+        assignments: IAssignmentRepository,
         knowledge_components: KnowledgeComponentRepository,
         qmatrix: QMatrixRepository,
         unit_of_work: IUnitOfWork,

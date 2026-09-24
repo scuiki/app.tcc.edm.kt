@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
-from api.assignments.domain.classroom_entity import Classroom
-from api.assignments.infrastructure.sqlite_classroom_repository import SqliteClassroomRepository
+from api.assignments.domain.entities.classroom_entity import Classroom
+from api.assignments.infrastructure.repositories.sqlite_classroom_repository import (
+    SqliteClassroomRepository,
+)
 
 
 def test_add_then_get_returns_the_same_classroom(tmp_db):

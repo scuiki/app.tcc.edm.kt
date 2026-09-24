@@ -11,10 +11,14 @@ from __future__ import annotations
 import subprocess
 import sys
 
-from api.assignments.domain.assignment_entity import Assignment
-from api.assignments.domain.classroom_entity import Classroom
-from api.assignments.infrastructure.sqlite_assignment_repository import SqliteAssignmentRepository
-from api.assignments.infrastructure.sqlite_classroom_repository import SqliteClassroomRepository
+from api.assignments.domain.entities.assignment_entity import Assignment
+from api.assignments.domain.entities.classroom_entity import Classroom
+from api.assignments.infrastructure.repositories.sqlite_assignment_repository import (
+    SqliteAssignmentRepository,
+)
+from api.assignments.infrastructure.repositories.sqlite_classroom_repository import (
+    SqliteClassroomRepository,
+)
 from api.knowledge_components.domain.knowledge_component_entity import KnowledgeComponent
 from api.knowledge_components.domain.qmatrix_binding_entity import QMatrixBinding
 from api.knowledge_components.infrastructure.sqlite_kc_generation_job_repository import (

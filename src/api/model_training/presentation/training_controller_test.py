@@ -11,10 +11,14 @@ import os
 import subprocess
 import sys
 
-from api.assignments.domain.assignment_entity import Assignment
-from api.assignments.domain.classroom_entity import Classroom
-from api.assignments.infrastructure.sqlite_assignment_repository import SqliteAssignmentRepository
-from api.assignments.infrastructure.sqlite_classroom_repository import SqliteClassroomRepository
+from api.assignments.domain.entities.assignment_entity import Assignment
+from api.assignments.domain.entities.classroom_entity import Classroom
+from api.assignments.infrastructure.repositories.sqlite_assignment_repository import (
+    SqliteAssignmentRepository,
+)
+from api.assignments.infrastructure.repositories.sqlite_classroom_repository import (
+    SqliteClassroomRepository,
+)
 from api.model_training.domain.training_epoch_metric import TrainingEpochMetric
 from api.model_training.infrastructure.sqlite_training_epoch_metric_repository import (
     SqliteTrainingEpochMetricRepository,
