@@ -1,4 +1,4 @@
-# IAssignmentRepository sobre SQLite. Todo SQL é parametrizado; nenhum dado é interpolado.
+# IAssignmentRepository sobre SQLite; as leituras ignoram os assignments excluídos.
 
 from __future__ import annotations
 
@@ -45,14 +45,31 @@ class SqliteAssignmentRepository:
 
     def get(self, assignment_id: int) -> Assignment | None:
         row = self._conn.execute(
-            f"SELECT {_COLUMNS} FROM assignment WHERE id = ?;", (assignment_id,)
+            f"SELECT {_COLUMNS} FROM assignment WHERE id = ? AND deleted_at IS NULL;",
+            (assignment_id,),
         ).fetchone()
         return None if row is None else _to_entity(row)
 
     def list_all(self) -> list[Assignment]:
         # Ordenado por id, para um payload determinístico.
-        rows = self._conn.execute(f"SELECT {_COLUMNS} FROM assignment ORDER BY id;").fetchall()
+        rows = self._conn.execute(
+            f"SELECT {_COLUMNS} FROM assignment WHERE deleted_at IS NULL ORDER BY id;"
+        ).fetchall()
         return [_to_entity(r) for r in rows]
+
+    def list_by_classroom(self, classroom_id: int) -> list[Assignment]:
+        rows = self._conn.execute(
+            f"SELECT {_COLUMNS} FROM assignment "
+            "WHERE classroom_id = ? AND deleted_at IS NULL ORDER BY id;",
+            (classroom_id,),
+        ).fetchall()
+        return [_to_entity(r) for r in rows]
+
+    def remove_all_of_classroom(self, classroom_id: int, removed_at: str) -> None:
+        self._conn.execute(
+            "UPDATE assignment SET deleted_at = ? WHERE classroom_id = ? AND deleted_at IS NULL;",
+            (removed_at, classroom_id),
+        )
 
     def set_status(self, assignment_id: int, status: AssignmentStatus) -> None:
         self._conn.execute(

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from api.assignments.domain.interfaces.assignment_repository import IAssignmentRepository
+from api.assignments.domain.services.existing_assignment import get_existing_assignment
 from api.knowledge_components.application.dtos.edit_knowledge_components_dto import (
     MergedKnowledgeComponentsDTO,
     MergeKnowledgeComponentsDTO,
@@ -49,6 +50,7 @@ class MergeKnowledgeComponentsUseCase(WriteUseCase):
         ]
 
     def execute(self, dto: MergeKnowledgeComponentsDTO) -> MergedKnowledgeComponentsDTO:
+        get_existing_assignment(self._assignments, dto.assignment_id)
         # Fusão consigo mesmo é 409 mesmo com id inexistente, checa antes do 404 de propósito.
         if dto.keep_kc_id != dto.drop_kc_id and (
             self._knowledge_components.get(dto.keep_kc_id) is None

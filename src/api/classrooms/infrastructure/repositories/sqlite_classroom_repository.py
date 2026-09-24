@@ -1,4 +1,4 @@
-# IClassroomRepository sobre SQLite; a turma é a raiz por professor, tudo pende dela.
+# IClassroomRepository sobre SQLite; as leituras ignoram as turmas excluídas.
 
 from __future__ import annotations
 
@@ -24,10 +24,25 @@ class SqliteClassroomRepository:
 
     def get(self, classroom_id: int) -> Classroom | None:
         row = self._conn.execute(
-            "SELECT id, name, created_at FROM classroom WHERE id = ?;", (classroom_id,)
+            "SELECT id, name, created_at FROM classroom WHERE id = ? AND deleted_at IS NULL;",
+            (classroom_id,),
         ).fetchone()
         return None if row is None else _to_entity(row)
 
     def list_all(self) -> list[Classroom]:
-        rows = self._conn.execute("SELECT id, name, created_at FROM classroom ORDER BY id;")
+        rows = self._conn.execute(
+            "SELECT id, name, created_at FROM classroom WHERE deleted_at IS NULL ORDER BY id;"
+        )
         return [_to_entity(r) for r in rows]
+
+    def rename(self, classroom_id: int, name: str) -> None:
+        self._conn.execute(
+            "UPDATE classroom SET name = ? WHERE id = ? AND deleted_at IS NULL;",
+            (name, classroom_id),
+        )
+
+    def remove(self, classroom_id: int, removed_at: str) -> None:
+        self._conn.execute(
+            "UPDATE classroom SET deleted_at = ? WHERE id = ? AND deleted_at IS NULL;",
+            (removed_at, classroom_id),
+        )

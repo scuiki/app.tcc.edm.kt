@@ -24,12 +24,14 @@ from api.knowledge_components.domain.rules.knowledge_component_not_linked_yet_ru
 from api.knowledge_components.domain.rules.problems_belong_to_assignment_rule import (
     ProblemsBelongToAssignmentRule,
 )
+from api.knowledge_components.domain.services.active_knowledge_component import (
+    get_active_knowledge_component,
+)
 from api.knowledge_components.domain.services.knowledge_component_edit import (
     revert_approval_after_edit,
 )
 from api.shared.application.interfaces.unit_of_work import IUnitOfWork
 from api.shared.application.use_cases.write_use_case import WriteUseCase
-from api.shared.domain.errors.not_found import NotFound
 from api.shared.domain.interfaces.business_rule import IBusinessRule
 
 
@@ -67,9 +69,9 @@ class AddProblemKnowledgeComponentUseCase(WriteUseCase):
         ]
 
     def execute(self, dto: ProblemKnowledgeComponentDTO) -> ProblemKnowledgeComponentDTO:
-        knowledge_component = self._knowledge_components.get(dto.kc_id)
-        if knowledge_component is None:
-            raise NotFound("KC inexistente")
+        knowledge_component = get_active_knowledge_component(
+            self._knowledge_components, self._assignments, dto.kc_id
+        )
         return super().execute(
             _LinkRequest(knowledge_component.assignment_id, dto.kc_id, dto.problem_id)
         )

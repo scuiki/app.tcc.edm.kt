@@ -9,6 +9,9 @@ from api.knowledge_components.application.dtos.edit_knowledge_components_dto imp
 from api.knowledge_components.domain.interfaces.knowledge_component_repository import (
     IKnowledgeComponentRepository,
 )
+from api.knowledge_components.domain.services.active_knowledge_component import (
+    get_active_knowledge_component,
+)
 from api.knowledge_components.domain.services.knowledge_component_edit import (
     ensure_every_problem_keeps_a_kc,
     revert_approval_after_edit,
@@ -19,7 +22,6 @@ from api.knowledge_components.domain.interfaces.problem_knowledge_component_repo
 from api.shared.application.interfaces.unit_of_work import IUnitOfWork
 from api.shared.application.services.clock import utc_now_iso
 from api.shared.application.use_cases.write_use_case import WriteUseCase
-from api.shared.domain.errors.not_found import NotFound
 
 
 class RemoveKnowledgeComponentUseCase(WriteUseCase):
@@ -36,9 +38,9 @@ class RemoveKnowledgeComponentUseCase(WriteUseCase):
         self._unit_of_work = unit_of_work
 
     def _run(self, dto: RemoveKnowledgeComponentDTO) -> RemovedKnowledgeComponentDTO:
-        knowledge_component = self._knowledge_components.get(dto.kc_id)
-        if knowledge_component is None:
-            raise NotFound("KC inexistente")
+        knowledge_component = get_active_knowledge_component(
+            self._knowledge_components, self._assignments, dto.kc_id
+        )
         # Problemas que este KC liga, colhidos antes de remover, só eles podem ficar sem KC.
         affected_problems = self._problem_kcs.problems_of(dto.kc_id)
         removed_at = utc_now_iso()

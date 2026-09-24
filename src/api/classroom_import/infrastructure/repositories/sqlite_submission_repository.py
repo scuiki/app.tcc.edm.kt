@@ -36,6 +36,17 @@ class SqliteSubmissionRepository:
             rows,
         )
 
+    def count_students(self, assignment_ids: list[int]) -> int:
+        if not assignment_ids:
+            return 0
+        placeholders = ", ".join("?" * len(assignment_ids))
+        row = self._conn.execute(
+            f"SELECT COUNT(DISTINCT student_id) FROM submission "
+            f"WHERE assignment_id IN ({placeholders});",
+            assignment_ids,
+        ).fetchone()
+        return row[0]
+
     def list_by_assignment(self, assignment_id: int) -> pd.DataFrame:
         rows = self._conn.execute(
             "SELECT s.student_id, a.progsnap_assignment_id, s.problem_id, s.code_snapshot_id, "
