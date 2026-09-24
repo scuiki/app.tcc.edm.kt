@@ -2,7 +2,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// Network bind mirrors the uvicorn rule in src/edmkt_app/api/app.py (D-02): never bind all-interfaces.
+// Network bind mirrors the bind rule of the api service (D-02): never bind all-interfaces.
 // Default to loopback; override to the tailnet IP (100.96.0.53) via VITE_HOST for Tailscale access.
 const host = process.env.VITE_HOST ?? '127.0.0.1'
 
@@ -25,7 +25,7 @@ export default defineConfig({
     allowedHosts,
     proxy: {
       '/assignments': apiTarget,
-      '/dashboard': apiTarget,
+      '/mastery-dashboard': apiTarget,
       '/openapi.json': apiTarget,
     },
   },

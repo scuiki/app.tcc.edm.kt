@@ -56,16 +56,16 @@ function stubFetch(overrides: FetchOverrides = {}) {
 
     if (path === '/assignments') return ok(assignmentsBody)
 
-    if (path.startsWith('/dashboard/mastery/')) {
+    if (path.endsWith('/mastery')) {
       if (failMastery) return { ok: false, status: 503 } as Response
-      const trained = path.endsWith('/1') ? masteryId1 === 'trained' : false
+      const trained = path === '/mastery-dashboard/1/mastery' ? masteryId1 === 'trained' : false
       return ok(trained ? masteryTrained : masteryUntrained)
     }
-    if (path.startsWith('/dashboard/eda/')) {
-      const hasData = path.endsWith('/1') ? edaId1 === 'data' : false
+    if (path.endsWith('/pre-training-statistics')) {
+      const hasData = path === '/mastery-dashboard/1/pre-training-statistics' ? edaId1 === 'data' : false
       return ok(hasData ? edaWithData : edaNoData)
     }
-    if (path.startsWith('/dashboard/recommendations/')) return ok(recommendations)
+    if (path.endsWith('/recommendations')) return ok(recommendations)
 
     throw new Error(`unexpected fetch ${path}`)
   })

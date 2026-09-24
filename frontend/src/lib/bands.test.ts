@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import { band, BAND_LOW, BAND_HIGH } from './bands'
 
-// Mirrors edmkt_core.mastery.classify_band exactly. The two boundaries are the contract: 0.40 enters
+// Mirrors classify_mastery_level (src/api/mastery_dashboard/domain/mastery_level.py) exactly. The two boundaries are the contract: 0.40 enters
 // medium (>= BAND_LOW) and 0.70 stays medium (<= BAND_HIGH) — Pitfall 3, the 0.70 trap.
 
 describe('band', () => {

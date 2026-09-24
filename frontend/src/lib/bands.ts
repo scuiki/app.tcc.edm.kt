@@ -1,4 +1,4 @@
-// Mirrors edmkt_core.mastery.classify_band — classifies a backend-authored mastery value, never
+// Mirrors classify_mastery_level (src/api/mastery_dashboard/domain/mastery_level.py) — classifies a backend-authored mastery value, never
 // recomputes it (D-08). Cutoffs are duplicated here as the single client-side source of truth; if the
 // core ever moves them, bands.test.ts breaks and forces this file back into sync.
 

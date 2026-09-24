@@ -1,6 +1,6 @@
 // EDA charts (DASH-04). The three backend aggregates plot as success-rate (Bar), learning-curve
 // (Line) and compile-error-rate (Bar). EDA reads only the canonical Parquet, so it is independent of
-// training: the prop is just the EdaResponse payload — no first_auc, no model version. Each aggregate
+// training: the prop is just the EdaResponse payload — no first_attempt_auc, no model version. Each aggregate
 // that arrives as {} degrades to the locked eda empty-state for that panel, never a blank canvas
 // (Pitfall 2: a blank chart reads as "perfect / no errors"). The SPA only plots backend-authored
 // values; it never recomputes an aggregate (D-08).

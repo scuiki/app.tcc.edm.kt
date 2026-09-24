@@ -15,7 +15,7 @@ describe('UncertaintyFrame', () => {
     expect(frame).toHaveTextContent('2026-06-21T00:00:00Z')
   })
 
-  it('renders the untrained copy when first_auc is null', () => {
+  it('renders the untrained copy when first_attempt_auc is null', () => {
     render(<UncertaintyFrame firstAuc={null} trainedAt={null} />)
     expect(
       screen.getByText(

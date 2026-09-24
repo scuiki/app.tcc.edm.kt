@@ -15,14 +15,15 @@ from pathlib import Path
 
 from fastapi import FastAPI
 
+from api.assignments.presentation import assignments_controller
+from api.classroom_import.presentation import classroom_import_controller
+from api.knowledge_components.presentation import knowledge_components_controller
+from api.mastery_dashboard.presentation import mastery_dashboard_controller
+from api.model_training.presentation import training_controller
 from api.shared.infrastructure.database.migrations.runner import run_migrations
 from api.shared.infrastructure.database.sqlite_connection import connect
 from api.shared.infrastructure.one_job_at_a_time_lock import release_lock_of_dead_holder
 from api.shared.presentation.http.error_handlers import install_error_handlers
-from api.assignments.presentation import assignments_controller
-from api.classroom_import.presentation import classroom_import_controller
-from api.knowledge_components.presentation import knowledge_components_controller
-from edmkt_app.api import dashboard, training
 
 
 def _resolve_db_path() -> str:
@@ -47,9 +48,10 @@ async def lifespan(app: FastAPI):
 def create_app() -> FastAPI:
     app = FastAPI(lifespan=lifespan, title="EDM·KT")
     install_error_handlers(app)
+    # Na ordem do fluxo do professor: importar → gerar e aprovar KCs → treinar → acompanhar.
     app.include_router(assignments_controller.router)
-    app.include_router(training.router)
     app.include_router(classroom_import_controller.router)
     app.include_router(knowledge_components_controller.router)
-    app.include_router(dashboard.router)
+    app.include_router(training_controller.router)
+    app.include_router(mastery_dashboard_controller.router)
     return app

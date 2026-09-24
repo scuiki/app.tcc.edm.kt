@@ -7,15 +7,15 @@ import type { EdaResponse, MasteryResponse } from '../api/schema'
 export type MasteryViewState = 'ready' | 'untrained'
 export type EdaViewState = 'ready' | 'empty'
 
-// Untrained == the uncertainty frame is null AND the matrix is empty (dashboard.py returns both
+// Untrained == the uncertainty frame is null AND the matrix is empty (the backend returns both
 // together when no model is published). An empty matrix is NOT zero mastery — never render it as such
 // (Pitfall 2, the all-red trap).
 export function masteryViewState(resp: MasteryResponse): MasteryViewState {
-  if (resp.first_auc == null && resp.matrix.length === 0) return 'untrained'
+  if (resp.first_attempt_auc == null && resp.matrix.length === 0) return 'untrained'
   return 'ready'
 }
 
-// Empty == all three EDA aggregates are keyless (the canonical Parquet is absent, dashboard.py degrades
+// Empty == all three EDA aggregates are keyless (the canonical Parquet is absent, the backend degrades
 // to {} rather than 500). One populated aggregate is enough to render.
 export function edaViewState(resp: EdaResponse): EdaViewState {
   const empty =
