@@ -24,6 +24,12 @@ from api.knowledge_components.application.dtos.edit_qmatrix_dto import (
 from api.knowledge_components.application.dtos.get_kc_generation_job_dto import (
     KnowledgeComponentGenerationJobDTO,
 )
+from api.knowledge_components.application.dtos.list_knowledge_components_dto import (
+    ListKnowledgeComponentsResponseDTO,
+)
+from api.knowledge_components.application.use_cases.list_knowledge_components_use_case import (
+    ListKnowledgeComponentsUseCase,
+)
 from api.knowledge_components.application.use_cases.get_kc_generation_job_use_case import (
     GetKnowledgeComponentGenerationJobUseCase,
 )
@@ -46,6 +52,20 @@ from api.knowledge_components.application.use_cases.start_kc_generation_use_case
 from api.knowledge_components.presentation import dependencies
 
 router = APIRouter(prefix="/knowledge-components", tags=["knowledge_components"])
+
+
+@router.get(
+    "",
+    response_model=ListKnowledgeComponentsResponseDTO,
+    description="Os KCs do assignment, cada um com os problemas a que ele se liga.",
+)
+def list_knowledge_components(
+    assignment_id: int,
+    use_case: ListKnowledgeComponentsUseCase = Depends(
+        dependencies.list_knowledge_components_use_case
+    ),
+) -> ListKnowledgeComponentsResponseDTO:
+    return use_case.execute(assignment_id)
 
 
 @router.post("/generation-jobs", status_code=202, response_model=StartedJobDTO)

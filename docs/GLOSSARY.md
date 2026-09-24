@@ -24,7 +24,7 @@ Regras gerais:
 | `ClassroomSlug` | A forma segura do nome da turma que vira nome de diretório em `data/` | `TurmaSlug` |
 | `Assignment` | Uma lista de exercícios (ex.: A439). Unidade de treino: um modelo por assignment | — |
 | `progsnap_assignment_id` | O ID do assignment **no dataset** (439). Distinto de `Assignment.id`, o ID do banco | derivado do nome por regex |
-| `Problem` / `problem_id` | Um exercício dentro do assignment | `ProblemID` |
+| `Problem` / `problem_id` | Um exercício dentro do assignment, com a `description` que o LLM deduz das soluções na geração de KCs. A chave é (`assignment_id`, `problem_id`), porque o `ProblemID` do dataset só é único dentro do assignment | `ProblemID` |
 | `Student` / `student_id` | O aluno | `SubjectID` |
 | `CodeSnapshot` / `code_snapshot_id` | O código Java que o aluno enviou numa tentativa | `CodeStateID` |
 | `Submission` | Uma tentativa: aluno + problema + snapshot + nota | — |
@@ -46,7 +46,7 @@ Todo `Protocol` da `api/` começa com `I` e fica numa pasta `interfaces/` (ver
 
 | Interface | Quem implementa | O que é | Nome antigo |
 |---|---|---|---|
-| `I<Entidade>Repository` (`IAssignmentRepository`, `IClassroomRepository`, `ISubmissionRepository`, `IKnowledgeComponentRepository`, `IKnowledgeComponentGenerationJobRepository`, `IQMatrixRepository`, `ITrainingJobRepository`, `ITrainedModelRepository`, `ITrainingEpochMetricRepository`, `IStudentMasteryRepository`) | `Sqlite<Entidade>Repository` | Ler e gravar uma entidade | sem o `I` |
+| `I<Entidade>Repository` (`IAssignmentRepository`, `IClassroomRepository`, `IProblemRepository`, `ISubmissionRepository`, `IKnowledgeComponentRepository`, `IKnowledgeComponentGenerationJobRepository`, `IQMatrixRepository`, `ITrainingJobRepository`, `ITrainedModelRepository`, `ITrainingEpochMetricRepository`, `IStudentMasteryRepository`) | `Sqlite<Entidade>Repository` | Ler e gravar uma entidade | sem o `I` |
 | `IProgSnapUploadExtractor` | `ProgSnapZipExtractor` | Extrair o `.zip` enviado e achar as tabelas | `ProgSnapUploadExtractor` |
 | `IProgSnapTableReader` | `ProgSnapCsvReader` | Ler as tabelas ProgSnap2 do CSV | `ProgSnapTableReader` |
 | `IKnowledgeComponentGenerator` | `KcGenKtGenerator` | Gerar os KCs de um assignment | `KnowledgeComponentGenerator` |
@@ -140,6 +140,9 @@ Os jobs (`TrainingJob`, `KnowledgeComponentGenerationJob`) têm os estados `pend
 | Rota | O que faz | Rota antiga |
 |---|---|---|
 | `GET /assignments` | Lista os assignments | igual |
+| `GET /assignments/{assignment_id}/problems` | Os problemas do assignment, com a descrição | — |
+| `GET /assignments/{assignment_id}/qmatrix` | Cada problema com a descrição e os KCs que exige (a lógica é de `knowledge_components`) | — |
+| `GET /knowledge-components?assignment_id=…` | Os KCs do assignment, cada um com os `problem_ids` a que se liga | — |
 | `POST /classroom-imports` | Recebe o `.zip` e devolve os arquivos detectados | `POST /ingest` |
 | `POST /classroom-imports/process` | Importa a variante escolhida | `POST /ingest/process` |
 | `POST /knowledge-components/generation-jobs` | Dispara a geração de KCs | `POST /kc/generate` |

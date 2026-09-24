@@ -6,6 +6,8 @@ import pandas as pd
 
 from api.assignments.domain.entities.assignment_entity import Assignment, AssignmentStatus
 from api.assignments.domain.interfaces.assignment_repository import IAssignmentRepository
+from api.assignments.problems.domain.entities.problem_entity import Problem
+from api.assignments.problems.domain.interfaces.problem_repository import IProblemRepository
 from api.classrooms.domain.entities.classroom_entity import Classroom
 from api.classrooms.domain.interfaces.classroom_repository import IClassroomRepository
 from api.classroom_import.application.dtos.import_classroom_dataset_dto import (
@@ -43,6 +45,7 @@ class ImportClassroomDatasetUseCase(WriteUseCase):
         self,
         classrooms: IClassroomRepository,
         assignments: IAssignmentRepository,
+        problems: IProblemRepository,
         submissions: ISubmissionRepository,
         unit_of_work: IUnitOfWork,
         job_lock: IJobLock,
@@ -50,6 +53,7 @@ class ImportClassroomDatasetUseCase(WriteUseCase):
     ) -> None:
         self._classrooms = classrooms
         self._assignments = assignments
+        self._problems = problems
         self._submissions = submissions
         self._unit_of_work = unit_of_work
         self._job_lock = job_lock
@@ -111,4 +115,7 @@ class ImportClassroomDatasetUseCase(WriteUseCase):
                         progsnap_assignment_id=int(progsnap_id),
                     )
                 )
+                # Os problemas antes das tentativas, que apontam para eles pela FK
+                problem_ids = sorted(int(p) for p in events["problem_id"].dropna().unique())
+                self._problems.add_many([Problem(assignment_id, p) for p in problem_ids])
                 self._submissions.add_many(assignment_id, events)

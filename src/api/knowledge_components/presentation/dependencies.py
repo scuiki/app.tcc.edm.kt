@@ -11,6 +11,9 @@ from api.assignments.infrastructure.repositories.sqlite_assignment_repository im
 from api.classrooms.infrastructure.repositories.sqlite_classroom_repository import (
     SqliteClassroomRepository,
 )
+from api.assignments.problems.infrastructure.repositories.sqlite_problem_repository import (
+    SqliteProblemRepository,
+)
 from api.classroom_import.infrastructure.repositories.sqlite_submission_repository import (
     SqliteSubmissionRepository,
 )
@@ -38,6 +41,9 @@ from api.knowledge_components.application.use_cases.run_kc_generation_use_case i
 from api.knowledge_components.application.use_cases.start_kc_generation_use_case import (
     StartKnowledgeComponentGenerationUseCase,
 )
+from api.knowledge_components.application.use_cases.list_knowledge_components_use_case import (
+    ListKnowledgeComponentsUseCase,
+)
 from api.knowledge_components.infrastructure.implementations.claude_cli_llm_client import (
     ClaudeCliLLMClient,
 )
@@ -64,6 +70,16 @@ from api.shared.presentation.http.database_session import open_database_session
 KC_GENERATION_WORKER = "api.knowledge_components.presentation.workers.kc_generation_worker"
 
 
+def list_knowledge_components_use_case(
+    conn: sqlite3.Connection = Depends(open_database_session),
+) -> ListKnowledgeComponentsUseCase:
+    return ListKnowledgeComponentsUseCase(
+        SqliteAssignmentRepository(conn),
+        SqliteKnowledgeComponentRepository(conn),
+        SqliteQMatrixRepository(conn),
+    )
+
+
 def start_kc_generation_use_case(
     conn: sqlite3.Connection = Depends(open_database_session),
 ) -> StartKnowledgeComponentGenerationUseCase:
@@ -88,6 +104,7 @@ def add_knowledge_component_use_case(
 ) -> AddKnowledgeComponentUseCase:
     return AddKnowledgeComponentUseCase(
         SqliteAssignmentRepository(conn),
+        SqliteProblemRepository(conn),
         SqliteKnowledgeComponentRepository(conn),
         SqliteQMatrixRepository(conn),
         SqliteUnitOfWork(conn),
@@ -143,6 +160,7 @@ def build_run_kc_generation_use_case(
     return RunKnowledgeComponentGenerationUseCase(
         assignments=SqliteAssignmentRepository(conn),
         classrooms=SqliteClassroomRepository(conn),
+        problems=SqliteProblemRepository(conn),
         submissions=SqliteSubmissionRepository(conn),
         generator=KcGenKtGenerator(llm or ClaudeCliLLMClient(model=KC_GENERATION_MODEL_ID)),
         knowledge_components=SqliteKnowledgeComponentRepository(conn),

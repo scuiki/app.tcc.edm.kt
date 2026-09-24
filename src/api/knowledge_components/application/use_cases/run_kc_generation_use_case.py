@@ -6,6 +6,7 @@ from api.assignments.domain.interfaces.assignment_repository import IAssignmentR
 from api.classrooms.domain.interfaces.classroom_repository import IClassroomRepository
 from api.classrooms.domain.value_objects.classroom_slug import ClassroomSlug
 from api.assignments.domain.value_objects.progsnap_assignment_id import ProgSnapAssignmentId
+from api.assignments.problems.domain.interfaces.problem_repository import IProblemRepository
 from api.classroom_import.domain.interfaces.submission_repository import ISubmissionRepository
 from api.knowledge_components.domain.interfaces.kc_generation_job_repository import (
     IKnowledgeComponentGenerationJobRepository,
@@ -28,6 +29,7 @@ class RunKnowledgeComponentGenerationUseCase:
         self,
         assignments: IAssignmentRepository,
         classrooms: IClassroomRepository,
+        problems: IProblemRepository,
         submissions: ISubmissionRepository,
         generator: IKnowledgeComponentGenerator,
         knowledge_components: IKnowledgeComponentRepository,
@@ -37,6 +39,7 @@ class RunKnowledgeComponentGenerationUseCase:
     ) -> None:
         self._assignments = assignments
         self._classrooms = classrooms
+        self._problems = problems
         self._submissions = submissions
         self._generator = generator
         self._knowledge_components = knowledge_components
@@ -84,6 +87,7 @@ class RunKnowledgeComponentGenerationUseCase:
                             problem_id=problem_id,
                         )
                     )
+            self._problems.set_descriptions(assignment_id, generated.problem_descriptions)
             # Status do assignment e job na mesma transação, evita kc_draft com job marcado failed.
             self._assignments.set_status(assignment_id, AssignmentStatus.KC_DRAFT)
             self._jobs.mark_done(job_id, updated_at=utc_now_iso())

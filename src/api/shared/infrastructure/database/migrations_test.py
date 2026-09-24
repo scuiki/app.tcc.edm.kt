@@ -214,6 +214,7 @@ def test_qmatrix_unique_blocks_duplicate_binding(tmp_path):
     kc_id = conn.execute(
         "INSERT INTO kc (assignment_id, name) VALUES (?, 'k');", (aid,)
     ).lastrowid
+    conn.execute("INSERT INTO problem (assignment_id, problem_id) VALUES (?, 7);", (aid,))
     insert = "INSERT INTO qmatrix (assignment_id, kc_id, problem_id) VALUES (?, ?, 7);"
     conn.execute(insert, (aid, kc_id))
 
@@ -324,7 +325,7 @@ def test_migration_0010_moves_the_cleaned_data_into_submission(tmp_path):
         (assignment_id,),
     )
 
-    run_migrations(conn)
+    run_migrations(conn, migrations_dir=_migrations_up_to(tmp_path, 10))
 
     assert _user_version(conn) == 10
     assert _column_names(conn, "submission") == {
@@ -333,3 +334,38 @@ def test_migration_0010_moves_the_cleaned_data_into_submission(tmp_path):
     }
     assert conn.execute("SELECT COUNT(*) FROM submission;").fetchone()[0] == 0
     assert conn.execute("SELECT COUNT(*) FROM assignment;").fetchone()[0] == 1
+
+
+# 0011 sobre um banco em user_version=10, os problemas saem das tentativas e da Q-matrix.
+def test_migration_0011_creates_the_problems_and_keeps_every_row(tmp_path):
+    conn = connect(str(tmp_path / "app.db"))
+    run_migrations(conn, migrations_dir=_migrations_up_to(tmp_path, 10))
+    assignment_id = _seed_assignment(conn)
+    kc_id = conn.execute(
+        "INSERT INTO kc (assignment_id, name) VALUES (?, 'k');", (assignment_id,)
+    ).lastrowid
+    for problem_id in (7, 7, 9):
+        conn.execute(
+            "INSERT INTO submission (assignment_id, problem_id, submitted_at, event_type, "
+            "is_correct) VALUES (?, ?, 't0', 'Run.Program', 1);",
+            (assignment_id, problem_id),
+        )
+    conn.execute(
+        "INSERT INTO qmatrix (assignment_id, kc_id, problem_id) VALUES (?, ?, 7);",
+        (assignment_id, kc_id),
+    )
+
+    run_migrations(conn)
+
+    assert _user_version(conn) == 11
+    problems = conn.execute("SELECT problem_id, description FROM problem ORDER BY 1;").fetchall()
+    assert [tuple(r) for r in problems] == [(7, None), (9, None)]
+    assert conn.execute("SELECT COUNT(*) FROM submission;").fetchone()[0] == 3
+    assert conn.execute("SELECT COUNT(*) FROM qmatrix;").fetchone()[0] == 1
+    assert conn.execute("PRAGMA foreign_key_check;").fetchall() == []
+    # Agora um vínculo com um problema que não existe é recusado pelo banco
+    with pytest.raises(sqlite3.IntegrityError):
+        conn.execute(
+            "INSERT INTO qmatrix (assignment_id, kc_id, problem_id) VALUES (?, ?, 99);",
+            (assignment_id, kc_id),
+        )

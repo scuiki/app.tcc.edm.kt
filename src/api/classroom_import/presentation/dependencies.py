@@ -12,6 +12,9 @@ from api.assignments.infrastructure.repositories.sqlite_assignment_repository im
 from api.classrooms.infrastructure.repositories.sqlite_classroom_repository import (
     SqliteClassroomRepository,
 )
+from api.assignments.problems.infrastructure.repositories.sqlite_problem_repository import (
+    SqliteProblemRepository,
+)
 from api.classroom_import.application.use_cases.import_classroom_dataset_use_case import (
     ImportClassroomDatasetUseCase,
 )
@@ -46,6 +49,7 @@ def build_import_classroom_dataset_use_case(conn: sqlite3.Connection) -> ImportC
     return ImportClassroomDatasetUseCase(
         classrooms=SqliteClassroomRepository(conn),
         assignments=SqliteAssignmentRepository(conn),
+        problems=SqliteProblemRepository(conn),
         submissions=SqliteSubmissionRepository(conn),
         unit_of_work=SqliteUnitOfWork(conn),
         job_lock=OneJobAtATimeLock(conn),

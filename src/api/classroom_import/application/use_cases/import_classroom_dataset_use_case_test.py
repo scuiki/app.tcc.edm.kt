@@ -75,6 +75,8 @@ def test_happy_persists_classroom_assignment_and_submissions(import_classroom, t
     # Assignment ganhou status do gate, ambas as classes presentes, então trainable.
     status = conn.execute("SELECT status FROM assignment;").fetchone()["status"]
     assert status == "ready_for_kc_generation"
+    problems = conn.execute("SELECT problem_id FROM problem ORDER BY problem_id;").fetchall()
+    assert [r["problem_id"] for r in problems] == [1, 2]  # os dois ProblemID da MainTable
 
 
 def test_the_cleaned_data_is_readable_by_assignment(import_classroom, sqlite_submissions, tmp_db, data_root):

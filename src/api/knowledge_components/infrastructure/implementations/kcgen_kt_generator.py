@@ -87,6 +87,11 @@ class KcGenKtGenerator:
                 int(p): [g for g in range(n_groups) if int(qmatrix.loc[p][f"kc_{g}"]) == 1]
                 for p in problem_ids
             },
+            problem_descriptions={
+                int(p): candidate_kcs_by_problem[p]["problem_description"]
+                for p in problem_ids
+                if candidate_kcs_by_problem[p].get("problem_description")
+            },
         )
 
     def _group_and_name(

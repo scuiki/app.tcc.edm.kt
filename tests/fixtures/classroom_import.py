@@ -13,6 +13,9 @@ from api.assignments.infrastructure.repositories.sqlite_assignment_repository im
 from api.classrooms.infrastructure.repositories.sqlite_classroom_repository import (
     SqliteClassroomRepository,
 )
+from api.assignments.problems.infrastructure.repositories.sqlite_problem_repository import (
+    SqliteProblemRepository,
+)
 from api.classroom_import.application.dtos.import_classroom_dataset_dto import (
     ImportClassroomDatasetDTO,
 )
@@ -49,6 +52,7 @@ def import_classroom(tmp_db, sqlite_submissions):
         use_case = ImportClassroomDatasetUseCase(
             classrooms=SqliteClassroomRepository(tmp_db),
             assignments=SqliteAssignmentRepository(tmp_db),
+            problems=SqliteProblemRepository(tmp_db),
             submissions=submissions or sqlite_submissions,
             unit_of_work=SqliteUnitOfWork(tmp_db),
             job_lock=OneJobAtATimeLock(tmp_db),

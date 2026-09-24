@@ -11,6 +11,7 @@ from api.classroom_import.domain.services.submission_cleaning import CLEANED_COL
 from api.classroom_import.infrastructure.repositories.sqlite_submission_repository import (
     SqliteSubmissionRepository,
 )
+from tests.fixtures.problems import add_problems
 
 
 def _assignment_id(conn, progsnap_assignment_id: int = 439) -> int:
@@ -58,6 +59,7 @@ def test_the_cleaned_data_comes_back_identical(tmp_db, student_ids, snapshot_ids
     repo = SqliteSubmissionRepository(tmp_db)
     assignment_id = _assignment_id(tmp_db)
     cleaned = _cleaned(student_ids, snapshot_ids)
+    add_problems(tmp_db, assignment_id, [1, 2])
 
     repo.add_many(assignment_id, cleaned)
 
@@ -67,6 +69,8 @@ def test_the_cleaned_data_comes_back_identical(tmp_db, student_ids, snapshot_ids
 def test_each_assignment_reads_only_its_own_rows_in_insertion_order(tmp_db):
     repo = SqliteSubmissionRepository(tmp_db)
     first, second = _assignment_id(tmp_db, 439), _assignment_id(tmp_db, 487)
+    add_problems(tmp_db, first, [1, 2])
+    add_problems(tmp_db, second, [1])
     repo.add_many(first, _cleaned([3, 1, 2], [30, 10, 20]))
     repo.add_many(second, _cleaned([7], [70]))
 

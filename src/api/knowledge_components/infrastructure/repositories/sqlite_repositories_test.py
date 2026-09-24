@@ -18,6 +18,7 @@ from api.knowledge_components.infrastructure.repositories.sqlite_qmatrix_reposit
     SqliteQMatrixRepository,
 )
 from api.shared.domain.value_objects.job_status import JobStatus
+from tests.fixtures.problems import add_problems
 
 
 @pytest.fixture
@@ -25,10 +26,12 @@ def assignment_id(tmp_db) -> int:
     classroom_id = tmp_db.execute(
         "INSERT INTO classroom (name, created_at) VALUES ('T', 't0');"
     ).lastrowid
-    return tmp_db.execute(
+    assignment_id = tmp_db.execute(
         "INSERT INTO assignment (classroom_id, name, created_at) VALUES (?, 'A', 't0');",
         (classroom_id,),
     ).lastrowid
+    add_problems(tmp_db, assignment_id, [1, 2])  # os problemas que os testes ligam aos KCs
+    return assignment_id
 
 
 def test_a_kc_round_trips_with_its_group_index(tmp_db, assignment_id):
