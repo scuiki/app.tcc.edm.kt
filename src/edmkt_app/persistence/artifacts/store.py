@@ -15,7 +15,9 @@ import torch
 from edmkt_core.models.code_dkt import CodeDKTModel
 
 from edmkt_app.persistence.artifacts.versioning import next_version_number
+from edmkt_app.persistence import models
 from edmkt_app.persistence.db import transaction
+from edmkt_app.persistence.repositories import ModelArtifactRepository
 from edmkt_app.values import ConfinedPath
 from edmkt_app.clock import utc_now_iso
 
@@ -159,24 +161,20 @@ class ArtifactStore:
 
         try:
             with transaction(conn):
-                cur = conn.execute(
-                    "INSERT INTO model_artifact "
-                    "(assignment_id, version_number, content_hash, artifact_dir, created_at, "
-                    "first_auc, git_commit, data_hash) "
-                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?);",
-                    (
-                        assignment_id,
-                        version_number,
-                        saved["content_hash"],
-                        saved["dir"],
-                        utc_now_iso(),
-                        first_auc,  # DASH-05: o AUC do treino entra na linha junto do blob (D-05)
+                artifact_id = ModelArtifactRepository(conn).insert(
+                    models.ModelArtifact(
+                        id=None,
+                        assignment_id=assignment_id,
+                        version_number=version_number,
+                        content_hash=saved["content_hash"],
+                        artifact_dir=saved["dir"],
+                        created_at=utc_now_iso(),
+                        first_auc=first_auc,  # DASH-05: o AUC do treino entra junto do blob (D-05)
                         # Proveniência (0008): qual código e qual dado produziram esta versão.
-                        git_commit,
-                        data_hash,
-                    ),
+                        git_commit=git_commit,
+                        data_hash=data_hash,
+                    )
                 )
-                artifact_id = cur.lastrowid
         except BaseException:
             # O transaction() já deu ROLLBACK; aqui se desfaz o blob do passo 1 para o slot de
             # versão não ficar bloqueado (CR-01).
