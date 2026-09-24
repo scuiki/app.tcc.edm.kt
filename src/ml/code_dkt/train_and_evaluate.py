@@ -1,12 +1,4 @@
-"""Treinar e avaliar o Code-DKT num assignment: dado limpo entra, modelo e métricas saem.
-
-A ordem das operações sustenta a reprodutibilidade e nunca é trocada:
-
-    sequências completas → split → AST paths → vocabulário só do treino → índice de problemas
-    (todos) → truncamento (só fatia) → treino → predição → AUCs separadas
-
-O teste de regressão contra o TCC 1 é o oráculo que reprova qualquer troca.
-"""
+# Treina e avalia o Code-DKT num assignment; a ordem das etapas abaixo é fixa (sustenta a AUC).
 
 from __future__ import annotations
 
@@ -28,12 +20,12 @@ from ml.evaluation.auc import compute_auc
 
 
 def code_by_snapshot_id(df: pd.DataFrame) -> dict[str, str]:
-    """snapshot id -> código Java. Um snapshot tem um código só; a última linha vence."""
+    # snapshot id -> código Java. Um snapshot tem um código só; a última linha vence.
     return dict(zip(df["code_snapshot_id"].astype(str), df["code"].fillna("")))
 
 
 def code_snapshot_ids(sequences: list[dict]) -> list[str]:
-    """Todos os snapshot ids dos eventos das sequências, em ordem (com repetições)."""
+    # Todos os snapshot ids dos eventos das sequências, em ordem (com repetições).
     out: list[str] = []
     for seq in sequences:
         out.extend(seq["events"]["code_snapshot_id"].astype(str).tolist())
@@ -50,16 +42,7 @@ def train_and_evaluate(
     on_epoch: Callable[[int, float], None] = lambda epoch, loss: None,
     n_workers: int | None = 1,
 ) -> dict:
-    """Treina e avalia o Code-DKT em um assignment.
-
-    Aceita UM DataFrame (dividido aqui por split_students_into_train_and_test, com o
-    random_state=1 do TCC 1) OU o par treino/teste já dividido. Nos dois casos a ordem das
-    operações é a mesma e o vocabulário sai só do treino.
-
-    Devolve {model, config, vocab, first_attempt_auc, all_attempts_auc, predictions,
-    n_train_events, n_test_events}. A semente é responsabilidade de quem chama
-    (seed_all_random_generators), antes desta função.
-    """
+    # Aceita 1 DataFrame (dividido aqui) ou treino/teste prontos; seed é de quem chama.
     if test_df is None:
         train_df, test_df = split_students_into_train_and_test(df_or_train)
     else:
@@ -68,7 +51,7 @@ def train_and_evaluate(
     max_len = config.get("max_len", 50)
     R = config.get("R", 50)
 
-    # 1. sequências completas: is_first_attempt é marcado uma vez por partição
+    # 1. sequências completas, is_first_attempt é marcado uma vez por partição
     train_sequences = build_student_sequences(train_df, progsnap_assignment_id)
     test_sequences = build_student_sequences(test_df, progsnap_assignment_id)
 
@@ -84,7 +67,7 @@ def train_and_evaluate(
         R=R, seed=config.get("seed", 42), n_workers=n_workers,
     )
 
-    # 3. vocabulário só do treino: sem vazamento por construção
+    # 3. vocabulário só do treino, sem vazamento por construção
     token_to_idx, path_to_idx = build_train_only_vocabulary(
         ast_paths_by_snapshot, code_snapshot_ids(train_sequences)
     )
@@ -98,7 +81,7 @@ def train_and_evaluate(
     # 4. índice de problemas sobre TODAS as sequências (a saída do modelo cobre todo problema)
     problem_to_idx = build_problem_index(train_sequences + test_sequences)
 
-    # 5. truncamento: só fatia, is_first_attempt segue como foi marcado
+    # 5. truncamento, só fatia, is_first_attempt segue como foi marcado
     train_sequences = truncate_student_sequences(train_sequences, max_len=max_len)
     test_sequences = truncate_student_sequences(test_sequences, max_len=max_len)
 
@@ -114,7 +97,7 @@ def train_and_evaluate(
 
     n_train_events = sum(min(len(s["events"]), max_len) for s in train_sequences)
 
-    # 7. métricas separadas: a mesma compute_auc, só a flag muda
+    # 7. métricas separadas, a mesma compute_auc, só a flag muda
     return {
         "model": model,
         "config": config,

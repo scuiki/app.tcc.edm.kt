@@ -1,7 +1,4 @@
-"""AUC-ROC das previsões de acerto: a métrica primária é a das primeiras tentativas.
-
-Portado do TCC 1 (src/evaluation.py). Numérica congelada.
-"""
+# AUC-ROC das previsões (métrica primária é a da primeira tentativa), portado do TCC 1, congelada.
 
 
 import numpy as np
@@ -10,7 +7,7 @@ from sklearn.metrics import roc_auc_score
 
 
 def compute_auc(predictions: pd.DataFrame, first_attempt_only: bool = False) -> float:
-    """AUC-ROC agregado sobre as previsões; `first_attempt_only` dá o first-attempt AUC."""
+    # AUC-ROC agregado sobre as previsões; `first_attempt_only` restringe ao first-attempt AUC.
 
     df = predictions.copy()
     if first_attempt_only:

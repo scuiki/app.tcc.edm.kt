@@ -1,14 +1,10 @@
-"""Etapa 4 do KCGen-KT: pedir ao LLM um nome para cada grupo de KCs parecidos.
-
-Portado do TCC 1 (notebook 03b_kc_generation, célula 15). O prompt é congelado e literal: faz
-parte da chave do cache de respostas do LLM.
-"""
+# Etapa 4 do KCGen-KT, pede ao LLM um nome por grupo de KCs; prompt congelado, é chave do cache.
 
 from __future__ import annotations
 
 from ml.kc_generation.llm_client import LLMClient
 
-# Prompt adapted from Duan et al. (2025), Table 9 — cluster labeling stage.
+# Prompt adaptado de Duan et al. (2025), Tabela 9, etapa de rotulagem de clusters.
 _CLUSTER_LABEL_SYSTEM = (
     "You are an expert CS educator labeling clusters of Knowledge Components (KCs) "
     "for an introductory Java programming course. "
@@ -18,7 +14,7 @@ _CLUSTER_LABEL_SYSTEM = (
     "the common underlying concept."
 )
 
-# Schema for the single-label cluster output (mirrors the cell-15 contract: kc_id/name/reasoning).
+# Schema da saída de um label por cluster (espelha o contrato da célula 15, kc_id/name/reasoning).
 KC_GROUP_NAME_SCHEMA: dict = {
     "type": "object",
     "properties": {
@@ -48,9 +44,9 @@ def _build_label_prompt(cluster_kcs: list[str], cluster_id: int) -> str:
 
 
 def name_kc_group(cluster_kcs: list[str], llm: LLMClient, cluster_id: int) -> dict:
-    """Label one cluster of KCs via the injected LLM port (Duan et al. 2025, Table 9)."""
+    # Rotula um cluster de KCs via a porta do LLM injetada (Duan et al. 2025, Tabela 9).
     result = llm.generate(
         _CLUSTER_LABEL_SYSTEM, _build_label_prompt(cluster_kcs, cluster_id), KC_GROUP_NAME_SCHEMA
     )
-    result["kc_id"] = cluster_id  # pin the id regardless of LLM output (cell-15 invariant)
+    result["kc_id"] = cluster_id  # fixa o id independente da saída do LLM (invariante da célula 15)
     return result

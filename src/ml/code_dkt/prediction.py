@@ -1,4 +1,4 @@
-"""Predição do Code-DKT: a probabilidade de acerto de cada próxima tentativa."""
+# Predição do Code-DKT, a probabilidade de acerto de cada próxima tentativa.
 
 # Portado do TCC 1 (src/models/code_dkt.py). Numérica congelada.
 
@@ -20,10 +20,7 @@ def predict_code_dkt(
     max_len: int = 50,
     R: int = 50,
 ) -> pd.DataFrame:
-    """Uma linha por tentativa (menos a primeira de cada aluno): a probabilidade prevista de acerto.
-
-    Colunas: student_id, problem_id, is_correct, is_first_attempt, predicted_correct_probability.
-    """
+    # Uma linha por tentativa (exceto a 1ª de cada aluno), com a probabilidade prevista de acerto.
 
     if not sequences:
         return pd.DataFrame(

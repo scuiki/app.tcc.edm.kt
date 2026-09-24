@@ -1,8 +1,4 @@
-"""Os hiperparâmetros do Code-DKT, congelados no protocolo de Shi et al. (2022).
-
-Vêm do notebook 06_code_dkt.ipynb do TCC 1 (DEFAULT_CONFIG, célula 3, e o BEST_CONFIG da grade,
-célula 24). O teste de regressão é o árbitro: se o AUC do A439 sair da banda, é aqui que se olha.
-"""
+# Hiperparâmetros do Code-DKT (Shi et al. 2022), congelados; do notebook 06_code_dkt.ipynb, TCC 1.
 
 from __future__ import annotations
 
@@ -25,5 +21,5 @@ _FROZEN = {
     "seed": 42,
 }
 
-# MappingProxyType: o mapeamento público não aceita escrita.
+# MappingProxyType garante que o mapeamento público não aceita escrita.
 CODE_DKT_HYPERPARAMETERS = MappingProxyType(_FROZEN)

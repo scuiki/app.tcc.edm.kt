@@ -1,10 +1,4 @@
-"""Etapa 3 do KCGen-KT: agrupar os nomes de KC parecidos.
-
-Portado literalmente do TCC 1 (notebook 03b_kc_generation, célula 12). Ciência congelada:
-embeddings SBERT (all-MiniLM-L6-v2) + clustering hierárquico (cosseno, average linkage), com o
-número de grupos escolhido pelo silhouette entre 10, 12 e 15. Os embeddings chegam prontos: este
-módulo não baixa nem carrega o modelo SBERT.
-"""
+# Etapa 3 do KCGen-KT, agrupa nomes de KC parecidos com SBERT + HAC (ciência congelada, sem I/O).
 
 from __future__ import annotations
 
@@ -13,13 +7,12 @@ from scipy.cluster.hierarchy import fcluster, linkage
 from scipy.spatial.distance import pdist
 from sklearn.metrics import silhouette_score
 
-# Os candidatos de número de grupos da seleção por silhouette. NÃO alterar: quem chama usa o
-# menor deles para decidir quando nem vale agrupar.
+# Candidatos de número de grupos por silhouette; NÃO alterar, quem chama usa o menor pra decidir.
 CANDIDATE_GROUP_COUNTS = (10, 12, 15)
 
 
 def group_similar_kcs(embeddings: np.ndarray, n_groups: int) -> np.ndarray:
-    """Clustering hierárquico (cosseno, average linkage) em n_groups; rótulos a partir de 0."""
+    # Clustering hierárquico (cosseno, average linkage) em n_groups; rótulos a partir de 0.
     dist_condensed = pdist(embeddings, metric="cosine")
     dist_condensed = np.clip(dist_condensed, 0, None)  # corrige negativos de ponto flutuante
     Z = linkage(dist_condensed, method="average")
@@ -28,10 +21,9 @@ def group_similar_kcs(embeddings: np.ndarray, n_groups: int) -> np.ndarray:
 
 
 def choose_kc_group_count(embeddings: np.ndarray, candidates=CANDIDATE_GROUP_COUNTS):
-    """O número de grupos com o maior silhouette médio (Rousseeuw, 1987)."""
+    # O número de grupos com o maior silhouette médio (Rousseeuw, 1987).
     n_kc_names = len(embeddings)
-    # Sem candidato menor que o número de nomes não há o que avaliar, e max() de dict vazio daria
-    # um erro opaco. Falha clara: quem chama já desvia antes para "um grupo por nome".
+    # Sem candidato menor que o total de nomes, nada a avaliar; falhar já evita erro opaco do max().
     if not any(n < n_kc_names for n in candidates):
         raise ValueError(
             f"n_kc_names={n_kc_names} abaixo do menor candidato {min(candidates)}: "

@@ -1,4 +1,4 @@
-"""A predição do Code-DKT devolve as colunas documentadas."""
+# A predição do Code-DKT devolve as colunas documentadas.
 
 from __future__ import annotations
 

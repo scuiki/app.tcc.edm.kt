@@ -1,4 +1,4 @@
-"""Caracterização da tensorização da entrada do Code-DKT (numérica congelada do TCC 1)."""
+# Caracterização da tensorização da entrada do Code-DKT (numérica congelada do TCC 1).
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ from ml.code_dkt.student_sequences import build_student_sequences
 
 
 def test_paths_to_tensor_maps_unseen_token_to_zero():
-    # unseen start/path/end map to index 0 (OOV).
+    # start/path/end nunca vistos mapeiam para o índice 0 (OOV).
     paths = [("NeverSeenStart", "Never@Seen@Path", "NeverSeenEnd")]
     arr = ast_paths_to_index_array(paths, token_to_idx={}, path_to_idx={}, R=50)
     assert arr.shape == (50, 3)
@@ -16,7 +16,7 @@ def test_paths_to_tensor_maps_unseen_token_to_zero():
 
 
 def test_build_code_input_tensor_has_documented_last_dim(a439_mini):
-    # Last dim == 2M + R*3, where M = number of distinct problems in the index.
+    # Última dimensão é 2M + R*3, com M igual ao número de problemas distintos no índice.
     sequences = build_student_sequences(a439_mini, 439)
     cache = {
         snapshot_id: extract_ast_paths(code)
