@@ -91,9 +91,16 @@ segue em aberto.
 ou `"N/A"`. Sem a conversão, `Score == 1.0` é falso em toda linha, e a turma inteira vira
 `statistics_only` sem erro nenhum.
 
-**Uma turma não é importada duas vezes.** A comparação é pelo slug, porque duas turmas com o mesmo
-slug dividiriam o mesmo diretório em `data/`, com o cache de paths, as respostas do LLM e os
-modelos de uma misturados aos da outra.
+**Os arquivos de uma turma ficam no id dela, não no nome.** Antes o diretório vinha do slug do nome,
+e isso tinha dois problemas. Renomear a turma mudava o slug, e o app deixava de achar o modelo
+publicado. E um segundo envio para a mesma turma misturava o cru e reaproveitava o cache de AST
+paths de outro dataset, porque a chave era só o `CodeStateID`. Agora o diretório é
+`data/<classroom_id>/`, cada envio tem a própria pasta em `raw/`, e o cache de AST paths e o do LLM
+ficam por assignment.
+
+**Uma turma recebe vários envios.** Cada envio cria assignments novos, mesmo que o AssignmentID ou
+um problema se repita, para manter a importação simples. Juntar ou substituir envios fica para
+quando houver uma entidade de dataset.
 
 **O zip do professor não é confiável.** O nome de cada arquivo é confinado ao diretório de destino
 antes de escrever, e a mensagem de erro não repete o caminho, que pode carregar conteúdo do aluno.
@@ -200,7 +207,9 @@ execução de código.
 **`CodeSnapshotId` é validado por allowlist.** É o único id do dataset do professor que vira nome de
 arquivo, e aceita só letras, números e `._-`.
 
-**`ClassroomSlug` é o único nome de turma que vira caminho.** O nome cru pode ter `/` ou `..`.
+**O nome da turma é único, comparado pelo `ClassroomSlug`.** "Turma 6" e "turma  6" são a mesma
+turma. O slug não vira mais caminho; o nome do zip de cada envio passa pela mesma limpeza
+(`text_to_slug`) antes de virar o nome da pasta, porque ele vem do usuário.
 
 **`ProgSnapAssignmentId` é um tipo próprio.** O assignment tem dois ids inteiros, o do banco e o do
 dataset, e eles já foram trocados um pelo outro.

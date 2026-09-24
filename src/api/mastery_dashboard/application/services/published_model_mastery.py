@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from api.assignments.domain.entities.assignment_entity import Assignment
 from api.assignments.domain.interfaces.assignment_repository import IAssignmentRepository
-from api.classrooms.domain.interfaces.classroom_repository import IClassroomRepository
 from api.classroom_import.domain.interfaces.submission_repository import ISubmissionRepository
 from api.knowledge_components.domain.interfaces.problem_knowledge_component_repository import (
     IProblemKnowledgeComponentRepository,
@@ -26,7 +25,6 @@ class PublishedModelMastery:
     def __init__(
         self,
         assignments: IAssignmentRepository,
-        classrooms: IClassroomRepository,
         submissions: ISubmissionRepository,
         trained_models: ITrainedModelRepository,
         problem_kcs: IProblemKnowledgeComponentRepository,
@@ -35,7 +33,6 @@ class PublishedModelMastery:
         unit_of_work: IUnitOfWork,
     ) -> None:
         self._assignments = assignments
-        self._classrooms = classrooms
         self._submissions = submissions
         self._trained_models = trained_models
         self._problem_kcs = problem_kcs
@@ -63,7 +60,7 @@ class PublishedModelMastery:
 
         # O mesmo recorte do treino, só Run.Program, senão a matriz sairia de outra distribuição.
         dataset = load_training_dataset(
-            assignment.id, self._assignments, self._classrooms, self._submissions
+            assignment.id, self._assignments, self._submissions
         )
         kcs_by_problem: dict[int, list[int]] = {}
         for binding in self._problem_kcs.list_by_assignment(assignment.id):

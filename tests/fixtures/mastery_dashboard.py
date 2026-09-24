@@ -8,9 +8,6 @@ import pytest
 from api.assignments.infrastructure.repositories.sqlite_assignment_repository import (
     SqliteAssignmentRepository,
 )
-from api.classrooms.infrastructure.repositories.sqlite_classroom_repository import (
-    SqliteClassroomRepository,
-)
 from api.classroom_import.domain.services.submission_cleaning import CLEANED_COLUMNS
 from api.classroom_import.infrastructure.repositories.sqlite_submission_repository import (
     SqliteSubmissionRepository,
@@ -105,7 +102,6 @@ def published_model_mastery(trained_artifact, real_mastery_predictor, sqlite_stu
     def build(predictor=None, student_masteries=None) -> PublishedModelMastery:
         return PublishedModelMastery(
             assignments=SqliteAssignmentRepository(conn),
-            classrooms=SqliteClassroomRepository(conn),
             submissions=SqliteSubmissionRepository(conn),
             trained_models=SqliteTrainedModelRepository(conn),
             problem_kcs=SqliteProblemKnowledgeComponentRepository(conn),
@@ -131,7 +127,6 @@ def training_dataset_of(trained_artifact):
         return load_training_dataset(
             assignment_id,
             SqliteAssignmentRepository(conn),
-            SqliteClassroomRepository(conn),
             SqliteSubmissionRepository(conn),
         )
 

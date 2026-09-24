@@ -9,9 +9,6 @@ from fastapi import Depends
 from api.assignments.infrastructure.repositories.sqlite_assignment_repository import (
     SqliteAssignmentRepository,
 )
-from api.classrooms.infrastructure.repositories.sqlite_classroom_repository import (
-    SqliteClassroomRepository,
-)
 from api.classroom_import.infrastructure.repositories.sqlite_submission_repository import (
     SqliteSubmissionRepository,
 )
@@ -49,7 +46,6 @@ def build_published_model_mastery(conn: sqlite3.Connection, predictor=None) -> P
     # `predictor` troca o preditor real, os testes o espionam.
     return PublishedModelMastery(
         assignments=SqliteAssignmentRepository(conn),
-        classrooms=SqliteClassroomRepository(conn),
         submissions=SqliteSubmissionRepository(conn),
         trained_models=SqliteTrainedModelRepository(conn),
         problem_kcs=SqliteProblemKnowledgeComponentRepository(conn),

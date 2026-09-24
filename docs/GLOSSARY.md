@@ -23,7 +23,8 @@ Regras gerais:
 | Nome no código | O que é | Nome antigo |
 |---|---|---|
 | `Classroom` | A turma do professor, dona dos dados enviados | `Turma` |
-| `ClassroomSlug` | A forma segura do nome da turma que vira nome de diretório em `data/` | `TurmaSlug` |
+| `ClassroomSlug` | O nome da turma normalizado, para "Turma 6" e "turma  6" serem o mesmo nome | `TurmaSlug` |
+| `ClassroomStatus` (`awaiting_data` / `in_progress` / `trained`) | A situação da turma na tela: sem problemas importados, com dados e sem modelo, com ao menos um modelo publicado. Calculado, nunca gravado | — |
 | `Assignment` | Uma lista de exercícios (ex.: A439). Unidade de treino: um modelo por assignment | — |
 | `progsnap_assignment_id` | O ID do assignment **no dataset** (439). Distinto de `Assignment.id`, o ID do banco | derivado do nome por regex |
 | `Problem` / `problem_id` | Um exercício dentro do assignment, com a `description` que o LLM deduz das soluções na geração de KCs. A chave é (`assignment_id`, `problem_id`), porque o `ProblemID` do dataset só é único dentro do assignment | `ProblemID` |
@@ -149,18 +150,22 @@ Os jobs (`TrainingJob`, `KnowledgeComponentGenerationJob`) têm os estados `pend
 
 | Rota | O que faz | Rota antiga |
 |---|---|---|
-| `GET /assignments` | Lista os assignments | igual |
+| `GET /assignments` | Lista os assignments ativos; com `?classroom_id=…`, só os da turma | igual |
 | `GET /assignments/{assignment_id}/problems` | Os problemas do assignment, com a descrição | — |
 | `GET /assignments/{assignment_id}/problems/knowledge-components` | Cada problema com a descrição e os KCs que exige (a lógica é de `knowledge_components`) | — |
 | `GET /knowledge-components?assignment_id=…` | Os KCs do assignment, cada um com os `problem_ids` a que se liga | — |
 | `POST /knowledge-components/{kc_id}/problems/{problem_id}` | Liga um KC que já existe a mais um problema | — |
 | `DELETE /knowledge-components/{kc_id}/problems/{problem_id}` | Tira o KC de um problema só; se ele perder o último, sai junto | — |
-| `POST /classroom-imports` | Recebe o `.zip` e devolve os arquivos detectados | `POST /ingest` |
-| `POST /classroom-imports/process` | Importa a variante escolhida | `POST /ingest/process` |
+| `GET /classrooms` | As turmas, com `problem_count`, `student_count` e `status` | — |
+| `POST /classrooms` | Cria uma turma só com o nome (409 para nome repetido) | — |
+| `PUT /classrooms/{classroom_id}` | Renomeia a turma | — |
+| `DELETE /classrooms/{classroom_id}` | Exclui a turma e os assignments dela (soft delete) | — |
+| `POST /classroom-imports` | Recebe o `.zip` de um envio para uma turma que já existe (`classroom_id`) e devolve os arquivos detectados | `POST /ingest` |
+| `POST /classroom-imports/process` | Importa a variante escolhida na turma (`classroom_id`) | `POST /ingest/process` |
 | `POST /knowledge-components/generation-jobs` | Dispara a geração de KCs | `POST /kc/generate` |
 | `GET /knowledge-components/generation-jobs/{job_id}` | Progresso da geração | `GET /kc/jobs/{job_id}` |
 | `POST /knowledge-components` | O professor adiciona um KC | `POST /kc` |
-| `PATCH /knowledge-components/{kc_id}` | Renomeia um KC | `PATCH /kc/{kc_id}` |
+| `PUT /knowledge-components/{kc_id}` | Renomeia um KC | `PATCH /knowledge-components/{kc_id}` |
 | `DELETE /knowledge-components/{kc_id}` | Remove um KC | `DELETE /kc/{kc_id}` |
 | `POST /knowledge-components/merge` | Funde dois KCs | `POST /kc/merge` |
 | `POST /knowledge-components/approve` | Aprova os KCs do assignment | `POST /knowledge-components/approve-qmatrix` |

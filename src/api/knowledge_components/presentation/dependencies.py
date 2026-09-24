@@ -8,9 +8,6 @@ from fastapi import Depends
 from api.assignments.infrastructure.repositories.sqlite_assignment_repository import (
     SqliteAssignmentRepository,
 )
-from api.classrooms.infrastructure.repositories.sqlite_classroom_repository import (
-    SqliteClassroomRepository,
-)
 from api.assignments.problems.infrastructure.repositories.sqlite_problem_repository import (
     SqliteProblemRepository,
 )
@@ -188,7 +185,6 @@ def build_run_kc_generation_use_case(
     # `llm` troca o cliente real do `claude`, os testes passam um falso.
     return RunKnowledgeComponentGenerationUseCase(
         assignments=SqliteAssignmentRepository(conn),
-        classrooms=SqliteClassroomRepository(conn),
         problems=SqliteProblemRepository(conn),
         submissions=SqliteSubmissionRepository(conn),
         generator=KcGenKtGenerator(llm or ClaudeCliLLMClient(model=KC_GENERATION_MODEL_ID)),

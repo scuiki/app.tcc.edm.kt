@@ -34,22 +34,29 @@ def _zip_bytes() -> bytes:
     return buffer.getvalue()
 
 
-def _upload(client):
+def _classroom(client) -> int:
+    return client.post("/classrooms", json={"name": "Turma X"}).json()["id"]
+
+
+def _upload(client, classroom_id: int):
     return client.post(
         "/classroom-imports",
-        data={"classroom_name": "Turma X"},
-        files={"file": ("upload.zip", _zip_bytes(), "application/zip")},
+        data={"classroom_id": str(classroom_id)},
+        files={"file": ("CSEDM Spring.zip", _zip_bytes(), "application/zip")},
     )
 
 
 def test_upload_lists_the_main_tables_without_taking_the_lock(api_client):
     client, conn = api_client
+    classroom_id = _classroom(client)
 
-    response = _upload(client)
+    response = _upload(client, classroom_id)
 
     assert response.status_code == 200
     body = response.json()
-    assert body["classroom_slug"] == "turma-x"
+    assert body["classroom_id"] == classroom_id
+    # Cada envio numa pasta própria, com a data e o nome do zip limpo
+    assert body["raw_dir"].split("/raw/")[1].endswith("_csedm-spring")
     assert body["main_tables"]  # achou ao menos uma MainTable
     assert body["code_snapshots"] is not None
     assert lock_holder_pid(conn) is None
@@ -57,12 +64,13 @@ def test_upload_lists_the_main_tables_without_taking_the_lock(api_client):
 
 def test_process_saves_the_classroom_and_reports_trainability(api_client):
     client, conn = api_client
-    upload = _upload(client).json()
+    classroom_id = _classroom(client)
+    upload = _upload(client, classroom_id).json()
 
     response = client.post(
         "/classroom-imports/process",
         json={
-            "classroom_name": "Turma X",
+            "classroom_id": classroom_id,
             "raw_dir": upload["raw_dir"],
             "main_table": upload["main_tables"][0],
         },
@@ -91,10 +99,10 @@ def test_process_refuses_paths_outside_the_data_root_before_reading(api_client):
     try:
         for body in (
             # main_table em /etc/passwd, leitura arbitrária de arquivo se não fosse confinado.
-            {"classroom_name": "X", "raw_dir": raw_dir, "main_table": "/etc/passwd"},
-            {"classroom_name": "X", "raw_dir": "/etc", "main_table": f"{raw_dir}/MainTable.csv"},
+            {"classroom_id": 1, "raw_dir": raw_dir, "main_table": "/etc/passwd"},
+            {"classroom_id": 1, "raw_dir": "/etc", "main_table": f"{raw_dir}/MainTable.csv"},
             # `..` que normaliza para fora da raiz; a guarda resolve antes de conferir.
-            {"classroom_name": "X", "raw_dir": raw_dir, "main_table": f"{raw_dir}/../../etc/passwd"},
+            {"classroom_id": 1, "raw_dir": raw_dir, "main_table": f"{raw_dir}/../../etc/passwd"},
         ):
             response = client.post("/classroom-imports/process", json=body)
             assert response.status_code == 400
@@ -109,4 +117,32 @@ def test_an_upload_over_the_size_limit_is_refused_with_413(api_client, monkeypat
     # Um teto minúsculo exercita o guarda de streaming sem subir 512 MiB.
     monkeypatch.setattr(classroom_import_controller, "MAX_UPLOAD_BYTES", 16)
 
-    assert _upload(client).status_code == 413
+    assert _upload(client, _classroom(client)).status_code == 413
+
+
+def test_a_second_send_to_the_same_classroom_creates_new_assignments(api_client):
+    client, conn = api_client
+    classroom_id = _classroom(client)
+    for _ in range(2):
+        upload = _upload(client, classroom_id).json()
+        response = client.post(
+            "/classroom-imports/process",
+            json={
+                "classroom_id": classroom_id,
+                "raw_dir": upload["raw_dir"],
+                "main_table": upload["main_tables"][0],
+            },
+        )
+        assert response.status_code == 200
+
+    # O assignment repetido vira um novo, e cada envio guardou o próprio cru
+    assert conn.execute("SELECT COUNT(*) FROM assignment;").fetchone()[0] == 2
+    raw = settings.DATA_ROOT / str(classroom_id) / "raw"
+    assert len(list(raw.iterdir())) == 2
+
+
+def test_uploading_or_importing_into_a_missing_classroom_is_404(api_client):
+    client, _ = api_client
+
+    assert _upload(client, 999).status_code == 404
+

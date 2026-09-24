@@ -11,7 +11,6 @@ import pandas as pd
 import pytest
 import torch
 
-from api.classrooms.domain.value_objects.classroom_slug import ClassroomSlug
 from api.assignments.domain.value_objects.progsnap_assignment_id import ProgSnapAssignmentId
 from api.model_training.domain.value_objects.training_outcome import TrainingOutcome
 from api.model_training.domain.value_objects.training_dataset import TrainingDataset
@@ -29,9 +28,9 @@ def _save(conn, classroom_id: int, assignment_id: int, model, vocab, config) -> 
     model_id = TrainedModelFileStore(conn).save(
         TrainingDataset(
             events=pd.DataFrame(),
-            classroom_slug=ClassroomSlug("turma-a"),
             progsnap_assignment_id=ProgSnapAssignmentId(1),
             classroom_id=classroom_id,
+            assignment_id=assignment_id,
         ),
         assignment_id,
         TrainingOutcome(
@@ -224,7 +223,7 @@ def test_persist_failure_does_not_block_next_version(
         _save(proxy, classroom_id, assignment_id, tiny_model, tiny_vocab, tiny_config)
 
     # (b) nenhum v1 órfão sobra no FS (rmtree desfez o blob); layout é <base>/<assignment_id>/v<N>.
-    v1 = data_root / "turma-a" / "models" / str(assignment_id) / "v1"
+    v1 = data_root / str(classroom_id) / "models" / str(assignment_id) / "v1"
     assert not v1.exists()
 
     # (c) a 2ª persist() sucede e devolve version_number==1, o slot foi liberado, não travado.
@@ -289,7 +288,7 @@ def test_version_dir_has_no_repeated_models_segment(tmp_db, data_root, tiny_mode
 
     vdir = Path(persisted["dir"])
     assert [p for p in vdir.parts if p == "models"] == ["models"]
-    assert vdir == (data_root / "turma-a" / "models" / str(assignment_id) / "v1").resolve()
+    assert vdir == (data_root / str(classroom_id) / "models" / str(assignment_id) / "v1").resolve()
 
 
 def test_reader_and_writer_agree_on_the_root(tmp_path):

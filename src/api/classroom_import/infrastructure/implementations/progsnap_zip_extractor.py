@@ -5,7 +5,6 @@ from __future__ import annotations
 import zipfile
 from pathlib import Path
 
-from api.classrooms.domain.value_objects.classroom_slug import ClassroomSlug
 from api.classroom_import.domain.value_objects.detected_upload import DetectedUpload
 from api.shared.infrastructure.filesystem import data_layout
 from api.shared.infrastructure.filesystem.confined_path import ConfinedPath
@@ -73,10 +72,16 @@ def extract_zip(zip_path: Path, dest: Path) -> Path:
     return base
 
 
-# IProgSnapUploadExtractor, extrai em data/<turma>/raw/ e lista o que encontrou.
+# IProgSnapUploadExtractor, extrai cada envio numa pasta própria em raw/ e lista o que encontrou.
 class ProgSnapZipExtractor:
-    def extract(self, zip_path: Path, classroom_slug: ClassroomSlug) -> DetectedUpload:
-        raw_dir = extract_zip(Path(zip_path), data_layout.raw_upload_dir(classroom_slug))
+    def extract(self, zip_path: Path, classroom_id: int, upload_name: str) -> DetectedUpload:
+        destination = data_layout.raw_upload_dir(classroom_id, upload_name)
+        # Dois envios no mesmo segundo e com o mesmo nome não se misturam
+        suffix = 2
+        while destination.exists():
+            destination = data_layout.raw_upload_dir(classroom_id, f"{upload_name}-{suffix}")
+            suffix += 1
+        raw_dir = extract_zip(Path(zip_path), destination)
         return DetectedUpload(
             raw_dir=raw_dir,
             main_tables=find_main_tables(raw_dir),

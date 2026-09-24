@@ -10,7 +10,7 @@ from api.classroom_import.domain.value_objects.import_report import ClassroomImp
 
 
 class ImportClassroomDatasetDTO(BaseModel):
-    classroom_name: str
+    classroom_id: int
     raw_dir: Path  # já confinado sob a raiz de dados pelo controller
     main_table: Path  # a MainTable.csv que o professor escolheu
 

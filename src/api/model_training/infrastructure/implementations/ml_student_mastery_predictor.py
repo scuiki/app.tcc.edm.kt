@@ -34,13 +34,14 @@ class MlStudentMasteryPredictor:
 
     def predict(self, trained_model: TrainedModel, dataset: TrainingDataset) -> pd.DataFrame:
         # Probabilidade de acerto (menos a 1ª tentativa); leitura confinada ao models/ da turma
-        model, vocab, meta = self._model_store.load(trained_model, dataset.classroom_slug)
+        model, vocab, meta = self._model_store.load(trained_model, dataset.classroom_id)
 
         # int, não o value object (o ml/ filtra a coluna do DataFrame pelo int).
         sequences = build_student_sequences(dataset.events, dataset.progsnap_assignment_id.value)
         # Parâmetros de extração vêm do meta da versão, completados pelos hiperparâmetros congelados
         ast_paths_by_snapshot = load_or_extract_ast_paths(
-            dataset.classroom_slug,
+            dataset.classroom_id,
+            dataset.assignment_id,
             sorted(set(code_snapshot_ids(sequences))),
             code_by_snapshot_id(dataset.events),
             {**CODE_DKT_HYPERPARAMETERS, **meta},

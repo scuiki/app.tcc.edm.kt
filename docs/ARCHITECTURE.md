@@ -15,7 +15,7 @@ Os nomes seguem o [glossário](GLOSSARY.md).
 
 | Pasta | Responsabilidade |
 |---|---|
-| `api/classrooms/` | `Classroom`, a turma do professor, e o `ClassroomSlug` que vira o diretório dela em `data/` |
+| `api/classrooms/` | `Classroom`, a turma do professor, o CRUD dela e o `ClassroomStatus` |
 | `api/assignments/` | `Assignment` e o ciclo de `AssignmentStatus`. O assignment pertence a uma turma, e todas as outras funcionalidades dependem dele |
 | `api/assignments/problems/` | `Problem`, os problemas de cada assignment e a descrição que o LLM deduz. É uma sub-funcionalidade de `assignments`, com camadas próprias |
 | `api/classroom_import/` | Upload do ProgSnap2, validação, limpeza, checagem de treinabilidade |
@@ -103,6 +103,19 @@ docker run --rm --security-opt label=disable -v "$PWD":/app -w /app edmkt-core:d
 - Os erros do domínio (`NotFound`, `BusinessRuleViolation`, `AnotherJobRunning`, em
   `shared/domain/errors/`) não conhecem HTTP; `shared/presentation/http/error_handlers.py` os
   traduz para 404 e 409.
+
+## Arquivos em disco
+
+Tudo o que uma turma tem fora do banco fica sob o id dela, que nunca muda, e só
+`shared/infrastructure/filesystem/data_layout.py` monta esses caminhos:
+
+```
+data/<classroom_id>/
+  raw/<data-e-hora>_<nome-do-zip>/     o cru de cada envio
+  cache/paths/<assignment_id>/         os AST paths já extraídos
+  kc/<assignment_id>/                  as respostas do LLM da geração de KCs
+  models/<assignment_id>/v<K>/         as versões de modelo treinadas
+```
 
 ## Remoção
 

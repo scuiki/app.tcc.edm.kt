@@ -6,7 +6,7 @@ from pydantic import BaseModel
 
 
 class UploadClassroomDatasetResponseDTO(BaseModel):
-    classroom_slug: str
+    classroom_id: int
     raw_dir: str
     main_tables: list[str]  # uma ou mais, o professor escolhe qual importar
     code_snapshots: str | None

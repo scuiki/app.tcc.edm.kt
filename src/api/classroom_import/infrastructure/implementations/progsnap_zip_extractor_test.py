@@ -122,7 +122,7 @@ def test_upload_extraction_does_not_take_the_job_lock(tmp_db, tmp_path, monkeypa
         zf.writestr("MainTable.csv", "SubjectID,AssignmentID\n")
         zf.writestr("CodeStates/CodeStates.csv", "CodeStateID,Code\n")
 
-    detected = discover_mod.ProgSnapZipExtractor().extract(upload, "turma-x")
+    detected = discover_mod.ProgSnapZipExtractor().extract(upload, 1, "envio")
 
     assert detected.main_tables
     assert detected.raw_dir.exists()  # o cru fica preservado em raw/
