@@ -213,3 +213,33 @@ def test_success_transitions_job_and_acquires_lock(tmp_db, data_root, monkeypatc
     assert asg.status == "kc_draft"  # pipeline conclui em kc_draft (D-06)
     assert conn.execute("SELECT COUNT(*) FROM kc;").fetchone()[0] >= 1  # KCs persistidos
     assert _holder_pid(conn) is None  # release garantido
+
+
+def test_main_resolves_paths_from_env_and_runs_pipeline(tmp_path, monkeypatch):
+    # O entrypoint do subprocess (`python -m edmkt_app.kc_pipeline`) nunca era exercitado: os
+    # testes acima chamam o runner direto. Um erro em main() mata o processo antes de marcar o
+    # job, e o kc_job fica 'pending' para sempre — sem nenhum teste falhar.
+    from edmkt_app.kc_pipeline import __main__ as kc_main
+    from edmkt_app.persistence import connect, run_migrations
+
+    db_path = tmp_path / "app.db"
+    run_migrations(connect(str(db_path)))
+    # setattr antes de main() mutar os globais: o teardown do monkeypatch os restaura.
+    monkeypatch.setattr(settings, "DB_PATH", "app.db")
+    monkeypatch.setattr(settings, "DATA_ROOT", settings.DATA_ROOT)
+    monkeypatch.setenv("EDMKT_DB_PATH", str(db_path))
+    monkeypatch.setenv("EDMKT_DATA_ROOT", str(tmp_path / "data"))
+
+    calls = []
+    monkeypatch.setattr(
+        kc_main,
+        "_run_kc_pipeline",
+        lambda conn, assignment_id, job_id: calls.append((assignment_id, job_id)) or {},
+    )
+
+    exit_code = kc_main.main(["--assignment", "7", "--job-id", "3"])
+
+    assert exit_code == 0
+    assert calls == [(7, 3)]
+    assert settings.DB_PATH == str(db_path)
+    assert settings.DATA_ROOT == tmp_path / "data"
