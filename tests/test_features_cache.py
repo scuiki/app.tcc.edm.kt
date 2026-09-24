@@ -11,7 +11,8 @@ from pathlib import Path
 
 import pytest
 
-from edmkt_app import features_cache, settings
+from api.shared.infrastructure import settings
+from edmkt_app import features_cache
 from ml.code_dkt.student_split import build_train_only_vocabulary
 
 

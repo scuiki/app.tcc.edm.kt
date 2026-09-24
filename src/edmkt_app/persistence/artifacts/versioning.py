@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import sqlite3
 
-from edmkt_app.persistence.db import transaction
+from api.shared.infrastructure.database.sqlite_connection import transaction
 from edmkt_app.persistence.repositories import AssignmentRepository
 
 

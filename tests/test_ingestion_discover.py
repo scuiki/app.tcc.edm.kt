@@ -118,8 +118,8 @@ def test_extract_zip_streaming_aceita_membro_dentro_do_teto(
 
 
 def test_discover_nao_importa_nucleo_nem_trava() -> None:
-    # Lock Timing (Pitfall 5): a detecção é read-only e NÃO toca PipelineLock nem o núcleo.
-    # Checa o CÓDIGO (não a docstring/prosa): nenhuma menção a PipelineLock ou import do
+    # Lock Timing (Pitfall 5): a detecção é read-only e NÃO toca OneJobAtATimeLock nem o núcleo.
+    # Checa o CÓDIGO (não a docstring/prosa): nenhuma menção a OneJobAtATimeLock ou import do
     # núcleo fora de literais de string/comentários.
     import ast
 
@@ -138,5 +138,5 @@ def test_discover_nao_importa_nucleo_nem_trava() -> None:
         if isinstance(node, ast.ImportFrom) and node.module
     }
     names = {node.id for node in ast.walk(tree) if isinstance(node, ast.Name)}
-    assert "PipelineLock" not in names and "PipelineLock" not in imported
+    assert "OneJobAtATimeLock" not in names and "OneJobAtATimeLock" not in imported
     assert not any(m and (m == "ml" or m.startswith("ml.")) for m in modules)

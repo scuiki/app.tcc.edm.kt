@@ -20,7 +20,8 @@ import sqlite3
 from dataclasses import dataclass
 import pandas as pd
 
-from edmkt_app import data_layout, utils
+from api.shared.infrastructure import data_layout
+from edmkt_app import utils
 from edmkt_app.persistence import repositories as repos
 from edmkt_app.values import ProgSnapAssignmentId, TurmaSlug
 

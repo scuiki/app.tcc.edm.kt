@@ -5,7 +5,7 @@ from __future__ import annotations
 import sqlite3
 
 from edmkt_app.persistence import repositories as repos
-from edmkt_app.use_cases.base import NotFound
+from api.shared.domain.errors import NotFound
 
 
 class GetKCJobStatusUseCase:

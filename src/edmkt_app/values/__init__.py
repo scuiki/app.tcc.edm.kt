@@ -14,8 +14,7 @@ outro.
 """
 
 from edmkt_app.values.code_state_id import CodeStateId
-from edmkt_app.values.confined_path import ConfinedPath
 from edmkt_app.values.progsnap_assignment_id import ProgSnapAssignmentId
 from edmkt_app.values.turma_slug import TurmaSlug
 
-__all__ = ["CodeStateId", "ConfinedPath", "ProgSnapAssignmentId", "TurmaSlug"]
+__all__ = ["CodeStateId", "ProgSnapAssignmentId", "TurmaSlug"]

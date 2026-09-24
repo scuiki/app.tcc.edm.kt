@@ -16,10 +16,10 @@ from ml.code_dkt.model import CodeDKTModel
 
 from edmkt_app.persistence.artifacts.versioning import next_version_number
 from edmkt_app.persistence import models
-from edmkt_app.persistence.db import transaction
+from api.shared.infrastructure.database.sqlite_connection import transaction
 from edmkt_app.persistence.repositories import ModelArtifactRepository
-from edmkt_app.values import ConfinedPath
-from edmkt_app.clock import utc_now_iso
+from api.shared.infrastructure.confined_path import ConfinedPath
+from api.shared.infrastructure.clock import utc_now_iso
 
 
 class ArtifactStore:
@@ -149,7 +149,7 @@ class ArtifactStore:
         IMMEDIATE, uma falha do INSERT/COMMIT desfaria o banco mas deixaria o diretório v<N>
         órfão no FS — e a próxima persist() recalcularia o mesmo N e bateria em FileExistsError,
         travando o slot. A versão é calculada fora da txn sem corrida porque a trava global
-        (PipelineLock, D-07) garante um único writer por vez; UNIQUE(assignment_id,
+        (OneJobAtATimeLock, D-07) garante um único writer por vez; UNIQUE(assignment_id,
         version_number) segue como rede. A txn cobre só o INSERT; em qualquer falha, o
         ROLLBACK limpa o banco e o rmtree desfaz o blob recém-escrito, liberando o slot. NÃO
         faz o flip: o ponteiro current só é trocado por flip_current depois (passo (3),

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import torch
 
-from edmkt_app.background_jobs import run_under_lock
+from api.shared.infrastructure.background_jobs import run_under_lock
 from edmkt_app.persistence import repositories as repos
 from edmkt_app.train.stages import _train_body
 

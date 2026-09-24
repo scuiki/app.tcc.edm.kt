@@ -5,12 +5,13 @@ from __future__ import annotations
 from pydantic import BaseModel
 
 from edmkt_app import specs
-from edmkt_app.background_jobs import launch_worker
+from api.shared.infrastructure.background_jobs import launch_worker
 from edmkt_app.persistence import models
 from edmkt_app.persistence import repositories as repos
-from edmkt_app.persistence.lock import pipeline_busy
-from edmkt_app.use_cases.base import BaseWriteUseCase, PipelineBusy
-from edmkt_app.clock import utc_now_iso
+from api.shared.infrastructure.one_job_at_a_time_lock import is_another_job_running
+from api.shared.domain.errors import AnotherJobRunning
+from edmkt_app.use_cases.base import BaseWriteUseCase
+from api.shared.infrastructure.clock import utc_now_iso
 
 
 class GenerateKCsDto(BaseModel):
@@ -27,8 +28,8 @@ class GenerateKCsUseCase(BaseWriteUseCase):
     ]
 
     def _run(self, dto: GenerateKCsDto) -> dict:
-        if pipeline_busy(self._conn):
-            raise PipelineBusy("pipeline ocupado; aguarde o job atual")
+        if is_another_job_running(self._conn):
+            raise AnotherJobRunning("pipeline ocupado; aguarde o job atual")
 
         job_id = repos.KCJobRepository(self._conn).insert(
             models.KCJob(

@@ -5,8 +5,9 @@ from __future__ import annotations
 from pydantic import BaseModel
 
 from edmkt_app.persistence import repositories as repos
-from edmkt_app.persistence import transaction
-from edmkt_app.use_cases.base import BaseWriteUseCase, NotFound
+from api.shared.infrastructure.database.sqlite_connection import transaction
+from api.shared.domain.errors import NotFound
+from edmkt_app.use_cases.base import BaseWriteUseCase
 from edmkt_app.use_cases.kc_rules import assert_no_empty_problem, revert_approval_if_approved
 
 

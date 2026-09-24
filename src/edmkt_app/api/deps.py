@@ -21,7 +21,7 @@ from typing import Iterator
 
 from fastapi import Depends, Request
 
-from edmkt_app.persistence import connect
+from api.shared.infrastructure.database.sqlite_connection import connect
 from edmkt_app.use_cases.add_kc import AddKCUseCase
 from edmkt_app.use_cases.approve_qmatrix import ApproveQMatrixUseCase
 from edmkt_app.use_cases.generate_kcs import GenerateKCsUseCase

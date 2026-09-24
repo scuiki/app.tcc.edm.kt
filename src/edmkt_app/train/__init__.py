@@ -1,7 +1,7 @@
 """CLI de treino headless: o corpo de treino isolado-por-processo (MODEL-01/02, D-01).
 
 `python -m edmkt_app.train --assignment N --job-id J` é o processo OS que o handler FastAPI
-dispara. Adquire a `PipelineLock` como PRIMEIRO ato (D-02) para que o PID-liveness da Fase 2
+dispara. Adquire a `OneJobAtATimeLock` como PRIMEIRO ato (D-02) para que o PID-liveness da Fase 2
 recupere a trava se o treino morrer — o `holder_pid` precisa apontar para o PID que realmente
 faz o trabalho, não para o web. Toma o quadro de modelagem pronto de `modeling_frame` (nunca o
 Parquet cru — training-serving skew), aquece o cache de paths, treina pelo seam congelado

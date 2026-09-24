@@ -5,12 +5,13 @@ from __future__ import annotations
 from pydantic import BaseModel
 
 from edmkt_app import specs
-from edmkt_app.background_jobs import launch_worker
+from api.shared.infrastructure.background_jobs import launch_worker
 from edmkt_app.persistence import models
 from edmkt_app.persistence import repositories as repos
-from edmkt_app.persistence.lock import pipeline_busy
-from edmkt_app.use_cases.base import BaseWriteUseCase, PipelineBusy
-from edmkt_app.clock import utc_now_iso
+from api.shared.infrastructure.one_job_at_a_time_lock import is_another_job_running
+from api.shared.domain.errors import AnotherJobRunning
+from edmkt_app.use_cases.base import BaseWriteUseCase
+from api.shared.infrastructure.clock import utc_now_iso
 
 
 class StartTrainingDto(BaseModel):
@@ -27,9 +28,9 @@ class StartTrainingUseCase(BaseWriteUseCase):
     ]
 
     def _run(self, dto: StartTrainingDto) -> dict:
-        # Fora do registry de propósito: corrida, não regra do payload (ver PipelineBusy).
-        if pipeline_busy(self._conn):
-            raise PipelineBusy("pipeline ocupado; aguarde o treino atual")
+        # Fora do registry de propósito: corrida, não regra do payload (ver AnotherJobRunning).
+        if is_another_job_running(self._conn):
+            raise AnotherJobRunning("pipeline ocupado; aguarde o treino atual")
 
         job_id = repos.TrainingJobRepository(self._conn).insert(
             models.TrainingJob(

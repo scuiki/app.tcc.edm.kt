@@ -34,12 +34,14 @@ services:
       - /home/leokuntz/.claude/.credentials.json:/root/.claude/.credentials.json:ro
       - /home/leokuntz/.claude.json:/root/.claude.json:ro
     environment:
+      # O código vem do bind mount em /app; src/ no path torna importáveis ml/ e api/.
+      PYTHONPATH: /app/src
       EDMKT_KC_CWD: /tmp
       HF_HUB_OFFLINE: "1"
       TRANSFORMERS_OFFLINE: "1"
     command:
       - uvicorn
-      - edmkt_app.api:create_app
+      - api.main:create_app
       - --factory
       - --host
       - 0.0.0.0

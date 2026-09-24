@@ -15,7 +15,7 @@ import javalang
 
 from ml.code_dkt.ast_paths import extract_ast_paths, extract_ast_paths_for_snapshots
 
-from edmkt_app import data_layout
+from api.shared.infrastructure import data_layout
 from edmkt_app.values import CodeStateId, TurmaSlug
 
 def _extract(code: str, config: dict) -> list[tuple[str, str, str]]:

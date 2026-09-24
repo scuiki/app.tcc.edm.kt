@@ -16,7 +16,7 @@ from __future__ import annotations
 import zipfile
 from pathlib import Path
 
-from edmkt_app.values import ConfinedPath
+from api.shared.infrastructure.confined_path import ConfinedPath
 
 # Tetos conservadores contra zip-bomb (DoS — RESEARCH §Security): o limite exato é detalhe
 # operacional; escolhidos folgados o bastante para um ProgSnap2 real (≈milhares de CodeStates),

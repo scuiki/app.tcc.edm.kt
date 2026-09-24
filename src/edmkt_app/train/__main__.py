@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import sys
 
-from edmkt_app.background_jobs import worker_main
+from api.shared.infrastructure.background_jobs import worker_main
 from edmkt_app.train.runner import _run_training
 
 

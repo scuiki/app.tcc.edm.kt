@@ -6,7 +6,7 @@ from pydantic import BaseModel
 
 from edmkt_app.persistence import models
 from edmkt_app.persistence import repositories as repos
-from edmkt_app.persistence import transaction
+from api.shared.infrastructure.database.sqlite_connection import transaction
 from edmkt_app.use_cases.base import BaseWriteUseCase
 from edmkt_app.use_cases.kc_rules import revert_approval_if_approved
 

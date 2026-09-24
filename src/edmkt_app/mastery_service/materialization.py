@@ -11,7 +11,8 @@ import sqlite3
 from ml.mastery.mastery_aggregation import aggregate_student_mastery
 
 from edmkt_app.mastery_service import inference
-from edmkt_app.persistence import models, transaction
+from api.shared.infrastructure.database.sqlite_connection import transaction
+from edmkt_app.persistence import models
 from edmkt_app.persistence import repositories as repos
 
 

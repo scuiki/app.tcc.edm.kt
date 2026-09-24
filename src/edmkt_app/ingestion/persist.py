@@ -14,12 +14,13 @@ from pathlib import Path
 
 import pandas as pd
 
-from edmkt_app import data_layout
+from api.shared.infrastructure import data_layout
 from edmkt_app.ingestion import clean
-from edmkt_app.persistence import models, transaction
+from api.shared.infrastructure.database.sqlite_connection import transaction
+from edmkt_app.persistence import models
 from edmkt_app.persistence import repositories as repos
 from edmkt_app.values import TurmaSlug
-from edmkt_app.clock import utc_now_iso
+from api.shared.infrastructure.clock import utc_now_iso
 
 
 

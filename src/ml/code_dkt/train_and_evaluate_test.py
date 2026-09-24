@@ -11,7 +11,6 @@ import pandas as pd
 import pytest
 import torch.nn as nn
 
-from ml.code_dkt.student_split import split_students_into_train_and_test
 from ml.code_dkt.train_and_evaluate import train_and_evaluate
 from ml.reproducibility.code_dkt_hyperparameters import CODE_DKT_HYPERPARAMETERS
 from ml.reproducibility.random_seed import seed_all_random_generators
