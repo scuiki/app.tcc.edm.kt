@@ -410,12 +410,14 @@ def trained_artifact(tmp_db, data_root, tiny_vocab, tiny_config):
 
     # Q-matrix determinística: problemas 1,2,3 → KC1/KC2; o problema 3 liga AMBOS os KCs,
     # forçando a média problem→KC (Pitfall 2: KC-mastery = mean sobre os problemas do KC).
-    from api.knowledge_components.domain.knowledge_component_entity import KnowledgeComponent
-    from api.knowledge_components.domain.qmatrix_binding_entity import QMatrixBinding
-    from api.knowledge_components.infrastructure.sqlite_knowledge_component_repository import (
+    from api.knowledge_components.domain.entities.knowledge_component_entity import (
+        KnowledgeComponent,
+    )
+    from api.knowledge_components.domain.entities.qmatrix_binding_entity import QMatrixBinding
+    from api.knowledge_components.infrastructure.repositories.sqlite_knowledge_component_repository import (
         SqliteKnowledgeComponentRepository,
     )
-    from api.knowledge_components.infrastructure.sqlite_qmatrix_repository import (
+    from api.knowledge_components.infrastructure.repositories.sqlite_qmatrix_repository import (
         SqliteQMatrixRepository,
     )
 

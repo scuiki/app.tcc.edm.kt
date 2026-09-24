@@ -12,7 +12,7 @@ from api.assignments.domain.entities.assignment_entity import Assignment
 from api.assignments.domain.interfaces.assignment_repository import IAssignmentRepository
 from api.assignments.domain.interfaces.classroom_repository import IClassroomRepository
 from api.classroom_import.domain.interfaces.cleaned_submissions_store import ICleanedSubmissionsStore
-from api.knowledge_components.domain.qmatrix_repository import QMatrixRepository
+from api.knowledge_components.domain.interfaces.qmatrix_repository import IQMatrixRepository
 from api.mastery_dashboard.domain.mastery_level import StudentMasteryMatrix
 from api.mastery_dashboard.domain.student_mastery_entity import StudentMastery
 from api.mastery_dashboard.domain.student_mastery_repository import StudentMasteryRepository
@@ -31,7 +31,7 @@ class PublishedModelMastery:
         classrooms: IClassroomRepository,
         cleaned_submissions: ICleanedSubmissionsStore,
         trained_models: TrainedModelRepository,
-        qmatrix: QMatrixRepository,
+        qmatrix: IQMatrixRepository,
         student_masteries: StudentMasteryRepository,
         predictor: StudentMasteryPredictor,
         unit_of_work: IUnitOfWork,

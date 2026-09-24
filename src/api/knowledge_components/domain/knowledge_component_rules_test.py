@@ -5,15 +5,17 @@ from __future__ import annotations
 from types import SimpleNamespace
 
 from api.assignments.domain.entities.assignment_entity import Assignment, AssignmentStatus
-from api.knowledge_components.domain.assignment_has_knowledge_components_rule import (
+from api.knowledge_components.domain.rules.assignment_has_knowledge_components_rule import (
     AssignmentHasKnowledgeComponentsRule,
 )
-from api.knowledge_components.domain.assignment_is_kc_draft_rule import AssignmentIsKcDraftRule
-from api.knowledge_components.domain.knowledge_component_entity import KnowledgeComponent
-from api.knowledge_components.domain.knowledge_components_are_distinct_rule import (
+from api.knowledge_components.domain.rules.assignment_is_kc_draft_rule import (
+    AssignmentIsKcDraftRule,
+)
+from api.knowledge_components.domain.entities.knowledge_component_entity import KnowledgeComponent
+from api.knowledge_components.domain.rules.knowledge_components_are_distinct_rule import (
     KnowledgeComponentsAreDistinctRule,
 )
-from api.knowledge_components.domain.knowledge_components_belong_to_assignment_rule import (
+from api.knowledge_components.domain.rules.knowledge_components_belong_to_assignment_rule import (
     KnowledgeComponentsBelongToAssignmentRule,
 )
 

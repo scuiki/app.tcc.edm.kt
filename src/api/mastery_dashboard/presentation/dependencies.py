@@ -19,10 +19,10 @@ from api.assignments.infrastructure.repositories.sqlite_classroom_repository imp
 from api.classroom_import.infrastructure.implementations.parquet_cleaned_submissions_store import (
     ParquetCleanedSubmissionsStore,
 )
-from api.knowledge_components.infrastructure.sqlite_knowledge_component_repository import (
+from api.knowledge_components.infrastructure.repositories.sqlite_knowledge_component_repository import (
     SqliteKnowledgeComponentRepository,
 )
-from api.knowledge_components.infrastructure.sqlite_qmatrix_repository import (
+from api.knowledge_components.infrastructure.repositories.sqlite_qmatrix_repository import (
     SqliteQMatrixRepository,
 )
 from api.mastery_dashboard.application.get_mastery_use_case import GetMasteryUseCase
