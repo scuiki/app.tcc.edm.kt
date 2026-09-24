@@ -78,9 +78,7 @@ def _train_body(conn, assignment_id: int, job_id: int) -> dict:
         ),
     )
     flip_current(conn, assignment_id, persisted["artifact_id"])
-    conn.execute(
-        "UPDATE assignment SET status='trained' WHERE id=?;", (assignment_id,)
-    )  # D-03: assignment flipa só no fim
+    repos.AssignmentRepository(conn).set_status(assignment_id, "trained")  # D-03: flipa só no fim
     # O dict de retorno some com o subprocess fire-and-forget; a linha SQLite é a ponte que
     # sobrevive ao término do filho — sem isto a taxa nunca chega ao GET (SC-3/MODEL-05).
     job_repo.mark_done(job_id, updated_at=utc_now_iso(), parse_rate=rate)

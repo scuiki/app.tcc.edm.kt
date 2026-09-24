@@ -10,6 +10,7 @@ from __future__ import annotations
 import sqlite3
 
 from edmkt_app.persistence.db import transaction
+from edmkt_app.persistence.repositories import AssignmentRepository
 
 
 
@@ -33,7 +34,4 @@ def flip_current(conn: sqlite3.Connection, assignment_id: int, new_version_id: i
     aqui um leitor passa a enxergar a nova versão, e sempre uma já completa (Pitfall 2). O
     ponteiro no DB é a fonte única — este UPDATE nunca toca o diretório do artefato."""
     with transaction(conn):
-        conn.execute(
-            "UPDATE assignment SET current_version_id=? WHERE id=?;",
-            (new_version_id, assignment_id),
-        )
+        AssignmentRepository(conn).set_current_version(assignment_id, new_version_id)

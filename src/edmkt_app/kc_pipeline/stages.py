@@ -117,9 +117,7 @@ def _kc_body(conn, assignment_id: int, job_id: int) -> dict:
                         )
                     )
         # D-06: o assignment só flipa no fim, dentro da mesma txn da persistência.
-        conn.execute(
-            "UPDATE assignment SET status='kc_draft' WHERE id=?;", (assignment_id,)
-        )
+        asg_repo.set_status(assignment_id, "kc_draft")
         # WR-01: mark_done DENTRO da txn — o flip de status e a conclusão do job são atômicos.
         # Fora dela, uma falha de mark_done deixaria assignment 'kc_draft' + job 'failed'.
         job_repo.mark_done(job_id, updated_at=utc_now_iso())

@@ -49,6 +49,12 @@ class AssignmentRepository:
             "UPDATE assignment SET status = ? WHERE id = ?;", (status, assignment_id)
         )
 
+    def set_current_version(self, assignment_id: int, model_artifact_id: int) -> None:
+        self._conn.execute(
+            "UPDATE assignment SET current_version_id = ? WHERE id = ?;",
+            (model_artifact_id, assignment_id),
+        )
+
     def list_all(self) -> list[models.Assignment]:
         # Listagem completa (BACKLOG 999.2): mesma forma de KCRepository.list_by_assignment, sem
         # filtro. Ordena por id para um payload determinístico. SQL sem parâmetros de entrada.
