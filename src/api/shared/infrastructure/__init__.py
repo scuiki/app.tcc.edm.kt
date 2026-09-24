@@ -1,1 +1,1 @@
-"""Implementações: SQLite, disco, LLM e as chamadas ao ml/."""
+# Implementações, SQLite, disco, LLM e as chamadas ao ml/.

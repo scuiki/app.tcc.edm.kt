@@ -1,10 +1,4 @@
-"""Base dos use cases que MUDAM estado: validar tudo, depois agir.
-
-As regras rodam todas e se acumulam, sem short-circuit: um pedido com três problemas devolve os
-três, em vez de obrigar o professor a descobrir um por vez. Leitura não estende esta base; não há
-o que validar antes de ler.
-"""
-
+# Base dos use cases que mudam estado, valida tudo e só depois age.
 from __future__ import annotations
 
 from typing import Any
@@ -14,8 +8,8 @@ from api.shared.domain.errors.business_rule_violation import BusinessRuleViolati
 
 
 class WriteUseCase:
+    # As regras que o pedido precisa satisfazer antes de `_run`; por padrão, nenhuma.
     def rules(self) -> list[IBusinessRule]:
-        """As regras que o pedido tem de satisfazer antes de `_run`. Default: nenhuma."""
         return []
 
     def validate(self, dto: Any) -> None:

@@ -1,4 +1,4 @@
-"""A IUnitOfWork sobre uma conexão SQLite: BEGIN IMMEDIATE ao entrar, COMMIT ou ROLLBACK ao sair."""
+# IUnitOfWork sobre uma conexão SQLite, BEGIN IMMEDIATE ao entrar, COMMIT ou ROLLBACK ao sair.
 
 from __future__ import annotations
 

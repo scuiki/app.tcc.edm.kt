@@ -1,9 +1,4 @@
-"""WriteUseCase: roda TODAS as regras, sem short-circuit, e acumula as recusas.
-
-Um pedido com três problemas devolve os três, não o primeiro. Como todas rodam, uma regra NÃO pode
-assumir que outra passou; cada uma busca o que precisa e tolera ausência.
-"""
-
+# WriteUseCase roda TODAS as regras, sem short-circuit, e acumula as recusas.
 from __future__ import annotations
 
 import pytest
@@ -12,9 +7,8 @@ from api.shared.application.use_cases.write_use_case import WriteUseCase
 from api.shared.domain.errors.business_rule_violation import BusinessRuleViolation
 
 
+# Regra de teste, devolve a mensagem configurada e registra que rodou.
 class _Rule:
-    """Regra de teste: devolve a mensagem configurada e registra que rodou."""
-
     def __init__(self, message: str | None) -> None:
         self.message = message
         self.ran = 0

@@ -1,11 +1,4 @@
-"""Tests for the SQLite connection + migration runner (D-02, MODEL-03/MODEL-04 foundation).
-
-Pins the persistence foundation the rest of Phase 2 stands on: the connection PRAGMAs
-(foreign_keys=ON — OFF by default in SQLite — and WAL), the forward-only runner over
-PRAGMA user_version (ordered, idempotent, atomic bump), and the 0001 schema (8 domain
-entities + the single pipeline_lock row). Hermetic and CPU-only — no GPU, no real CSEDM.
-"""
-
+# Testa a conexão SQLite mais o runner de migrations, base da persistência. Hermético e CPU-only.
 from __future__ import annotations
 
 import sqlite3
@@ -17,7 +10,7 @@ from api.shared.infrastructure.database.migrations.runner import run_migrations
 from api.shared.infrastructure.database.sqlite_connection import connect
 from api.shared.infrastructure.database.migrations import runner as runner_mod
 
-# The 8 domain entities (D-01) plus the dedicated one-row lock table.
+# As 8 entidades do domínio, mais a tabela dedicada de trava de uma linha só.
 _DOMAIN_TABLES = {
     "classroom",
     "assignment",
@@ -42,16 +35,13 @@ def _user_version(conn: sqlite3.Connection) -> int:
     return conn.execute("PRAGMA user_version;").fetchone()[0]
 
 
-# Última versão de schema aplicada pelo runner (sobe a cada degrau NNNN_*.sql novo).
-# Derivada dos arquivos, não um literal: cada migration nova quebrava estes testes por
-# envelhecimento, não por defeito.
+# Derivada dos arquivos, não um literal, senão cada migration nova quebraria este teste por
 _LATEST_VERSION = max(
     int(f.name[:4])
     for f in (Path(__file__).resolve().parent / "migrations").glob("[0-9][0-9][0-9][0-9]_*.sql")
 )
 
-# As colunas de progresso que sobrevivem de 0003 no training_job (D-06); current_epoch e
-# train_loss saíram na 0009, o progresso por época vive em training_metric.
+# As colunas de progresso que sobrevivem de 0003 no training_job; current_epoch e train_loss
 _TRAINING_JOB_PROGRESS_COLUMNS = {
     "total_epochs",
     "started_at",
@@ -71,17 +61,16 @@ def test_runner_applies_in_order(tmp_path):
 def test_runner_idempotent(tmp_path):
     conn = connect(str(tmp_path / "app.db"))
     run_migrations(conn)
-    # Second pass must not re-execute the DDL ("table already exists") nor bump again.
+    # Uma segunda passada não pode reexecutar o DDL nem bumpar de novo.
     run_migrations(conn)
     assert _user_version(conn) == _LATEST_VERSION
 
 
+# Um passo com DDL inválido dá ROLLBACK, user_version não avança além do último passo bom.
 def test_runner_bumps_atomically(tmp_path):
-    """A synthetic invalid step must ROLLBACK — user_version never advances past the
-    last good step (DDL + bump share one transaction, D-02)."""
     migrations_dir = tmp_path / "migs"
     migrations_dir.mkdir()
-    # A deliberately broken DDL step: parses past the first statement then fails.
+    # Passo propositalmente quebrado, avança até o primeiro statement e falha no segundo.
     (migrations_dir / "0001_broken.sql").write_text(
         "CREATE TABLE ok (id INTEGER PRIMARY KEY);\n"
         "CREATE TABLE bad (id INTEGER PRIMARY KEY, FOREIGN KEY (id) REFERENCES nonexistent(x));\n"
@@ -94,7 +83,7 @@ def test_runner_bumps_atomically(tmp_path):
         pass
     else:
         raise AssertionError("expected the broken migration to raise")
-    # The bump must NOT have happened — the whole step rolled back.
+    # O bump não pode ter acontecido, o passo inteiro faz rollback.
     assert _user_version(conn) == 0
     assert "ok" not in _table_names(conn)
 
@@ -114,11 +103,8 @@ def test_pipeline_lock_seeded(tmp_path):
     assert rows[0]["holder_pid"] is None
 
 
+# Um comentário `--` inline com `;` dentro não pode quebrar o split nem truncar `--` numa string.
 def test_inline_comment_does_not_break_split(tmp_path):
-    """Um statement com `-- comentário` inline aplica sem OperationalError mesmo quando o
-    comentário contém um `;` (que, sem strip do comentário, racha o split e gruda um
-    fragmento inválido no próximo statement); e `--` dentro de string literal NÃO é
-    truncado (WR-02)."""
     migrations_dir = tmp_path / "migs"
     migrations_dir.mkdir()
     (migrations_dir / "0001_inline_comments.sql").write_text(
@@ -132,17 +118,16 @@ def test_inline_comment_does_not_break_split(tmp_path):
 
     assert _user_version(conn) == 1
     assert "foo" in _table_names(conn)
-    # `--` dentro da string literal foi preservado (não truncado pelo strip de comentário).
+    # `--` dentro da string literal foi preservado, não truncado pelo strip de comentário.
     row = conn.execute("SELECT label FROM foo WHERE id=1;").fetchone()
     assert row["label"] == "a--b"
 
 
 def test_default_migrations_dir_is_package_local(tmp_path):
-    """run_migrations() with no dir argument resolves the package's own migrations/."""
     conn = connect(str(tmp_path / "app.db"))
-    run_migrations(conn)  # uses the default dir
+    run_migrations(conn)  # usa a pasta default
     assert _user_version(conn) == _LATEST_VERSION
-    # The default dir is the package's migrations folder (sanity on the resolution).
+    # A pasta default é a migrations/ do próprio pacote.
     assert runner_mod._default_migrations_dir().name == "migrations"
 
 
@@ -151,8 +136,6 @@ def _column_names(conn: sqlite3.Connection, table: str) -> set[str]:
 
 
 def test_migration_0002_grows_assignment_and_submission(tmp_path):
-    """0002 é forward-only: aplica sobre o 0001, bumpa user_version=2 e adiciona as colunas
-    de estado do assignment (status) + event_type do stream canônico na submission (D-05/D-13)."""
     conn = connect(str(tmp_path / "app.db"))
     run_migrations(conn)
     assert _user_version(conn) >= 2
@@ -161,8 +144,6 @@ def test_migration_0002_grows_assignment_and_submission(tmp_path):
 
 
 def test_migration_0003_grows_training_job_progress(tmp_path):
-    """0003 é forward-only: bumpa user_version=3 e adiciona as colunas de progresso do
-    training_job (D-06) que a CLI de treino escreve."""
     conn = connect(str(tmp_path / "app.db"))
     run_migrations(conn)
     assert _user_version(conn) >= 3
@@ -170,8 +151,6 @@ def test_migration_0003_grows_training_job_progress(tmp_path):
 
 
 def test_migration_0004_adds_parse_rate(tmp_path):
-    """0004 é forward-only: bumpa user_version>=4 e adiciona a coluna parse_rate ao
-    training_job (D-06 estendido/MODEL-05) — a taxa de parse que o subprocess grava p/ o SC-3."""
     conn = connect(str(tmp_path / "app.db"))
     run_migrations(conn)
     assert _user_version(conn) >= 4
@@ -179,23 +158,18 @@ def test_migration_0004_adds_parse_rate(tmp_path):
 
 
 def test_migration_0005_adds_kc_index_and_kc_job(tmp_path):
-    """0005 é forward-only: bumpa user_version=5, adiciona a coluna kc.kc_index (id de cluster
-    0..N, fidelidade c/ artefatos TCC, D-06/Open Q2) e cria a tabela kc_job que espelha
-    training_job (estado do pipeline KCGen-KT lido por polling GET, D-05/KC-01)."""
     conn = connect(str(tmp_path / "app.db"))
     run_migrations(conn)
     assert _user_version(conn) >= 5
     assert "kc_index" in _column_names(conn, "kc")
     assert "kc_job" in _table_names(conn)
-    # A tabela kc_job tem a forma do job de background (espelha training_job): status + estágio.
+    # kc_job tem a forma do job de background (espelha training_job), status mais estágio.
     assert {"id", "assignment_id", "status", "created_at", "stage", "error_message"} <= (
         _column_names(conn, "kc_job")
     )
 
 
 def test_migration_0006_adds_qmatrix_unique_index(tmp_path):
-    """0006 é forward-only: bumpa user_version=6 e cria o índice UNIQUE que torna o
-    INSERT/UPDATE OR IGNORE de qmatrix real (WR-04)."""
     conn = connect(str(tmp_path / "app.db"))
     run_migrations(conn)
     assert _user_version(conn) >= 6
@@ -209,8 +183,6 @@ def test_migration_0006_adds_qmatrix_unique_index(tmp_path):
 
 
 def test_migration_0007_adds_first_auc(tmp_path):
-    """0007 é forward-only: adiciona o AUC do treino ao model_artifact (DASH-05/D-05); a 0009
-    renomeia a coluna para first_attempt_auc."""
     conn = connect(str(tmp_path / "app.db"))
     run_migrations(conn)
     assert _user_version(conn) >= _LATEST_VERSION
@@ -218,8 +190,6 @@ def test_migration_0007_adds_first_auc(tmp_path):
 
 
 def test_first_attempt_auc_is_nullable(tmp_path):
-    """model_artifact.first_attempt_auc guarda o AUC do treino e nasce NULL quando não informado
-    (os artefatos anteriores à 0007)."""
     conn = connect(str(tmp_path / "app.db"))
     run_migrations(conn)
     aid = _seed_assignment(conn)
@@ -236,8 +206,6 @@ def test_first_attempt_auc_is_nullable(tmp_path):
 
 
 def test_qmatrix_unique_blocks_duplicate_binding(tmp_path):
-    """O trio (assignment_id, kc_id, problem_id) é único (0006): um INSERT do mesmo trio levanta
-    IntegrityError, e é isso que torna real o INSERT OR IGNORE de quem grava vínculos."""
     import sqlite3 as _sqlite3
 
     conn = connect(str(tmp_path / "app.db"))
@@ -257,7 +225,6 @@ def test_qmatrix_unique_blocks_duplicate_binding(tmp_path):
 
 
 def test_training_job_parse_rate_round_trips(tmp_path):
-    """training_job.parse_rate (0004) guarda a taxa de parse do javalang do treino."""
     conn = connect(str(tmp_path / "app.db"))
     run_migrations(conn)
     job_id = _seed_training_job(conn)
@@ -267,8 +234,8 @@ def test_training_job_parse_rate_round_trips(tmp_path):
     assert row["parse_rate"] == 0.86
 
 
+# classroom -> assignment, em SQL puro (este teste é do schema, não de um repositório).
 def _seed_assignment(conn: sqlite3.Connection) -> int:
-    """classroom → assignment, em SQL puro (este teste é do schema, não de um repositório)."""
     classroom_id = conn.execute(
         "INSERT INTO classroom (name, created_at) VALUES ('t', 't0');"
     ).lastrowid
@@ -278,8 +245,8 @@ def _seed_assignment(conn: sqlite3.Connection) -> int:
     ).lastrowid
 
 
+# classroom -> assignment -> training_job, devolve o job_id (a FK exige a cadeia).
 def _seed_training_job(conn: sqlite3.Connection) -> int:
-    """classroom → assignment → training_job; devolve o job_id (a FK exige a cadeia)."""
     return conn.execute(
         "INSERT INTO training_job (assignment_id, status, created_at) VALUES (?, 'pending', 't0');",
         (_seed_assignment(conn),),
@@ -287,7 +254,6 @@ def _seed_training_job(conn: sqlite3.Connection) -> int:
 
 
 def test_training_job_born_null_progress(tmp_path):
-    """Uma linha recém-criada lê as colunas de progresso como NULL."""
     conn = connect(str(tmp_path / "app.db"))
     run_migrations(conn)
     job_id = _seed_training_job(conn)
@@ -300,10 +266,8 @@ def test_training_job_born_null_progress(tmp_path):
     assert tuple(row) == (None, None, None, None)
 
 
-
-
+# Uma cópia da pasta de migrations só até `version`, o banco como estava naquela versão.
 def _migrations_up_to(tmp_path: Path, version: int) -> Path:
-    """Uma cópia da pasta de migrations só até `version`: o banco como estava naquela versão."""
     import shutil
 
     migrations_dir = Path(runner_mod.__file__).resolve().parent
@@ -315,9 +279,8 @@ def _migrations_up_to(tmp_path: Path, version: int) -> Path:
     return up_to
 
 
+# 0009 sobre um banco com dado real, renomeia sem perder nada e traduz os estados antigos.
 def test_migration_0009_carries_existing_data_to_the_glossary_names(tmp_path):
-    """0009 sobre um banco em user_version=8 com dado real: renomeia sem perder nada, preenche o
-    AssignmentID do ProgSnap2 a partir do nome e traduz os estados antigos."""
     conn = connect(str(tmp_path / "app.db"))
     run_migrations(conn, migrations_dir=_migrations_up_to(tmp_path, 8))
     assert _user_version(conn) == 8
@@ -341,7 +304,7 @@ def test_migration_0009_carries_existing_data_to_the_glossary_names(tmp_path):
     assert [tuple(r) for r in rows] == [
         (1, 1, 439, "ready_for_kc_generation"),
         (2, 1, 492, "statistics_only"),
-        (3, 1, None, "kc_draft"),  # nome fora do padrão da importação: fica vazio, não inventado
+        (3, 1, None, "kc_draft"),  # nome fora do padrão da importação, fica vazio, não inventado
     ]
     assert tuple(conn.execute("SELECT id, name FROM classroom;").fetchone()) == (1, "CSEDM")
     sub = conn.execute("SELECT code_snapshot_id, student_id FROM submission;").fetchone()
@@ -350,9 +313,8 @@ def test_migration_0009_carries_existing_data_to_the_glossary_names(tmp_path):
     assert conn.execute("PRAGMA foreign_key_check;").fetchall() == []
 
 
+# 0010 sobre um banco em user_version=9, submission passa a ter o dado limpo inteiro.
 def test_migration_0010_moves_the_cleaned_data_into_submission(tmp_path):
-    """0010 sobre um banco em user_version=9: submission passa a ter o dado limpo inteiro (o código
-    inclusive), e as linhas antigas, só com metadados, saem. O resto do banco fica intacto."""
     conn = connect(str(tmp_path / "app.db"))
     run_migrations(conn, migrations_dir=_migrations_up_to(tmp_path, 9))
     assignment_id = _seed_assignment(conn)

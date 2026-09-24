@@ -1,4 +1,4 @@
-"""Os estados de um job em background (treino ou geração de KCs)."""
+# Os estados de um job em background (treino ou geração de KCs).
 
 from __future__ import annotations
 
