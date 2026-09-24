@@ -222,7 +222,7 @@ def test_success_transitions_job_and_acquires_lock(tmp_db, data_root):
 
 
 def test_main_resolves_paths_from_env_and_runs_pipeline(tmp_path, monkeypatch):
-    # O entrypoint do subprocess (`python -m edmkt_app.kc_pipeline`) nunca era exercitado: os
+    # O entrypoint do subprocess (`python -m api.knowledge_components.presentation.kc_generation_worker`) nunca era exercitado: os
     # testes acima chamam o runner direto. Um erro em main() mata o processo antes de marcar o
     # job, e o kc_job fica 'pending' para sempre — sem nenhum teste falhar.
     kc_main = kc_generation_worker

@@ -21,7 +21,7 @@ isto precisa funcionar: dados → KCs → Code-DKT treinado → dashboard de mas
 ### Constraints
 
 - **Tech stack**: backend **Python/FastAPI** (API JSON) obrigatório — reuso de Code-DKT/javalang
-  (PyTorch, pyBKT) embrulhado na biblioteca `edmkt_core`. Frontend **React SPA (Vite + TS)**,
+  (PyTorch, pyBKT) embrulhado na biblioteca `ml`. Frontend **React SPA (Vite + TS)**,
   gráficos via `react-chartjs-2`. Persistência SQLite + filesystem. Treino em processo de
   background com **trava global de pipeline** (sem fila durável/Redis).
 
@@ -64,8 +64,11 @@ isto precisa funcionar: dados → KCs → Code-DKT treinado → dashboard de mas
 | scikit-learn | — | HAC + silhouette (clustering de KCs) e AUC |
 | CLI `claude` | Haiku 4.5 pinado | Geração de KCs pela **assinatura** (OAuth montado read-only). O SDK `anthropic` NUNCA é importado |
 
-Camadas: `edmkt_core/` é a ciência pura e nunca importa de `edmkt_app`; `edmkt_app/` é
-aplicação e infra (`persistence/`, `ingestion/`, `api/`, pipelines de KC e treino).
+Pacotes em `src/`: `ml/` é a ciência pura (Code-DKT, KCGen-KT, mastery) e nunca importa de
+`api`; `api/` é a aplicação, organizada por funcionalidade (`assignments`, `classroom_import`,
+`knowledge_components`, `model_training`, `mastery_dashboard`, mais `shared/`), cada uma com
+`domain/`, `application/`, `infrastructure/` e `presentation/`. Nomes em `docs/GLOSSARY.md`;
+regra de dependência (verificada pelo `lint-imports`) em `docs/ARCHITECTURE.md`.
 
 ### Frontend — React SPA
 
@@ -81,7 +84,7 @@ aplicação e infra (`persistence/`, `ingestion/`, `api/`, pipelines de KC e tre
 
 ### Execução de jobs
 
-Treino e geração de KCs rodam em **subprocess** (`python -m edmkt_app.train`), serializados por
+Treino e geração de KCs rodam em **subprocess** (`python -m api.model_training.presentation.training_worker`), serializados por
 uma **trava global**: uma linha em `pipeline_lock` com `holder_pid`, validada por liveness de PID,
 sem TTL. O banco é o canal entre os processos — o retorno do fire-and-forget se perde, o estado
 vive em `training_job` / `kc_job`.

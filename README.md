@@ -5,9 +5,16 @@ introdutória em formato ProgSnap2, mostrando ao professor o estágio de domíni
 por *Knowledge Component* (KC). Esta é a fase de **Implantação** do processo EDM iniciado
 no TCC 1 (`../tcc.edm.kt`), que elegeu o Code-DKT como modelo base.
 
-O núcleo científico vive em `src/edmkt_core/` — um port fiel do pipeline Code-DKT do TCC 1
-(commit `0e8807c`), test-driven e blindado por testes de caracterização. O contrato público
-é `train_and_evaluate` (DataFrame ProgSnap2 entra, artefatos saem).
+O código vive em dois pacotes em `src/`:
+
+- `src/ml/` — a ciência: um port fiel do pipeline Code-DKT e do KCGen-KT do TCC 1 (commit
+  `0e8807c`), blindado por testes de caracterização. Não conhece a aplicação.
+- `src/api/` — a aplicação FastAPI, organizada por funcionalidade, cada uma com as camadas
+  `domain/`, `application/`, `infrastructure/` e `presentation/`.
+
+Os nomes estão em [`docs/GLOSSARY.md`](docs/GLOSSARY.md) e as camadas e a regra de dependência
+em [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md). Cada teste fica ao lado do arquivo que testa
+(`<arquivo>_test.py`); `tests/` guarda só o teste de regressão e os dados de exemplo.
 
 ## Reprodutibilidade científica
 
@@ -19,9 +26,9 @@ Code-DKT A439). Fora da banda o teste **falha alto** — qualquer mudança de de
 ou ordem de operações que mova o A439 para fora da banda fica vermelha.
 
 A banda de ±3pp absorve a variação de seed (std ≈ 1.34pp no TCC 1) e a diferença entre o
-`FROZEN_CONFIG` (protocolo Shi et al. 2022: `hidden_dim=128`, `dropout=0.1`) e o
+`CODE_DKT_HYPERPARAMETERS` (protocolo Shi et al. 2022: `hidden_dim=128`, `dropout=0.1`) e o
 `BEST_CONFIG` do grid do TCC 1 (`hidden_dim=200`). O valor observado neste repositório com o
-`FROZEN_CONFIG` é **0.7608**, dentro da banda.
+`CODE_DKT_HYPERPARAMETERS` é **0.7608**, dentro da banda.
 
 ### Pré-requisito: `EDMKT_CSEDM_PATH`
 
@@ -48,7 +55,14 @@ para ler os bind mounts de `/srv` sem relabel SELinux.
 
 ```bash
 docker run --rm --security-opt label=disable -v "$PWD":/app -w /app \
-  edmkt-core:dev python -m pytest tests/ -q
+  edmkt-core:dev python -m pytest -q
+```
+
+A regra de dependência entre camadas é verificada pelo `import-linter` (também no container):
+
+```bash
+docker run --rm --security-opt label=disable -v "$PWD":/app -w /app edmkt-core:dev \
+  sh -c "pip install -q import-linter==2.15 && PYTHONPATH=/app/src lint-imports"
 ```
 
 O `addopts = -m 'not regression'` (em `pyproject.toml`) desmarca o teste de regressão por padrão.
