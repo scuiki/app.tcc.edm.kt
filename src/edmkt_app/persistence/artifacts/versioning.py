@@ -8,13 +8,9 @@ load-bearing blob→INSERT→flip (Pitfall 2) — publicar antes exporia um arte
 from __future__ import annotations
 
 import sqlite3
-from datetime import datetime, timezone
 
 from edmkt_app.persistence.db import transaction
 
-
-def _now_iso() -> str:
-    return datetime.now(timezone.utc).isoformat()
 
 
 def next_version_number(conn: sqlite3.Connection, assignment_id: int) -> int:

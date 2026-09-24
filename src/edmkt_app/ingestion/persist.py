@@ -10,7 +10,6 @@ QUANDO persistir, este módulo sabe COMO.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
 from pathlib import Path
 
 import pandas as pd
@@ -20,12 +19,10 @@ from edmkt_app.ingestion import clean
 from edmkt_app.persistence import models, transaction
 from edmkt_app.persistence import repositories as repos
 from edmkt_app.values import TurmaSlug
+from edmkt_app.clock import utc_now_iso
 
 
 
-
-def _now_iso() -> str:
-    return datetime.now(timezone.utc).isoformat()
 
 
 def _persist_atomic(
@@ -44,7 +41,7 @@ def _persist_atomic(
     participa do ROLLBACK do SQLite; escrevê-lo dentro deixaria-o órfão num INSERT que falha.
     """
     clean_dir = settings.DATA_ROOT / TurmaSlug.from_name(turma_name) / "clean"
-    created_at = _now_iso()
+    created_at = utc_now_iso()
 
     # 1. Blob (Parquet) FORA da txn — um arquivo por AssignmentID, colunas do seam (D-13).
     #    Escrito em `.tmp` e só renomeado DEPOIS do COMMIT: `to_parquet` sobrescreve, então
