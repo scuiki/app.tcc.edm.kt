@@ -74,7 +74,7 @@ def _seed_clean_parquet(ns, data_root, with_compile_errors: bool = False):
     # Monta o Parquet canônico da Fase 3 no caminho que o serviço deriva (_slug(turma)/clean/
     # assignment_<progsnap_aid>.parquet). turma="Turma 6" → "turma-6"; assignment="A439" → 439.
     # Problemas 1/2/3 batem com a Q-matrix do fixture (problema 3 liga ambos os KCs).
-    from edmkt_app.ingestion.clean import CANONICAL_COLUMNS
+    from api.classroom_import.domain.submission_cleaning import CLEANED_COLUMNS
 
     base = pd.Timestamp("2019-03-01T08:00:00Z")
     java_a = "public int f(int x) { return x + 1; }"
@@ -115,7 +115,7 @@ def _seed_clean_parquet(ns, data_root, with_compile_errors: bool = False):
 
     clean_dir = data_root / "turma-6" / "clean"
     clean_dir.mkdir(parents=True, exist_ok=True)
-    df[CANONICAL_COLUMNS].to_parquet(
+    df[CLEANED_COLUMNS].to_parquet(
         clean_dir / "assignment_439.parquet", engine="pyarrow", index=False
     )
 

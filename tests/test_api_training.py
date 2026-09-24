@@ -14,8 +14,6 @@ import subprocess
 import os
 import sys
 
-from edmkt_app.api import training
-from edmkt_app.persistence import models
 from edmkt_app.persistence import repositories as repos
 from api.assignments.infrastructure.sqlite_classroom_repository import SqliteClassroomRepository
 from api.assignments.infrastructure.sqlite_assignment_repository import SqliteAssignmentRepository

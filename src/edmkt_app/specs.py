@@ -15,8 +15,6 @@ import sqlite3
 from dataclasses import dataclass
 
 from edmkt_app.persistence import repositories as repos
-from api.assignments.domain.classroom_slug import ClassroomSlug
-from api.assignments.infrastructure.sqlite_classroom_repository import SqliteClassroomRepository
 from api.assignments.infrastructure.sqlite_assignment_repository import SqliteAssignmentRepository
 
 
@@ -86,32 +84,4 @@ class KCsBelongToAssignment:
             return None  # inexistência é NotFound, levantado antes
         if keep.assignment_id != dto.assignment_id or drop.assignment_id != dto.assignment_id:
             return "KC não pertence ao assignment"
-        return None
-
-
-@dataclass(frozen=True)
-class TurmaNotDuplicated:
-    """Recusa re-ingerir uma turma que já existe (B1).
-
-    Antes disso, `_persist_atomic` sempre inseria uma Turma nova, sem verificar nada. Subir a
-    mesma turma de novo criava Turma, Assignments e Submissions duplicados — enquanto o Parquet
-    era gravado no MESMO diretório, porque o caminho vem do slug. Os assignments antigos, que
-    carregam os KCs, a Q-matrix aprovada e o modelo treinado, ficavam apontando para um Parquet
-    cujo conteúdo agora era outro. Nada disso dava erro.
-
-    A comparação é pelo SLUG, não pelo nome cru: "Turma 6" e "turma  6" são nomes diferentes e
-    o MESMO diretório, então checar o nome deixaria a colisão de diretório passar.
-
-    Parede explícita até a Fase 7 (re-treino com dados novos) existir: falhar alto é melhor que
-    corromper baixo.
-    """
-
-    def check(self, conn: sqlite3.Connection, dto) -> str | None:
-        alvo = ClassroomSlug.from_name(dto.turma_name)
-        for turma in SqliteClassroomRepository(conn).list_all():
-            if ClassroomSlug.from_name(turma.name) == alvo:
-                return (
-                    f"a turma {turma.name!r} já foi ingerida; re-ingestão ainda não é suportada "
-                    "(use outro nome de turma ou remova a anterior)"
-                )
         return None

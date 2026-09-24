@@ -1,8 +1,8 @@
-"""Contrato de saída estruturado da ingestão por severidade (D-07).
+"""Contrato de saída estruturado da ingestão por severidade.
 
 Testes puros (sem I/O, sem SQLite, sem GPU): asseguram invariantes do contrato — has_fatal
-deriva da presença de ≥1 item fatal, ReportItem é write-once (frozen), e o IngestReport
-preserva per_assignment. Nada de valores mágicos de AUC (Pitfall 2).
+deriva da presença de ≥1 item fatal, ImportCheck é write-once (frozen), e o ClassroomImportReport
+preserva per_assignment. Nada de valores mágicos de AUC.
 """
 
 from __future__ import annotations
@@ -11,23 +11,27 @@ import dataclasses
 
 import pytest
 
-from edmkt_app.ingestion.report import AssignmentSummary, IngestReport, ReportItem
+from api.classroom_import.domain.import_report import (
+    AssignmentTrainability,
+    ClassroomImportReport,
+    ImportCheck,
+)
 
 
-def _empty_report(items) -> IngestReport:
-    return IngestReport(items=items, dataset_summary={}, per_assignment=[])
+def _empty_report(items) -> ClassroomImportReport:
+    return ClassroomImportReport(checks=items, dataset_summary={}, per_assignment=[])
 
 
 def test_has_fatal_true_when_any_fatal_item():
-    report = _empty_report([ReportItem(check="missing_column", severity="fatal", message="msg")])
+    report = _empty_report([ImportCheck(check="missing_column", severity="fatal", message="msg")])
     assert report.has_fatal is True
 
 
 def test_has_fatal_false_with_only_warning_and_viability():
     report = _empty_report(
         [
-            ReportItem(check="encoding", severity="warning", message="BOM"),
-            ReportItem(check="small_cohort", severity="viability", message="poucos alunos"),
+            ImportCheck(check="encoding", severity="warning", message="BOM"),
+            ImportCheck(check="small_cohort", severity="viability", message="poucos alunos"),
         ]
     )
     assert report.has_fatal is False
@@ -38,22 +42,22 @@ def test_has_fatal_false_when_empty():
 
 
 def test_report_item_is_frozen():
-    item = ReportItem(check="orphan", severity="warning", message="x", count=3)
+    item = ImportCheck(check="orphan", severity="warning", message="x", count=3)
     with pytest.raises(dataclasses.FrozenInstanceError):
         item.severity = "fatal"  # type: ignore[misc]
 
 
 def test_ingest_report_preserves_per_assignment():
-    summary = AssignmentSummary(
-        assignment_id=439,
+    summary = AssignmentTrainability(
+        progsnap_assignment_id=439,
         n_students_eligible=300,
         n_problems=10,
         n_submissions=1200,
         both_classes_present=True,
         trainable=True,
     )
-    report = IngestReport(
-        items=[],
+    report = ClassroomImportReport(
+        checks=[],
         dataset_summary={"n_students": 300, "n_assignments": 1},
         per_assignment=[summary],
     )

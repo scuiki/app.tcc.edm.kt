@@ -17,7 +17,6 @@ import pandas as pd
 import pytest
 import torch
 
-from api.shared.infrastructure import settings
 from edmkt_app.train import runner, stages
 from edmkt_app.persistence import models
 from edmkt_app.persistence import repositories as repos
@@ -77,15 +76,6 @@ def _canonical_df() -> pd.DataFrame:
 
 
 @pytest.fixture
-def data_root(tmp_path, monkeypatch):
-    """Aponta a raiz de dados compartilhada para tmp_path — FS hermético."""
-
-    # Uma raiz só: este único patch redireciona treino, cache de features e tudo mais.
-    monkeypatch.setattr(settings, "DATA_ROOT", tmp_path)
-    return tmp_path
-
-
-@pytest.fixture
 def fast_config(monkeypatch):
     """Reduz épocas via CODE_DKT_HYPERPARAMETERS visto pela CLI, sem mutar o MappingProxyType global."""
     from ml.reproducibility.code_dkt_hyperparameters import CODE_DKT_HYPERPARAMETERS
@@ -98,7 +88,7 @@ def fast_config(monkeypatch):
 def _canonical_df_with_compile_errors() -> pd.DataFrame:
     """Stream canônico realista: Run.Program parseável + Compile.Error com Java QUEBRADO.
 
-    É a forma que `clean.clean_event_stream` grava de verdade (ALLOWED_EVENTS = os dois tipos,
+    É a forma que `clean.clean_submissions` grava de verdade (ALLOWED_EVENTS = os dois tipos,
     D-10) e que o CSEDM real exibe — no A439, 57,6% das linhas são Compile.Error. O Java
     malformado é o que torna o teste discriminante: se esses eventos chegarem à extração de
     features, a taxa de parse cai abaixo de 1.0.

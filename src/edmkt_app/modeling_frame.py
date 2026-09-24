@@ -21,8 +21,7 @@ from dataclasses import dataclass
 import pandas as pd
 
 from api.shared.infrastructure import data_layout
-from edmkt_app import utils
-from edmkt_app.persistence import repositories as repos
+from api.classroom_import.domain import submission_event
 from api.assignments.domain.progsnap_assignment_id import ProgSnapAssignmentId
 from api.assignments.domain.classroom_slug import ClassroomSlug
 from api.assignments.infrastructure.sqlite_classroom_repository import SqliteClassroomRepository
@@ -58,7 +57,7 @@ def load_modeling_frame(conn: sqlite3.Connection, assignment_id: int) -> Modelin
     pq = data_layout.cleaned_submissions_path(turma_slug, progsnap_aid)
 
     return ModelingFrame(
-        events=utils.run_program_only(pd.read_parquet(pq, engine="pyarrow")),
+        events=submission_event.keep_only_program_runs(pd.read_parquet(pq, engine="pyarrow")),
         turma_slug=turma_slug,
         assignment_id=progsnap_aid,
         classroom_id=assignment.classroom_id,

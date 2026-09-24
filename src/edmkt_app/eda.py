@@ -1,6 +1,6 @@
 """EDA de turma a partir do Parquet canônico (DASH-04, D-06) — SEM modelo treinado.
 
-A EDA é a view SEMPRE disponível: lê só o Parquet canônico da Fase 3 (CANONICAL_COLUMNS
+A EDA é a view SEMPRE disponível: lê só o Parquet canônico da Fase 3 (CLEANED_COLUMNS
 de clean.py) e nunca toca um artefato de modelo nem a stack de inferência (D-06). O professor
 tem dashboard de EDA antes mesmo do treino.
 
@@ -15,7 +15,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from edmkt_app.submission_events import COMPILE_ERROR, RUN_PROGRAM
+from api.classroom_import.domain.submission_event import COMPILE_ERROR, RUN_PROGRAM
 
 # EDA NÃO importa train.py/persistence: aquele lado puxa torch + ArtifactStore e quebraria a
 # invariante "EDA roda sem modelo" (D-06). O caminho do Parquet quem resolve é o use case.

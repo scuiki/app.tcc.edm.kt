@@ -19,7 +19,7 @@ from edmkt_app.persistence import models
 from api.shared.infrastructure.database.sqlite_connection import transaction
 from edmkt_app.persistence.repositories import ModelArtifactRepository
 from api.shared.infrastructure.confined_path import ConfinedPath
-from api.shared.infrastructure.clock import utc_now_iso
+from api.shared.application.clock import utc_now_iso
 
 
 class ArtifactStore:

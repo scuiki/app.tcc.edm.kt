@@ -20,8 +20,6 @@ from __future__ import annotations
 import sqlite3
 from typing import Any, Protocol
 
-from edmkt_app.persistence import models
-from edmkt_app.persistence import repositories as repos
 from api.shared.domain.errors import BusinessRuleViolation, NotFound
 from api.assignments.infrastructure.sqlite_assignment_repository import SqliteAssignmentRepository
 from api.assignments.domain.assignment_entity import Assignment

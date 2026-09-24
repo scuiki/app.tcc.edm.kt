@@ -19,7 +19,7 @@ from edmkt_app.persistence import repositories as repos
 from api.shared.infrastructure.database.sqlite_connection import transaction
 from api.assignments.domain.progsnap_assignment_id import ProgSnapAssignmentId
 from api.assignments.domain.classroom_slug import ClassroomSlug
-from api.shared.infrastructure.clock import utc_now_iso
+from api.shared.application.clock import utc_now_iso
 from api.assignments.infrastructure.sqlite_classroom_repository import SqliteClassroomRepository
 from api.assignments.infrastructure.sqlite_assignment_repository import SqliteAssignmentRepository
 

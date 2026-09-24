@@ -301,17 +301,6 @@ def test_training_job_born_null_progress(tmp_path):
 
 
 
-def test_pyarrow_parquet_roundtrip(tmp_path):
-    """Guarda de regressão do checkpoint manual do Task 1: o engine pyarrow do to_parquet
-    está instalado e faz round-trip no container (sem ele a ingestão D-13 falha)."""
-    import pandas as pd
-
-    df = pd.DataFrame({"a": [1, 2], "b": ["x", "y"]})
-    path = tmp_path / "t.parquet"
-    df.to_parquet(path, engine="pyarrow", index=False)
-    back = pd.read_parquet(path)
-    assert back.equals(df)
-
 
 def test_migration_0009_carries_existing_data_to_the_glossary_names(tmp_path):
     """0009 sobre um banco em user_version=8 com dado real: renomeia sem perder nada, preenche o

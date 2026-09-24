@@ -1,35 +1,29 @@
-"""Estágio D da ingestão: o gate de viabilidade por-assignment (INGEST-03 / D-08 / D-09 RESOLVIDO).
+"""A checagem de treinabilidade de cada assignment: ready_for_kc_generation ou statistics_only.
 
-INGEST-03 é o "gate é a feature" do projeto, mas na versão RESOLVIDA do D-09 ele combate o
-comportamento silencioso SEM cair em pisos mágicos. O único veredito que torna o treino
-genuinamente impossível — e portanto o único bloqueio duro (trainable=False / EDA-only) — é a
-ausência de ambas as classes nos first-attempts de um assignment: sem ≥1 acerto E ≥1 erro,
-`roc_auc_score` levanta "Only one class present" e a métrica primária (first-attempt AUC) fica
-matematicamente indefinida.
+O único veredito que torna o treino IMPOSSÍVEL, e portanto o único bloqueio, é a ausência de uma
+das classes nas primeiras tentativas: sem ao menos um acerto E um erro, o first-attempt AUC é
+matematicamente indefinido. Poucos problemas ou poucos alunos NÃO bloqueiam: são incerteza, não
+impossibilidade, e viram avisos para o professor ler a mastery com cautela.
 
-Pisos de problemas e de tamanho de amostra NÃO bloqueiam: são incerteza, não impossibilidade. A
-mitigação real (intervalos de confiança, cautela na leitura) é da Fase 6 — aqui eles viram avisos
-graduados acionáveis (severity="viability"), nunca uma parede que esconde dado computável.
+A checagem é por assignment: o A439 pode treinar e o A492 ficar só com estatísticas na mesma
+turma. A elegibilidade do aluno espelha a divisão treino/teste do ml/ (3 ou mais Run.Program).
 
-O gate é por-assignment (D-08): A439 pode ser trainable e A492 EDA-only na mesma turma. A
-elegibilidade de aluno espelha o `split_students_into_train_and_test` do núcleo (min_attempts≥3 Run.Program).
-
-Módulo puro (DataFrame-in → contrato-out): sem I/O, sem SQL, sem import de ml.
+Módulo puro: sem I/O, sem SQL, sem ml/.
 """
 
 from __future__ import annotations
 
 import pandas as pd
 
-from edmkt_app.ingestion.report import AssignmentSummary, ReportItem
-from edmkt_app.submission_events import RUN_PROGRAM
+from api.classroom_import.domain.import_report import AssignmentTrainability, ImportCheck
+from api.classroom_import.domain.submission_event import RUN_PROGRAM
 
-# Espelha split_students_into_train_and_test (../tcc.edm.kt data_loader → ml/code_dkt/student_split.py:41-44): só conta
+# Espelha split_students_into_train_and_test (ml/code_dkt/student_split.py): só conta
 # como elegível o aluno com >=3 eventos Run.Program. Alunos abaixo são EXCLUÍDOS da contagem,
 # nunca bloqueiam o assignment.
 MIN_ATTEMPTS = 3
 
-# Limiares de AVISO (não de bloqueio). [ASSUMED] no RESEARCH (~50 / ~20): não há número
+# Limiares de AVISO (não de bloqueio). não há número
 # científico fechado para "amostra pequena" — são heurísticas de cautela que disparam o aviso
 # graduado, não a parede. Trocar aqui não muda quem treina, só a intensidade do alerta.
 SMALL_SAMPLE_THRESHOLD = 50  # [ASSUMED] abaixo disso: amostra pequena (aviso brando)
@@ -39,17 +33,17 @@ TINY_SAMPLE_THRESHOLD = 20  # [ASSUMED] abaixo disso: amostra muito pequena (avi
 MIN_PROBLEMS = 2
 
 
-def assess_viability(
+def check_assignment_trainability(
     canonical_df: pd.DataFrame,
-) -> tuple[list[AssignmentSummary], list[ReportItem]]:
-    """Decide trainable vs EDA-only por-assignment sobre o stream canônico (D-08/D-09).
+) -> tuple[list[AssignmentTrainability], list[ImportCheck]]:
+    """Decide trainable vs statistics_only por-assignment sobre o dado limpo.
 
-    Devolve (lista de AssignmentSummary, lista de ReportItem severity="viability"). O único
+    Devolve (lista de AssignmentTrainability, lista de ImportCheck severity="viability"). O único
     bloqueio duro é both_classes_present=False; pisos de problemas/amostra só anexam avisos
     graduados e reasons, deixando `trainable` governado exclusivamente pela presença de classe.
     """
-    summaries: list[AssignmentSummary] = []
-    items: list[ReportItem] = []
+    summaries: list[AssignmentTrainability] = []
+    checks: list[ImportCheck] = []
 
     for assignment_id, group in canonical_df.groupby("progsnap_assignment_id", sort=True):
         reasons: list[str] = []
@@ -72,14 +66,14 @@ def assess_viability(
         classes = set(first_attempts["is_correct"].unique())
         both_classes_present = {0, 1}.issubset(classes)
 
-        # trainable = both_classes_present — A POLÍTICA RESOLVIDA (D-09). É o ÚNICO bloqueio duro:
-        # uma classe só => AUC matematicamente indefinido => EDA-only. Pisos abaixo só avisam.
+        # trainable = both_classes_present. É o ÚNICO bloqueio duro:
+        # uma classe só => AUC matematicamente indefinido => statistics_only. Pisos abaixo só avisam.
         trainable = both_classes_present
         if not both_classes_present:
             reasons.append(
                 "AUC indefinido: os first-attempts deste assignment têm uma única classe "
                 "(todos acertaram ou todos erraram). Sem ambas as classes o Code-DKT não pode "
-                "ser avaliado — assignment marcado como EDA-only."
+                "ser avaliado — o assignment fica só com as estatísticas pré-treino."
             )
 
         # Piso de problemas (<2): cobertura rasa de KC. AVISO graduado, jamais parede — trainable
@@ -91,8 +85,8 @@ def assess_viability(
                 "cautela."
             )
             reasons.append(msg)
-            items.append(
-                ReportItem(
+            checks.append(
+                ImportCheck(
                     check="few_problems",
                     severity="viability",
                     message=msg,
@@ -102,7 +96,7 @@ def assess_viability(
             )
 
         # Piso de amostra: poucos alunos elegíveis => mais incerteza na estimativa. AVISO graduado
-        # (brando < 50, reforçado < 20), nunca bloqueio (mitigação real é Fase 6).
+        # (brando < 50, reforçado < 20), nunca bloqueio.
         if n_students_eligible < SMALL_SAMPLE_THRESHOLD:
             reforcado = n_students_eligible < TINY_SAMPLE_THRESHOLD
             msg = (
@@ -114,8 +108,8 @@ def assess_viability(
                 )
             )
             reasons.append(msg)
-            items.append(
-                ReportItem(
+            checks.append(
+                ImportCheck(
                     check="small_sample",
                     severity="viability",
                     message=msg,
@@ -125,8 +119,8 @@ def assess_viability(
             )
 
         summaries.append(
-            AssignmentSummary(
-                assignment_id=int(assignment_id),
+            AssignmentTrainability(
+                progsnap_assignment_id=int(assignment_id),
                 n_students_eligible=n_students_eligible,
                 n_problems=n_problems,
                 n_submissions=n_submissions,
@@ -136,4 +130,4 @@ def assess_viability(
             )
         )
 
-    return summaries, items
+    return summaries, checks

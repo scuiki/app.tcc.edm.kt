@@ -2,7 +2,7 @@
 
 O bug original: `train.py` e `mastery_service.py` liam o Parquet canônico cada um por si e
 nenhum recortava `Run.Program`, então o modelo treinava sobre 57,6% de eventos rotulados como
-erro cujo Java não compila. A primeira correção (chamar `utils.run_program_only` nos dois) deixa
+erro cujo Java não compila. A primeira correção (chamar `submission_event.keep_only_program_runs` nos dois) deixa
 a garantia dependendo de dois chamadores LEMBRAREM de chamar — e um terceiro consumidor futuro
 reintroduz o bug.
 
@@ -20,8 +20,6 @@ import pytest
 
 from api.shared.infrastructure import settings
 from edmkt_app import modeling_frame
-from edmkt_app.persistence import models
-from edmkt_app.persistence import repositories as repos
 from api.assignments.infrastructure.sqlite_classroom_repository import SqliteClassroomRepository
 from api.assignments.infrastructure.sqlite_assignment_repository import SqliteAssignmentRepository
 from api.assignments.domain.classroom_entity import Classroom

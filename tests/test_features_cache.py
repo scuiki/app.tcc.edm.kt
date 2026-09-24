@@ -11,20 +11,8 @@ from pathlib import Path
 
 import pytest
 
-from api.shared.infrastructure import settings
 from edmkt_app import features_cache
 from ml.code_dkt.student_split import build_train_only_vocabulary
-
-
-
-@pytest.fixture
-def data_root(tmp_path, monkeypatch):
-    """Point features_cache.DATA_ROOT at tmp_path so .pkl writes stay hermetic."""
-    monkeypatch.setattr(settings, "DATA_ROOT", tmp_path)
-    return tmp_path
-
-
-# --- incremental skip (D-07/D-08) -------------------------------------------------
 
 
 def test_second_call_skips_extraction_same_result(

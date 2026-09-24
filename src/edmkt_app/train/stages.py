@@ -21,7 +21,7 @@ from edmkt_app.features_cache import build_cache_on_disk, parse_rate
 from edmkt_app.modeling_frame import load_modeling_frame
 from edmkt_app.persistence import repositories as repos
 from edmkt_app.persistence.artifacts import ArtifactStore, flip_current
-from api.shared.infrastructure.clock import utc_now_iso
+from api.shared.application.clock import utc_now_iso
 from api.assignments.infrastructure.sqlite_assignment_repository import SqliteAssignmentRepository
 
 

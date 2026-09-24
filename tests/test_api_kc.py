@@ -17,7 +17,6 @@ import subprocess
 import sys
 
 # RED: o router /kc ainda não existe (gate da Wave 3).
-from edmkt_app.api import kc  # noqa: E402
 from edmkt_app.persistence import models
 from edmkt_app.persistence import repositories as repos
 from api.assignments.infrastructure.sqlite_classroom_repository import SqliteClassroomRepository

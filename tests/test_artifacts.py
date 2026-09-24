@@ -19,7 +19,6 @@ import pytest
 import torch
 
 from edmkt_app.persistence import models
-from edmkt_app.persistence import repositories as repos
 from edmkt_app.persistence.artifacts import ArtifactStore
 from api.assignments.infrastructure.sqlite_classroom_repository import SqliteClassroomRepository
 from api.assignments.infrastructure.sqlite_assignment_repository import SqliteAssignmentRepository

@@ -2,7 +2,7 @@
 
 Testes herméticos (sem GPU, sem rede): usam a fixture `ingest_layout_dir` (CodeStates em
 LinkTables/ + múltiplas MainTable) e zips construídos em tmp_path. Asseguram invariantes de
-localização (D-02/D-03) e a defesa contra zip-slip/zip-bomb por comportamento (ValueError +
+localização e a defesa contra zip-slip/zip-bomb por comportamento (ValueError +
 ausência de arquivo escrito fora do dest), nunca por valores mágicos.
 """
 
@@ -13,28 +13,27 @@ from pathlib import Path
 
 import pytest
 
-from edmkt_app.ingestion import discover as discover_mod
-from edmkt_app.ingestion.discover import (
-    detect_variants,
+from api.classroom_import.infrastructure import progsnap_zip_extractor as discover_mod
+from api.classroom_import.infrastructure.progsnap_zip_extractor import (
     extract_zip,
-    find_code_states,
+    find_code_snapshots_file,
     find_main_tables,
 )
 
 
 def test_find_code_states_prefere_link_tables(ingest_layout_dir: Path) -> None:
-    # D-02: na variante CodeWorkout de referência o CodeStates vive em LinkTables/, não em CodeStates/.
-    found = find_code_states(ingest_layout_dir)
+    # na variante CodeWorkout de referência o CodeStates vive em LinkTables/, não em CodeStates/.
+    found = find_code_snapshots_file(ingest_layout_dir)
     assert found is not None
     assert found == ingest_layout_dir / "LinkTables" / "CodeStates.csv"
 
 
 def test_find_code_states_ausente_devolve_none(tmp_path: Path) -> None:
-    assert find_code_states(tmp_path) is None
+    assert find_code_snapshots_file(tmp_path) is None
 
 
 def test_find_main_tables_enumera_variantes_ordenadas(ingest_layout_dir: Path) -> None:
-    # D-03: All/ e Train/ → 2 candidatas; discover NÃO adivinha, lista para o professor escolher.
+    # All/ e Train/ → 2 candidatas; o extrator NÃO adivinha, lista para o professor escolher.
     mains = find_main_tables(ingest_layout_dir)
     assert len(mains) == 2
     assert mains == sorted(mains)
@@ -45,10 +44,9 @@ def test_find_main_tables_vazio_quando_ausente(tmp_path: Path) -> None:
     assert find_main_tables(tmp_path) == []
 
 
-def test_detect_variants_estrutura_read_only(ingest_layout_dir: Path) -> None:
-    info = detect_variants(ingest_layout_dir)
-    assert len(info["main_tables"]) == 2
-    assert info["code_states"] == ingest_layout_dir / "LinkTables" / "CodeStates.csv"
+def test_the_layout_lists_every_main_table_and_the_code_snapshots(ingest_layout_dir: Path) -> None:
+    assert len(find_main_tables(ingest_layout_dir)) == 2
+    assert find_code_snapshots_file(ingest_layout_dir) == ingest_layout_dir / "LinkTables" / "CodeStates.csv"
 
 
 def _make_zip(path: Path, members: dict[str, str]) -> Path:
@@ -117,26 +115,23 @@ def test_extract_zip_streaming_aceita_membro_dentro_do_teto(
     assert (dest / "All" / "MainTable.csv").read_text() == content
 
 
-def test_discover_nao_importa_nucleo_nem_trava() -> None:
-    # Lock Timing (Pitfall 5): a detecção é read-only e NÃO toca OneJobAtATimeLock nem o núcleo.
-    # Checa o CÓDIGO (não a docstring/prosa): nenhuma menção a OneJobAtATimeLock ou import do
-    # núcleo fora de literais de string/comentários.
-    import ast
 
-    import edmkt_app.ingestion.discover as discover
+def test_upload_extraction_does_not_take_the_job_lock(tmp_db, tmp_path, monkeypatch):
+    # O upload só escreve o cru deste upload e NÃO pega a trava de job: prendê-la aqui a manteria
+    # presa enquanto o professor escolhe qual MainTable importar.
+    import zipfile
 
-    tree = ast.parse(Path(discover.__file__).read_text())
-    imported = {
-        alias.name
-        for node in ast.walk(tree)
-        if isinstance(node, (ast.Import, ast.ImportFrom))
-        for alias in node.names
-    }
-    modules = {
-        node.module
-        for node in ast.walk(tree)
-        if isinstance(node, ast.ImportFrom) and node.module
-    }
-    names = {node.id for node in ast.walk(tree) if isinstance(node, ast.Name)}
-    assert "OneJobAtATimeLock" not in names and "OneJobAtATimeLock" not in imported
-    assert not any(m and (m == "ml" or m.startswith("ml.")) for m in modules)
+    from api.shared.infrastructure import settings
+
+    monkeypatch.setattr(settings, "DATA_ROOT", tmp_path / "data")
+    upload = tmp_path / "upload.zip"
+    with zipfile.ZipFile(upload, "w") as zf:
+        zf.writestr("MainTable.csv", "SubjectID,AssignmentID\n")
+        zf.writestr("CodeStates/CodeStates.csv", "CodeStateID,Code\n")
+
+    detected = discover_mod.ProgSnapZipExtractor().extract(upload, "turma-x")
+
+    assert detected.main_tables
+    assert detected.raw_dir.exists()  # o cru fica preservado em raw/
+    holder = tmp_db.execute("SELECT holder_pid FROM pipeline_lock WHERE id=1;").fetchone()[0]
+    assert holder is None
