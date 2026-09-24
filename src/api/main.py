@@ -4,7 +4,7 @@ No startup o lifespan conecta ao app.db, aplica as migrations e libera uma trava
 um job que morreu no meio deixaria a OneJobAtATimeLock presa por um PID que já não existe.
 
 Rode com `--workers 1` (escritor único do SQLite + GPU compartilhada) e sem publicar porta sem bind
-IP explícito (nitro-env): no compose, só o frontend publica porta.
+IP explícito (nitro-env): no compose, só o web publica porta.
 """
 
 from __future__ import annotations

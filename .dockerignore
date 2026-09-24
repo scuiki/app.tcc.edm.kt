@@ -8,7 +8,7 @@
 tests/data/**/*.csv
 tests/data/**/*.parquet
 tests/data/**/*.pkl
-# Frontend build artifacts — node_modules is baked into the image, dist is generated.
+# Web build artifacts — node_modules is baked into the image, dist is generated.
 # Keeps a stray host node_modules out of the build context.
-frontend/node_modules
-frontend/dist
+src/web/node_modules
+src/web/dist

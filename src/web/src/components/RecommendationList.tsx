@@ -3,7 +3,7 @@
 // auto-escapes — never dangerouslySetInnerHTML, T-06.1-09) and keeps the backend array order (no
 // client re-sort, D-08). An empty array means no model is trained → the recs-untrained empty-state.
 
-import type { Recommendation } from '../api/schema'
+import type { Recommendation } from '../http/schema'
 import { EmptyState } from './states/EmptyState'
 
 export function RecommendationList({

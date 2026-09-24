@@ -1,6 +1,7 @@
 # Arquitetura do backend
 
-Dois pacotes em `src/`:
+Três partes em `src/`. Este documento trata das duas em Python (`ml/` e `api/`); a terceira,
+`web/`, é a SPA em React, com o próprio `package.json`.
 
 - **`ml/`**: a ciência (Code-DKT, KCGen-KT, AUC, agregação de mastery). É uma biblioteca, como o
   torch: não conhece HTTP, banco nem disco da aplicação, e **nunca importa de `api/`**. É o que o

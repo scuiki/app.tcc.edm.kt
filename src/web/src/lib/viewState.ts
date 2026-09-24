@@ -2,7 +2,7 @@
 // (mastery) from "no data ingested yet" (eda) — two distinct empty states that route to different copy
 // downstream (Pitfall 4). The error/loading states are the query layer's job, not these helpers'.
 
-import type { EdaResponse, MasteryResponse } from '../api/schema'
+import type { EdaResponse, MasteryResponse } from '../http/schema'
 
 export type MasteryViewState = 'ready' | 'untrained'
 export type EdaViewState = 'ready' | 'empty'

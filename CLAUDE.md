@@ -45,7 +45,7 @@ Code-DKT treinado → dashboard de mastery.
 | scikit-learn | | Clustering de KCs (HAC + silhouette) e AUC |
 | CLI `claude` | Haiku 4.5 pinado | Geração de KCs pela **assinatura** (OAuth montado read-only). O SDK `anthropic` nunca é importado |
 
-### Frontend
+### Web (`src/web/`)
 
 | Peça | Versão | Papel |
 |---|---|---|
@@ -60,13 +60,14 @@ Code-DKT treinado → dashboard de mastery.
 
 Treino e geração de KCs rodam em **subprocess**
 (`python -m api.<funcionalidade>.presentation.workers.<…>_worker`), um por vez, serializados pelo
-`OneJobAtATimeLock` (uma linha no banco, validada pela vida do PID do dono, sem TTL). O banco é o canal entre os processos, e o estado do job vive em
-`training_job` e `kc_job`. Um restart no meio do treino perde o job, e isso é aceito.
+`OneJobAtATimeLock` (uma linha no banco, validada pela vida do PID do dono, sem TTL). O banco é o
+canal entre os processos, e o estado do job vive em `training_job` e `kc_job`. Um restart no meio
+do treino perde o job, e isso é aceito.
 
 ### Runtime
 
 Dois serviços em `docker-compose.yml`. A `api` não publica porta e só é alcançável pelo nome do
-serviço. O `frontend` publica em `${EDMKT_BIND_IP:-127.0.0.1}:5173`. GPU RTX 4050, 6 GB de VRAM.
+serviço. O `web` publica em `${EDMKT_BIND_IP:-127.0.0.1}:5173`. GPU RTX 4050, 6 GB de VRAM.
 
 ### O que NÃO usar
 
@@ -89,8 +90,8 @@ código. Testes ficam ao lado do arquivo testado, com sufixo `_test.py`.
 
 ## Architecture
 
-`src/ml/` é a ciência e nunca importa de `api/`. `src/api/` é organizada por funcionalidade
-(`assignments`, `classroom_import`, `knowledge_components`, `model_training`, `mastery_dashboard`,
-`shared`), cada uma com `domain/ application/ infrastructure/ presentation/` e, dentro delas, uma
-subpasta por papel. As regras estão em `docs/ARCHITECTURE.md` e são verificadas pelo
-`import-linter` e por `src/api/architecture_test.py`.
+`src/ml/` é a ciência e nunca importa de `api/`. `src/web/` é a SPA. `src/api/` é organizada por
+funcionalidade (`assignments`, `classroom_import`, `knowledge_components`, `model_training`,
+`mastery_dashboard`, `shared`), cada uma com `domain/ application/ infrastructure/ presentation/`
+e, dentro delas, uma subpasta por papel. As regras estão em `docs/ARCHITECTURE.md` e são
+verificadas pelo `import-linter` e por `src/api/architecture_test.py`.

@@ -17,7 +17,7 @@ import {
 } from 'chart.js'
 import { Bar, Line } from 'react-chartjs-2'
 
-import type { EdaAggregate, EdaResponse } from '../api/schema'
+import type { EdaAggregate, EdaResponse } from '../http/schema'
 import { EmptyState } from './states/EmptyState'
 
 // Register once at module load — Chart.js 4 is tree-shaken, so the scales/elements each chart uses

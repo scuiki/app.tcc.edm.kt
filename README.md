@@ -5,12 +5,13 @@ introdutória em formato ProgSnap2, mostrando ao professor o estágio de domíni
 por *Knowledge Component* (KC). Esta é a fase de **Implantação** do processo EDM iniciado
 no TCC 1 (`../tcc.edm.kt`), que elegeu o Code-DKT como modelo base.
 
-O código vive em dois pacotes em `src/`:
+O código vive em `src/`, em três partes:
 
 - `src/ml/` — a ciência: um port fiel do pipeline Code-DKT e do KCGen-KT do TCC 1 (commit
   `0e8807c`), blindado por testes de caracterização. Não conhece a aplicação.
 - `src/api/` — a aplicação FastAPI, organizada por funcionalidade, cada uma com as camadas
   `domain/`, `application/`, `infrastructure/` e `presentation/`.
+- `src/web/` — a SPA em React (Vite + TypeScript) que o professor usa no navegador.
 
 Os nomes estão em [`docs/GLOSSARY.md`](docs/GLOSSARY.md) e as camadas e a regra de dependência
 em [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md). Cada teste fica ao lado do arquivo que testa

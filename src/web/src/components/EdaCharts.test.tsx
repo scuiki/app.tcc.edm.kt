@@ -11,7 +11,7 @@ vi.mock('react-chartjs-2', () => ({
 }))
 
 import { EdaCharts } from './EdaCharts'
-import type { EdaResponse } from '../api/schema'
+import type { EdaResponse } from '../http/schema'
 
 // DASH-04: three backend aggregates → success-rate (Bar), learning-curve (Line),
 // compile-error-rate (Bar). An empty ({}) aggregate degrades to the eda empty-state for THAT panel,

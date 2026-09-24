@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 
 import { HeatmapGrid } from './HeatmapGrid'
-import type { MasteryCell } from '../api/schema'
+import type { MasteryCell } from '../http/schema'
 
 // The heatmap only colors backend-authored mastery (D-08); these tests pin the band cutoffs (via the
 // non-color cue, not the fill) and the untrained empty-state guard so an empty matrix never reads as a

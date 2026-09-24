@@ -11,7 +11,7 @@ import type {
   EdaResponse,
   MasteryResponse,
   RecommendationsResponse,
-} from '../api/schema'
+} from '../http/schema'
 
 // Trained: non-empty matrix, populated uncertainty frame, weakest-first critical KCs,
 // students_at_risk as a plain string[] (Pitfall 1 — student_ids, never objects).
