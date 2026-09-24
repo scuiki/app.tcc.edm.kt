@@ -1,0 +1,80 @@
+.btn {
+  height: var(--control-height);
+  padding: 0 16px;
+  border-radius: var(--radius);
+  border: 1px solid transparent;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition:
+    background-color var(--transition),
+    border-color var(--transition);
+}
+
+/* A ação principal da página ou do diálogo, uma por tela */
+.btn--primary {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #ffffff;
+}
+
+.btn--primary:hover {
+  background: var(--color-accent-text);
+  border-color: var(--color-accent-text);
+}
+
+/* A alternativa neutra ao lado da principal, como o Cancelar */
+.btn--secondary {
+  background: var(--color-surface);
+  border-color: var(--color-control-border);
+  color: var(--color-text);
+}
+
+.btn--secondary:hover {
+  background: var(--color-hover);
+}
+
+/* Só dentro do diálogo que confirma uma exclusão */
+.btn--destructive {
+  background: var(--color-danger);
+  border-color: var(--color-danger);
+  color: #ffffff;
+}
+
+.btn--destructive:hover {
+  background: var(--color-danger-text);
+  border-color: var(--color-danger-text);
+}
+
+.btn:disabled,
+.btn:disabled:hover {
+  background: var(--color-rule);
+  border-color: var(--color-rule);
+  color: var(--color-text-disabled);
+  cursor: not-allowed;
+}
+
+/* A ação de linha em tabela, e excluir usa o mesmo contorno */
+.icon-btn {
+  width: var(--control-height-compact);
+  height: var(--control-height-compact);
+  padding: 0;
+  border: 1px solid var(--color-control-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color var(--transition);
+}
+
+.icon-btn:hover {
+  background: var(--color-hover);
+}

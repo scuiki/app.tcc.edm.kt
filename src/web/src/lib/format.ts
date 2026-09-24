@@ -1,10 +1,26 @@
-// Formats backend-authored floats as integer percents, matching the backend {:.0%} convention so the
-// SPA never renders a number that disagrees with its source (D-08). No recomputation here.
+// Os números e as datas que o backend manda, formatados em pt-BR sem nenhum recálculo
 
 const PLACEHOLDER = '—'
 
-// null/undefined (e.g. an untrained first_attempt_auc) renders the placeholder, never "NaN%".
+const dateFormat = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short' })
+const dateTimeFormat = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' })
+const countFormat = new Intl.NumberFormat('pt-BR')
+
+// Percentual inteiro, com o mesmo arredondamento do {.0%} do backend
 export function formatPercent(value: number | null | undefined): string {
   if (value == null) return PLACEHOLDER
   return `${Math.round(value * 100)}%`
+}
+
+export function formatCount(value: number): string {
+  return countFormat.format(value)
+}
+
+// A data no fuso de quem está vendo, porque o backend grava em UTC
+export function formatDate(iso: string): string {
+  return dateFormat.format(new Date(iso))
+}
+
+export function formatDateTime(iso: string): string {
+  return dateTimeFormat.format(new Date(iso)).replace(',', '')
 }

@@ -1,7 +1,8 @@
 # Arquitetura do backend
 
-Três partes em `src/`. Este documento trata das duas em Python (`ml/` e `api/`); a terceira,
-`web/`, é a SPA em React, com o próprio `package.json`.
+Três partes em `src/`. A maior parte deste documento trata das duas em Python (`ml/` e `api/`); a
+terceira, `web/`, é a SPA em React, com o próprio `package.json`, e tem a sua seção no fim
+([Frontend](#frontend)).
 
 - **`ml/`**: a ciência (Code-DKT, KCGen-KT, AUC, agregação de mastery). É uma biblioteca, como o
   torch: não conhece HTTP, banco nem disco da aplicação, e **nunca importa de `api/`**. É o que o
@@ -185,3 +186,72 @@ Treino e geração de KCs rodam em subprocess
 (`python -m api.<funcionalidade>.presentation.workers.<…>_worker`), serializados pelo
 `OneJobAtATimeLock`, uma linha no banco validada pela vida do PID do dono. O banco é o canal entre
 os processos: o estado do job vive em `training_job` / `kc_job`.
+
+## Frontend
+
+`src/web/src/` segue a mesma ideia do backend, organizado por funcionalidade primeiro, com três
+camadas de componente e uma fronteira de conhecimento entre elas.
+
+```
+app/          o casco: barra superior, menu, a tabela de rotas e o ErrorBoundary
+components/
+  ui/         primitivas sem domínio (Button, Card, Dialog, TextField, SearchField, Badge)
+  states/     os quatro estados de toda tela (carregando, erro, vazio, conteúdo)
+  …           outros componentes de produto, como o PageHeader
+features/
+  <funcionalidade>/
+    api/        os hooks de dados (TanStack Query) e os tipos do DTO
+    components/ os componentes que conhecem o domínio
+    pages/      a página que entra na tabela de rotas
+http/         o cliente (a via única de dados) e o schema.d.ts gerado do OpenAPI
+lib/          funções puras transversais (formatação, rota por hash)
+styles/       os tokens da linguagem visual
+```
+
+As funcionalidades têm o nome das do backend (`classrooms`, `assignments`, `mastery_dashboard`…), e
+uma pasta só existe quando tem conteúdo. `assignments/` hoje só tem `api/`.
+
+### Fronteiras
+
+- `components/` não conhece nenhuma funcionalidade nem o `app/`. Recebe dados genéricos,
+  `children` e a política de quem o usa (o texto do vazio, o que conta como vazio), nunca a decide.
+- `lib/` e `http/` dependem só de `lib/` e `http/`.
+- Uma funcionalidade nunca importa o `app/`.
+- **Entre funcionalidades, só se importa o `api/` da outra** (os hooks e os tipos), nunca os
+  componentes. É o espelho da regra do backend, em que se importa só o `domain/` da outra.
+
+As quatro regras são verificadas por `src/web/architecture.test.ts`, que resolve cada import para o
+arquivo real. O ESLint não serve aqui, porque com imports relativos `../../components/ui` e
+`../../classrooms/components` têm a mesma forma.
+
+### Composição, estado e effects
+
+- Nenhum componente é definido dentro de outro (`react/no-unstable-nested-components` como erro).
+- Um componente se decompõe por lógica, não por tamanho. Um subcomponente privado, sem estado e sem
+  teste próprio fica no arquivo de quem o usa.
+- Estado é o mínimo que não se calcula. Estados que se excluem viram um `status` só, e uma seleção
+  guarda o id, nunca o objeto.
+- `useEffect` só sincroniza com algo de fora do React (o único hoje é o do `Dialog`, que chama o
+  `showModal()` do DOM). A rota lê o hash com `useSyncExternalStore`, sem effect.
+- Um formulário nasce limpo por remontagem, nunca por effect de reset. O `Dialog` só renderiza o
+  conteúdo aberto.
+- Sem `useMemo`, `useCallback` ou `memo` defensivos.
+
+### Linguagem visual
+
+CSS puro, com os tokens de `styles/tokens.css` e um `.css` ao lado de cada componente. Nenhuma cor
+é escrita no ponto de uso. Cada variante de botão tem a sua situação de uso (primária, secundária,
+destrutiva e o botão de ícone das linhas de tabela), e uma variante sem uso não nasce. Vermelho,
+âmbar e verde são só das faixas de domínio.
+
+### Verificação
+
+Tudo roda no container `web`.
+
+```bash
+docker compose run --rm web sh -c "npx tsc -b && npx eslint . && npx prettier --check . && npx vitest run"
+```
+
+Os tipos da api saem do OpenAPI com `npm run types`, com a api no ar, e o `schema.d.ts` nunca é
+editado à mão. A regra dos comentários vale também aqui (só `//`, uma linha), verificada pelo mesmo
+`src/api/code_comments_test.py`.

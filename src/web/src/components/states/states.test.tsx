@@ -1,77 +1,100 @@
-import { render, screen } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { fireEvent, render, screen } from '@testing-library/react'
+import type { UseQueryResult } from '@tanstack/react-query'
+import { describe, expect, it, vi } from 'vitest'
 
-import { Loading } from './Loading'
-import { ErrorState } from './ErrorState'
-import { EmptyState } from './EmptyState'
+import { EmptyState, ErrorState, LoadingState, QueryStates } from './states'
 
-// Each state must render its EXACT locked copy from the UI-SPEC Copywriting Contract — these strings
-// are the contract, so the assertions are verbatim (including the ellipsis character).
+// Só os campos que o QueryStates lê, sem montar um QueryClient
+function fakeQuery<T>(fields: Partial<UseQueryResult<T>>): UseQueryResult<T> {
+  return { isPending: false, isError: false, refetch: vi.fn(), ...fields } as UseQueryResult<T>
+}
 
-describe('Loading', () => {
-  it('renders the locked loading copy', () => {
-    render(<Loading />)
-    expect(screen.getByText('Carregando dados da turma…')).toBeInTheDocument()
+describe('LoadingState', () => {
+  it('names what is being loaded', () => {
+    render(<LoadingState label="Carregando turmas…" />)
+    expect(screen.getByRole('status')).toHaveTextContent('Carregando turmas…')
   })
 })
 
 describe('ErrorState', () => {
-  it('renders the locked error copy', () => {
+  it('shows a default message and no retry button without onRetry', () => {
     render(<ErrorState />)
-    expect(
-      screen.getByText(
-        'Não foi possível carregar os dados do dashboard. Verifique se a API está no ar e tente novamente.',
-      ),
-    ).toBeInTheDocument()
+    expect(screen.getByRole('alert')).toHaveTextContent('Verifique se a API está no ar')
+    expect(screen.queryByRole('button')).not.toBeInTheDocument()
+  })
+
+  it('calls onRetry from the retry button', () => {
+    const onRetry = vi.fn()
+    render(<ErrorState message="Falhou." onRetry={onRetry} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Tentar de novo' }))
+    expect(onRetry).toHaveBeenCalledOnce()
   })
 })
 
 describe('EmptyState', () => {
-  it('renders the no-assignments heading and body', () => {
-    render(<EmptyState kind="no-assignments" />)
-    expect(screen.getByText('Nenhum assignment disponível')).toBeInTheDocument()
-    expect(
-      screen.getByText(
-        'Suba e processe um dataset ProgSnap2 para que os assignments apareçam aqui.',
-      ),
-    ).toBeInTheDocument()
+  it('shows the title, the text and the action', () => {
+    render(
+      <EmptyState
+        title="Nenhuma turma ainda"
+        text="Cadastre a primeira turma."
+        action={<button type="button">Nova turma</button>}
+      />,
+    )
+    expect(screen.getByText('Nenhuma turma ainda')).toBeInTheDocument()
+    expect(screen.getByText('Cadastre a primeira turma.')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Nova turma' })).toBeInTheDocument()
+  })
+})
+
+describe('QueryStates', () => {
+  const content = (items: string[]) => <p>{items.join(', ')}</p>
+
+  it('shows the loading label while pending', () => {
+    render(
+      <QueryStates query={fakeQuery<string[]>({ isPending: true })} loadingLabel="Carregando…">
+        {content}
+      </QueryStates>,
+    )
+    expect(screen.getByRole('status')).toHaveTextContent('Carregando…')
   })
 
-  it('renders the EDA no-data heading and body', () => {
-    render(<EmptyState kind="eda" />)
-    expect(screen.getByText('Sem dados para análise ainda')).toBeInTheDocument()
-    expect(
-      screen.getByText(
-        'Conclua a ingestão de um dataset desta turma para ver taxa de acerto, curvas de aprendizado e erros de compilação.',
-      ),
-    ).toBeInTheDocument()
+  it('shows the error with a retry that refetches', () => {
+    const query = fakeQuery<string[]>({ isError: true })
+    render(
+      <QueryStates query={query} loadingLabel="Carregando…" errorMessage="Não carregou.">
+        {content}
+      </QueryStates>,
+    )
+    expect(screen.getByRole('alert')).toHaveTextContent('Não carregou.')
+    fireEvent.click(screen.getByRole('button', { name: 'Tentar de novo' }))
+    expect(query.refetch).toHaveBeenCalledOnce()
   })
 
-  it('renders the mastery-untrained copy', () => {
-    render(<EmptyState kind="mastery-untrained" />)
-    expect(
-      screen.getByText(
-        'Sem heatmap de domínio até o treino do Code-DKT concluir. Veja a EDA enquanto isso.',
-      ),
-    ).toBeInTheDocument()
+  it('shows the empty node when the caller says the data is empty', () => {
+    render(
+      <QueryStates
+        query={fakeQuery<string[]>({ data: [] })}
+        loadingLabel="Carregando…"
+        isEmpty={(items) => items.length === 0}
+        empty={<p>Vazio</p>}
+      >
+        {content}
+      </QueryStates>,
+    )
+    expect(screen.getByText('Vazio')).toBeInTheDocument()
   })
 
-  it('renders the recs-untrained copy', () => {
-    render(<EmptyState kind="recs-untrained" />)
-    expect(
-      screen.getByText(
-        'As recomendações de reforço aparecem após o treino, a partir dos KCs de menor domínio.',
-      ),
-    ).toBeInTheDocument()
-  })
-
-  it('renders the select-assignment heading and body', () => {
-    render(<EmptyState kind="select-assignment" />)
-    expect(screen.getByText('Selecione um assignment')).toBeInTheDocument()
-    expect(
-      screen.getByText(
-        'Escolha uma turma na lista à esquerda para ver domínio, análise exploratória e recomendações.',
-      ),
-    ).toBeInTheDocument()
+  it('renders the content with the data otherwise', () => {
+    render(
+      <QueryStates
+        query={fakeQuery<string[]>({ data: ['a', 'b'] })}
+        loadingLabel="Carregando…"
+        isEmpty={(items) => items.length === 0}
+        empty={<p>Vazio</p>}
+      >
+        {content}
+      </QueryStates>,
+    )
+    expect(screen.getByText('a, b')).toBeInTheDocument()
   })
 })

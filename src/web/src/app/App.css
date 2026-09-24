@@ -1,0 +1,73 @@
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* A barra superior branca, destacada por sombra, só com o ícone da ferramenta */
+.topbar {
+  height: 56px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  background: var(--color-surface);
+  box-shadow: var(--shadow-bar);
+  position: relative;
+  z-index: 1;
+}
+
+.topbar__icon {
+  color: var(--color-accent);
+}
+
+.app__body {
+  flex-grow: 1;
+  display: flex;
+  min-height: 0;
+}
+
+/* O menu em lista única, sem rótulos de seção */
+.side-menu {
+  width: 240px;
+  flex-shrink: 0;
+  padding: 16px 10px;
+  background: var(--color-surface);
+  border-right: 1px solid var(--color-menu-rule);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.side-menu__item {
+  height: 38px;
+  padding: 0 12px;
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  font-size: 13px;
+  color: var(--color-text-body);
+  text-decoration: none;
+  transition: background-color var(--transition);
+}
+
+.side-menu__item:hover {
+  background: var(--color-hover);
+}
+
+/* A página atual com fundo azul suave e texto azul, sem barra lateral */
+.side-menu__item[aria-current='page'] {
+  background: var(--color-accent-soft);
+  color: var(--color-accent-text);
+  font-weight: 600;
+}
+
+.app__main {
+  flex-grow: 1;
+  min-width: 0;
+  padding: 20px 28px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}

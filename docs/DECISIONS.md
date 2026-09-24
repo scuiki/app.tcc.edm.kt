@@ -213,3 +213,35 @@ turma. O slug não vira mais caminho; o nome do zip de cada envio passa pela mes
 
 **`ProgSnapAssignmentId` é um tipo próprio.** O assignment tem dois ids inteiros, o do banco e o do
 dataset, e eles já foram trocados um pelo outro.
+
+## Frontend
+
+**A rota mora no hash da URL, sem biblioteca de rotas.** Um hook de poucas linhas lê o
+`location.hash` com `useSyncExternalStore`. Com o hash, um F5 e o voltar do navegador funcionam, o
+que um estado no `App` não daria. O react-router e o TanStack Router trariam loaders e rotas
+aninhadas que o app não usa. Se um dia precisar, trocar é mecânico.
+
+**CSS puro, sem Tailwind nem shadcn.** O guia de frontend do trabalho parte dessa stack, mas o que
+ele quer garantir (nenhuma cor no ponto de uso, variante com situação de uso) vale do mesmo jeito
+com tokens e uma prop `variant` que escolhe a classe. Trocar o jeito de escrever CSS no meio do
+caminho custaria mais do que rende.
+
+**O `<dialog>` nativo no lugar do Radix.** Ele já prende o foco, fecha no Esc e escurece o fundo.
+Abrir como modal exige chamar `showModal()`, e esse é o único effect das primitivas, porque
+sincroniza com uma API do DOM. O conteúdo só existe com o diálogo aberto, então o formulário nasce
+limpo a cada abertura, que é o efeito do override O-1 do guia sem o Radix.
+
+**Sem react-hook-form nem zod.** Os formulários das telas planejadas têm um campo cada, e o backend
+já valida (tamanho do nome e nome único, com o 409). O `useState` resolve.
+
+**`eslint-plugin-react` com o ESLint 10.** A versão 7.37.5 declara suporte só até o 9, mas as duas
+regras que interessam (`no-unstable-nested-components` e `jsx-key`) foram testadas no 10 e
+funcionam. O `.npmrc` já relaxa os peers por causa do `openapi-typescript`.
+
+**As fronteiras entre camadas são um teste, e não uma regra do ESLint.** Com imports relativos, o
+`no-restricted-imports` não distingue `../../components/ui` de `../../classrooms/components`. O
+`architecture.test.ts` resolve o caminho real, como o `architecture_test.py` faz no backend.
+
+**O `PageHeader` nasceu antes da terceira cópia.** A regra do guia é promover um padrão na terceira
+ocorrência, mas toda página do desenho abre com o mesmo cabeçalho, então ele nasce promovido, pelo
+mesmo motivo dos quatro estados de tela.
