@@ -39,6 +39,26 @@ Regras gerais:
 | `KnowledgeComponentGenerationJob` | Uma geração de KCs em andamento ou concluída | `KCJob` |
 | `StudentMastery` | A probabilidade de domínio de um aluno em um KC | `MasteryPrediction` |
 
+## Interfaces
+
+Todo `Protocol` da `api/` começa com `I` e fica numa pasta `interfaces/` (ver
+[ARCHITECTURE](ARCHITECTURE.md#nomes)). Quem implementa fica na infraestrutura.
+
+| Interface | Quem implementa | O que é | Nome antigo |
+|---|---|---|---|
+| `I<Entidade>Repository` (`IAssignmentRepository`, `IClassroomRepository`, `ISubmissionRepository`, `IKnowledgeComponentRepository`, `IKnowledgeComponentGenerationJobRepository`, `IQMatrixRepository`, `ITrainingJobRepository`, `ITrainedModelRepository`, `ITrainingEpochMetricRepository`, `IStudentMasteryRepository`) | `Sqlite<Entidade>Repository` | Ler e gravar uma entidade | sem o `I` |
+| `ICleanedSubmissionsStore` / `IStagedCleanedSubmissions` | `ParquetCleanedSubmissionsStore` | Gravar e ler o dado limpo, em duas fases (preparar e publicar) | sem o `I` |
+| `IProgSnapUploadExtractor` | `ProgSnapZipExtractor` | Extrair o `.zip` enviado e achar as tabelas | `ProgSnapUploadExtractor` |
+| `IProgSnapTableReader` | `ProgSnapCsvReader` | Ler as tabelas ProgSnap2 do CSV | `ProgSnapTableReader` |
+| `IKnowledgeComponentGenerator` | `KcGenKtGenerator` | Gerar os KCs de um assignment | `KnowledgeComponentGenerator` |
+| `ICodeDktTrainer` | `MlCodeDktTrainer` | Treinar o Code-DKT sobre um `TrainingDataset` | `CodeDktTrainer` |
+| `ITrainedModelStore` | `TrainedModelFileStore` | Guardar e recarregar os arquivos de um modelo treinado | `TrainedModelStore` |
+| `IStudentMasteryPredictor` | `MlStudentMasteryPredictor` | Prever a mastery aluno × KC com um modelo treinado | `StudentMasteryPredictor` |
+| `IBusinessRule` | cada `*Rule` | Uma regra que um use case de escrita checa | `BusinessRule` |
+| `IUnitOfWork` | `SqliteUnitOfWork` | Gravar tudo junto, ou nada | `UnitOfWork` |
+| `IJobLock` / `IAcquiredJobLock` | `OneJobAtATimeLock` | Pegar e soltar a trava de job | `JobLock` / `AcquiredJobLock` |
+| `IBackgroundJobLauncher` | `SubprocessJobLauncher` | Disparar um worker em background | `BackgroundJobLauncher` |
+
 ## Estados do assignment
 
 `AssignmentStatus` descreve até onde o assignment chegou. Cada transição tem um único dono.
@@ -59,11 +79,15 @@ Os jobs (`TrainingJob`, `KnowledgeComponentGenerationJob`) têm os estados `pend
 | Nome no código | O que é | Nome antigo |
 |---|---|---|
 | `MasteryLevel` (`low` / `medium` / `high`) | A faixa de domínio: abaixo de 0,40 / de 0,40 a 0,70 / acima de 0,70 | band, `classify_band` |
+| `classify_mastery_level()` | Em que `MasteryLevel` cai um valor de mastery (`services/mastery_classification.py`) | `classify_band` |
+| `StudentMasteryMatrix` | A matriz `{(student_id, kc_id): mastery}` | — |
 | `find_critical_knowledge_components()` | KCs ordenados pela mastery média da turma, do mais fraco ao mais forte | `critical_kcs` |
 | `find_students_at_risk()` | Alunos com 3 ou mais KCs em nível `low` | `at_risk_students` |
-| `ReinforcementRecommendation` | O que reforçar em aula, com prioridade e texto em pt-BR. Sem LLM | `recommend_reinforcement` |
+| `ReinforcementRecommendation` | O que reforçar em aula, com prioridade e texto em pt-BR. Sem LLM | — |
+| `recommend_reinforcement()` | Monta as `ReinforcementRecommendation` a partir dos KCs críticos (`services/reinforcement_recommender.py`) | — |
 | `TrainedModelInfo` | O que acompanha todo número derivado do modelo: o first-attempt AUC e a data do treino, para o professor saber o quanto confiar. Sem modelo publicado, vem vazio | `uncertainty_frame` |
 | `PreTrainingStatistics` | Estatísticas das submissões disponíveis antes de qualquer treino: taxa de acerto, curva de aprendizagem, taxa de erro de compilação | EDA, `eda.py` |
+| `compute_pre_training_statistics()` | Calcula as `PreTrainingStatistics` do dado limpo (`services/pre_training_statistics_calculation.py`) | `PreTrainingStatistics.of()` |
 | `first_attempt_auc` | A métrica primária: AUC só sobre as primeiras tentativas | `first_auc` |
 
 ## Pipeline de dados
@@ -74,7 +98,10 @@ Os jobs (`TrainingJob`, `KnowledgeComponentGenerationJob`) têm os estados `pend
 | `ClassroomImportReport` / `ImportCheck` | O relatório da importação e cada item dele (fatal, aviso ou de treinabilidade) | `IngestReport` / `ReportItem` |
 | `check_assignment_trainability()` | Decide, por assignment, entre `ready_for_kc_generation` e `statistics_only` | `viability` |
 | `cleaned_submissions.parquet` | O dado limpo de onde tudo lê, um arquivo por assignment | Parquet canônico |
-| `load_training_dataset()` | O recorte que treino e inferência consomem: só eventos `Run.Program` | `load_modeling_frame` |
+| `TrainingDataset` | O recorte que treino e inferência consomem: só eventos `Run.Program` | `ModelingFrame` |
+| `load_training_dataset()` | Monta o `TrainingDataset` de um assignment (`services/training_dataset_loading.py`) | `load_modeling_frame` |
+| `TrainingOutcome` | O que um treino devolve: o modelo, o vocabulário, os hiperparâmetros, o first-attempt AUC e o `java_parse_rate` | — |
+| `DetectedUpload` | O que o upload encontrou no `.zip`: o diretório cru e as tabelas | — |
 | `AstPath` | Um caminho na árvore sintática do Java; é a feature de entrada do Code-DKT (termo do artigo) | paths |
 | `AstPathCache` | Os paths já extraídos, salvos em disco por snapshot | `features_cache` |
 | `java_parse_rate` | A fração dos snapshots que o javalang conseguiu parsear | `parse_rate` |
