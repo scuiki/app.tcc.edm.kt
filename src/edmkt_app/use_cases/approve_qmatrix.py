@@ -7,7 +7,7 @@ from pydantic import BaseModel
 from edmkt_app import specs
 from edmkt_app.persistence import repositories as repos
 from edmkt_app.persistence import transaction
-from edmkt_app.use_cases.base import BaseWriteUseCase, NotFound
+from edmkt_app.use_cases.base import BaseWriteUseCase, require_assignment
 
 
 class ApproveQMatrixDto(BaseModel):
@@ -20,8 +20,7 @@ class ApproveQMatrixUseCase(BaseWriteUseCase):
 
     def execute(self, dto: ApproveQMatrixDto) -> dict:
         # Inexistência é fail-fast (404) e não entra no acúmulo: sem alvo, não há regra a aplicar.
-        if repos.AssignmentRepository(self._conn).get(dto.assignment_id) is None:
-            raise NotFound("assignment inexistente")
+        require_assignment(self._conn, dto.assignment_id)
         return super().execute(dto)
 
     def _run(self, dto: ApproveQMatrixDto) -> dict:

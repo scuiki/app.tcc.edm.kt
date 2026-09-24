@@ -16,6 +16,9 @@ from __future__ import annotations
 import sqlite3
 from typing import Any, Protocol
 
+from edmkt_app.persistence import models
+from edmkt_app.persistence import repositories as repos
+
 
 class Specification(Protocol):
     """Devolve a mensagem de recusa, ou None se a regra passa."""
@@ -43,6 +46,14 @@ class PipelineBusy(Exception):
     """Já há um pipeline pesado rodando. NÃO é uma specification: é corrida, não regra do
     payload — o gate autoritativo é o acquire da trava dentro do subprocess, e tratá-la como
     spec convidaria alguém a concluir que o gate está aqui e apagar aquele acquire."""
+
+
+def require_assignment(conn: sqlite3.Connection, assignment_id: int) -> models.Assignment:
+    """O assignment alvo, ou NotFound — o 404 que todo use case sobre um assignment começa por."""
+    assignment = repos.AssignmentRepository(conn).get(assignment_id)
+    if assignment is None:
+        raise NotFound("assignment inexistente")
+    return assignment
 
 
 class BaseWriteUseCase:
