@@ -22,6 +22,7 @@ from __future__ import annotations
 import pandas as pd
 
 from edmkt_app.ingestion.report import AssignmentSummary, ReportItem
+from edmkt_app.submission_events import RUN_PROGRAM
 
 # Espelha split_by_subject (../tcc.edm.kt data_loader → edmkt_core/pipeline.py:41-44): só conta
 # como elegível o aluno com >=3 eventos Run.Program. Alunos abaixo são EXCLUÍDOS da contagem,
@@ -55,7 +56,7 @@ def assess_viability(
 
         # Elegibilidade min_attempts>=3 Run.Program por aluno (espelha o núcleo): alunos abaixo
         # do piso não contam como elegíveis, mas a sua presença não derruba o assignment.
-        run = group[group["EventType"] == "Run.Program"]
+        run = group[group["EventType"] == RUN_PROGRAM]
         attempts = run.groupby("SubjectID").size()
         eligible = attempts[attempts >= MIN_ATTEMPTS].index
         n_students_eligible = int(len(eligible))

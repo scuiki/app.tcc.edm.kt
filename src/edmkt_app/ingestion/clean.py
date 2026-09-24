@@ -15,11 +15,7 @@ from __future__ import annotations
 import pandas as pd
 
 from edmkt_app.ingestion.report import ReportItem
-
-# O filtro de EventType É o dedup do par mesmo-timestamp (D-10): no ProgSnap2 do CSEDM cada
-# Run.Program vem acompanhado de um Compile plain com o MESMO ServerTimestamp e SEM Score;
-# manter só {Run.Program, Compile.Error} descarta o plain e resolve o empate — não é loop O(n²).
-ALLOWED_EVENTS = {"Run.Program", "Compile.Error"}
+from edmkt_app.submission_events import KEPT_EVENTS, RUN_PROGRAM
 
 # Contrato de colunas do seam: exatamente o que build_sequences/train_and_evaluate consomem
 # (verificado em edmkt_core/sequences.py:16 e pipeline.py:84-130). A ordem é estável p/ o Parquet.
@@ -46,9 +42,11 @@ def clean_event_stream(
     """
     items: list[ReportItem] = []
 
-    # Dedup/filtro (D-10): o filtro de EventType é o próprio tie-break do par mesmo-timestamp.
+    # Dedup/filtro (D-10): o filtro de EventType é o próprio tie-break do par mesmo-timestamp. No
+    # ProgSnap2 do CSEDM cada Run.Program vem acompanhado de um Compile plain com o MESMO
+    # ServerTimestamp e SEM Score; manter só {Run.Program, Compile.Error} descarta o plain.
     n_before = len(raw)
-    df = raw[raw["EventType"].isin(ALLOWED_EVENTS)].copy()
+    df = raw[raw["EventType"].isin(KEPT_EVENTS)].copy()
     n_dropped = n_before - len(df)
     if n_dropped:
         items.append(
@@ -63,7 +61,7 @@ def clean_event_stream(
     # Binarização (D-12) preservando o Score CONTÍNUO: `correct` é derivada à parte; a coluna
     # Score crua segue intacta para a EDA da Fase 6 (Pitfall 4 — não destruir o contínuo).
     df["correct"] = (
-        (df["EventType"] == "Run.Program") & (df["Score"] == 1.0)
+        (df["EventType"] == RUN_PROGRAM) & (df["Score"] == 1.0)
     ).astype(int)
 
     # Integridade referencial (D-11): evento cujo CodeStateID não existe em code_states não tem

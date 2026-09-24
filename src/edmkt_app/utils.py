@@ -14,11 +14,8 @@ from __future__ import annotations
 
 import pandas as pd
 
-# O Parquet canônico da Fase 3 guarda {Run.Program, Compile.Error} de propósito — o filtro de
-# EventType É o dedup do par de mesmo timestamp (clean.py D-10) e a EDA precisa dos compile
-# errors para a taxa de erro. Modelagem é outra história: o TCC 1 treinou o Code-DKT só sobre
-# Run.Program, e é esse o dado que o teste de regressão usa como oráculo.
-RUN_EVENT = "Run.Program"
+from edmkt_app import submission_events
+
 
 
 def run_program_only(df: pd.DataFrame) -> pd.DataFrame:
@@ -33,4 +30,4 @@ def run_program_only(df: pd.DataFrame) -> pd.DataFrame:
     NÃO altera o DataFrame recebido: o canônico segue inteiro para a EDA, que precisa dos
     compile errors. O índice é reconstruído porque o que consome isto adiante itera por posição.
     """
-    return df[df["EventType"] == RUN_EVENT].copy().reset_index(drop=True)
+    return df[df["EventType"] == submission_events.RUN_PROGRAM].copy().reset_index(drop=True)
