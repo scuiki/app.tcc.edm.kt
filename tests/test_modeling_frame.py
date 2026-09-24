@@ -18,7 +18,7 @@ import inspect
 import pandas as pd
 import pytest
 
-from edmkt_app import modeling_frame
+from edmkt_app import modeling_frame, settings
 from edmkt_app.persistence import models
 from edmkt_app.persistence import repositories as repos
 
@@ -70,30 +70,34 @@ def _seed(conn, data_root) -> int:
     return assignment_id
 
 
-def test_frame_carries_only_run_program(tmp_db, tmp_path):
+def test_frame_carries_only_run_program(tmp_db, tmp_path, monkeypatch):
+    monkeypatch.setattr(settings, "DATA_ROOT", tmp_path)
     assignment_id = _seed(tmp_db, tmp_path)
 
-    frame = modeling_frame.load_modeling_frame(tmp_db, assignment_id, data_root=tmp_path)
+    frame = modeling_frame.load_modeling_frame(tmp_db, assignment_id)
 
     assert set(frame.events["EventType"].unique()) == {"Run.Program"}
     assert len(frame.events) == 2
 
 
-def test_frame_carries_the_identifiers_the_callers_need(tmp_db, tmp_path):
+def test_frame_carries_the_identifiers_the_callers_need(tmp_db, tmp_path, monkeypatch):
+    monkeypatch.setattr(settings, "DATA_ROOT", tmp_path)
     assignment_id = _seed(tmp_db, tmp_path)
 
-    frame = modeling_frame.load_modeling_frame(tmp_db, assignment_id, data_root=tmp_path)
+    frame = modeling_frame.load_modeling_frame(tmp_db, assignment_id)
 
     assert str(frame.turma_slug) == "turma-x"
     assert frame.assignment_id.value == 439
 
 
-def test_missing_assignment_raises(tmp_db, tmp_path):
+def test_missing_assignment_raises(tmp_db, tmp_path, monkeypatch):
+    monkeypatch.setattr(settings, "DATA_ROOT", tmp_path)
     with pytest.raises(ValueError, match="assignment"):
-        modeling_frame.load_modeling_frame(tmp_db, 999, data_root=tmp_path)
+        modeling_frame.load_modeling_frame(tmp_db, 999)
 
 
-def test_orphan_turma_raises_instead_of_attributeerror(tmp_db, tmp_path):
+def test_orphan_turma_raises_instead_of_attributeerror(tmp_db, tmp_path, monkeypatch):
+    monkeypatch.setattr(settings, "DATA_ROOT", tmp_path)
     # WR-01 já pego uma vez em api/dashboard: turma ausente virava AttributeError em turma.name
     # e subia como 500 cru. A resolução de nomes agora é de um lugar só — a guarda mora com ela.
     #
@@ -106,7 +110,7 @@ def test_orphan_turma_raises_instead_of_attributeerror(tmp_db, tmp_path):
     tmp_db.execute("PRAGMA foreign_keys=ON;")
 
     with pytest.raises(ValueError, match="turma"):
-        modeling_frame.load_modeling_frame(tmp_db, assignment_id, data_root=tmp_path)
+        modeling_frame.load_modeling_frame(tmp_db, assignment_id)
 
 
 @pytest.mark.parametrize("module_name", ["edmkt_app.train", "edmkt_app.mastery_service"])

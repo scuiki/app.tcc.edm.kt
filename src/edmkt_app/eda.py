@@ -15,11 +15,8 @@ from pathlib import Path
 
 import pandas as pd
 
-from edmkt_app import settings
-from edmkt_app.values import ProgSnapAssignmentId, TurmaSlug
-
 # EDA NÃO importa train.py/persistence: aquele lado puxa torch + ArtifactStore e quebraria a
-# invariante "EDA roda sem modelo" (D-06). _slug/_progsnap_aid são triviais e reproduzidos aqui.
+# invariante "EDA roda sem modelo" (D-06). O caminho do Parquet quem resolve é o use case.
 # IN-02: o stream canônico (clean.py ALLOWED_EVENTS) contém exatamente {Run.Program, Compile.Error};
 # esses dois tipos são os únicos consumidos abaixo (RUN_EVENT/COMPILE_ERROR_EVENT) — sem precisar
 # importar ALLOWED_EVENTS só para documentar, o que acoplava a EDA a ingestion.clean no import.
@@ -31,16 +28,6 @@ def _read_canonical(pq: Path | str) -> pd.DataFrame:
     # Único ponto de I/O do módulo (T-06-05): o caminho vem de IDs int + _slug/_progsnap_aid
     # internos, NUNCA de caminho de cliente; o read não carrega artefato de modelo (D-06).
     return pd.read_parquet(pq, engine="pyarrow")
-
-
-def canonical_parquet_path(turma_name: str, assignment_name: str) -> Path:
-    """Deriva o caminho do Parquet canônico igual a `train.py:89` — a partir de nomes internos."""
-    return (
-        settings.DATA_ROOT
-        / TurmaSlug.from_name(turma_name)
-        / "clean"
-        / f"assignment_{ProgSnapAssignmentId.from_name(assignment_name)}.parquet"
-    )
 
 
 # --- Agregações puras (DataFrame-in → out) ---------------------------------------

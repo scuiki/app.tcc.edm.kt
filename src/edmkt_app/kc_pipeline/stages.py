@@ -14,9 +14,9 @@ from edmkt_core.kc import (
     label_cluster,
     select_best_n_clusters,
 )
-from edmkt_app import settings
+from edmkt_app import data_layout
 from edmkt_app.kc_pipeline.qmatrix_validation import _validate_qmatrix
-from edmkt_app.kc_pipeline.transport import _CachedLLM, _kc_cache_dir
+from edmkt_app.kc_pipeline.transport import _CachedLLM
 from edmkt_app.persistence import models
 from edmkt_app.persistence import repositories as repos
 from edmkt_app.persistence.db import transaction
@@ -38,7 +38,7 @@ def _kc_body(conn, assignment_id: int, job_id: int) -> dict:
 
     job_repo.mark_running(job_id, started_at=utc_now_iso())
 
-    pq = settings.DATA_ROOT / turma_slug / "clean" / f"assignment_{progsnap_aid}.parquet"
+    pq = data_layout.cleaned_submissions_path(turma_slug, progsnap_aid)
     df = pd.read_parquet(pq, engine="pyarrow")
 
     # Pitfall 4: KC-gen vê só código CORRETO (a 1ª submissão correta por aluno×problema sai do
@@ -46,7 +46,7 @@ def _kc_body(conn, assignment_id: int, job_id: int) -> dict:
     correct_df = df[df["correct"] == 1]
     problem_ids = sorted(str(p) for p in correct_df["ProblemID"].dropna().unique())
 
-    cache_dir = _kc_cache_dir(turma_slug, progsnap_aid)
+    cache_dir = data_layout.llm_cache_dir(turma_slug, progsnap_aid)
     gen_llm = _CachedLLM(cache_dir, stage="generate")
 
     # Etapa 2 (por problema): amostra por diversidade → gera KCs pela porta LLM. EmptyKCError de

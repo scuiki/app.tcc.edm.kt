@@ -16,7 +16,7 @@ from edmkt_core.features import build_cache
 from edmkt_core.models.code_dkt import predict_code_dkt
 from edmkt_core.sequences import build_sequences
 
-from edmkt_app import settings
+from edmkt_app import data_layout
 from edmkt_app.modeling_frame import load_modeling_frame
 from edmkt_app.persistence import models
 from edmkt_app.persistence import repositories as repos
@@ -67,12 +67,12 @@ def infer_predictions(
     # que ele nunca viu, e a matriz do dashboard sairia de outra distribuição que o AUC exibido
     # na moldura de incerteza. A resolução nome→caminho e as guardas de assignment/turma
     # inexistentes vivem lá (modeling_frame), não duplicadas aqui.
-    frame = load_modeling_frame(conn, assignment_id, data_root=settings.DATA_ROOT)
+    frame = load_modeling_frame(conn, assignment_id)
     df, progsnap_aid = frame.events, frame.assignment_id
 
     # artifact_dir é DB-owned (reconstruído do valor gravado, nunca de caminho de cliente);
     # load_version desserializa com weights_only=True (artifacts.py) — sem reload solto (T-06-09).
-    store = ArtifactStore(str(settings.DATA_ROOT / frame.turma_slug / "models"))
+    store = ArtifactStore(str(data_layout.trained_models_dir(frame.turma_slug)))
     model, vocab, meta = store.load_version(artifact.artifact_dir)
 
     max_len = meta.get("max_len", 50)

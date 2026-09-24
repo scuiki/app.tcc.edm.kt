@@ -11,19 +11,16 @@ recorte, o modelo treinou sobre 57,6% de eventos rotulados como erro e o first-a
 para 0,6959, fora da banda ±3pp. Uma função compartilhada resolveria o caso de hoje; a fonte
 única resolve o caso de amanhã, porque quem faz modelagem passa a receber o quadro pronto.
 
-`data_root` vem por parâmetro em vez de global: os dois chamadores já têm o seu (e os testes o
-monkeypatcham), e um segundo global aqui seria mais um lugar para divergir.
+O caminho do Parquet sai de `data_layout`, o único lugar que conhece a árvore de `data/`.
 """
 
 from __future__ import annotations
 
 import sqlite3
 from dataclasses import dataclass
-from pathlib import Path
-
 import pandas as pd
 
-from edmkt_app import utils
+from edmkt_app import data_layout, utils
 from edmkt_app.persistence import repositories as repos
 from edmkt_app.values import ProgSnapAssignmentId, TurmaSlug
 
@@ -38,15 +35,7 @@ class ModelingFrame:
     turma_id: int  # id do banco — o artefato é persistido por (turma, assignment)
 
 
-def canonical_parquet_path(
-    data_root: Path, turma_slug: TurmaSlug, assignment_id: ProgSnapAssignmentId
-) -> Path:
-    return data_root / turma_slug / "clean" / f"assignment_{assignment_id}.parquet"
-
-
-def load_modeling_frame(
-    conn: sqlite3.Connection, assignment_id: int, *, data_root: Path
-) -> ModelingFrame:
+def load_modeling_frame(conn: sqlite3.Connection, assignment_id: int) -> ModelingFrame:
     """Resolve nomes → caminho → Parquet → recorte, e devolve o quadro já modelável.
 
     `assignment_id` é o id do BANCO; o do ProgSnap2 sai do nome e volta no frame (999.2).
@@ -62,7 +51,7 @@ def load_modeling_frame(
 
     turma_slug = TurmaSlug.from_name(turma.name)
     progsnap_aid = ProgSnapAssignmentId.from_name(assignment.name)
-    pq = canonical_parquet_path(Path(data_root), turma_slug, progsnap_aid)
+    pq = data_layout.cleaned_submissions_path(turma_slug, progsnap_aid)
 
     return ModelingFrame(
         events=utils.run_program_only(pd.read_parquet(pq, engine="pyarrow")),
