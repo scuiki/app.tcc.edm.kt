@@ -8,7 +8,7 @@ from edmkt_core.mastery import critical_kcs
 
 from edmkt_app.persistence import repositories as repos
 from edmkt_app.recommendations import recommend_reinforcement
-from edmkt_app.use_cases.base import NotFound
+from edmkt_app.use_cases.base import require_assignment
 from edmkt_app.use_cases.uncertainty_frame import uncertainty_frame
 
 
@@ -17,9 +17,7 @@ class GetRecommendationsUseCase:
         self._conn = conn
 
     def execute(self, assignment_id: int) -> dict:
-        assignment = repos.AssignmentRepository(self._conn).get(assignment_id)
-        if assignment is None:
-            raise NotFound("assignment inexistente")
+        assignment = require_assignment(self._conn, assignment_id)
         matrix, _first_auc, _trained_at = uncertainty_frame(self._conn, assignment)
         names = {
             kc.id: kc.name

@@ -7,7 +7,7 @@ import sqlite3
 from edmkt_app import data_layout
 from edmkt_app import eda as eda_module
 from edmkt_app.persistence import repositories as repos
-from edmkt_app.use_cases.base import NotFound
+from edmkt_app.use_cases.base import NotFound, require_assignment
 from edmkt_app.values import ProgSnapAssignmentId, TurmaSlug
 
 
@@ -16,9 +16,7 @@ class GetEdaUseCase:
         self._conn = conn
 
     def execute(self, assignment_id: int) -> dict:
-        assignment = repos.AssignmentRepository(self._conn).get(assignment_id)
-        if assignment is None:
-            raise NotFound("assignment inexistente")
+        assignment = require_assignment(self._conn, assignment_id)
         turma = repos.TurmaRepository(self._conn).get(assignment.turma_id)
         if turma is None:  # WR-01: turma órfã → 404 explícito, não AttributeError em turma.name
             raise NotFound("turma inexistente")
