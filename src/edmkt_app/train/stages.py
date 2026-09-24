@@ -11,7 +11,7 @@ from pathlib import Path
 import torch
 
 from edmkt_core.config import FROZEN_CONFIG
-from edmkt_core.pipeline import split_by_subject, train_and_evaluate
+from edmkt_core.pipeline import code_states_from_df, split_by_subject, train_and_evaluate
 from edmkt_core.seeding import set_global_seed
 
 from edmkt_app import data_layout, provenance
@@ -48,7 +48,7 @@ def _train_body(conn, assignment_id: int, job_id: int) -> dict:
 
     # Aquece o cache de paths em disco (D-07): crash-safe, namespaced por turma, reaproveitado
     # no re-treino (Fase 7). A taxa de parse 3-vias (D-09) sai dos mesmos snapshots.
-    code_states = dict(zip(df["CodeStateID"].astype(str), df["Code"].fillna("")))
+    code_states = code_states_from_df(df)
     build_cache_on_disk(turma_slug, list(code_states.keys()), code_states, config)
     rate = parse_rate(list(code_states.values()), config)
 

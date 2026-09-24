@@ -20,12 +20,13 @@ from edmkt_core.pipeline.partitioning import build_train_vocab, split_by_subject
 from edmkt_core.sequences import build_sequences, truncate_sequences
 
 
-def _code_states_from_df(df: pd.DataFrame) -> dict[str, str]:
-    # CodeStateID -> Code, last write wins (a CodeStateID maps to one snapshot).
+def code_states_from_df(df: pd.DataFrame) -> dict[str, str]:
+    """CodeStateID -> Code, last write wins (a CodeStateID maps to one snapshot)."""
     return dict(zip(df["CodeStateID"].astype(str), df["Code"].fillna("")))
 
 
-def _csids(sequences: list[dict]) -> list[str]:
+def code_state_ids(sequences: list[dict]) -> list[str]:
+    """Every CodeStateID across the sequences' events, in order (duplicates kept)."""
     out: list[str] = []
     for seq in sequences:
         out.extend(seq["events"]["CodeStateID"].astype(str).tolist())
@@ -65,8 +66,8 @@ def train_and_evaluate(
     test_sequences = build_sequences(test_df, assignment_id)
 
     # 2. build_cache for train+test CodeStateIDs (Pitfall 5: n_workers safe for tests).
-    code_states = _code_states_from_df(pd.concat([train_df, test_df], ignore_index=True))
-    all_csids = sorted(set(_csids(train_sequences)) | set(_csids(test_sequences)))
+    code_states = code_states_from_df(pd.concat([train_df, test_df], ignore_index=True))
+    all_csids = sorted(set(code_state_ids(train_sequences)) | set(code_state_ids(test_sequences)))
     cache_raw = build_cache(
         all_csids, code_states,
         max_path_length=config.get("max_path_length", 8),
@@ -75,7 +76,7 @@ def train_and_evaluate(
     )
 
     # 3. build_train_vocab — train-only, leakage-proof by construction (CORE-04).
-    token_to_idx, path_to_idx = build_train_vocab(cache_raw, _csids(train_sequences))
+    token_to_idx, path_to_idx = build_train_vocab(cache_raw, code_state_ids(train_sequences))
     vocab = {
         "token_to_idx": token_to_idx,
         "path_to_idx": path_to_idx,
