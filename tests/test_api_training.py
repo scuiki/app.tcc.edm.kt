@@ -32,6 +32,7 @@ def _seed_assignment(conn, status: str = "kc_approved") -> int:
             id=None,
             turma_id=turma_id,
             name="Assignment 439",
+            progsnap_assignment_id=439,
             current_version_id=None,
             created_at=_NOW,
             status=status,
@@ -77,7 +78,7 @@ def test_dispatch_returns_job_id_immediately(api_client, monkeypatch):
 
 def test_dispatch_rejects_not_trainable_409(api_client, monkeypatch):
     client, conn = api_client
-    aid = _seed_assignment(conn, status="eda_only")
+    aid = _seed_assignment(conn, status="statistics_only")
     monkeypatch.setattr(subprocess, "Popen", _FakePopen)
 
     resp = client.post("/training", json={"assignment_id": aid})

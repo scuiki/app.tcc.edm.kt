@@ -76,8 +76,9 @@ def _persist_atomic(
                         name=f"Assignment {aid_int}",
                         current_version_id=None,
                         created_at=created_at,
-                        # status do gate (D-08): trainable se ambas as classes; senão eda_only.
-                        status=status_by_aid.get(aid_int, "eda_only"),
+                        # status do gate (D-08): pronto para gerar KCs se há as duas classes.
+                        status=status_by_aid.get(aid_int, "statistics_only"),
+                        progsnap_assignment_id=aid_int,
                     )
                 )
                 for row in group.itertuples(index=False):

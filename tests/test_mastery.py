@@ -332,7 +332,7 @@ def test_infer_predictions_orphan_turma_raises_valueerror(trained_artifact, tmp_
 
     # Remove a turma (FK desligada só p/ o DELETE: o órfão surge de uma conexão sem enforcement).
     conn.execute("PRAGMA foreign_keys=OFF;")
-    conn.execute("DELETE FROM turma WHERE id = ?;", (trained_artifact.turma_id,))
+    conn.execute("DELETE FROM classroom WHERE id = ?;", (trained_artifact.turma_id,))
     conn.execute("PRAGMA foreign_keys=ON;")
 
     with pytest.raises(ValueError, match="turma .* inexistente"):

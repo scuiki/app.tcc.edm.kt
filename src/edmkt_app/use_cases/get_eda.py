@@ -22,7 +22,7 @@ class GetEdaUseCase:
             raise NotFound("turma inexistente")
 
         pq = data_layout.cleaned_submissions_path(
-            TurmaSlug.from_name(turma.name), ProgSnapAssignmentId.from_name(assignment.name)
+            TurmaSlug.from_name(turma.name), ProgSnapAssignmentId(assignment.progsnap_assignment_id)
         )
         if not pq.exists():
             # Degrada para agregados vazios quando a ingestão ainda não produziu o Parquet —

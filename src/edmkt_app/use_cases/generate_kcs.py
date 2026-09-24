@@ -19,9 +19,10 @@ class GenerateKCsDto(BaseModel):
 
 class GenerateKCsUseCase(BaseWriteUseCase):
     specs = [
-        # KC-gen roda sobre um assignment treinável e ainda-não-rascunhado (gate da Fase 3).
+        # KC-gen roda sobre um assignment com as duas classes e ainda-não-rascunhado (gate da Fase 3).
         specs.AssignmentInStatus(
-            allowed=("trainable",), message="assignment não está trainable"
+            allowed=("ready_for_kc_generation",),
+            message="assignment não está pronto para gerar KCs",
         )
     ]
 

@@ -127,9 +127,10 @@ def _seed_trainable(conn, data_root, df: pd.DataFrame | None = None) -> tuple[in
             id=None,
             turma_id=turma_id,
             name=f"Assignment {ASSIGNMENT_ID}",
+            progsnap_assignment_id=ASSIGNMENT_ID,
             current_version_id=None,
             created_at=created,
-            status="trainable",
+            status="ready_for_kc_generation",
         )
     )
     clean_dir = data_root / "turma-x" / "clean"
@@ -189,7 +190,7 @@ def test_lock_busy_marks_failed_and_does_not_train(tmp_db, data_root, fast_confi
     assert job.status == "failed"
     assert "busy" in (job.error_message or "").lower()
     asg = repos.AssignmentRepository(conn).get(assignment_id)
-    assert asg.status == "trainable"  # não treinou
+    assert asg.status == "ready_for_kc_generation"  # não treinou
     assert asg.current_version_id is None
     assert _holder_pid(conn) == os.getpid()  # o lock segue do dono vivo
 
@@ -232,7 +233,7 @@ def test_training_failure_releases_lock_and_keeps_trainable(tmp_db, data_root, f
     assert job.status == "failed"
     assert "explodiu" in (job.error_message or "")
     asg = repos.AssignmentRepository(conn).get(assignment_id)
-    assert asg.status == "trainable"
+    assert asg.status == "ready_for_kc_generation"
     assert asg.current_version_id is None
     assert _holder_pid(conn) is None  # liberado mesmo sob exceção (SC3)
 
@@ -255,7 +256,7 @@ def test_cuda_oom_fails_gracefully(tmp_db, data_root, fast_config, monkeypatch):
     assert job.status == "failed"
     assert "VRAM" in (job.error_message or "")
     asg = repos.AssignmentRepository(conn).get(assignment_id)
-    assert asg.status == "trainable"
+    assert asg.status == "ready_for_kc_generation"
     assert _holder_pid(conn) is None
 
 

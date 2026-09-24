@@ -24,7 +24,7 @@ from edmkt_app.persistence import repositories as repos
 _NOW = "2026-06-21T00:00:00Z"
 
 
-def _seed_assignment(conn, status: str = "trainable") -> int:
+def _seed_assignment(conn, status: str = "ready_for_kc_generation") -> int:
     turma_id = repos.TurmaRepository(conn).insert(
         models.Turma(id=None, name="Turma X", created_at=_NOW)
     )
@@ -33,6 +33,7 @@ def _seed_assignment(conn, status: str = "trainable") -> int:
             id=None,
             turma_id=turma_id,
             name="Assignment 439",
+            progsnap_assignment_id=439,
             current_version_id=None,
             created_at=_NOW,
             status=status,
@@ -236,11 +237,11 @@ def test_approve_rejects_non_draft_assignment(api_client):
     # WR-02: aprovar um assignment ainda 'trainable' (sem KC-gen) burlaria o gate humano →
     # dispatch_training rodaria sobre uma Q-matrix inexistente. Deve ser rejeitado (409).
     client, conn = api_client
-    aid = _seed_assignment(conn, status="trainable")
+    aid = _seed_assignment(conn, status="ready_for_kc_generation")
 
     resp = client.post("/kc/approve", json={"assignment_id": aid})
     assert resp.status_code == 409
-    assert repos.AssignmentRepository(conn).get(aid).status == "trainable"  # não avançou
+    assert repos.AssignmentRepository(conn).get(aid).status == "ready_for_kc_generation"  # não avançou
 
 
 def test_approve_rejects_draft_without_kcs(api_client):

@@ -15,7 +15,7 @@ class ModelArtifactRepository:
     def insert(self, artifact: models.ModelArtifact) -> int:
         cur = self._conn.execute(
             "INSERT INTO model_artifact "
-            "(assignment_id, version_number, content_hash, artifact_dir, created_at, first_auc, "
+            "(assignment_id, version_number, content_hash, artifact_dir, created_at, first_attempt_auc, "
             "git_commit, data_hash) "
             "VALUES (?, ?, ?, ?, ?, ?, ?, ?);",
             (
@@ -34,7 +34,7 @@ class ModelArtifactRepository:
     def get(self, artifact_id: int) -> Optional[models.ModelArtifact]:
         row = self._conn.execute(
             "SELECT id, assignment_id, version_number, content_hash, artifact_dir, created_at, "
-            "first_auc, git_commit, data_hash "
+            "first_attempt_auc, git_commit, data_hash "
             "FROM model_artifact WHERE id = ?;",
             (artifact_id,),
         ).fetchone()
@@ -47,7 +47,7 @@ class ModelArtifactRepository:
             content_hash=row["content_hash"],
             artifact_dir=row["artifact_dir"],
             created_at=row["created_at"],
-            first_auc=row["first_auc"],
+            first_auc=row["first_attempt_auc"],
             git_commit=row["git_commit"],
             data_hash=row["data_hash"],
         )

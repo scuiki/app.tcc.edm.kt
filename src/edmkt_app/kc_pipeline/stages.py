@@ -34,7 +34,7 @@ def _kc_body(conn, assignment_id: int, job_id: int) -> dict:
         raise ValueError(f"assignment {assignment_id} inexistente")
     turma = repos.TurmaRepository(conn).get(asg.turma_id)
     turma_slug = TurmaSlug.from_name(turma.name)
-    progsnap_aid = ProgSnapAssignmentId.from_name(asg.name)
+    progsnap_aid = ProgSnapAssignmentId(asg.progsnap_assignment_id)
 
     job_repo.mark_running(job_id, started_at=utc_now_iso())
 

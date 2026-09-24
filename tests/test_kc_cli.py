@@ -78,9 +78,10 @@ def _seed_kc_ready(conn, data_root) -> tuple[int, int]:
             id=None,
             turma_id=turma_id,
             name=f"Assignment {ASSIGNMENT_ID}",
+            progsnap_assignment_id=ASSIGNMENT_ID,
             current_version_id=None,
             created_at=created,
-            status="trainable",
+            status="ready_for_kc_generation",
         )
     )
     clean_dir = data_root / "turma-x" / "clean"
@@ -143,7 +144,7 @@ def test_content_hard_fail_marks_failed_nothing_persisted(tmp_db, data_root, mon
     assert conn.execute("SELECT COUNT(*) FROM kc;").fetchone()[0] == 0
     assert conn.execute("SELECT COUNT(*) FROM qmatrix;").fetchone()[0] == 0
     asg = repos.AssignmentRepository(conn).get(assignment_id)
-    assert asg.status == "trainable"  # não avançou para kc_draft
+    assert asg.status == "ready_for_kc_generation"  # não avançou para kc_draft
     assert _holder_pid(conn) is None  # lock liberado mesmo na falha (with lock)
 
 
@@ -192,7 +193,7 @@ def test_mark_done_failure_is_atomic_with_persist(tmp_db, data_root, monkeypatch
     job = repos.KCJobRepository(conn).get(job_id)
     # Sem inconsistência: ou tudo persiste com job done, ou nada (aqui: rollback → trainable+failed).
     assert not (asg.status == "kc_draft" and job.status == "failed")
-    assert asg.status == "trainable"
+    assert asg.status == "ready_for_kc_generation"
     assert conn.execute("SELECT COUNT(*) FROM kc;").fetchone()[0] == 0
     assert _holder_pid(conn) is None
 

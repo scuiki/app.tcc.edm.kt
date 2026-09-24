@@ -125,7 +125,7 @@ def _ingest_locked(
 
     # E. Persistência atômica. Mapeia trainable por AssignmentID (ProgSnap2) do gate.
     status_by_aid = {
-        s.assignment_id: ("trainable" if s.trainable else "eda_only") for s in per_assignment
+        s.assignment_id: ("ready_for_kc_generation" if s.trainable else "statistics_only") for s in per_assignment
     }
     _persist_atomic(conn, turma_name, canonical, status_by_aid)
     return report

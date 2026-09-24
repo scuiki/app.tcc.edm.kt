@@ -65,7 +65,7 @@ def test_eight_entities_roundtrip(tmp_db):
     sub_id = repos.SubmissionRepository(conn).insert(submission)
     # Sem get(): a produção só insere submissões; o round-trip é conferido direto na tabela.
     row = conn.execute(
-        "SELECT assignment_id, code_state_id, subject_id, problem_id, score, created_at "
+        "SELECT assignment_id, code_snapshot_id, student_id, problem_id, score, created_at "
         "FROM submission WHERE id = ?;",
         (sub_id,),
     ).fetchone()
@@ -166,7 +166,7 @@ def test_assignment_status_roundtrip(tmp_db):
     turma_id = repos.TurmaRepository(conn).insert(
         models.Turma(id=None, name="Turma A", created_at="2026-06-21T00:00:00Z")
     )
-    for status in ("eda_only", "trainable"):
+    for status in ("statistics_only", "ready_for_kc_generation"):
         aid = repos.AssignmentRepository(conn).insert(
             models.Assignment(
                 id=None,
@@ -283,4 +283,4 @@ def test_sql_is_parametrized(tmp_db):
     )
     # A tabela continua existindo e o nome foi gravado verbatim.
     assert repos.TurmaRepository(conn).get(turma_id).name == evil
-    conn.execute("SELECT 1 FROM turma LIMIT 1;")  # não levanta: tabela não foi dropada
+    conn.execute("SELECT 1 FROM classroom LIMIT 1;")  # não levanta: tabela não foi dropada

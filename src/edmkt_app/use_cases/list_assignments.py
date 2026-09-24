@@ -5,7 +5,6 @@ from __future__ import annotations
 import sqlite3
 
 from edmkt_app.persistence import repositories as repos
-from edmkt_app.values import ProgSnapAssignmentId
 
 
 class ListAssignmentsUseCase:
@@ -15,15 +14,10 @@ class ListAssignmentsUseCase:
     def execute(self) -> dict:
         items = []
         for asg in repos.AssignmentRepository(self._conn).list_all():
-            try:
-                progsnap_id = ProgSnapAssignmentId.from_name(asg.name).value
-            except ValueError:
-                # Nome sem sufixo numérico: o id ProgSnap2 fica indisponível, a lista não quebra.
-                progsnap_id = None
             items.append(
                 {
                     "id": asg.id,
-                    "progsnap_id": progsnap_id,
+                    "progsnap_id": asg.progsnap_assignment_id,
                     "name": asg.name,
                     "status": asg.status,
                     "current_version_id": asg.current_version_id,

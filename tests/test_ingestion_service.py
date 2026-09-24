@@ -60,7 +60,7 @@ def data_root(tmp_path, monkeypatch):
 
 
 def _counts(conn) -> tuple[int, int, int]:
-    t = conn.execute("SELECT COUNT(*) AS n FROM turma;").fetchone()["n"]
+    t = conn.execute("SELECT COUNT(*) AS n FROM classroom;").fetchone()["n"]
     a = conn.execute("SELECT COUNT(*) AS n FROM assignment;").fetchone()["n"]
     s = conn.execute("SELECT COUNT(*) AS n FROM submission;").fetchone()["n"]
     return t, a, s
@@ -87,7 +87,7 @@ def test_happy_persists_turma_assignment_submissions_and_parquet(tmp_db, data_ro
 
     # Assignment ganhou status do gate (D-08): ambas as classes presentes ⇒ trainable.
     status = conn.execute("SELECT status FROM assignment;").fetchone()["status"]
-    assert status == "trainable"
+    assert status == "ready_for_kc_generation"
 
     # Parquet do stream canônico existe em clean/ com o nome derivado do AssignmentID (não do zip).
     pq = data_root / "turma-x" / "clean" / "assignment_439.parquet"
