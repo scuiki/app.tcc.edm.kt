@@ -13,6 +13,7 @@ import zipfile
 from api.classroom_import.presentation.controllers import classroom_import_controller
 from api.classroom_import.presentation.dependencies import import_classroom_dataset_use_case
 from api.shared.infrastructure import settings
+from tests.fixtures.job_lock import lock_holder_pid
 
 _MAIN_TABLE = (
     "SubjectID,AssignmentID,ProblemID,CodeStateID,EventType,Score,ServerTimestamp\n"
@@ -46,10 +47,6 @@ def _upload(client):
     )
 
 
-def _holder_pid(conn):
-    return conn.execute("SELECT holder_pid FROM pipeline_lock WHERE id=1;").fetchone()["holder_pid"]
-
-
 def test_upload_lists_the_main_tables_without_taking_the_lock(api_client):
     client, conn = api_client
 
@@ -60,7 +57,7 @@ def test_upload_lists_the_main_tables_without_taking_the_lock(api_client):
     assert body["classroom_slug"] == "turma-x"
     assert body["main_tables"]  # achou ao menos uma MainTable
     assert body["code_snapshots"] is not None
-    assert _holder_pid(conn) is None
+    assert lock_holder_pid(conn) is None
 
 
 def test_process_saves_the_classroom_and_reports_trainability(api_client):
@@ -83,7 +80,7 @@ def test_process_saves_the_classroom_and_reports_trainability(api_client):
     assert conn.execute("SELECT COUNT(*) FROM classroom;").fetchone()[0] == 1
     status = conn.execute("SELECT status FROM assignment;").fetchone()["status"]
     assert status == "ready_for_kc_generation"
-    assert _holder_pid(conn) is None  # a trava foi liberada ao terminar
+    assert lock_holder_pid(conn) is None  # a trava foi liberada ao terminar
 
 
 def test_process_refuses_paths_outside_the_data_root_before_reading(api_client):

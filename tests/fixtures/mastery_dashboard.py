@@ -1,4 +1,4 @@
-"""mastery_dashboard montado com a infraestrutura real, sobre o trained_artifact."""
+# mastery_dashboard montado com a infraestrutura real, sobre o trained_artifact.
 
 from __future__ import annotations
 
@@ -36,8 +36,7 @@ from api.shared.infrastructure.implementations.sqlite_unit_of_work import Sqlite
 
 
 def _cleaned_submissions(with_compile_errors: bool) -> pd.DataFrame:
-    # O dado limpo do assignment do trained_artifact (A439). Os problemas 1/2/3 batem com a
-    # Q-matrix da fixture (o problema 3 liga os dois KCs).
+    # Os problemas 1, 2 e 3 batem com a Q-matrix do trained_artifact
     base = pd.Timestamp("2019-03-01T08:00:00Z")
     java_a = "public int f(int x) { return x + 1; }"
     java_b = "public int g(int a, int b) { int s = a + b; return s; }"
@@ -63,8 +62,7 @@ def _cleaned_submissions(with_compile_errors: bool) -> pd.DataFrame:
         for step, (pid, score, code, snapshot_id) in enumerate(plan):
             rows.append(_row(subj, pid, si * 10 + step, score, code, f"c{si}_{step}"))
         if with_compile_errors:
-            # Como a importação grava de fato: Compile.Error com Java quebrado convive com os
-            # Run.Program no MESMO assignment.
+            # Compile.Error com Java quebrado no mesmo assignment dos Run.Program
             broken = _row(subj, 1, si * 10 + 5, 0.0, "public int oops( { return ;;; }", "")
             broken["code_snapshot_id"] = f"e{si}"
             broken["event_type"] = "Compile.Error"
@@ -79,8 +77,7 @@ def _cleaned_submissions(with_compile_errors: bool) -> pd.DataFrame:
 
 @pytest.fixture
 def seed_cleaned_submissions(trained_artifact):
-    """Grava o dado limpo do assignment do trained_artifact; `with_compile_errors` mistura
-    Compile.Error como a importação faz."""
+    # `with_compile_errors` mistura Compile.Error, como a importação grava
 
     def seed(with_compile_errors: bool = False) -> None:
         SqliteSubmissionRepository(trained_artifact.conn).add_many(
@@ -102,7 +99,7 @@ def sqlite_student_masteries(trained_artifact) -> SqliteStudentMasteryRepository
 
 @pytest.fixture
 def published_model_mastery(trained_artifact, real_mastery_predictor, sqlite_student_masteries):
-    """PublishedModelMastery real; `predictor=` e `student_masteries=` trocam as peças."""
+    # `predictor=` e `student_masteries=` trocam as peças reais
     conn = trained_artifact.conn
 
     def build(predictor=None, student_masteries=None) -> PublishedModelMastery:
@@ -122,13 +119,12 @@ def published_model_mastery(trained_artifact, real_mastery_predictor, sqlite_stu
 
 @pytest.fixture
 def published_assignment(trained_artifact):
-    """O assignment do trained_artifact, relido do banco (com a versão publicada)."""
+    # O assignment relido do banco, já com a versão publicada
     return SqliteAssignmentRepository(trained_artifact.conn).get(trained_artifact.assignment_id)
 
 
 @pytest.fixture
 def training_dataset_of(trained_artifact):
-    """load_training_dataset(assignment_id) com os repositórios reais."""
     conn = trained_artifact.conn
 
     def load(assignment_id: int):
