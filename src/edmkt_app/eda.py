@@ -15,13 +15,10 @@ from pathlib import Path
 
 import pandas as pd
 
+from edmkt_app.submission_events import COMPILE_ERROR, RUN_PROGRAM
+
 # EDA NÃO importa train.py/persistence: aquele lado puxa torch + ArtifactStore e quebraria a
 # invariante "EDA roda sem modelo" (D-06). O caminho do Parquet quem resolve é o use case.
-# IN-02: o stream canônico (clean.py ALLOWED_EVENTS) contém exatamente {Run.Program, Compile.Error};
-# esses dois tipos são os únicos consumidos abaixo (RUN_EVENT/COMPILE_ERROR_EVENT) — sem precisar
-# importar ALLOWED_EVENTS só para documentar, o que acoplava a EDA a ingestion.clean no import.
-RUN_EVENT = "Run.Program"
-COMPILE_ERROR_EVENT = "Compile.Error"
 
 
 def _read_canonical(pq: Path | str) -> pd.DataFrame:
@@ -34,12 +31,12 @@ def _read_canonical(pq: Path | str) -> pd.DataFrame:
 
 
 def _success_rate_by_assignment(df: pd.DataFrame) -> dict[int, float]:
-    runs = df[df["EventType"] == RUN_EVENT]
+    runs = df[df["EventType"] == RUN_PROGRAM]
     return {int(aid): float(rate) for aid, rate in runs.groupby("AssignmentID")["correct"].mean().items()}
 
 
 def _learning_curve(df: pd.DataFrame) -> dict[int, float]:
-    runs = df[df["EventType"] == RUN_EVENT].sort_values("ServerTimestamp")
+    runs = df[df["EventType"] == RUN_PROGRAM].sort_values("ServerTimestamp")
     # attempt_num = cumcount por (aluno, assignment): a n-ésima tentativa de Run.Program do aluno.
     attempt = runs.groupby(["SubjectID", "AssignmentID"]).cumcount()
     curve = runs.assign(attempt_num=attempt).groupby("attempt_num")["correct"].mean()
@@ -50,8 +47,8 @@ def _compile_error_rate_by_assignment(df: pd.DataFrame) -> dict[int, float]:
     # WR-03: a taxa é CE_count / Run_count (compile-errors POR tentativa de execução), não
     # CE_count / (CE+Run). A média sobre TODOS os eventos misturava os dois tipos e variava
     # com quantos Run.Program o aluno teve, tornando a métrica incomparável com a convenção.
-    runs = df[df["EventType"] == RUN_EVENT]
-    ce = df[df["EventType"] == COMPILE_ERROR_EVENT]
+    runs = df[df["EventType"] == RUN_PROGRAM]
+    ce = df[df["EventType"] == COMPILE_ERROR]
     run_counts = runs.groupby("AssignmentID").size()
     ce_counts = ce.groupby("AssignmentID").size().reindex(run_counts.index, fill_value=0)
     rate = (ce_counts / run_counts).fillna(0.0)

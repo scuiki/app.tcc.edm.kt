@@ -9,11 +9,8 @@ from __future__ import annotations
 
 import pandas as pd
 
-from edmkt_app.ingestion.clean import (
-    ALLOWED_EVENTS,
-    CANONICAL_COLUMNS,
-    clean_event_stream,
-)
+from edmkt_app.ingestion.clean import CANONICAL_COLUMNS, clean_event_stream
+from edmkt_app.submission_events import KEPT_EVENTS
 
 # code_states que cobre todos os CodeStateID do a439_mini, para a integridade não dropar nada
 # nos testes de dedup/binarização (o órfão é exercitado à parte com ingest_orphan_df).
@@ -37,7 +34,7 @@ def test_dedup_drops_compile_plain_and_warns(a439_mini):
 
     df, items = clean_event_stream(raw, _A439_CODE_STATES)
 
-    assert set(df["EventType"].unique()).issubset(ALLOWED_EVENTS)
+    assert set(df["EventType"].unique()).issubset(KEPT_EVENTS)
     assert "Compile" not in set(df["EventType"].unique())
 
     dedup = [i for i in items if i.check == "dedup_compile"]
@@ -49,7 +46,7 @@ def test_dedup_drops_compile_plain_and_warns(a439_mini):
 def test_no_dedup_warning_when_no_compile_plain(a439_mini):
     # a439_mini só tem Run.Program/Compile.Error — nada a descartar, nenhum aviso de dedup.
     df, items = clean_event_stream(a439_mini, _A439_CODE_STATES)
-    assert set(df["EventType"].unique()).issubset(ALLOWED_EVENTS)
+    assert set(df["EventType"].unique()).issubset(KEPT_EVENTS)
     assert [i for i in items if i.check == "dedup_compile"] == []
 
 
