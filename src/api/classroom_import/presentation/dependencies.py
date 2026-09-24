@@ -12,18 +12,22 @@ from api.assignments.infrastructure.repositories.sqlite_assignment_repository im
 from api.assignments.infrastructure.repositories.sqlite_classroom_repository import (
     SqliteClassroomRepository,
 )
-from api.classroom_import.application.import_classroom_dataset_use_case import (
+from api.classroom_import.application.use_cases.import_classroom_dataset_use_case import (
     ImportClassroomDatasetUseCase,
 )
-from api.classroom_import.application.upload_classroom_dataset_use_case import (
+from api.classroom_import.application.use_cases.upload_classroom_dataset_use_case import (
     UploadClassroomDatasetUseCase,
 )
-from api.classroom_import.infrastructure.parquet_cleaned_submissions_store import (
+from api.classroom_import.infrastructure.implementations.parquet_cleaned_submissions_store import (
     ParquetCleanedSubmissionsStore,
 )
-from api.classroom_import.infrastructure.progsnap_csv_reader import ProgSnapCsvReader
-from api.classroom_import.infrastructure.progsnap_zip_extractor import ProgSnapZipExtractor
-from api.classroom_import.infrastructure.sqlite_submission_repository import (
+from api.classroom_import.infrastructure.implementations.progsnap_csv_reader import (
+    ProgSnapCsvReader,
+)
+from api.classroom_import.infrastructure.implementations.progsnap_zip_extractor import (
+    ProgSnapZipExtractor,
+)
+from api.classroom_import.infrastructure.repositories.sqlite_submission_repository import (
     SqliteSubmissionRepository,
 )
 from api.shared.infrastructure.implementations.sqlite_unit_of_work import SqliteUnitOfWork

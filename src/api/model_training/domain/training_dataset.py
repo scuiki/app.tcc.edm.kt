@@ -15,8 +15,8 @@ from api.assignments.domain.interfaces.assignment_repository import IAssignmentR
 from api.assignments.domain.interfaces.classroom_repository import IClassroomRepository
 from api.assignments.domain.value_objects.classroom_slug import ClassroomSlug
 from api.assignments.domain.value_objects.progsnap_assignment_id import ProgSnapAssignmentId
-from api.classroom_import.domain.cleaned_submissions_store import CleanedSubmissionsStore
-from api.classroom_import.domain.submission_event import keep_only_program_runs
+from api.classroom_import.domain.interfaces.cleaned_submissions_store import ICleanedSubmissionsStore
+from api.classroom_import.domain.services.submission_event import keep_only_program_runs
 
 
 @dataclass(frozen=True)
@@ -31,7 +31,7 @@ def load_training_dataset(
     assignment_id: int,
     assignments: IAssignmentRepository,
     classrooms: IClassroomRepository,
-    cleaned_submissions: CleanedSubmissionsStore,
+    cleaned_submissions: ICleanedSubmissionsStore,
 ) -> TrainingDataset:
     """assignment (id do banco) → turma → Parquet limpo → recorte Run.Program."""
     assignment = assignments.get(assignment_id)

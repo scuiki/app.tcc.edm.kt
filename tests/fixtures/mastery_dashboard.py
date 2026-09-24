@@ -11,7 +11,7 @@ from api.assignments.infrastructure.repositories.sqlite_assignment_repository im
 from api.assignments.infrastructure.repositories.sqlite_classroom_repository import (
     SqliteClassroomRepository,
 )
-from api.classroom_import.infrastructure.parquet_cleaned_submissions_store import (
+from api.classroom_import.infrastructure.implementations.parquet_cleaned_submissions_store import (
     ParquetCleanedSubmissionsStore,
 )
 from api.knowledge_components.infrastructure.sqlite_qmatrix_repository import (
@@ -35,7 +35,7 @@ from api.shared.infrastructure.implementations.sqlite_unit_of_work import Sqlite
 def _write_cleaned_submissions(data_root, with_compile_errors: bool) -> None:
     # O Parquet limpo no caminho que o trained_artifact usa ("Turma 6" → turma-6, A439 → 439).
     # Os problemas 1/2/3 batem com a Q-matrix da fixture (o problema 3 liga os dois KCs).
-    from api.classroom_import.domain.submission_cleaning import CLEANED_COLUMNS
+    from api.classroom_import.domain.services.submission_cleaning import CLEANED_COLUMNS
 
     base = pd.Timestamp("2019-03-01T08:00:00Z")
     java_a = "public int f(int x) { return x + 1; }"

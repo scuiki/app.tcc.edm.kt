@@ -12,7 +12,7 @@ from api.assignments.infrastructure.repositories.sqlite_assignment_repository im
 from api.assignments.infrastructure.repositories.sqlite_classroom_repository import (
     SqliteClassroomRepository,
 )
-from api.classroom_import.infrastructure.parquet_cleaned_submissions_store import (
+from api.classroom_import.infrastructure.implementations.parquet_cleaned_submissions_store import (
     ParquetCleanedSubmissionsStore,
 )
 from api.knowledge_components.application.add_knowledge_component_use_case import (
