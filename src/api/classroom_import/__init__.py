@@ -1,1 +1,1 @@
-"""Upload do ProgSnap2, validação, limpeza e checagem de treinabilidade."""
+# Upload do ProgSnap2, validação, limpeza e checagem de treinabilidade.

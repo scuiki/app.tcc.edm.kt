@@ -1,9 +1,4 @@
-"""POST /classroom-imports e /classroom-imports/process pelo HTTP.
-
-O upload extrai o zip e devolve as MainTable encontradas sem pegar a trava; o process grava tudo e
-devolve o relatório; um caminho fora da raiz de dados é recusado antes de qualquer leitura; e o teto
-do upload recusa com 413. Herméticos via api_client (app.db e DATA_ROOT em tmp_path).
-"""
+# POST /classroom-imports e /classroom-imports/process pelo HTTP, herméticos via api_client.
 
 from __future__ import annotations
 
@@ -95,10 +90,10 @@ def test_process_refuses_paths_outside_the_data_root_before_reading(api_client):
     raw_dir = str(settings.DATA_ROOT / "raw")
     try:
         for body in (
-            # main_table em /etc/passwd: leitura arbitrária de arquivo se não fosse confinado.
+            # main_table em /etc/passwd, leitura arbitrária de arquivo se não fosse confinado.
             {"classroom_name": "X", "raw_dir": raw_dir, "main_table": "/etc/passwd"},
             {"classroom_name": "X", "raw_dir": "/etc", "main_table": f"{raw_dir}/MainTable.csv"},
-            # `..` que normaliza para fora da raiz: a guarda resolve ANTES de conferir.
+            # `..` que normaliza para fora da raiz; a guarda resolve antes de conferir.
             {"classroom_name": "X", "raw_dir": raw_dir, "main_table": f"{raw_dir}/../../etc/passwd"},
         ):
             response = client.post("/classroom-imports/process", json=body)
@@ -106,7 +101,7 @@ def test_process_refuses_paths_outside_the_data_root_before_reading(api_client):
     finally:
         client.app.dependency_overrides.clear()
 
-    assert calls == []  # recusado antes: o use case nunca foi chamado
+    assert calls == []  # recusado antes, o use case nunca foi chamado
 
 
 def test_an_upload_over_the_size_limit_is_refused_with_413(api_client, monkeypatch):

@@ -1,4 +1,4 @@
-"""O pedido e a resposta de POST /classroom-imports/process."""
+# O pedido e a resposta de POST /classroom-imports/process.
 
 from __future__ import annotations
 

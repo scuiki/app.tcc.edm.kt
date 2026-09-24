@@ -1,13 +1,4 @@
-"""Regra: recusa importar de novo uma turma que já existe.
-
-Sem ela, subir a mesma turma de novo criava turma, assignments e submissões duplicados, e as duas
-turmas dividiam o MESMO diretório em data/ (o caminho vem do slug): o cache de paths, as respostas
-do LLM e os modelos de uma se misturavam com os da outra. Nada disso dava erro.
-
-A comparação é pelo SLUG, não pelo nome: "Turma 6" e "turma  6" são nomes diferentes e o MESMO
-diretório. É uma parede explícita até existir re-treino com dados novos: falhar alto é melhor que
-corromper em silêncio.
-"""
+# Sem esta regra, reimportar a mesma turma duplica dados e mistura o diretório de duas turmas.
 
 from __future__ import annotations
 

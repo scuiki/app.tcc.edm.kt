@@ -1,12 +1,4 @@
-"""POST /classroom-imports e /classroom-imports/process: HTTP puro sobre os use cases.
-
-O fluxo é em dois passos porque um zip pode trazer várias MainTable: o upload devolve as opções,
-o professor escolhe uma, e o process importa a escolhida.
-
-Aqui mora só o que é de HTTP: o streaming do upload com teto de tamanho e o confinamento dos
-caminhos que o cliente devolve no process (sem ele, main_table="/etc/passwd" viraria leitura
-arbitrária de arquivo).
-"""
+# HTTP puro sobre os use cases; upload e process em dois passos, zip traz várias MainTable.
 
 from __future__ import annotations
 
@@ -37,15 +29,13 @@ from api.shared.infrastructure.filesystem.confined_path import ConfinedPath
 
 router = APIRouter(tags=["classroom_import"])
 
-# Teto de bytes do upload (DoS): folgado para um ProgSnap2 real, apertado o bastante para barrar
-# abuso antes de exaurir o disco. O zip-bomb DESCOMPRIMIDO tem teto próprio no extrator.
+# Teto de bytes do upload contra DoS; o zip-bomb descomprimido tem teto próprio no extrator.
 MAX_UPLOAD_BYTES = 512 * 1024 * 1024  # 512 MiB
 _UPLOAD_CHUNK = 1024 * 1024
 
 
 def _save_upload(upload: UploadFile, destination: Path) -> None:
-    # Em blocos, contando os bytes reais: ler o arquivo inteiro na RAM derrubaria o processo num
-    # upload grande; aborta no instante em que o real ultrapassa o teto.
+    # Em blocos, contando bytes reais; ler tudo na RAM derrubaria o processo num upload grande.
     written = 0
     with open(destination, "wb") as out:
         while chunk := upload.file.read(_UPLOAD_CHUNK):
@@ -58,8 +48,7 @@ def _save_upload(upload: UploadFile, destination: Path) -> None:
 
 
 def _confine(path: Path) -> Path:
-    # A prova de confinamento é do ConfinedPath; aqui só se traduz a recusa para HTTP. A raiz é lida
-    # em tempo de chamada (o teste a redireciona).
+    # ConfinedPath prova o confinamento; sem ele, main_table=/etc/passwd leria arquivo arbitrário.
     try:
         return Path(ConfinedPath(path, root=settings.DATA_ROOT))
     except ValueError:

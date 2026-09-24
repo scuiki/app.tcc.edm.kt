@@ -1,10 +1,4 @@
-"""Testes herméticos do gate de viabilidade por-assignment.
-
-Pinam a política RESOLVIDA: o único bloqueio duro (trainable=False / EDA-only) é a ausência de
-ambas as classes nos first-attempts (AUC matematicamente indefinido). Pisos de problemas/amostra
-NUNCA derrubam trainable — viram avisos graduados severity="viability". A fixture de classe única
-(`ingest_single_class_df`) exercita o caso intestável no dataset de referência.
-"""
+# O único bloqueio duro é a ausência de ambas as classes; pisos de problemas/amostra só avisam.
 
 from __future__ import annotations
 
@@ -21,7 +15,7 @@ def _item(items: list[ImportCheck], check: str) -> ImportCheck | None:
     return next((i for i in items if i.check == check), None)
 
 
-def test_a439_mini_ambas_as_classes_e_trainable(a439_mini):
+def test_a439_mini_both_classes_present_is_trainable(a439_mini):
     summaries, items = check_assignment_trainability(a439_mini)
 
     assert len(summaries) == 1
@@ -29,25 +23,24 @@ def test_a439_mini_ambas_as_classes_e_trainable(a439_mini):
     assert isinstance(s, AssignmentTrainability)
     assert s.progsnap_assignment_id == 439
     assert s.both_classes_present is True
-    # both_classes_present é o ÚNICO bloqueio duro: presentes => trainable.
+    # both_classes_present é o único bloqueio duro; presente, então trainable.
     assert s.trainable is True
 
 
-def test_classe_unica_bloqueia_duro_com_reason(ingest_single_class_df):
+def test_single_class_blocks_hard_with_reason(ingest_single_class_df):
     summaries, items = check_assignment_trainability(ingest_single_class_df)
 
     assert len(summaries) == 1
     s = summaries[0]
     assert s.both_classes_present is False
-    # Único bloqueio científico: AUC indefinido => EDA-only.
+    # Único bloqueio científico, AUC indefinido, vira EDA-only.
     assert s.trainable is False
-    # A reason precisa nomear a causa (classe ausente / AUC indefinido) — anti-silencioso.
+    # A reason precisa nomear a causa (classe ausente ou AUC indefinido), nunca silencioso.
     assert any("classe" in r.lower() or "auc" in r.lower() for r in s.reasons)
 
 
-def test_few_problems_avisa_mas_nao_bloqueia():
-    # 1 problema só, mas com AMBAS as classes nos first-attempts (S1 erra, S2 acerta).
-    # min_attempts>=3 Run.Program por aluno: 3 RP cada para serem elegíveis.
+def test_few_problems_warns_but_does_not_block():
+    # 1 problema só, mas com ambas as classes nos first-attempts (S1 erra, S2 acerta).
     base = pd.Timestamp("2019-03-01T08:00:00Z")
     rows = []
     for i, (sid, score) in enumerate([("S1", 0.0), ("S2", 1.0), ("S3", 1.0)]):
@@ -76,14 +69,13 @@ def test_few_problems_avisa_mas_nao_bloqueia():
     fp = _item(items, "few_problems")
     assert fp is not None
     assert fp.severity == "viability"
-    # O piso de problemas é AVISO, não parede: classe presente => trainable permanece.
+    # O piso de problemas é aviso, não parede; classe presente, então trainable permanece.
     assert s.both_classes_present is True
     assert s.trainable is True
 
 
-def test_small_sample_avisa_mas_nao_bloqueia():
-    # Poucos alunos elegíveis (3), ambas as classes presentes => aviso small_sample,
-    # trainable inalterado (governado só por classe).
+def test_small_sample_warns_but_does_not_block():
+    # Poucos alunos elegíveis (3), ambas as classes presentes, aviso small_sample sem bloqueio.
     base = pd.Timestamp("2019-03-01T08:00:00Z")
     rows = []
     for i, (sid, score) in enumerate([("S1", 0.0), ("S2", 1.0), ("S3", 1.0)]):
@@ -116,8 +108,8 @@ def test_small_sample_avisa_mas_nao_bloqueia():
     assert s.trainable is True  # aviso não derruba
 
 
-def test_n_students_eligible_conta_so_min_3_run_program():
-    # S1 com 3 RP (elegível), S2 com 2 RP (NÃO elegível) — espelha split_students_into_train_and_test.
+def test_n_students_eligible_counts_only_min_3_run_program():
+    # S1 com 3 RP (elegível), S2 com 2 RP (não elegível); espelha o split de treino/teste.
     base = pd.Timestamp("2019-03-01T08:00:00Z")
     rows = []
     for k in range(3):
@@ -159,11 +151,11 @@ def test_n_students_eligible_conta_so_min_3_run_program():
     assert s.n_students_eligible == 1
 
 
-def test_gate_por_assignment_independente():
+def test_gate_is_per_assignment_independent():
     # A439 com ambas as classes (trainable) e A492 com uma classe só (EDA-only) na mesma turma.
     base = pd.Timestamp("2019-03-01T08:00:00Z")
     rows = []
-    # A439: S1 erra, S2 acerta nos first-attempts => ambas as classes.
+    # A439, S1 erra e S2 acerta nos first-attempts, então ambas as classes.
     for sid, score in [("S1", 0.0), ("S2", 1.0)]:
         rows.append(
             {
@@ -178,7 +170,7 @@ def test_gate_por_assignment_independente():
                 "is_correct": int(score == 1.0),
             }
         )
-    # A492: todos acertam => uma classe só.
+    # A492, todos acertam, então uma classe só.
     for sid in ["S3", "S4"]:
         rows.append(
             {
