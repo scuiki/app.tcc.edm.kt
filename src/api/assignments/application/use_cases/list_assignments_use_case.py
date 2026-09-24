@@ -13,7 +13,12 @@ class ListAssignmentsUseCase:
     def __init__(self, assignments: IAssignmentRepository) -> None:
         self._assignments = assignments
 
-    def execute(self) -> ListAssignmentsResponseDTO:
+    def execute(self, classroom_id: int | None = None) -> ListAssignmentsResponseDTO:
+        assignments = (
+            self._assignments.list_all()
+            if classroom_id is None
+            else self._assignments.list_by_classroom(classroom_id)
+        )
         return ListAssignmentsResponseDTO(
             assignments=[
                 AssignmentSummaryDTO(
@@ -23,6 +28,6 @@ class ListAssignmentsUseCase:
                     status=assignment.status,
                     published_model_id=assignment.published_model_id,
                 )
-                for assignment in self._assignments.list_all()
+                for assignment in assignments
             ]
         )

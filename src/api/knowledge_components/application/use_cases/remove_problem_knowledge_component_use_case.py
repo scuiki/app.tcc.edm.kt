@@ -13,6 +13,9 @@ from api.knowledge_components.domain.interfaces.knowledge_component_repository i
 from api.knowledge_components.domain.interfaces.problem_knowledge_component_repository import (
     IProblemKnowledgeComponentRepository,
 )
+from api.knowledge_components.domain.services.active_knowledge_component import (
+    get_active_knowledge_component,
+)
 from api.knowledge_components.domain.services.knowledge_component_edit import (
     ensure_every_problem_keeps_a_kc,
     revert_approval_after_edit,
@@ -37,9 +40,9 @@ class RemoveProblemKnowledgeComponentUseCase(WriteUseCase):
         self._unit_of_work = unit_of_work
 
     def _run(self, dto: ProblemKnowledgeComponentDTO) -> RemovedProblemKnowledgeComponentDTO:
-        knowledge_component = self._knowledge_components.get(dto.kc_id)
-        if knowledge_component is None:
-            raise NotFound("KC inexistente")
+        knowledge_component = get_active_knowledge_component(
+            self._knowledge_components, self._assignments, dto.kc_id
+        )
         assignment_id = knowledge_component.assignment_id
         removed_at = utc_now_iso()
         with self._unit_of_work:

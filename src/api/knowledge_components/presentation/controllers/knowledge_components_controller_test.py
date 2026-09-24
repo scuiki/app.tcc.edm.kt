@@ -131,7 +131,7 @@ def test_rename_kc_updates_name(api_client, monkeypatch):
     kc_id = _seed_kc(conn, aid, "nome antigo")
     _bind(conn, aid, kc_id, problem_id=1)
 
-    resp = client.patch(f"/knowledge-components/{kc_id}", json={"name": "nome novo"})
+    resp = client.put(f"/knowledge-components/{kc_id}", json={"name": "nome novo"})
     assert resp.status_code == 200
 
     assert SqliteKnowledgeComponentRepository(conn).get(kc_id).name == "nome novo"
@@ -269,7 +269,7 @@ def test_editing_after_approval_reverts_status(api_client):
     _bind(conn, aid, a, problem_id=1)
     _bind(conn, aid, b, problem_id=1)  # problema 1 tem 2 KCs (remover 1 não o zera)
 
-    resp = client.patch(f"/knowledge-components/{a}", json={"name": "a-editado"})
+    resp = client.put(f"/knowledge-components/{a}", json={"name": "a-editado"})
     assert resp.status_code == 200
 
     assert SqliteAssignmentRepository(conn).get(aid).status == "kc_draft"
@@ -390,3 +390,16 @@ def test_linking_is_refused_for_a_repeated_link_or_a_problem_of_another_assignme
     assert unknown.status_code == 409
     assert client.post("/knowledge-components/999/problems/1").status_code == 404
 
+
+
+def test_a_kc_of_a_removed_assignment_is_404_on_every_route_by_kc_id(api_client):
+    client, conn = api_client
+    aid = _seed_assignment(conn, status="kc_draft")
+    kc_id = _seed_kc(conn, aid, "k")
+    _bind(conn, aid, kc_id, problem_id=1)
+    conn.execute("UPDATE assignment SET deleted_at = 't1' WHERE id = ?;", (aid,))
+
+    assert client.put(f"/knowledge-components/{kc_id}", json={"name": "x"}).status_code == 404
+    assert client.delete(f"/knowledge-components/{kc_id}").status_code == 404
+    assert client.post(f"/knowledge-components/{kc_id}/problems/1").status_code == 404
+    assert client.delete(f"/knowledge-components/{kc_id}/problems/1").status_code == 404

@@ -11,8 +11,13 @@ from api.assignments.presentation.dependencies import list_assignments_use_case
 router = APIRouter(tags=["assignments"])
 
 
-@router.get("/assignments", response_model=ListAssignmentsResponseDTO)
+@router.get(
+    "/assignments",
+    response_model=ListAssignmentsResponseDTO,
+    description="Os assignments ativos; com `classroom_id`, só os daquela turma.",
+)
 def list_assignments(
+    classroom_id: int | None = None,
     use_case: ListAssignmentsUseCase = Depends(list_assignments_use_case),
 ) -> ListAssignmentsResponseDTO:
-    return use_case.execute()
+    return use_case.execute(classroom_id)

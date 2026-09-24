@@ -412,7 +412,7 @@ def test_migration_0013_adds_soft_delete_and_a_partial_unique_index(tmp_path):
     insert = "INSERT INTO problem_kc (assignment_id, kc_id, problem_id) VALUES (?, ?, 7);"
     conn.execute(insert, (assignment_id, kc_id))
 
-    run_migrations(conn)
+    run_migrations(conn, migrations_dir=_migrations_up_to(tmp_path, 13))
 
     assert _user_version(conn) == 13
     assert "deleted_at" in _column_names(conn, "kc")
@@ -422,4 +422,19 @@ def test_migration_0013_adds_soft_delete_and_a_partial_unique_index(tmp_path):
     conn.execute("UPDATE problem_kc SET deleted_at = 't1';")
     conn.execute(insert, (assignment_id, kc_id))  # um removido e um ativo, sim
     assert conn.execute("SELECT COUNT(*) FROM problem_kc;").fetchone()[0] == 2
+
+
+# 0014 sobre um banco em user_version=13, turma e assignment ganham deleted_at.
+def test_migration_0014_adds_soft_delete_to_classroom_and_assignment(tmp_path):
+    conn = connect(str(tmp_path / "app.db"))
+    run_migrations(conn, migrations_dir=_migrations_up_to(tmp_path, 13))
+    _seed_assignment(conn)
+
+    run_migrations(conn)
+
+    assert _user_version(conn) == 14
+    assert "deleted_at" in _column_names(conn, "classroom")
+    assert "deleted_at" in _column_names(conn, "assignment")
+    row = conn.execute("SELECT deleted_at FROM assignment;").fetchone()
+    assert row[0] is None  # o que já existia continua ativo
 

@@ -104,7 +104,7 @@ def add_knowledge_component(
     return use_case.execute(body)
 
 
-@router.patch("/{kc_id}", response_model=KnowledgeComponentDTO)
+@router.put("/{kc_id}", response_model=KnowledgeComponentDTO)
 def rename_knowledge_component(
     kc_id: int,
     body: RenameKnowledgeComponentBody,

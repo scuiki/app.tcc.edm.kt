@@ -12,6 +12,10 @@ class ISubmissionRepository(Protocol):
         # Grava as tentativas de um assignment. `events` tem as colunas de CLEANED_COLUMNS.
         ...
 
+    def count_students(self, assignment_ids: list[int]) -> int:
+        # Os alunos distintos com alguma tentativa nesses assignments
+        ...
+
     def list_by_assignment(self, assignment_id: int) -> pd.DataFrame:
         # As tentativas do assignment na ordem gravada, ou um DataFrame vazio se não houver.
         ...

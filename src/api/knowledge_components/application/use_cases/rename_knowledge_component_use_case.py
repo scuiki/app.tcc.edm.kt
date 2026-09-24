@@ -9,12 +9,14 @@ from api.knowledge_components.application.dtos.edit_knowledge_components_dto imp
 from api.knowledge_components.domain.interfaces.knowledge_component_repository import (
     IKnowledgeComponentRepository,
 )
+from api.knowledge_components.domain.services.active_knowledge_component import (
+    get_active_knowledge_component,
+)
 from api.knowledge_components.domain.services.knowledge_component_edit import (
     revert_approval_after_edit,
 )
 from api.shared.application.interfaces.unit_of_work import IUnitOfWork
 from api.shared.application.use_cases.write_use_case import WriteUseCase
-from api.shared.domain.errors.not_found import NotFound
 
 
 class RenameKnowledgeComponentUseCase(WriteUseCase):
@@ -29,9 +31,9 @@ class RenameKnowledgeComponentUseCase(WriteUseCase):
         self._unit_of_work = unit_of_work
 
     def _run(self, dto: RenameKnowledgeComponentDTO) -> KnowledgeComponentDTO:
-        knowledge_component = self._knowledge_components.get(dto.kc_id)
-        if knowledge_component is None:
-            raise NotFound("KC inexistente")
+        knowledge_component = get_active_knowledge_component(
+            self._knowledge_components, self._assignments, dto.kc_id
+        )
         with self._unit_of_work:
             self._knowledge_components.rename(dto.kc_id, dto.name)
             revert_approval_after_edit(self._assignments, knowledge_component.assignment_id)
