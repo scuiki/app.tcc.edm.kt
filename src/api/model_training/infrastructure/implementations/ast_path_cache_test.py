@@ -1,5 +1,4 @@
-"""O cache em disco dos AST paths: reaproveita o já extraído, isola por turma, não vaza para o
-vocabulário e não deixa um snapshot id escapar do diretório. Herméticos (data_root em tmp_path)."""
+# O cache em disco reaproveita o já extraído, isola por turma e não deixa escapar um snapshot id.
 
 from __future__ import annotations
 
@@ -27,18 +26,18 @@ def test_second_call_skips_extraction_same_result(
     first = ast_path_cache.load_or_extract_ast_paths("A", snapshot_ids, cache_code_states, cache_config)
     second = ast_path_cache.load_or_extract_ast_paths("A", snapshot_ids, cache_code_states, cache_config)
 
-    # First call extracts both; second sees them all cached → empty missing (or no call).
+    # A primeira chamada extrai ambos; a segunda já vê tudo em cache, sem faltar nada.
     assert sorted(calls["missing"][0]) == snapshot_ids
     assert all(len(m) == 0 for m in calls["missing"][1:])
     assert first == second
 
 
-# --- namespace per turma ---------------------------------------------------
+# --- namespace por turma ---------------------------------------------------
 
 
 def test_namespace_isolation_no_cross_class_leak(java_snippets, data_root, cache_config):
     code_a = {"shared": java_snippets.ok_a}
-    code_b = {"shared": java_snippets.empty_class}  # different code, same CSID
+    code_b = {"shared": java_snippets.empty_class}  # código diferente, mesmo CSID
 
     res_a = ast_path_cache.load_or_extract_ast_paths("turma-a", ["shared"], code_a, cache_config)
     res_b = ast_path_cache.load_or_extract_ast_paths("turma-b", ["shared"], code_b, cache_config)
@@ -47,16 +46,16 @@ def test_namespace_isolation_no_cross_class_leak(java_snippets, data_root, cache
     file_b = data_root / "turma-b" / "cache" / "paths" / "shared.pkl"
     assert file_a.exists() and file_b.exists()
     assert file_a != file_b
-    # com_paths code yields paths; empty class yields none — proves no overwrite.
+    # código com_paths gera paths; classe vazia não gera nenhum, provando que não houve sobrescrita.
     assert len(res_a["shared"]) > 0
     assert res_b["shared"] == []
 
 
-# --- 3-way classification --------------------------------------------------
+# --- classificação em 3 vias ------------------------------------------------
 
 
 def test_global_cache_does_not_leak_into_train_vocab(java_snippets, data_root, cache_config):
-    # Cache ALL snapshot_ids globally (com_paths each), then build vocab train-only.
+    # Faz cache de TODOS os snapshot_ids (com_paths cada), depois monta vocab só do treino.
     code_states = {"train1": java_snippets.ok_a, "held_out": "public int z(int q) { return q * 2; }"}
     ast_paths_by_snapshot = ast_path_cache.load_or_extract_ast_paths(
         "A", ["train1", "held_out"], code_states, cache_config
@@ -70,10 +69,10 @@ def test_global_cache_does_not_leak_into_train_vocab(java_snippets, data_root, c
         for start, path_str, end in held_paths
         if path_str not in path_to_idx
     )
-    assert oov > 0  # held-out paths absent from train-only vocab → OOV>0 (no leak)
+    assert oov > 0  # paths do held-out ausentes do vocab train-only, OOV>0 comprova que não vazou
 
 
-# --- traversal guard --------------------------------------------------
+# --- guarda contra traversal --------------------------------------------------
 
 
 def test_malicious_csid_cannot_escape_cache_dir(java_snippets, data_root, cache_config):

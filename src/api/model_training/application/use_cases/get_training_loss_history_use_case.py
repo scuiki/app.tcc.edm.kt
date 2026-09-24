@@ -1,8 +1,4 @@
-"""A curva de loss de um treino, época por época.
-
-Rota própria, não embutida no progresso: o poll de progresso roda de segundos em segundos e tem
-vida curta; a curva é lida uma vez, depois que o treino acabou.
-"""
+# Rota própria (o progresso é polled a cada poucos segundos); a curva de loss se lê uma vez.
 
 from __future__ import annotations
 

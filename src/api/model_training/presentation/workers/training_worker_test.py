@@ -1,9 +1,4 @@
-"""O worker de treino: estados do job, trava, curva de loss, taxa de parse e o recorte Run.Program.
-
-Chama `run_training(conn, assignment_id, job_id, trainer=...)` direto, em CPU e com poucas épocas,
-sobre `tmp_db` + `data_root` herméticos (o subprocess real é testado à parte). O treinador rápido
-ou falho é injetado; nenhum AUC mágico: os testes pinam estados (status, job, holder_pid).
-"""
+# O worker de treino, estados do job, trava, curva de loss, taxa de parse e o recorte Run.Program.
 
 from __future__ import annotations
 
@@ -42,8 +37,7 @@ from tests.fixtures.job_lock import lock_holder_pid
 
 ASSIGNMENT_ID = 439
 
-# Oito corpos de método estruturalmente distintos (espelha test_pipeline.progsnap_df):
-# garante OOV>0 no held-out e cache com paths reais para um treino end-to-end em CPU.
+# Oito corpos de método distintos (espelha test_pipeline.progsnap_df), garantindo OOV>0 no held-out.
 _JAVA_BODIES = [
     "public int g0(int a, int b) { int s = a + b; return s; }",
     "public int g1(int a) { for (int i = 0; i < a; i++) { a = a * 2; } return a; }",
@@ -55,7 +49,7 @@ _JAVA_BODIES = [
     "public int g7(int n) { try { return 10 / n; } catch (Exception e) { return -1; } }",
 ]
 
-# Arquitetura congelada; só as épocas caem para um smoke CPU rápido (nunca no CODE_DKT_HYPERPARAMETERS).
+# Arquitetura congelada; só as épocas caem, para um smoke CPU rápido (nunca no real).
 _FAST_EPOCHS = 3
 
 
@@ -95,7 +89,7 @@ _FAST_HYPERPARAMETERS = {**CODE_DKT_HYPERPARAMETERS, "epochs": _FAST_EPOCHS}
 
 @pytest.fixture
 def fast_trainer() -> MlCodeDktTrainer:
-    """O treinador real com poucas épocas (os hiperparâmetros congelados não são mutados)."""
+    # O treinador real com poucas épocas (os hiperparâmetros congelados não são mutados).
     return MlCodeDktTrainer(hyperparameters=_FAST_HYPERPARAMETERS)
 
 
@@ -107,13 +101,7 @@ def _failing_trainer(error: Exception) -> MlCodeDktTrainer:
 
 
 def _canonical_df_with_compile_errors() -> pd.DataFrame:
-    """Stream canônico realista: Run.Program parseável + Compile.Error com Java QUEBRADO.
-
-    É a forma que `clean.clean_submissions` grava de verdade (ALLOWED_EVENTS = os dois tipos,
-    D-10) e que o CSEDM real exibe — no A439, 57,6% das linhas são Compile.Error. O Java
-    malformado é o que torna o teste discriminante: se esses eventos chegarem à extração de
-    features, a taxa de parse cai abaixo de 1.0.
-    """
+    # Stream realista, Run.Program parseável + Compile.Error com Java quebrado (57,6% no A439 real).
     df = _canonical_df()
     base = pd.Timestamp("2019-03-01T08:00:00Z")
     broken = []
@@ -122,7 +110,7 @@ def _canonical_df_with_compile_errors() -> pd.DataFrame:
             ts = base + pd.Timedelta(hours=s) + pd.Timedelta(minutes=30 + step)
             row = _row(f"S{s}", 1, ts, 0.0, "public int oops( { return ;;; }", f"e{s}_{step}")
             row["event_type"] = "Compile.Error"
-            row["is_correct"] = 0  # clean.py: correct exige Run.Program AND Score == 1.0
+            row["is_correct"] = 0  # correct exige Run.Program e Score == 1.0
             broken.append(row)
     out = pd.concat([df, pd.DataFrame(broken)], ignore_index=True)
     out["submitted_at"] = pd.to_datetime(out["submitted_at"], utc=True)
@@ -132,7 +120,7 @@ def _canonical_df_with_compile_errors() -> pd.DataFrame:
 
 
 def _seed_approved(conn, data_root, df: pd.DataFrame | None = None) -> tuple[int, int]:
-    """Turma + assignment com a Q-matrix aprovada + dado limpo + job pending. Devolve (aid, job)."""
+    # Turma + assignment com a Q-matrix aprovada + dado limpo + job pending. Devolve (aid, job).
     created = "2019-03-01T00:00:00+00:00"
     classroom_id = SqliteClassroomRepository(conn).add(
         Classroom(id=None, name="Turma X", created_at=created)
@@ -162,7 +150,7 @@ def _dead_pid() -> int:
     return 2**22
 
 
-# --- caso 1: de ponta a ponta, kc_approved -> trained + artefato + job done ---
+# --- caso 1, de ponta a ponta, kc_approved -> trained + artefato + job done ---
 
 
 def test_end_to_end_trains_persists_and_flips_status(tmp_db, data_root, fast_trainer):
@@ -181,13 +169,13 @@ def test_end_to_end_trains_persists_and_flips_status(tmp_db, data_root, fast_tra
     assert lock_holder_pid(conn) is None  # release garantido ao sair do `with lock`
 
 
-# --- caso 2: lock por PID vivo -> job failed "pipeline busy", sem treino ---
+# --- caso 2, lock por PID vivo -> job failed "pipeline busy", sem treino ---
 
 
 def test_lock_busy_marks_failed_and_does_not_train(tmp_db, data_root, fast_trainer):
     conn = tmp_db
     assignment_id, job_id = _seed_approved(conn, data_root)
-    # Dono vivo (este processo) segura o lock — a aquisição da CLI deve ser negada.
+    # Dono vivo (este processo) segura o lock; a aquisição da CLI deve ser negada.
     conn.execute(
         "UPDATE pipeline_lock SET holder_pid=?, operation='training', job_id=99 WHERE id=1;",
         (os.getpid(),),
@@ -204,7 +192,7 @@ def test_lock_busy_marks_failed_and_does_not_train(tmp_db, data_root, fast_train
     assert lock_holder_pid(conn) == os.getpid()  # o lock segue do dono vivo
 
 
-# --- caso 3: on_epoch grava current_epoch + train_loss no TrainingJob ---
+# --- caso 3, on_epoch grava current_epoch + train_loss no TrainingJob ---
 
 
 def test_epoch_callback_writes_progress(tmp_db, data_root, fast_trainer):
@@ -217,14 +205,13 @@ def test_epoch_callback_writes_progress(tmp_db, data_root, fast_trainer):
     assert job.total_epochs == _FAST_EPOCHS
     assert job.started_at is not None
 
-    # A curva agora é append-only (migração 0008): UMA linha por época, todas preservadas. Antes
-    # o UPDATE sobrescrevia e sobrava só o último número, então não havia curva a plotar.
+    # A curva é append-only (migração 0008); antes sobrescrevia e só sobrava o último valor
     serie = SqliteTrainingEpochMetricRepository(conn).list_by_job(job_id)
     assert [m.epoch for m in serie] == list(range(1, _FAST_EPOCHS + 1))
     assert all(m.train_loss is not None for m in serie)
 
 
-# --- caso 4: o treino levanta -> assignment segue kc_approved, job failed, lock liberado ---
+# --- caso 4, o treino levanta -> assignment segue kc_approved, job failed, lock liberado ---
 
 
 def test_training_failure_releases_lock_and_keeps_kc_approved(tmp_db, data_root):
@@ -242,7 +229,7 @@ def test_training_failure_releases_lock_and_keeps_kc_approved(tmp_db, data_root)
     assert lock_holder_pid(conn) is None  # liberado mesmo sob exceção
 
 
-# --- caso 5: CUDA OOM -> job failed com mensagem de VRAM, lock liberado ---
+# --- caso 5, CUDA OOM -> job failed com mensagem de VRAM, lock liberado ---
 
 
 def test_cuda_oom_fails_gracefully(tmp_db, data_root):
@@ -264,7 +251,7 @@ def test_cuda_oom_fails_gracefully(tmp_db, data_root):
     assert lock_holder_pid(conn) is None
 
 
-# --- caso 6: taxa de parse 3-vias recordada/recuperável ---
+# --- caso 6, taxa de parse 3-vias recordada/recuperável ---
 
 
 def test_parse_rate_is_recorded(tmp_db, data_root, fast_trainer):
@@ -280,8 +267,7 @@ def test_parse_rate_is_recorded(tmp_db, data_root, fast_trainer):
 
 
 def test_parse_rate_is_persisted(tmp_db, data_root, fast_trainer):
-    """A taxa não pode viver só no dict de retorno (descartado com o subprocess): tem de
-    sobreviver na linha do training_job (SC-3). Relê via get() após _run_training."""
+    # A taxa não pode viver só no retorno (perdido no subprocess); sobrevive na linha do job
     conn = tmp_db
     assignment_id, job_id = _seed_approved(conn, data_root)
 
@@ -292,22 +278,11 @@ def test_parse_rate_is_persisted(tmp_db, data_root, fast_trainer):
     assert job.java_parse_rate == pytest.approx(1.0)
 
 
-# --- caso 7: o stream de treino é só Run.Program (fidelidade a Shi et al. 2022) ---
+# --- caso 7, o stream de treino é só Run.Program (fidelidade a Shi et al. 2022) ---
 
 
 def test_compile_errors_never_reach_the_training_stream(tmp_db, data_root, fast_trainer):
-    """Compile.Error vive no dado limpo (as estatísticas precisam dele), mas NÃO se treina com ele.
-
-    O TCC 1 treinou o Code-DKT só sobre Run.Program (data_loader.filter_for_bkt_dkt, o filtro
-    por trás de sequences_bkt_dkt.pkl); o teste de regressão reproduz aquele número porque o fixture
-    csedm_main_table já chega filtrado. Sem o mesmo filtro AQUI, a aplicação treina sobre outro
-    dado que o oráculo — no CSEDM real isso derrubou o first-attempt AUC para 0,6959, fora da
-    banda ±3pp, e a taxa de parse para 78,58%.
-
-    O fixture carrega Compile.Error com Java sintaticamente quebrado: se algum deles alcançar a
-    extração de features, a taxa de parse cai abaixo de 1.0. A asserção é essa — comportamento
-    observável pelo contrato público de _run_training, não espionagem de chamada interna.
-    """
+    # Compile.Error fica no limpo (estatísticas), mas nunca no treino (AUC caiu p/ 0,6959 no A439)
     conn = tmp_db
     assignment_id, job_id = _seed_approved(
         conn, data_root, df=_canonical_df_with_compile_errors()
@@ -320,7 +295,7 @@ def test_compile_errors_never_reach_the_training_stream(tmp_db, data_root, fast_
 
 
 def test_main_resolves_paths_from_env_and_runs_training(tmp_path, monkeypatch):
-    # O entrypoint do subprocess: um erro em main() mataria o processo antes de marcar o job.
+    # O entrypoint do subprocess, um erro em main() mataria o processo antes de marcar o job.
     from api.model_training.presentation.workers import training_worker
     from api.shared.infrastructure import settings
     from api.shared.infrastructure.database.migrations.runner import run_migrations

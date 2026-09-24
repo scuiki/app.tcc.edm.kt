@@ -1,4 +1,4 @@
-"""A interface de persistência da curva de loss: append-only, uma linha por época."""
+# A interface de persistência da curva de loss, append-only, uma linha por época.
 
 from __future__ import annotations
 

@@ -1,8 +1,4 @@
-"""A taxa de parse do javalang: quanto do código dos alunos o Code-DKT de fato enxerga.
-
-O ml/ devolve `[]` tanto para "não parseou" quanto para "parseou mas não tem path", então a
-classificação em quatro casos mora aqui: no_code, parse_failed, parsed_sem_paths, com_paths.
-"""
+# Taxa de parse do javalang; classifica em no_code, parse_failed, parsed_sem_paths ou com_paths.
 
 from __future__ import annotations
 
@@ -22,12 +18,7 @@ def _extract(code: str, config: dict) -> list[tuple[str, str, str]]:
 
 
 def classify_parse(code: str, config: dict) -> str:
-    """Desambigua o `[]` de `extract_ast_paths` em 4 classes.
-
-    O core retorna `[]` tanto para parse-fail quanto para parseado-sem-paths
-   . Para separar, replicamos as 3 linhas de `_parse_java` aqui em vez de
-    importar o nome privado — mantém a superfície pública do core inalterada.
-    """
+    # Desambigua o `[]` de `extract_ast_paths`, replicando `_parse_java` sem importar nome privado.
     if not code.strip():
         return "no_code"
     try:
@@ -39,10 +30,7 @@ def classify_parse(code: str, config: dict) -> str:
 
 
 def compute_java_parse_rate(codes: list[str], config: dict) -> float:
-    """Taxa de parse honesta = (com_paths + parsed_sem_paths) / total-com-código.
-
-    `no_code` sai do denominador (sem snapshot, não é falha de parse). Denominador 0 → 0.0.
-    """
+    # Taxa honesta = (com_paths + parsed_sem_paths) / total-com-código; `no_code` sai do denominador
     classes = [classify_parse(c, config) for c in codes]
     with_code = [c for c in classes if c != "no_code"]
     if not with_code:

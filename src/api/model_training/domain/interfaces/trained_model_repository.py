@@ -1,4 +1,4 @@
-"""A interface de leitura das versões de modelo. Quem grava é o ITrainedModelStore."""
+# A interface de leitura das versões de modelo. Quem grava é o ITrainedModelStore.
 
 from __future__ import annotations
 

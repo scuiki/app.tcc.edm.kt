@@ -1,4 +1,4 @@
-"""TrainingJob: um treino do Code-DKT em andamento ou concluído."""
+# TrainingJob, um treino do Code-DKT em andamento ou concluído.
 
 from __future__ import annotations
 
@@ -18,6 +18,5 @@ class TrainingJob:
     started_at: str | None = None
     updated_at: str | None = None
     error_message: str | None = None
-    # A fração dos snapshots que o javalang conseguiu parsear, gravada no sucesso: o professor vê
-    # quanto do código dos alunos o modelo de fato enxergou.
+    # Fração dos snapshots parseados pelo javalang, mostra ao professor o quanto o modelo viu.
     java_parse_rate: float | None = None

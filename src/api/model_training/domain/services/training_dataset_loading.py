@@ -1,10 +1,4 @@
-"""Monta o dado que treino e inferência consomem (TrainingDataset): o dado limpo do assignment,
-só com Run.Program.
-
-Este é o único lugar que monta esse recorte. Antes, o treino e a inferência liam o dado limpo cada
-um por si; os dois esqueceram o recorte, o modelo treinou sobre 57,6% de eventos rotulados como erro e
-o first-attempt AUC caiu para 0,6959, fora da banda. Quem modela passa a receber o dado pronto.
-"""
+# Único lugar que monta o recorte (só Run.Program); sem ele o first-attempt AUC caiu para 0,6959.
 
 from __future__ import annotations
 
@@ -24,13 +18,13 @@ def load_training_dataset(
     classrooms: IClassroomRepository,
     submissions: ISubmissionRepository,
 ) -> TrainingDataset:
-    """assignment (id do banco) → dado limpo → recorte Run.Program, mais os ids da turma."""
+    # assignment (id do banco) -> dado limpo -> recorte Run.Program, mais os ids da turma.
     assignment = assignments.get(assignment_id)
     if assignment is None:
         raise ValueError(f"assignment {assignment_id} inexistente")
     classroom = classrooms.get(assignment.classroom_id)
     if classroom is None:
-        # Turma órfã (a FK é por conexão): erro nomeado em vez de AttributeError em .name.
+        # Turma órfã (FK por conexão), erro nomeado em vez de AttributeError em .name.
         raise ValueError(f"turma {assignment.classroom_id} inexistente")
 
     slug = ClassroomSlug.from_name(classroom.name)

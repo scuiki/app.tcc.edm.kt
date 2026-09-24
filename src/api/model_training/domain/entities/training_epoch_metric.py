@@ -1,4 +1,4 @@
-"""TrainingEpochMetric: a loss de uma época. A curva de loss de um treino é a lista delas."""
+# TrainingEpochMetric, a loss de uma época; a curva de loss de um treino é a lista delas.
 
 from __future__ import annotations
 

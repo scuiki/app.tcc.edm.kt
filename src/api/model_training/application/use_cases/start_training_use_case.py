@@ -1,4 +1,4 @@
-"""Dispara o treino do Code-DKT em background e devolve o job na hora (o treino leva minutos)."""
+# Dispara o treino do Code-DKT em background e devolve o job na hora (o treino leva minutos).
 
 from __future__ import annotations
 
@@ -44,7 +44,7 @@ class StartTrainingUseCase(WriteUseCase):
         ]
 
     def _run(self, dto: StartTrainingDTO) -> StartedTrainingJobDTO:
-        # Fora das regras de propósito: é corrida, não defeito do pedido (ver AnotherJobRunning).
+        # Fora das regras de propósito, é corrida, não defeito do pedido (daí AnotherJobRunning).
         if self._job_lock.is_another_job_running():
             raise AnotherJobRunning("já existe um job em andamento; aguarde a conclusão")
         job_id = self._jobs.add(

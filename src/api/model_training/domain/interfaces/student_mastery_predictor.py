@@ -1,9 +1,4 @@
-"""O que o dashboard precisa do modelo: a mastery de cada aluno em cada KC.
-
-Declarada aqui (quem sabe carregar e rodar um modelo treinado é model_training) e usada pelo
-dashboard. A implementação recarrega a versão, prevê por PROBLEMA e agrega por KC pela Q-matrix: a
-saída do Code-DKT é por problema, e o professor lê por KC.
-"""
+# O dashboard só quer mastery por aluno x KC; a impl. prevê por problema e agrega via Q-matrix.
 
 from __future__ import annotations
 
@@ -20,5 +15,5 @@ class IStudentMasteryPredictor(Protocol):
         dataset: TrainingDataset,
         kcs_by_problem: dict[int, list[int]],
     ) -> dict[tuple[str, int], float]:
-        """{(student_id, kc_id): mastery}; `kcs_by_problem` é a Q-matrix aprovada."""
+        # `{(student_id, kc_id): mastery}`; `kcs_by_problem` é a Q-matrix aprovada.
         ...

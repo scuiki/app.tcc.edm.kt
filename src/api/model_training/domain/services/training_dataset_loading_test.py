@@ -1,4 +1,4 @@
-"""load_training_dataset: o único lugar que monta o recorte do treino e da inferência."""
+# load_training_dataset, o único lugar que monta o recorte do treino e da inferência.
 
 from __future__ import annotations
 
@@ -51,7 +51,7 @@ def test_the_dataset_carries_only_program_runs_and_the_ids_callers_need():
     )
 
     assert list(dataset.events["event_type"]) == ["Run.Program", "Run.Program"]
-    assert list(dataset.events.index) == [0, 1]  # reindexado: quem consome itera por posição
+    assert list(dataset.events.index) == [0, 1]  # reindexado, quem consome itera por posição
     assert (str(dataset.classroom_slug), dataset.progsnap_assignment_id.value) == ("turma-x", 439)
     assert dataset.classroom_id == 1
     assert cleaned.read_with == 7  # pelo id do banco

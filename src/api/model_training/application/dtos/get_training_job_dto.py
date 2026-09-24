@@ -1,4 +1,4 @@
-"""As respostas de GET /training-jobs/{job_id} e /training-jobs/{job_id}/loss-history."""
+# As respostas de GET /training-jobs/{job_id} e /training-jobs/{job_id}/loss-history.
 
 from __future__ import annotations
 

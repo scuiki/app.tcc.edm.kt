@@ -1,4 +1,4 @@
-"""Composition root de model_training: qual implementação cada use case recebe."""
+# Composition root de model_training, qual implementação cada use case recebe.
 
 from __future__ import annotations
 
@@ -69,7 +69,7 @@ def get_training_loss_history_use_case(
 def build_run_training_use_case(
     conn: sqlite3.Connection, trainer: MlCodeDktTrainer | None = None
 ) -> RunTrainingUseCase:
-    """O corpo do worker. `trainer` troca o treinador real (os testes passam um rápido ou falho)."""
+    # O corpo do worker; `trainer` troca o treinador real (os testes passam um rápido ou falho).
     return RunTrainingUseCase(
         assignments=SqliteAssignmentRepository(conn),
         classrooms=SqliteClassroomRepository(conn),

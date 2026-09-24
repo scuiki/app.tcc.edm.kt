@@ -1,9 +1,4 @@
-"""O cache em disco dos AST paths: data/<turma>/cache/paths/<snapshot>.pkl.
-
-Extrair os paths de milhares de snapshots é a parte cara do treino. Cada snapshot já extraído fica
-em disco (escrita atômica: .tmp e depois rename), por turma, e é reaproveitado no treino seguinte e
-na inferência. O ml/ só é CHAMADO: a numérica não muda, só se evita refazer.
-"""
+# Cache em disco dos AST paths (por turma), reaproveitado entre treino e inferência.
 
 from __future__ import annotations
 
@@ -23,14 +18,7 @@ def load_or_extract_ast_paths(
     config: dict,
     n_workers: Optional[int] = None,
 ) -> dict[str, list[tuple[str, str, str]]]:
-    """Cache incremental crash-safe de paths crus, namespaced por turma.
-
-    Para cada CSID: hit no `<snapshot_id>.pkl` → carrega (pula extração); miss → coleta em
-    `missing`. Chama `extract_ast_paths_for_snapshots(missing, ...)` UMA vez (reusa o mp.Pool do core, numerics
-    intactos) e grava cada resultado via `<snapshot_id>.pkl.tmp` + `.rename()` (atômico). O
-    `ast_paths_by_snapshot` combinado alimenta `build_train_only_vocabulary(ast_paths_by_snapshot, train_snapshot_ids)` — o filtro
-    train-only acontece DEPOIS, então cachear todos os CSIDs globalmente NÃO vaza.
-    """
+    # Cache incremental crash-safe por turma; o filtro train-only ocorre depois, não vaza no vocab.
     cache_dir = data_layout.ast_path_cache_dir(classroom_slug)
     cache_dir.mkdir(parents=True, exist_ok=True)
 

@@ -1,9 +1,4 @@
-"""ICodeDktTrainer sobre o ml/: divide por aluno, aquece o cache de paths, treina e avalia.
-
-A ordem e os parâmetros são os do protocolo congelado; o teste de regressão contra o TCC 1 é o
-oráculo que reprova qualquer mudança. Os hiperparâmetros e a função de treino entram pelo
-construtor: os testes passam uma configuração rápida ou uma falha simulada, sem monkeypatch.
-"""
+# ICodeDktTrainer sobre o ml/; hiperparâmetros e função de treino entram pelo construtor (testável).
 
 from __future__ import annotations
 
@@ -44,15 +39,14 @@ class MlCodeDktTrainer:
         config = dict(self._hyperparameters)
         train_df, test_df = split_students_into_train_and_test(dataset.events)
 
-        # Aquece o cache de paths em disco (reaproveitado no próximo treino e na inferência); a
-        # taxa de parse sai dos mesmos snapshots.
+        # Aquece o cache de paths (reaproveitado no próximo treino/inferência); parse rate sai daqui
         code_by_snapshot = code_by_snapshot_id(dataset.events)
         load_or_extract_ast_paths(
             dataset.classroom_slug, list(code_by_snapshot.keys()), code_by_snapshot, config
         )
         java_parse_rate = compute_java_parse_rate(list(code_by_snapshot.values()), config)
 
-        # Não estrito na GPU: o treino confia na banda de ±3pp em vez do determinismo bit a bit.
+        # Não estrito na GPU, o treino confia na banda de ±3pp em vez do determinismo bit a bit.
         seed_all_random_generators(config["seed"], strict=False)
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -60,8 +54,7 @@ class MlCodeDktTrainer:
             train_df,
             config=config,
             test_df=test_df,
-            # int, não o value object: o ml/ compara com a coluna do DataFrame, e um VO casaria com
-            # zero linhas em silêncio.
+            # int, não o value object (o ml/ compara com a coluna; VO casaria com zero linhas).
             progsnap_assignment_id=dataset.progsnap_assignment_id.value,
             device=device,
             on_epoch=on_epoch,

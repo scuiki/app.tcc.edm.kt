@@ -1,7 +1,4 @@
-"""ITrainingEpochMetricRepository sobre SQLite (tabela `training_metric`), append-only.
-
-O progresso corrente é DERIVADO da última linha, em vez de um campo mutável mantido em paralelo.
-"""
+# ITrainingEpochMetricRepository sobre SQLite (`training_metric`), append-only; progresso derivado.
 
 from __future__ import annotations
 
@@ -15,8 +12,7 @@ class SqliteTrainingEpochMetricRepository:
         self._conn = conn
 
     def append(self, job_id: int, metric: TrainingEpochMetric) -> None:
-        # OR REPLACE: um re-treino que reaproveite o mesmo job_id sobrescreve a época em vez de
-        # violar o UNIQUE(job_id, epoch).
+        # OR REPLACE, um re-treino que reaproveite o job_id sobrescreve em vez de violar o UNIQUE.
         self._conn.execute(
             "INSERT OR REPLACE INTO training_metric (job_id, epoch, train_loss, recorded_at) "
             "VALUES (?, ?, ?, ?);",

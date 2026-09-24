@@ -1,8 +1,4 @@
-"""O corpo do worker de treino: dado de treino → Code-DKT → versão gravada → publicada.
-
-A ordem arquivos → linha → publicação garante que o dashboard só enxerga uma versão completa. O
-retorno se perde com o subprocess: o que sobrevive é a linha do job, a curva de loss e a versão.
-"""
+# Ordem arquivos -> linha -> publicação garante versão completa; o retorno do subprocess se perde.
 
 from __future__ import annotations
 
@@ -50,8 +46,7 @@ class RunTrainingUseCase:
         )
 
         def record_epoch(epoch: int, average_loss: float) -> None:
-            # Append, não UPDATE: sobrescrever destruiria a curva a cada época. É uma escrita
-            # curta sob WAL; o poll do professor lê em paralelo sem bloquear.
+            # Append, não UPDATE (sobrescrever apagaria a curva); escrita curta sob WAL.
             self._epoch_metrics.append(
                 job_id, TrainingEpochMetric(epoch, float(average_loss), utc_now_iso())
             )
@@ -59,7 +54,7 @@ class RunTrainingUseCase:
         outcome = self._trainer.train(dataset, on_epoch=record_epoch)
         model_id = self._model_store.save(dataset, assignment_id, outcome)
 
-        # Só agora a versão é publicada: um leitor nunca enxerga uma versão incompleta.
+        # Só agora a versão é publicada, um leitor nunca enxerga uma versão incompleta.
         with self._unit_of_work:
             self._assignments.set_published_model(assignment_id, model_id)
         self._assignments.set_status(assignment_id, AssignmentStatus.TRAINED)

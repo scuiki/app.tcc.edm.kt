@@ -1,4 +1,4 @@
-"""O pedido e a resposta de POST /training-jobs."""
+# O pedido e a resposta de POST /training-jobs.
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ from api.shared.domain.value_objects.job_status import JobStatus
 
 
 class StartTrainingDTO(BaseModel):
-    # int, nunca str: o id vira argumento do subprocess, e um int fecha injeção de comando na borda
+    # int, nunca str, o id vira argumento do subprocess e um int fecha injeção de comando na borda
     assignment_id: int
 
 

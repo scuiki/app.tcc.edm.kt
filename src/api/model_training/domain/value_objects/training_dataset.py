@@ -1,7 +1,4 @@
-"""O dado que treino e inferência consomem: o dado limpo do assignment, só com Run.Program.
-
-Quem monta é `services/training_dataset_loading.py`, o único lugar que faz esse recorte.
-"""
+# Dado limpo do assignment, só Run.Program; montado por load_training_dataset, único ponto do corte
 
 from __future__ import annotations
 

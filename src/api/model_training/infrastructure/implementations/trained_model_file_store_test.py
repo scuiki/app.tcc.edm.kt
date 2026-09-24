@@ -1,8 +1,4 @@
-"""As versões de modelo em disco: write-once, versão monótona, hash estável e leitura confinada.
-
-ModelVersionFiles cuida dos arquivos de uma versão; TrainedModelFileStore amarra os arquivos à
-linha em model_artifact. Herméticos, em CPU, sobre tmp_db/tiny_model/tiny_vocab/tiny_config.
-"""
+# Versões de modelo em disco, write-once, versão monótona, hash estável e leitura confinada.
 
 from __future__ import annotations
 
@@ -29,7 +25,7 @@ from api.model_training.infrastructure.implementations.trained_model_file_store 
 
 
 def _save(conn, classroom_id: int, assignment_id: int, model, vocab, config) -> dict:
-    """Grava pela TrainedModelFileStore real e devolve {version_number, artifact_id, dir}."""
+    # Grava pela TrainedModelFileStore real e devolve {version_number, artifact_id, dir}.
     model_id = TrainedModelFileStore(conn).save(
         TrainingDataset(
             events=pd.DataFrame(),
@@ -52,7 +48,7 @@ def sqlite3_connection(conn):
 
 
 def _seed_turma_assignment(conn) -> tuple[int, int]:
-    """classroom + assignment em SQL puro; devolve (classroom_id, assignment_id)."""
+    # classroom + assignment em SQL puro; devolve (classroom_id, assignment_id).
     classroom_id = conn.execute(
         "INSERT INTO classroom (name, created_at) VALUES ('Turma A', 't0');"
     ).lastrowid
@@ -67,11 +63,7 @@ def _add_assignment(conn, classroom_id: int, name: str) -> int:
 
 
 def test_save_writes_blob_and_sidecars(tmp_path, tiny_model, tiny_vocab, tiny_config):
-    # save_version grava os três arquivos (state_dict + vocab.pkl + config.json) e o meta
-    # carrega TODOS os args de construção, derivando input_dim/output_dim do
-    # modelo vivo. O state_dict relido bate byte a byte com o salvo — sem
-    # reconstruir a classe aqui (tiny_model é um stand-in; a reconstrução completa de
-    # CodeDKTModel é exercida em test_reload_contract_no_size_mismatch).
+    # save grava os 3 arquivos e o meta com input/output_dim; tiny_model é stand-in, não o real.
     import pathlib
 
     store = ModelVersionFiles(tmp_path / "data")
@@ -95,7 +87,7 @@ def test_save_writes_blob_and_sidecars(tmp_path, tiny_model, tiny_vocab, tiny_co
         assert meta[key] == tiny_config[key]
     assert meta["node_count"] == tiny_vocab["node_count"]
     assert meta["path_count"] == tiny_vocab["path_count"]
-    # input_dim/output_dim derivados do objeto vivo — o CodeDKTModel real tem input_dim != output_dim.
+    # input_dim/output_dim derivados do objeto vivo, no CodeDKTModel real input_dim != output_dim.
     assert meta["input_dim"] == tiny_model.input_dim
     assert meta["output_dim"] == tiny_model.fc.out_features == meta["n_problems"]
 
@@ -106,9 +98,7 @@ def test_save_writes_blob_and_sidecars(tmp_path, tiny_model, tiny_vocab, tiny_co
 
 
 def test_version_monotonic_per_scope(tmp_db, data_root, tiny_model, tiny_vocab, tiny_config):
-    # 3 versões para o mesmo (turma, assignment) geram v1, v2, v3; um SEGUNDO assignment
-    # recomeça em v1 (escopo por turma×assignment). O número é MAX+1 calculado na MESMA
-    # transação do insert; UNIQUE(assignment_id, version_number) é a rede.
+    # 3 versões do mesmo assignment geram v1,v2,v3; outro assignment recomeça em v1 (escopo turma).
     conn = tmp_db
     classroom_id, assignment_a = _seed_turma_assignment(conn)
     assignment_b = _add_assignment(conn, classroom_id, "A2")
@@ -119,7 +109,7 @@ def test_version_monotonic_per_scope(tmp_db, data_root, tiny_model, tiny_vocab, 
     ]
     assert [v["version_number"] for v in versions_a] == [1, 2, 3]
 
-    # segundo assignment recomeça em v1 — escopo por (turma, assignment).
+    # segundo assignment recomeça em v1, escopo por (turma, assignment).
     version_b = _save(conn, classroom_id, assignment_b, tiny_model, tiny_vocab, tiny_config)
     assert version_b["version_number"] == 1
 
@@ -132,8 +122,7 @@ def test_version_monotonic_per_scope(tmp_db, data_root, tiny_model, tiny_vocab, 
 
 
 def test_write_once_refuses_overwrite(tmp_path, tiny_model, tiny_vocab, tiny_config):
-    # Re-gravar uma versão cujo diretório já existe FALHA (mkdir sem exist_ok) — D-05/D-06;
-    # nenhum byte do v<N> anterior é alterado.
+    # Re-gravar uma versão existente falha (mkdir sem exist_ok); nenhum byte do v<N> é alterado.
     store = ModelVersionFiles(tmp_path / "data")
     first = store.write(
         assignment_id=1, version_number=1,
@@ -147,14 +136,13 @@ def test_write_once_refuses_overwrite(tmp_path, tiny_model, tiny_vocab, tiny_con
             model=tiny_model, vocab=tiny_vocab, config=tiny_config,
         )
 
-    # write-once: o blob anterior segue intacto após a tentativa recusada.
+    # write-once, o blob anterior segue intacto após a tentativa recusada.
     weights_after = (__import__("pathlib").Path(first["dir"]) / "model.pt").read_bytes()
     assert weights_after == weights_before
 
 
 def test_content_hash_stable_and_dedup(tmp_path, tiny_model, tiny_vocab, tiny_config):
-    # Dois saves dos MESMOS bytes produzem o mesmo content_hash; a detecção de duplicata
-    # NÃO bloqueia a nova versão (version_number ainda avança — D-05 mantém histórico).
+    # Dois saves iguais produzem o mesmo content_hash; a duplicata não bloqueia a nova versão.
     store = ModelVersionFiles(tmp_path / "data")
     h1 = store.write(
         assignment_id=1, version_number=1,
@@ -171,12 +159,10 @@ def test_content_hash_stable_and_dedup(tmp_path, tiny_model, tiny_vocab, tiny_co
 
 
 def test_reload_contract_no_size_mismatch(tmp_path):
-    # Reconstruir um CodeDKTModel real via meta.json (todos os args de construção) e
-    # load_state_dict NÃO levanta RuntimeError de shape. Usa o modelo de verdade,
-    # não o tiny_model, para exercitar o contrato completo de reconstrução.
+    # Reconstrói um CodeDKTModel real via meta.json e load_state_dict sem RuntimeError de shape.
     from ml.code_dkt.model import CodeDKTModel
 
-    # CodeDKTModel real: input_dim=2M, output_dim=M — distintos.
+    # CodeDKTModel real, input_dim=2M e output_dim=M, distintos.
     M = 2  # n_problems = M; input_dim = 2M
     model = CodeDKTModel(
         input_dim=2 * M,
@@ -210,18 +196,13 @@ def test_reload_contract_no_size_mismatch(tmp_path):
 def test_persist_failure_does_not_block_next_version(
     tmp_db, data_root, tiny_model, tiny_vocab, tiny_config
 ):
-    # se o INSERT falha DEPOIS do blob escrito, o ROLLBACK limpa o banco mas o
-    # diretório v<N> não pode ficar órfão — senão a próxima persist() recalcula o mesmo
-    # N e save_version() bate em FileExistsError, bloqueando o slot permanentemente.
+    # Se o INSERT falha após o blob escrito, o v<N> não pode ficar órfão (senão o save falha depois)
     import pathlib
 
     conn = tmp_db
     classroom_id, assignment_id = _seed_turma_assignment(conn)
 
-    # sqlite3.Connection.execute é read-only (objeto C) — então embrulhamos a conn num proxy
-    # que delega tudo à conn real e intercepta só o INSERT do model_artifact, falhando uma
-    # única vez (deixa BEGIN/SELECT/ROLLBACK/COMMIT passarem). persist() recebe conn por
-    # parâmetro, então o proxy chega lá no lugar da conexão real.
+    # Connection.execute é read-only (objeto C); um proxy intercepta só o INSERT do model_artifact.
     class _FailOnceInsertProxy:
         def __init__(self, real):
             self._real = real
@@ -242,14 +223,11 @@ def test_persist_failure_does_not_block_next_version(
     with pytest.raises(sqlite3.OperationalError):
         _save(proxy, classroom_id, assignment_id, tiny_model, tiny_vocab, tiny_config)
 
-    # (b) nenhum diretório v1 órfão sobra no FS (rmtree desfez o blob do passo 1).
-    # Layout pós-B5: <base>/<assignment_id>/v<N>. Antes esta linha apontava para o caminho
-    # aninhado antigo e passava por vacuidade — checava um diretório que nunca existiria.
+    # (b) nenhum v1 órfão sobra no FS (rmtree desfez o blob); layout é <base>/<assignment_id>/v<N>.
     v1 = data_root / "turma-a" / "models" / str(assignment_id) / "v1"
     assert not v1.exists()
 
-    # (c) a 2ª persist() (execute já restaurado) SUCEDE e devolve version_number == 1 — o slot
-    # foi liberado, não ficou travado por dir órfão.
+    # (c) a 2ª persist() sucede e devolve version_number==1, o slot foi liberado, não travado.
     result = _save(conn, classroom_id, assignment_id, tiny_model, tiny_vocab, tiny_config)
     assert result["version_number"] == 1
 
@@ -273,18 +251,14 @@ def test_path_stays_under_base(tmp_path, tiny_model, tiny_vocab, tiny_config):
 
 
 def test_load_version_refuses_dir_outside_base(tmp_path):
-    # load_version desserializa vocab.pkl com pickle IRRESTRITO. Se o artifact_dir
-    # (DB-owned) for adulterado para fora de base, um vocab.pkl atacante seria executado (RCE).
-    # A guarda resolve-depois-confere deve recusar o diretório fora da árvore ANTES de abrir o
-    # .pkl — provamos que o pickle malicioso NUNCA é carregado.
+    # vocab.pkl usa pickle irrestrito; sem a guarda, um artifact_dir adulterado rodaria RCE.
     import pathlib
 
     base = tmp_path / "data"
     base.mkdir()
     store = ModelVersionFiles(base)
 
-    # Diretório de artefato FORA de base, com um vocab.pkl cujo unpickle tem efeito colateral
-    # observável (escreve um arquivo-sentinela) — o equivalente benigno de uma RCE.
+    # Diretório fora de base, com vocab.pkl cujo unpickle grava um sentinela (RCE benigna)
     evil_dir = tmp_path / "evil"
     evil_dir.mkdir()
     sentinel = tmp_path / "PWNED"
@@ -300,7 +274,7 @@ def test_load_version_refuses_dir_outside_base(tmp_path):
     with pytest.raises(ValueError, match="fora da raiz"):
         store.read(str(evil_dir))
 
-    # O efeito colateral do pickle NÃO ocorreu: a guarda barrou antes de qualquer pickle.load.
+    # O efeito colateral do pickle não ocorreu, a guarda barrou antes de qualquer pickle.load.
     assert not sentinel.exists()
 
 
@@ -308,12 +282,7 @@ def test_load_version_refuses_dir_outside_base(tmp_path):
 
 
 def test_version_dir_has_no_repeated_models_segment(tmp_db, data_root, tiny_model, tiny_vocab, tiny_config):
-    """A raiz era passada de dois jeitos: train.py com `.../models` no fim e mastery_service
-    com DATA_ROOT cru. Como _version_dir também acrescentava "models", o caminho real virava
-    `data/<turma>/models/1/1/models/v1` (999.1) — e a guarda de traversal que protege o
-    `pickle.load` do vocab.pkl valia sobre a árvore `data/` inteira no caminho de leitura,
-    inclusive sobre `data/<turma>/raw/`, onde aterrissa o conteúdo do zip do professor.
-    """
+    # A raiz duplicava "models"; a guarda de traversal acabava valendo também sobre data/<turma>/raw
     classroom_id, assignment_id = _seed_turma_assignment(tmp_db)
 
     persisted = _save(tmp_db, classroom_id, assignment_id, tiny_model, tiny_vocab, tiny_config)
@@ -324,13 +293,7 @@ def test_version_dir_has_no_repeated_models_segment(tmp_db, data_root, tiny_mode
 
 
 def test_reader_and_writer_agree_on_the_root(tmp_path):
-    """O leitor tem de confinar sob a MESMA raiz do escritor.
-
-    mastery_service abria o store em DATA_ROOT enquanto train.py escrevia em
-    DATA_ROOT/<turma>/models. Como load_version desserializa o vocab.pkl com pickle IRRESTRITO,
-    a guarda passava a valer sobre a árvore data/ inteira — inclusive data/<turma>/raw/, que é
-    onde o conteúdo do zip do professor é extraído.
-    """
+    # Leitor e escritor devem confinar sob a mesma raiz (senão a guarda vale sobre data/ inteiro).
     from ml.code_dkt.model import CodeDKTModel
 
     M = 2
@@ -347,12 +310,11 @@ def test_reader_and_writer_agree_on_the_root(tmp_path):
         assignment_id=1, version_number=1, model=model, vocab=vocab, config=config
     )
 
-    # Mesma raiz: aceita.
+    # Mesma raiz, aceita.
     _loaded, reloaded_vocab, _meta = ModelVersionFiles(base).read(written["dir"])
     assert reloaded_vocab == vocab
 
-    # Raiz LARGA (o defeito): um artifact_dir apontando para dentro de raw/ passaria pela
-    # guarda. Provamos que a raiz certa o recusa.
+    # Raiz larga (o defeito) deixaria artifact_dir dentro de raw/ passar pela guarda; a certa recusa
     raw_dir = data_root / "turma-x" / "raw" / "forjado"
     raw_dir.mkdir(parents=True)
     with pytest.raises(ValueError, match="fora da raiz"):
