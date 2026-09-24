@@ -1,10 +1,4 @@
-"""O subprocess da geração de KCs: `python -m api.knowledge_components.presentation.workers.kc_generation_worker`.
-
-Pega a trava de job como PRIMEIRO ato (a geração nunca concorre com um treino) e roda o use case.
-Qualquer falha (conteúdo vazio do LLM, problema sem KC, erro de transporte) marca o job como
-failed, e nada parcial é gravado.
-"""
-
+# Subprocess da geração de KCs, pega a trava de job como primeiro ato e roda o use case.
 from __future__ import annotations
 
 import sqlite3
@@ -21,7 +15,7 @@ from api.shared.infrastructure.implementations.background_jobs import run_under_
 
 
 def run_kc_generation(conn: sqlite3.Connection, assignment_id: int, job_id: int, llm=None) -> dict | None:
-    """Roda a geração sob a trava. Devolve o resumo no sucesso, ou None na falha."""
+    # Roda a geração sob a trava, devolve o resumo no sucesso ou None na falha.
     use_case = build_run_kc_generation_use_case(conn, llm=llm)
     return run_under_lock(
         conn,

@@ -1,5 +1,4 @@
-"""QMatrixBinding: uma linha da Q-matrix, "o problema P exige o KC K"."""
-
+# QMatrixBinding, uma linha da Q-matrix, "o problema P exige o KC K".
 from __future__ import annotations
 
 from dataclasses import dataclass

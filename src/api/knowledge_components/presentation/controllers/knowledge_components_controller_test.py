@@ -1,11 +1,4 @@
-"""As rotas de /knowledge-components: disparo e progresso da geração, edição e aprovação da Q-matrix.
-
-`_FakePopen` captura os argumentos do disparo sem criar processo (a geração real nunca roda aqui) e
-confere o list-form `python -m <worker> --assignment .. --job-id ..`, sem shell. Cobre a edição
-(renomear, adicionar, remover, fundir com união dos vínculos), a guarda "nenhum problema sem KC"
-que desfaz a edição, a aprovação e a volta a rascunho quando se edita uma Q-matrix aprovada.
-"""
-
+# Rotas de /knowledge-components, disparo/progresso da geração, edição e aprovação da Q-matrix.
 from __future__ import annotations
 
 import subprocess
@@ -64,16 +57,15 @@ def _bind(conn, assignment_id, kc_id, problem_id) -> None:
     )
 
 
+# Captura os args do dispatch sem spawnar processo, KC-gen real nunca roda.
 class _FakePopen:
-    """Captura os args do dispatch sem spawnar processo (KC-gen real nunca roda)."""
-
     calls: list[list[str]] = []
 
     def __init__(self, args, *a, **kw):
         type(self).calls.append(args)
 
 
-# --- dispatch + poll (espelha test_api_training) ----------------------------------
+# --- dispatch e poll ----------------------------------
 
 
 def test_generate_dispatches_list_form_and_returns_job_id(api_client, monkeypatch):
@@ -126,7 +118,7 @@ def test_poll_missing_job_404(api_client):
     assert client.get("/knowledge-components/generation-jobs/9999").status_code == 404
 
 
-# --- edição da Q-matrix ---------------------------------------------
+# --- edição da Q-matrix ---
 
 
 def test_rename_kc_updates_name(api_client, monkeypatch):
@@ -152,7 +144,7 @@ def test_merge_unions_bindings(api_client):
     resp = client.post("/knowledge-components/merge", json={"assignment_id": aid, "keep_kc_id": keep, "drop_kc_id": drop})
     assert resp.status_code == 200
 
-    # União: keep agora cobre os problemas 1 e 2; drop sumiu.
+    # União, keep agora cobre os problemas 1 e 2; drop sumiu.
     problems = {
         r["problem_id"]
         for r in conn.execute(
@@ -173,7 +165,7 @@ def test_remove_that_empties_a_problem_is_blocked(api_client):
     resp = client.delete(f"/knowledge-components/{only_kc}")
     assert resp.status_code >= 400  # rejeitado
 
-    # ROLLBACK: o KC e seu binding continuam intactos.
+    # ROLLBACK, o KC e seu binding continuam intactos.
     assert SqliteKnowledgeComponentRepository(conn).get(only_kc) is not None
     assert conn.execute("SELECT COUNT(*) FROM qmatrix WHERE kc_id=?;", (only_kc,)).fetchone()[0] == 1
 
@@ -185,7 +177,7 @@ def test_merge_rejects_cross_assignment_kc(api_client):
     aid_b = _seed_assignment(conn, status="kc_draft")
     keep = _seed_kc(conn, aid_a, "keep")
     _bind(conn, aid_a, keep, problem_id=1)
-    # KC de OUTRO assignment — não pode ser tocado por um merge sobre aid_a.
+    # KC de OUTRO assignment, não pode ser tocado por um merge sobre aid_a.
     foreign = _seed_kc(conn, aid_b, "foreign")
     _bind(conn, aid_b, foreign, problem_id=1)
 
@@ -194,7 +186,7 @@ def test_merge_rejects_cross_assignment_kc(api_client):
     )
     assert resp.status_code in (403, 409)
 
-    # O KC alheio (e seu binding) seguem intactos — nenhuma FK pendurada.
+    # O KC alheio (e seu binding) seguem intactos, nenhuma FK pendurada.
     assert SqliteKnowledgeComponentRepository(conn).get(foreign) is not None
     assert (
         conn.execute("SELECT COUNT(*) FROM qmatrix WHERE kc_id=?;", (foreign,)).fetchone()[0] == 1
@@ -229,7 +221,7 @@ def test_merge_self_merge_rejected(api_client):
     assert SqliteKnowledgeComponentRepository(conn).get(kc_id) is not None  # não se autodeletou
 
 
-# --- gate de aprovação ----------------------------------------------
+# --- gate de aprovação ---
 
 
 def test_approve_sets_kc_approved(api_client):
@@ -245,14 +237,13 @@ def test_approve_sets_kc_approved(api_client):
 
 
 def test_approve_rejects_non_draft_assignment(api_client):
-    # aprovar um assignment que nem gerou KCs burlaria a revisão do professor →
-    # dispatch_training rodaria sobre uma Q-matrix inexistente. Deve ser rejeitado (409).
+    # Aprovar sem gerar KCs burlaria a revisão e treinaria sobre Q-matrix inexistente, é 409.
     client, conn = api_client
     aid = _seed_assignment(conn, status="ready_for_kc_generation")
 
     resp = client.post("/knowledge-components/approve-qmatrix", json={"assignment_id": aid})
     assert resp.status_code == 409
-    assert SqliteAssignmentRepository(conn).get(aid).status == "ready_for_kc_generation"  # não avançou
+    assert SqliteAssignmentRepository(conn).get(aid).status == "ready_for_kc_generation"  # parado
 
 
 def test_approve_rejects_draft_without_kcs(api_client):

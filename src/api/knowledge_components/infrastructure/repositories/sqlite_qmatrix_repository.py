@@ -1,4 +1,4 @@
-"""IQMatrixRepository sobre SQLite. Nenhum método abre transação: roda na IUnitOfWork de quem chama."""
+# IQMatrixRepository sobre SQLite. Nenhum método abre transação, roda na IUnitOfWork de quem chama.
 
 from __future__ import annotations
 
@@ -35,7 +35,7 @@ class SqliteQMatrixRepository:
         return [_to_entity(r) for r in rows]
 
     def bind_problems(self, assignment_id: int, kc_id: int, problem_ids: list[int]) -> None:
-        # OR IGNORE: o UNIQUE (assignment, kc, problema) da 0006 descarta o vínculo que já existe.
+        # OR IGNORE, o UNIQUE (assignment, kc, problema) da 0006 descarta vínculo já existente.
         for problem_id in problem_ids:
             self._conn.execute(
                 "INSERT OR IGNORE INTO qmatrix (assignment_id, kc_id, problem_id) "
@@ -44,8 +44,7 @@ class SqliteQMatrixRepository:
             )
 
     def move_bindings(self, assignment_id: int, from_kc_id: int, to_kc_id: int) -> None:
-        # União: cada vínculo de from_kc vira de to_kc (o UPDATE OR IGNORE descarta o par que
-        # to_kc já tinha), e depois somem os que sobraram em from_kc.
+        # União, cada vínculo de from_kc vira de to_kc, UPDATE OR IGNORE descarta o par repetido.
         self._conn.execute(
             "UPDATE OR IGNORE qmatrix SET kc_id = ? WHERE kc_id = ? AND assignment_id = ?;",
             (to_kc_id, from_kc_id, assignment_id),

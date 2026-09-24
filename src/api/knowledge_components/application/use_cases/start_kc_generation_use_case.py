@@ -1,5 +1,4 @@
-"""Dispara a geração de KCs em background e devolve o job na hora (o KCGen-KT leva minutos)."""
-
+# Dispara a geração de KCs em background e devolve o job na hora (o KCGen-KT leva minutos).
 from __future__ import annotations
 
 from api.assignments.domain.entities.assignment_entity import AssignmentStatus
@@ -48,7 +47,7 @@ class StartKnowledgeComponentGenerationUseCase(WriteUseCase):
         ]
 
     def _run(self, dto: StartKnowledgeComponentGenerationDTO) -> StartedJobDTO:
-        # Fora das regras de propósito: é corrida, não defeito do pedido (ver AnotherJobRunning).
+        # Fica fora das regras de propósito, é corrida e não defeito do pedido, raise direto.
         if self._job_lock.is_another_job_running():
             raise AnotherJobRunning("já existe um job em andamento; aguarde a conclusão")
         job_id = self._jobs.add(

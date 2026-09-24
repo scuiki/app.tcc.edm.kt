@@ -1,9 +1,4 @@
-"""O corpo do worker de geração de KCs: gera, valida tudo, e só então grava tudo junto.
-
-Roda no subprocess, sob a trava de job (quem a pega é o worker). O retorno se perde com o
-subprocess: o que sobrevive é o que fica gravado nas linhas do job, dos KCs e da Q-matrix.
-"""
-
+# Corpo do worker de geração de KCs, gera, valida tudo e só então grava tudo junto.
 from __future__ import annotations
 
 from api.assignments.domain.entities.assignment_entity import AssignmentStatus
@@ -64,8 +59,7 @@ class RunKnowledgeComponentGenerationUseCase:
             progsnap_id,
             on_stage=lambda stage: self._jobs.update_stage(job_id, stage, utc_now_iso()),
         )
-        # Validar tudo, depois gravar: um problema sem KC reprova a Q-matrix inteira, antes de
-        # abrir a transação. O job falha e nada parcial é gravado.
+        # Valida tudo antes de abrir a transação, problema sem KC reprova a Q-matrix inteira.
         generated.ensure_every_problem_has_a_kc()
 
         with self._unit_of_work:
@@ -90,8 +84,7 @@ class RunKnowledgeComponentGenerationUseCase:
                             problem_id=problem_id,
                         )
                     )
-            # O status e a conclusão do job na MESMA transação dos KCs: nunca um assignment em
-            # kc_draft com o job marcado como failed.
+            # Status do assignment e job na mesma transação, evita kc_draft com job marcado failed.
             self._assignments.set_status(assignment_id, AssignmentStatus.KC_DRAFT)
             self._jobs.mark_done(job_id, updated_at=utc_now_iso())
 

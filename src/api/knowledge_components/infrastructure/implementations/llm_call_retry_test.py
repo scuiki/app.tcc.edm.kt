@@ -1,7 +1,4 @@
-"""call_with_retry: repete só o erro transiente (rede, 429, 5xx), com backoff e um teto de
-tentativas; o conteúdo vazio é falha dura e sobe na hora. O sleep do backoff é substituído.
-"""
-
+# call_with_retry repete só o erro transiente, com backoff e teto; conteúdo vazio sobe na hora.
 from __future__ import annotations
 
 import pytest
@@ -47,14 +44,13 @@ def test_transient_then_success(monkeypatch):
 
 
 def test_retries_below_one_raises_value_error():
-    # retries=0 → range(0) vazio, last_exc fica None, e `raise None` daria TypeError opaco.
-    # Guard explícito: ValueError claro antes de tentar.
+    # retries=0 daria range(0) vazio e `raise None` (TypeError opaco), guard dá ValueError claro.
     with pytest.raises(ValueError):
         call_with_retry(lambda: {"kcs": [{"name": "x"}]}, retries=0)
 
 
 def test_empty_content_is_not_retried(monkeypatch):
-    # Conteúdo-vazio NÃO é transiente: re-chamar não ajuda → propaga sem retry inútil.
+    # Conteúdo vazio não é transiente, re-chamar não ajuda, propaga sem retry inútil.
     calls = {"n": 0}
 
     def _empty():

@@ -1,9 +1,4 @@
-"""O que a geração de KCs precisa de fora: o KCGen-KT, que chama o LLM e o ml/.
-
-A implementação fica na infraestrutura. Aqui ficam a forma do resultado e a checagem que decide se
-ele pode ser gravado.
-"""
-
+# O que a geração de KCs precisa de fora, o KCGen-KT, que chama o LLM e o ml/.
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -15,8 +10,9 @@ from api.assignments.domain.value_objects.classroom_slug import ClassroomSlug
 from api.assignments.domain.value_objects.progsnap_assignment_id import ProgSnapAssignmentId
 
 
+# A Q-matrix gerada deixou algum problema sem KC, o job falha e nada é gravado.
 class ProblemWithoutKnowledgeComponent(ValueError):
-    """A Q-matrix gerada deixou algum problema sem KC: o job falha e nada é gravado."""
+    pass
 
 
 @dataclass(frozen=True)
@@ -26,7 +22,7 @@ class GeneratedKnowledgeComponents:
     groups_by_problem: dict[int, list[int]]  # problem_id -> os group_index que ele exige
 
     def ensure_every_problem_has_a_kc(self) -> None:
-        """Validar tudo, depois gravar: uma linha toda zerada reprova a Q-matrix inteira."""
+        # Valida tudo antes de gravar, uma linha toda zerada reprova a Q-matrix inteira.
         if not self.problem_ids:
             raise ProblemWithoutKnowledgeComponent(
                 "Q-matrix vazia: nenhum problema correto gerou KCs"
@@ -44,5 +40,5 @@ class IKnowledgeComponentGenerator(Protocol):
         progsnap_assignment_id: ProgSnapAssignmentId,
         on_stage: Callable[[str], None],
     ) -> GeneratedKnowledgeComponents:
-        """Roda o KCGen-KT sobre o dado limpo; `on_stage` recebe cada etapa nomeada."""
+        # Roda o KCGen-KT sobre o dado limpo, `on_stage` recebe cada etapa nomeada.
         ...

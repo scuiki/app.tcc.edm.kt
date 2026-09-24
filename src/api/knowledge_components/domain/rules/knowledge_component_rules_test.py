@@ -1,5 +1,4 @@
-"""As regras de edição e aprovação da Q-matrix, com repositórios em memória."""
-
+# Regras de edição e aprovação da Q-matrix, com repositórios em memória.
 from __future__ import annotations
 
 from types import SimpleNamespace

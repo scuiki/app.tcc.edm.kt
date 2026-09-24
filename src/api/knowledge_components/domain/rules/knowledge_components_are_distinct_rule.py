@@ -1,5 +1,4 @@
-"""Regra: fundir um KC com ele mesmo não faz sentido; recusa explícita em vez de depender do rollback."""
-
+# Fundir um KC com ele mesmo não faz sentido, recusa explícita em vez de depender do rollback.
 from __future__ import annotations
 
 from typing import Any

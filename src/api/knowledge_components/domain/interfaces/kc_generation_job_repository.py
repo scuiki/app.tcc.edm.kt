@@ -1,5 +1,4 @@
-"""A interface de persistência dos jobs de geração de KCs: a ponte entre o web e o subprocess."""
-
+# Interface de persistência dos jobs de geração de KCs, a ponte entre o web e o subprocess.
 from __future__ import annotations
 
 from typing import Protocol

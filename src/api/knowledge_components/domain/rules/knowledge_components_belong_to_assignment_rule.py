@@ -1,10 +1,4 @@
-"""Regra: os dois KCs de uma fusão pertencem ao assignment do pedido.
-
-É autorização: sem ela, apagar o KC fundido apagaria um KC de OUTRO assignment (o DELETE não
-filtra por assignment), deixando vínculo pendurado na Q-matrix alheia. A inexistência de um KC é
-NotFound, levantado antes pelo use case; aqui não é regra violada.
-"""
-
+# Os dois KCs de uma fusão pertencem ao assignment do pedido, é regra de autorização.
 from __future__ import annotations
 
 from typing import Any

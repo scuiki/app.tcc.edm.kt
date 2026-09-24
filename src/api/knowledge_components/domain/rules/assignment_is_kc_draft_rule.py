@@ -1,9 +1,4 @@
-"""Regra: só se aprova um rascunho de fato.
-
-Aprovar fora de kc_draft deixaria o treino rodar sobre uma Q-matrix inexistente, burlando a
-revisão do professor. A inexistência do assignment é NotFound, levantado antes pelo use case.
-"""
-
+# Só se aprova um rascunho de fato, evita treinar sobre uma Q-matrix inexistente.
 from __future__ import annotations
 
 from typing import Any

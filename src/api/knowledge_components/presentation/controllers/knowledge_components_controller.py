@@ -1,9 +1,4 @@
-"""As rotas de /knowledge-components: HTTP puro. Recebe, delega ao use case, devolve.
-
-A geração roda em background (202 + job); as edições da Q-matrix são síncronas, cada uma numa
-transação. As recusas viram 404/409 em shared/presentation/http/error_handlers.py.
-"""
-
+# Rotas de /knowledge-components, HTTP puro, recebe, delega ao use case, devolve.
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends

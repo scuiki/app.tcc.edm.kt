@@ -1,5 +1,4 @@
-"""O professor aprova a Q-matrix que o LLM rascunhou. É o ÚNICO caminho que libera o treino."""
-
+# O professor aprova a Q-matrix que o LLM rascunhou, é o único caminho que libera o treino.
 from __future__ import annotations
 
 from api.assignments.domain.entities.assignment_entity import AssignmentStatus
@@ -41,7 +40,7 @@ class ApproveQMatrixUseCase(WriteUseCase):
         ]
 
     def execute(self, dto: ApproveQMatrixDTO) -> ApprovedQMatrixDTO:
-        # A inexistência é 404 e não entra no acúmulo: sem alvo, não há regra a aplicar.
+        # A inexistência é 404 e não entra no acúmulo, sem alvo não há regra a aplicar.
         get_existing_assignment(self._assignments, dto.assignment_id)
         return super().execute(dto)
 

@@ -1,5 +1,4 @@
-"""O professor funde dois KCs: os problemas de drop_kc_id passam para keep_kc_id e drop some."""
-
+# O professor funde dois KCs, os problemas de drop_kc_id passam para keep_kc_id e drop some.
 from __future__ import annotations
 
 from api.assignments.domain.interfaces.assignment_repository import IAssignmentRepository
@@ -47,8 +46,7 @@ class MergeKnowledgeComponentsUseCase(WriteUseCase):
         ]
 
     def execute(self, dto: MergeKnowledgeComponentsDTO) -> MergedKnowledgeComponentsDTO:
-        # A fusão consigo mesmo é recusada ANTES do 404: um mesmo id inexistente devolve 409, não
-        # 404. Status code é contrato.
+        # Fusão consigo mesmo é 409 mesmo com id inexistente, checa antes do 404 de propósito.
         if dto.keep_kc_id != dto.drop_kc_id and (
             self._knowledge_components.get(dto.keep_kc_id) is None
             or self._knowledge_components.get(dto.drop_kc_id) is None
@@ -57,7 +55,7 @@ class MergeKnowledgeComponentsUseCase(WriteUseCase):
         return super().execute(dto)
 
     def _run(self, dto: MergeKnowledgeComponentsDTO) -> MergedKnowledgeComponentsDTO:
-        # A fusão é a união dos vínculos: só os problemas de drop_kc_id podem ficar sem KC.
+        # A fusão é a união dos vínculos, só os problemas de drop_kc_id podem ficar sem KC.
         affected_problems = self._qmatrix.problems_of(dto.drop_kc_id)
         with self._unit_of_work:
             self._qmatrix.move_bindings(dto.assignment_id, dto.drop_kc_id, dto.keep_kc_id)

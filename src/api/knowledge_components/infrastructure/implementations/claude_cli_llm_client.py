@@ -1,11 +1,4 @@
-"""O LLM pela assinatura: o binário `claude` em modo print (`-p`), nunca o SDK `anthropic`.
-
-`call_claude` roda `claude -p` em list-form (sem shell), restringe a saída com `--json-schema`,
-desliga todo tool e lê `structured_output` do envelope. A autenticação é a credencial OAuth da
-assinatura, que o próprio CLI resolve. A classificação das falhas (transiente contra conteúdo) e o
-retry ficam em llm_call_retry.py.
-"""
-
+# O LLM pela assinatura, o binário `claude` em modo print (`-p`), nunca o SDK `anthropic`.
 from __future__ import annotations
 
 import json
@@ -18,21 +11,17 @@ from api.knowledge_components.infrastructure.implementations.llm_call_retry impo
     TransientLLMError,
 )
 
-# Tarefa de texto pura: sem nenhum tool o LLM não faz I/O (não vaza arquivo/credencial) nem infla
-# latência — fecha também a injeção de prompt via código de aluno.
+# Sem tool nenhum o LLM não faz I/O, o que também fecha a injeção de prompt via código de aluno.
 DISALLOWED_TOOLS = "Bash,Read,Edit,Write,WebSearch,WebFetch,Glob,Grep"
 
 
 def _neutral_cwd() -> str:
-    # `claude` carrega o CLAUDE.md do cwd no contexto; rodar dentro do repo inflaria cada chamada
-    # com o nosso CLAUDE.md inteiro. EDMKT_KC_CWD permite fixar um dir neutro no deploy;
-    # default = tempdir do SO, sem CLAUDE.md.
+    # EDMKT_KC_CWD fixa um dir neutro para não carregar o CLAUDE.md do repo em cada chamada.
     return os.environ.get("EDMKT_KC_CWD") or tempfile.gettempdir()
 
 
 def _parse_json_from_text(text: str) -> dict:
-    # Fallback defensivo SÓ quando structured_output vem ausente: extrai o JSON de uma cerca
-    # markdown (```json ... ```) ou do primeiro objeto {...} no texto cru.
+    # Fallback só quando structured_output vem ausente, extrai o JSON da cerca markdown ou o cru.
     if not text:
         raise EmptyContentError("envelope sem structured_output e result vazio")
     fence = "```json"
@@ -56,14 +45,7 @@ def call_claude(
     model: str,
     timeout_s: int = 120,
 ) -> dict:
-    """Chama `claude -p` uma vez e devolve a saída estruturada validada por schema.
-
-    `model` é obrigatório: o pin científico é de quem chama (kc_pipeline/settings.MODEL_ID),
-    não deste transporte.
-
-    Levanta TransientLLMError em exit≠0 / is_error / subtype≠success (retentável); o conteúdo
-    vazio/malformado vira EmptyContentError (falha-dura, NÃO retentável).
-    """
+    # `model` vem de quem chama, o pin científico é dele, este transporte não escolhe modelo.
     argv = [
         "claude",
         "-p",
@@ -72,7 +54,7 @@ def call_claude(
         "json",
         "--model",
         model,
-        "--system-prompt",  # substitui o prompt default; nunca o modo bare (exigiria ANTHROPIC_API_KEY)
+        "--system-prompt",  # substitui o prompt default; nunca bare, que exigiria ANTHROPIC_API_KEY
         system,
         "--json-schema",
         json.dumps(schema),
@@ -80,7 +62,7 @@ def call_claude(
         DISALLOWED_TOOLS,
     ]
     try:
-        # list-form, sem shell: fecha command injection.
+        # list-form, sem shell, fecha command injection.
         proc = subprocess.run(
             argv,
             capture_output=True,
@@ -108,13 +90,8 @@ def call_claude(
     return out
 
 
+# LLMClient (interface do ml/kc_generation) sobre `claude -p`, injeção troca o transporte.
 class ClaudeCliLLMClient:
-    """LLMClient (a interface do ml/kc_generation) sobre `claude -p`.
-
-    O core puro recebe um LLMClient injetado e nunca toca subprocess/anthropic; trocar o
-    transporte (ex.: mock nos testes) é trocar a instância.
-    """
-
     def __init__(self, model: str, timeout_s: int = 120) -> None:
         self._model = model
         self._timeout_s = timeout_s

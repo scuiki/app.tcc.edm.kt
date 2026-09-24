@@ -1,5 +1,4 @@
-"""IKnowledgeComponentRepository sobre SQLite (tabela `kc`). Todo SQL é parametrizado."""
-
+# IKnowledgeComponentRepository sobre SQLite (tabela `kc`). Todo SQL é parametrizado.
 from __future__ import annotations
 
 import sqlite3
@@ -45,7 +44,7 @@ class SqliteKnowledgeComponentRepository:
         return [_to_entity(r) for r in rows]
 
     def rename(self, kc_id: int, name: str) -> None:
-        # O nome é dado do professor: parametrizado, nunca interpolado.
+        # Nome vem do professor, parametrizado, nunca interpolado.
         self._conn.execute("UPDATE kc SET name = ? WHERE id = ?;", (name, kc_id))
 
     def delete(self, kc_id: int) -> None:

@@ -1,5 +1,4 @@
-"""O professor adiciona um KC, já ligado aos problemas que escolher."""
-
+# O professor adiciona um KC, já ligado aos problemas que escolher.
 from __future__ import annotations
 
 from api.assignments.domain.interfaces.assignment_repository import IAssignmentRepository
@@ -32,12 +31,11 @@ class AddKnowledgeComponentUseCase(WriteUseCase):
 
     def _run(self, dto: AddKnowledgeComponentDTO) -> KnowledgeComponentDTO:
         with self._unit_of_work:
-            # Um KC do professor não veio de um grupo do KCGen-KT: group_index fica vazio.
+            # Um KC do professor não veio de um grupo do KCGen-KT, group_index fica vazio.
             kc_id = self._knowledge_components.add(
                 KnowledgeComponent(id=None, assignment_id=dto.assignment_id, name=dto.name)
             )
             self._qmatrix.bind_problems(dto.assignment_id, kc_id, dto.problem_ids)
-            # Adicionar só aumenta a cobertura, então nenhum problema pode ficar sem KC; mas a
-            # edição ainda devolve uma Q-matrix aprovada a rascunho.
+            # Toda edição volta a Q-matrix aprovada para rascunho, mesmo esta que só cobre mais.
             revert_approval_after_edit(self._assignments, dto.assignment_id)
         return KnowledgeComponentDTO(id=kc_id, name=dto.name)

@@ -1,5 +1,4 @@
-"""Os repositórios SQLite de KCs, da Q-matrix e dos jobs de geração: ida e volta e transições."""
-
+# Repositórios SQLite de KCs, da Q-matrix e dos jobs de geração, ida e volta e transições.
 from __future__ import annotations
 
 import pytest
@@ -41,7 +40,7 @@ def test_a_kc_round_trips_with_its_group_index(tmp_db, assignment_id):
     by_teacher.id = repository.add(by_teacher)
 
     assert repository.get(generated.id) == generated
-    assert repository.get(by_teacher.id).group_index is None  # KC do professor: sem grupo
+    assert repository.get(by_teacher.id).group_index is None  # KC do professor, sem grupo
     assert repository.list_by_assignment(assignment_id) == [generated, by_teacher]
 
 

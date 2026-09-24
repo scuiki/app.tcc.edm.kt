@@ -1,5 +1,4 @@
-"""Os pedidos e as respostas das edições da Q-matrix pelo professor."""
-
+# Pedidos e respostas das edições da Q-matrix pelo professor.
 from __future__ import annotations
 
 from pydantic import BaseModel
@@ -13,9 +12,8 @@ class AddKnowledgeComponentDTO(BaseModel):
     problem_ids: list[int] = []  # os problemas que o novo KC já liga (opcional)
 
 
+# O corpo do PATCH; o kc_id vem do caminho e é juntado no controller.
 class RenameKnowledgeComponentBody(BaseModel):
-    """O corpo do PATCH; o kc_id vem do caminho e é juntado no controller."""
-
     name: str
 
 
@@ -31,7 +29,7 @@ class RemoveKnowledgeComponentDTO(BaseModel):
 class MergeKnowledgeComponentsDTO(BaseModel):
     assignment_id: int
     keep_kc_id: int  # o KC que fica
-    drop_kc_id: int  # o KC que some: seus problemas passam para keep_kc_id
+    drop_kc_id: int  # o KC que some, seus problemas passam para keep_kc_id
 
 
 class ApproveQMatrixDTO(BaseModel):
