@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from api.mastery_dashboard.domain.reinforcement_recommendation import recommend_reinforcement
+from api.mastery_dashboard.domain.services.reinforcement_recommender import recommend_reinforcement
 
 
 def test_the_weakest_kc_comes_first_with_a_text_that_names_it():

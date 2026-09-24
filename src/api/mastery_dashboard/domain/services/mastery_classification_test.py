@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import pytest
 
-from api.mastery_dashboard.domain.mastery_level import (
-    MasteryLevel,
+from api.mastery_dashboard.domain.value_objects.mastery_level import MasteryLevel
+from api.mastery_dashboard.domain.services.mastery_classification import (
     classify_mastery_level,
     find_critical_knowledge_components,
     find_students_at_risk,

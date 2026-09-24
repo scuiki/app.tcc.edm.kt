@@ -1,10 +1,10 @@
-"""StudentMasteryRepository sobre SQLite (tabela `mastery_prediction`)."""
+"""IStudentMasteryRepository sobre SQLite (tabela `mastery_prediction`)."""
 
 from __future__ import annotations
 
 import sqlite3
 
-from api.mastery_dashboard.domain.student_mastery_entity import StudentMastery
+from api.mastery_dashboard.domain.entities.student_mastery_entity import StudentMastery
 
 
 class SqliteStudentMasteryRepository:

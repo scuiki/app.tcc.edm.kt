@@ -7,13 +7,15 @@ from api.assignments.domain.services.existing_assignment import get_existing_ass
 from api.knowledge_components.domain.interfaces.knowledge_component_repository import (
     IKnowledgeComponentRepository,
 )
-from api.mastery_dashboard.application.mastery_dashboard_dto import (
+from api.mastery_dashboard.application.dtos.mastery_dashboard_dto import (
     RecommendationsResponseDTO,
     ReinforcementRecommendationDTO,
 )
-from api.mastery_dashboard.application.published_model_mastery import PublishedModelMastery
-from api.mastery_dashboard.domain.mastery_level import find_critical_knowledge_components
-from api.mastery_dashboard.domain.reinforcement_recommendation import recommend_reinforcement
+from api.mastery_dashboard.application.services.published_model_mastery import PublishedModelMastery
+from api.mastery_dashboard.domain.services.mastery_classification import (
+    find_critical_knowledge_components,
+)
+from api.mastery_dashboard.domain.services.reinforcement_recommender import recommend_reinforcement
 
 
 class GetRecommendationsUseCase:

@@ -136,6 +136,6 @@ start_training_use_case_test.py
 
 ## Jobs em background
 
-Treino e geração de KCs rodam em subprocess (`python -m api.<funcionalidade>.presentation.<…>_worker`),
+Treino e geração de KCs rodam em subprocess (`python -m api.<funcionalidade>.presentation.workers.<…>_worker`),
 serializados pelo `OneJobAtATimeLock`, uma linha no banco validada pela vida do PID do dono. O banco
 é o canal entre os processos: o estado do job vive em `training_job` / `kc_job`.

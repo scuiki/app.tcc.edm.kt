@@ -4,13 +4,13 @@ from __future__ import annotations
 
 from api.assignments.domain.interfaces.assignment_repository import IAssignmentRepository
 from api.assignments.domain.services.existing_assignment import get_existing_assignment
-from api.mastery_dashboard.application.mastery_dashboard_dto import (
+from api.mastery_dashboard.application.dtos.mastery_dashboard_dto import (
     CriticalKnowledgeComponentDTO,
     MasteryResponseDTO,
     StudentMasteryDTO,
 )
-from api.mastery_dashboard.application.published_model_mastery import PublishedModelMastery
-from api.mastery_dashboard.domain.mastery_level import (
+from api.mastery_dashboard.application.services.published_model_mastery import PublishedModelMastery
+from api.mastery_dashboard.domain.services.mastery_classification import (
     find_critical_knowledge_components,
     find_students_at_risk,
 )

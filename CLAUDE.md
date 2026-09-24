@@ -82,8 +82,9 @@ regra de dependência (verificada pelo `lint-imports`) em `docs/ARCHITECTURE.md`
 
 ### Execução de jobs
 
-Treino e geração de KCs rodam em **subprocess** (`python -m api.model_training.presentation.training_worker`), serializados por
-uma **trava global**: uma linha em `pipeline_lock` com `holder_pid`, validada por liveness de PID,
+Treino e geração de KCs rodam em **subprocess**
+(`python -m api.model_training.presentation.workers.training_worker`), serializados por uma
+**trava global**: uma linha em `pipeline_lock` com `holder_pid`, validada por liveness de PID,
 sem TTL. O banco é o canal entre os processos — o retorno do fire-and-forget se perde, o estado
 vive em `training_job` / `kc_job`.
 

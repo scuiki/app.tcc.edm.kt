@@ -25,15 +25,15 @@ from api.knowledge_components.infrastructure.repositories.sqlite_knowledge_compo
 from api.knowledge_components.infrastructure.repositories.sqlite_qmatrix_repository import (
     SqliteQMatrixRepository,
 )
-from api.mastery_dashboard.application.get_mastery_use_case import GetMasteryUseCase
-from api.mastery_dashboard.application.get_pre_training_statistics_use_case import (
+from api.mastery_dashboard.application.use_cases.get_mastery_use_case import GetMasteryUseCase
+from api.mastery_dashboard.application.use_cases.get_pre_training_statistics_use_case import (
     GetPreTrainingStatisticsUseCase,
 )
-from api.mastery_dashboard.application.get_recommendations_use_case import (
+from api.mastery_dashboard.application.use_cases.get_recommendations_use_case import (
     GetRecommendationsUseCase,
 )
-from api.mastery_dashboard.application.published_model_mastery import PublishedModelMastery
-from api.mastery_dashboard.infrastructure.sqlite_student_mastery_repository import (
+from api.mastery_dashboard.application.services.published_model_mastery import PublishedModelMastery
+from api.mastery_dashboard.infrastructure.repositories.sqlite_student_mastery_repository import (
     SqliteStudentMasteryRepository,
 )
 from api.model_training.infrastructure.implementations.ml_student_mastery_predictor import (

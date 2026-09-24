@@ -1,6 +1,7 @@
 // Per-state API response fixtures, mirroring the backend's fixture-per-state discipline in
-// src/api/mastery_dashboard/presentation/mastery_dashboard_controller_test.py. Shapes match
-// src/api/mastery_dashboard/application/mastery_dashboard_dto.py exactly (typed against schema.d.ts), so a contract drift breaks the type-check here, not at runtime.
+// src/api/mastery_dashboard/presentation/controllers/mastery_dashboard_controller_test.py.
+// Shapes match src/api/mastery_dashboard/application/dtos/mastery_dashboard_dto.py exactly
+// (typed against schema.d.ts), so a contract drift breaks the type-check here, not at runtime.
 //
 // The four states (RESEARCH Validation Architecture): trained / untrained / no-data / error. The
 // error state is exercised by the fetchJson throw path (Error("API <status>")), not a JSON body.

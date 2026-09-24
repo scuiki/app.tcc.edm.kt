@@ -3,13 +3,14 @@
 // The canonical generator is `npx openapi-typescript http://127.0.0.1:8099/openapi.json`, but the
 // FastAPI app only runs inside the Docker image (container-only isolation: the nitro host is kept
 // clean, no host venv/pip — STATE.md). With no importable uvicorn here, these types are transcribed
-// by hand DIRECTLY from the backend DTOs (e.g. src/api/mastery_dashboard/application/
-// mastery_dashboard_dto.py) — the source of truth, not the UI-SPEC abbreviations. Regenerate from /openapi.json once the api service is up to remove drift.
+// by hand DIRECTLY from the backend DTOs (e.g. src/api/mastery_dashboard/application/dtos/
+// mastery_dashboard_dto.py) — the source of truth, not the UI-SPEC abbreviations. Regenerate
+// from /openapi.json once the api service is up to remove drift.
 //
 // Pitfall 1 (RESEARCH): `students_at_risk` is `string[]` (student_ids), NOT object[]. The backend
 // returns find_students_at_risk(matrix) -> list[str] (mastery_level.py).
 
-// GET /assignments -> api/assignments/application/list_assignments_dto.py
+// GET /assignments -> api/assignments/application/dtos/list_assignments_dto.py
 export interface AssignmentSummary {
   /** internal DB id (autoincrement) */
   id: number;

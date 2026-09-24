@@ -1,4 +1,5 @@
-"""PreTrainingStatistics: as estatísticas das submissões que existem ANTES de qualquer treino.
+"""Calcula as PreTrainingStatistics: as estatísticas das submissões que existem ANTES de qualquer
+treino.
 
 O professor tem estas estatísticas desde a importação: são calculadas direto do dado limpo e nunca
 tocam um modelo. Funções puras (DataFrame entra, dicionário sai); ler o Parquet é do use case.
@@ -6,31 +7,19 @@ tocam um modelo. Funções puras (DataFrame entra, dicionário sai); ler o Parqu
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-
 import pandas as pd
 
 from api.classroom_import.domain.services.submission_event import COMPILE_ERROR, RUN_PROGRAM
 
+from api.mastery_dashboard.domain.value_objects.pre_training_statistics import PreTrainingStatistics
 
-@dataclass(frozen=True)
-class PreTrainingStatistics:
-    success_rate: dict[int, float]  # por AssignmentID do dataset
-    learning_curve: dict[int, float]  # por número da tentativa
-    compile_error_rate: dict[int, float]  # por AssignmentID do dataset
 
-    @classmethod
-    def empty(cls) -> "PreTrainingStatistics":
-        """Sem dado limpo ainda: estatísticas vazias, não um erro."""
-        return cls(success_rate={}, learning_curve={}, compile_error_rate={})
-
-    @classmethod
-    def of(cls, cleaned_submissions: pd.DataFrame) -> "PreTrainingStatistics":
-        return cls(
-            success_rate=success_rate_by_assignment(cleaned_submissions),
-            learning_curve=learning_curve(cleaned_submissions),
-            compile_error_rate=compile_error_rate_by_assignment(cleaned_submissions),
-        )
+def compute_pre_training_statistics(cleaned_submissions: pd.DataFrame) -> PreTrainingStatistics:
+    return PreTrainingStatistics(
+        success_rate=success_rate_by_assignment(cleaned_submissions),
+        learning_curve=learning_curve(cleaned_submissions),
+        compile_error_rate=compile_error_rate_by_assignment(cleaned_submissions),
+    )
 
 
 def success_rate_by_assignment(cleaned: pd.DataFrame) -> dict[int, float]:
