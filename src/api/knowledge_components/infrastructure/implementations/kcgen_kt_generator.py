@@ -6,8 +6,6 @@ from typing import Callable
 
 import pandas as pd
 
-from api.classrooms.domain.value_objects.classroom_slug import ClassroomSlug
-from api.assignments.domain.value_objects.progsnap_assignment_id import ProgSnapAssignmentId
 from api.knowledge_components.domain.interfaces.knowledge_component_generator import (
     GeneratedKnowledgeComponents,
 )
@@ -36,11 +34,11 @@ class KcGenKtGenerator:
     def generate(
         self,
         cleaned_submissions: pd.DataFrame,
-        classroom_slug: ClassroomSlug,
-        progsnap_assignment_id: ProgSnapAssignmentId,
+        classroom_id: int,
+        assignment_id: int,
         on_stage: Callable[[str], None],
     ) -> GeneratedKnowledgeComponents:
-        cache_dir = data_layout.llm_cache_dir(classroom_slug, progsnap_assignment_id.value)
+        cache_dir = data_layout.llm_cache_dir(classroom_id, assignment_id)
 
         # O KCGen-KT vê só código correto, mostrar código errado ao LLM ensinaria o KC errado.
         correct = cleaned_submissions[cleaned_submissions["is_correct"] == 1]

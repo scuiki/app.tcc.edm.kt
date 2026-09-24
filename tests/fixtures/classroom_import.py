@@ -7,6 +7,7 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
+from api.classrooms.domain.entities.classroom_entity import Classroom
 from api.assignments.infrastructure.repositories.sqlite_assignment_repository import (
     SqliteAssignmentRepository,
 )
@@ -46,9 +47,12 @@ def sqlite_submissions(tmp_db) -> SqliteSubmissionRepository:
 
 @pytest.fixture
 def import_classroom(tmp_db, sqlite_submissions):
-    # Importa uma MainTable pelo use case real, e `submissions=` troca o repositório
+    # Cria a turma, como o CRUD faz, e importa nela; `submissions=` troca o repositório
 
     def run(raw_dir: Path, classroom_name: str, main_table: Path, *, submissions=None):
+        classroom_id = SqliteClassroomRepository(tmp_db).add(
+            Classroom(id=None, name=classroom_name, created_at="t0")
+        )
         use_case = ImportClassroomDatasetUseCase(
             classrooms=SqliteClassroomRepository(tmp_db),
             assignments=SqliteAssignmentRepository(tmp_db),
@@ -60,7 +64,7 @@ def import_classroom(tmp_db, sqlite_submissions):
         )
         return use_case.execute(
             ImportClassroomDatasetDTO(
-                classroom_name=classroom_name, raw_dir=raw_dir, main_table=main_table
+                classroom_id=classroom_id, raw_dir=raw_dir, main_table=main_table
             )
         )
 

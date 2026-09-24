@@ -35,8 +35,10 @@ from api.shared.infrastructure.implementations.one_job_at_a_time_lock import One
 from api.shared.presentation.http.database_session import open_database_session
 
 
-def upload_classroom_dataset_use_case() -> UploadClassroomDatasetUseCase:
-    return UploadClassroomDatasetUseCase(ProgSnapZipExtractor())
+def upload_classroom_dataset_use_case(
+    conn: sqlite3.Connection = Depends(open_database_session),
+) -> UploadClassroomDatasetUseCase:
+    return UploadClassroomDatasetUseCase(SqliteClassroomRepository(conn), ProgSnapZipExtractor())
 
 
 def import_classroom_dataset_use_case(

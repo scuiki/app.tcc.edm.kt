@@ -6,8 +6,6 @@ from typing import Callable, Protocol
 
 import pandas as pd
 
-from api.classrooms.domain.value_objects.classroom_slug import ClassroomSlug
-from api.assignments.domain.value_objects.progsnap_assignment_id import ProgSnapAssignmentId
 
 
 # A geração deixou algum problema sem KC, o job falha e nada é gravado.
@@ -38,8 +36,8 @@ class IKnowledgeComponentGenerator(Protocol):
     def generate(
         self,
         cleaned_submissions: pd.DataFrame,
-        classroom_slug: ClassroomSlug,
-        progsnap_assignment_id: ProgSnapAssignmentId,
+        classroom_id: int,
+        assignment_id: int,
         on_stage: Callable[[str], None],
     ) -> GeneratedKnowledgeComponents:
         # Roda o KCGen-KT sobre o dado limpo, `on_stage` recebe cada etapa nomeada.

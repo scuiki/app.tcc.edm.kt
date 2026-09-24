@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from pathlib import Path
 
 from api.classrooms.domain.value_objects.classroom_slug import ClassroomSlug
 
@@ -28,8 +27,3 @@ def test_classroom_slug_is_idempotent():
     once = ClassroomSlug.from_name("Turma 6")
     twice = ClassroomSlug.from_name(str(once))
     assert str(once) == str(twice)
-
-
-def test_classroom_slug_composes_into_a_path():
-    # Usável direto em `DATA_ROOT / slug` (os.PathLike), sem precisar de str() em cada call site.
-    assert Path("data") / ClassroomSlug.from_name("Turma 6") == Path("data/turma-6")

@@ -20,6 +20,3 @@ class ClassroomSlug:
 
     def __str__(self) -> str:
         return self.value
-
-    def __fspath__(self) -> str:
-        return self.value

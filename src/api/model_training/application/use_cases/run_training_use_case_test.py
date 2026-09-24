@@ -7,7 +7,6 @@ import contextlib
 import pandas as pd
 
 from api.assignments.domain.entities.assignment_entity import Assignment, AssignmentStatus
-from api.classrooms.domain.entities.classroom_entity import Classroom
 from api.model_training.application.use_cases.run_training_use_case import RunTrainingUseCase
 from api.model_training.domain.value_objects.training_outcome import TrainingOutcome
 
@@ -32,11 +31,6 @@ class _Assignments:
 
     def set_status(self, assignment_id, status):
         self._log.append(("status", status))
-
-
-class _Classrooms:
-    def get(self, classroom_id):
-        return Classroom(id=1, name="Turma X", created_at="t0")
 
 
 class _Submissions:
@@ -91,7 +85,6 @@ class _EpochMetrics:
 def _use_case(log) -> RunTrainingUseCase:
     return RunTrainingUseCase(
         assignments=_Assignments(log),
-        classrooms=_Classrooms(),
         submissions=_Submissions(),
         trainer=_Trainer(log),
         model_store=_ModelStore(log),

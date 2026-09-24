@@ -10,7 +10,6 @@ import torch
 
 from api.assignments.domain.entities.assignment_entity import Assignment
 from api.classrooms.domain.entities.classroom_entity import Classroom
-from api.classrooms.domain.value_objects.classroom_slug import ClassroomSlug
 from api.assignments.domain.value_objects.progsnap_assignment_id import ProgSnapAssignmentId
 from api.assignments.infrastructure.repositories.sqlite_assignment_repository import (
     SqliteAssignmentRepository,
@@ -139,9 +138,9 @@ def trained_artifact(tmp_db, data_root, tiny_vocab, tiny_config):
     artifact_id = store.save(
         TrainingDataset(
             events=pd.DataFrame(),
-            classroom_slug=ClassroomSlug.from_name("Turma 6"),
             progsnap_assignment_id=ProgSnapAssignmentId(439),
             classroom_id=classroom_id,
+            assignment_id=assignment_id,
         ),
         assignment_id,
         TrainingOutcome(

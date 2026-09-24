@@ -9,17 +9,17 @@ from ml.code_dkt.ast_paths import extract_ast_paths_for_snapshots
 
 from api.shared.infrastructure.filesystem import data_layout
 from api.model_training.infrastructure.implementations.code_snapshot_id import CodeSnapshotId
-from api.classrooms.domain.value_objects.classroom_slug import ClassroomSlug
 
 def load_or_extract_ast_paths(
-    classroom_slug: ClassroomSlug,
+    classroom_id: int,
+    assignment_id: int,
     all_snapshot_ids: list[str],
     code_by_snapshot: dict[str, str],
     config: dict,
     n_workers: Optional[int] = None,
 ) -> dict[str, list[tuple[str, str, str]]]:
-    # Cache incremental crash-safe por turma; o filtro train-only ocorre depois, não vaza no vocab.
-    cache_dir = data_layout.ast_path_cache_dir(classroom_slug)
+    # Cache incremental por assignment; o filtro train-only vem depois e não vaza no vocab
+    cache_dir = data_layout.ast_path_cache_dir(classroom_id, assignment_id)
     cache_dir.mkdir(parents=True, exist_ok=True)
 
     ast_paths_by_snapshot: dict[str, list[tuple[str, str, str]]] = {}

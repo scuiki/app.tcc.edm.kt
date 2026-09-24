@@ -3,9 +3,6 @@ from __future__ import annotations
 
 from api.assignments.domain.entities.assignment_entity import AssignmentStatus
 from api.assignments.domain.interfaces.assignment_repository import IAssignmentRepository
-from api.classrooms.domain.interfaces.classroom_repository import IClassroomRepository
-from api.classrooms.domain.value_objects.classroom_slug import ClassroomSlug
-from api.assignments.domain.value_objects.progsnap_assignment_id import ProgSnapAssignmentId
 from api.assignments.problems.domain.interfaces.problem_repository import IProblemRepository
 from api.classroom_import.domain.interfaces.submission_repository import ISubmissionRepository
 from api.knowledge_components.domain.interfaces.kc_generation_job_repository import (
@@ -32,7 +29,6 @@ class RunKnowledgeComponentGenerationUseCase:
     def __init__(
         self,
         assignments: IAssignmentRepository,
-        classrooms: IClassroomRepository,
         problems: IProblemRepository,
         submissions: ISubmissionRepository,
         generator: IKnowledgeComponentGenerator,
@@ -42,7 +38,6 @@ class RunKnowledgeComponentGenerationUseCase:
         unit_of_work: IUnitOfWork,
     ) -> None:
         self._assignments = assignments
-        self._classrooms = classrooms
         self._problems = problems
         self._submissions = submissions
         self._generator = generator
@@ -55,15 +50,12 @@ class RunKnowledgeComponentGenerationUseCase:
         assignment = self._assignments.get(assignment_id)
         if assignment is None:
             raise ValueError(f"assignment {assignment_id} inexistente")
-        classroom = self._classrooms.get(assignment.classroom_id)
-        slug = ClassroomSlug.from_name(classroom.name)
-        progsnap_id = ProgSnapAssignmentId(assignment.progsnap_assignment_id)
 
         self._jobs.mark_running(job_id, started_at=utc_now_iso())
         generated = self._generator.generate(
             self._submissions.list_by_assignment(assignment_id),
-            slug,
-            progsnap_id,
+            assignment.classroom_id,
+            assignment_id,
             on_stage=lambda stage: self._jobs.update_stage(job_id, stage, utc_now_iso()),
         )
         # Valida tudo antes de abrir a transação, problema sem KC reprova a geração inteira.

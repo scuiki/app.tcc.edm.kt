@@ -42,7 +42,11 @@ class MlCodeDktTrainer:
         # Aquece o cache de paths (reaproveitado no próximo treino/inferência); parse rate sai daqui
         code_by_snapshot = code_by_snapshot_id(dataset.events)
         load_or_extract_ast_paths(
-            dataset.classroom_slug, list(code_by_snapshot.keys()), code_by_snapshot, config
+            dataset.classroom_id,
+            dataset.assignment_id,
+            list(code_by_snapshot.keys()),
+            code_by_snapshot,
+            config,
         )
         java_parse_rate = compute_java_parse_rate(list(code_by_snapshot.values()), config)
 

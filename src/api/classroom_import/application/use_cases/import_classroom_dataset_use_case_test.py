@@ -116,7 +116,7 @@ def test_atomicity_failure_mid_persist_leaves_nothing(import_classroom, sqlite_s
         import_classroom(raw, "Turma X", main, submissions=_FailsAfterWriting(sqlite_submissions))
 
     # SQLite inalterado, 0 turmas/assignments/submissions (ROLLBACK).
-    assert _counts(conn) == (0, 0, 0)
+    assert _counts(conn) == (1, 0, 0)  # a turma existia antes; nada do envio ficou
     # Release garantido mesmo sob exceção; a trava voltou a NULL.
     assert lock_holder_pid(conn) is None
 
@@ -133,7 +133,7 @@ def test_fatal_preflight_persists_nothing(import_classroom, tmp_db, data_root):
     report = import_classroom(raw, "Turma X", main)
 
     assert report.has_fatal
-    assert _counts(conn) == (0, 0, 0)
+    assert _counts(conn) == (1, 0, 0)  # a turma existia antes; nada do envio ficou
 
 
 # --- Lock Timing, busy não persiste; release garantido --------------------------------------
@@ -153,7 +153,7 @@ def test_lock_busy_does_not_persist(import_classroom, tmp_db, data_root):
 
     assert report.has_fatal  # relatório "busy" carrega um item fatal
     assert any(c.check == "another_job_running" for c in report.checks)
-    assert _counts(conn) == (0, 0, 0)
+    assert _counts(conn) == (1, 0, 0)  # a turma existia antes; nada do envio ficou
     # A trava do dono vivo NÃO foi tocada por nós.
     assert lock_holder_pid(conn) == os.getpid()
 

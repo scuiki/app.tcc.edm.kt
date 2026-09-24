@@ -11,7 +11,6 @@ from pathlib import Path
 
 import torch
 
-from api.classrooms.domain.value_objects.classroom_slug import ClassroomSlug
 from api.model_training.domain.value_objects.training_outcome import TrainingOutcome
 from api.model_training.domain.entities.trained_model_entity import TrainedModel
 from api.model_training.domain.value_objects.training_dataset import TrainingDataset
@@ -111,7 +110,7 @@ class TrainedModelFileStore:
 
     def save(self, dataset: TrainingDataset, assignment_id: int, outcome: TrainingOutcome) -> int:
         # Arquivos fora da transação; falha no INSERT apaga o dir recém-escrito e libera o número.
-        files = ModelVersionFiles(data_layout.trained_models_dir(dataset.classroom_slug))
+        files = ModelVersionFiles(data_layout.trained_models_dir(dataset.classroom_id))
         version_number = self._models.next_version_number(assignment_id)
         written = files.write(
             assignment_id, version_number, outcome.model, outcome.vocab, outcome.hyperparameters
@@ -135,8 +134,8 @@ class TrainedModelFileStore:
             shutil.rmtree(written["dir"], ignore_errors=True)
             raise
 
-    def load(self, trained_model: TrainedModel, classroom_slug: ClassroomSlug):
+    def load(self, trained_model: TrainedModel, classroom_id: int):
         # (modelo, vocab, meta) de uma versão, confinada ao models/ da turma.
-        return ModelVersionFiles(data_layout.trained_models_dir(classroom_slug)).read(
+        return ModelVersionFiles(data_layout.trained_models_dir(classroom_id)).read(
             trained_model.model_dir
         )

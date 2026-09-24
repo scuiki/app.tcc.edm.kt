@@ -57,7 +57,7 @@ def _confine(path: Path) -> Path:
 
 @router.post("/classroom-imports", response_model=UploadClassroomDatasetResponseDTO)
 def upload_classroom_dataset(
-    classroom_name: str = Form(...),
+    classroom_id: int = Form(...),
     file: UploadFile = File(...),
     use_case: UploadClassroomDatasetUseCase = Depends(upload_classroom_dataset_use_case),
 ) -> UploadClassroomDatasetResponseDTO:
@@ -65,7 +65,7 @@ def upload_classroom_dataset(
         zip_path = Path(tmp.name)
     try:
         _save_upload(file, zip_path)
-        return use_case.execute(zip_path, classroom_name)
+        return use_case.execute(zip_path, classroom_id, file.filename or "envio.zip")
     finally:
         zip_path.unlink(missing_ok=True)
 
@@ -76,7 +76,7 @@ def import_classroom_dataset(
     use_case: ImportClassroomDatasetUseCase = Depends(import_classroom_dataset_use_case),
 ) -> ImportClassroomDatasetResponseDTO:
     confined = ImportClassroomDatasetDTO(
-        classroom_name=body.classroom_name,
+        classroom_id=body.classroom_id,
         raw_dir=_confine(body.raw_dir),
         main_table=_confine(body.main_table),
     )
