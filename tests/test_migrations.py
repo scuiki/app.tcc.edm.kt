@@ -18,7 +18,7 @@ from edmkt_app.persistence.migrations import runner as runner_mod
 
 # The 8 domain entities (D-01) plus the dedicated one-row lock table.
 _DOMAIN_TABLES = {
-    "turma",
+    "classroom",
     "assignment",
     "submission",
     "kc",
@@ -51,11 +51,10 @@ _LATEST_VERSION = max(
     )
 )
 
-# As 6 colunas de progresso por-época que 0003 adiciona ao training_job (D-06).
+# As colunas de progresso que sobrevivem de 0003 no training_job (D-06); current_epoch e
+# train_loss saíram na 0009, o progresso por época vive em training_metric.
 _TRAINING_JOB_PROGRESS_COLUMNS = {
-    "current_epoch",
     "total_epochs",
-    "train_loss",
     "started_at",
     "updated_at",
     "error_message",
@@ -163,8 +162,8 @@ def test_migration_0002_grows_assignment_and_submission(tmp_path):
 
 
 def test_migration_0003_grows_training_job_progress(tmp_path):
-    """0003 é forward-only: bumpa user_version=3 e adiciona as 6 colunas de progresso
-    por-época do training_job (D-06) — o que a CLI da plan 03 escreve durante o treino."""
+    """0003 é forward-only: bumpa user_version=3 e adiciona as colunas de progresso do
+    training_job (D-06) que a CLI de treino escreve."""
     conn = connect(str(tmp_path / "app.db"))
     run_migrations(conn)
     assert _user_version(conn) >= 3
@@ -211,12 +210,12 @@ def test_migration_0006_adds_qmatrix_unique_index(tmp_path):
 
 
 def test_migration_0007_adds_first_auc(tmp_path):
-    """0007 é forward-only: bumpa user_version>=7 e adiciona a coluna first_auc ao
-    model_artifact (DASH-05/D-05) — o AUC que train.py já computa e hoje some com o subprocess."""
+    """0007 é forward-only: adiciona o AUC do treino ao model_artifact (DASH-05/D-05); a 0009
+    renomeia a coluna para first_attempt_auc."""
     conn = connect(str(tmp_path / "app.db"))
     run_migrations(conn)
     assert _user_version(conn) >= _LATEST_VERSION
-    assert "first_auc" in _column_names(conn, "model_artifact")
+    assert "first_attempt_auc" in _column_names(conn, "model_artifact")
 
 
 def test_migration_0007_repo_round_trips_first_auc(tmp_path):
@@ -383,3 +382,47 @@ def test_pyarrow_parquet_roundtrip(tmp_path):
     df.to_parquet(path, engine="pyarrow", index=False)
     back = pd.read_parquet(path)
     assert back.equals(df)
+
+
+def test_migration_0009_carries_existing_data_to_the_glossary_names(tmp_path):
+    """0009 sobre um banco em user_version=8 com dado real: renomeia sem perder nada, preenche o
+    AssignmentID do ProgSnap2 a partir do nome e traduz os estados antigos."""
+    import shutil
+
+    migrations_dir = Path(runner_mod.__file__).resolve().parent
+    up_to_8 = tmp_path / "migrations_up_to_8"
+    up_to_8.mkdir()
+    for script in migrations_dir.glob("[0-9][0-9][0-9][0-9]_*.sql"):
+        if int(script.name[:4]) <= 8:
+            shutil.copy(script, up_to_8 / script.name)
+
+    conn = connect(str(tmp_path / "app.db"))
+    run_migrations(conn, migrations_dir=up_to_8)
+    assert _user_version(conn) == 8
+    conn.execute("INSERT INTO turma (id, name, created_at) VALUES (1, 'CSEDM', 't0');")
+    conn.executemany(
+        "INSERT INTO assignment (id, turma_id, name, current_version_id, created_at, status) "
+        "VALUES (?, 1, ?, NULL, 't0', ?);",
+        [(1, "Assignment 439", "trainable"), (2, "Assignment 492", "eda_only"), (3, "manual", "kc_draft")],
+    )
+    conn.execute(
+        "INSERT INTO submission (assignment_id, code_state_id, subject_id, problem_id, score, "
+        "created_at) VALUES (1, 'cs1', 'S1', 7, 1.0, 't0');"
+    )
+
+    run_migrations(conn)
+
+    assert _user_version(conn) == 9
+    rows = conn.execute(
+        "SELECT id, classroom_id, progsnap_assignment_id, status FROM assignment ORDER BY id;"
+    ).fetchall()
+    assert [tuple(r) for r in rows] == [
+        (1, 1, 439, "ready_for_kc_generation"),
+        (2, 1, 492, "statistics_only"),
+        (3, 1, None, "kc_draft"),  # nome fora do padrão da importação: fica vazio, não inventado
+    ]
+    assert tuple(conn.execute("SELECT id, name FROM classroom;").fetchone()) == (1, "CSEDM")
+    sub = conn.execute("SELECT code_snapshot_id, student_id FROM submission;").fetchone()
+    assert tuple(sub) == ("cs1", "S1")
+    assert {"current_epoch", "train_loss"}.isdisjoint(_column_names(conn, "training_job"))
+    assert conn.execute("PRAGMA foreign_key_check;").fetchall() == []

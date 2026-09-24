@@ -375,6 +375,7 @@ def trained_artifact(tmp_db, tmp_path, tiny_vocab, tiny_config):
             id=None,
             turma_id=turma_id,
             name="A439",
+            progsnap_assignment_id=439,
             current_version_id=None,
             created_at=now,
             status="kc_approved",

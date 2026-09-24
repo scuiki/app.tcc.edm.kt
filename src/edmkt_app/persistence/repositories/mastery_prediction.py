@@ -14,7 +14,7 @@ class MasteryPredictionRepository:
     def insert(self, prediction: models.MasteryPrediction) -> int:
         cur = self._conn.execute(
             "INSERT INTO mastery_prediction "
-            "(model_artifact_id, subject_id, kc_id, mastery) VALUES (?, ?, ?, ?);",
+            "(model_artifact_id, student_id, kc_id, mastery) VALUES (?, ?, ?, ?);",
             (
                 prediction.model_artifact_id,
                 prediction.subject_id,
@@ -35,7 +35,7 @@ class MasteryPredictionRepository:
 
     def list_by_artifact(self, model_artifact_id: int) -> list[models.MasteryPrediction]:
         rows = self._conn.execute(
-            "SELECT id, model_artifact_id, subject_id, kc_id, mastery "
+            "SELECT id, model_artifact_id, student_id, kc_id, mastery "
             "FROM mastery_prediction WHERE model_artifact_id = ?;",
             (model_artifact_id,),
         ).fetchall()
@@ -43,7 +43,7 @@ class MasteryPredictionRepository:
             models.MasteryPrediction(
                 id=r["id"],
                 model_artifact_id=r["model_artifact_id"],
-                subject_id=r["subject_id"],
+                subject_id=r["student_id"],
                 kc_id=r["kc_id"],
                 mastery=r["mastery"],
             )

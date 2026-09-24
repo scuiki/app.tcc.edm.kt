@@ -21,7 +21,9 @@ from edmkt_app.persistence import repositories as repos
 _NOW = "2026-06-21T00:00:00Z"
 
 
-def _seed_assignment(conn, status: str = "kc_approved", name: str = "Assignment 439") -> int:
+def _seed_assignment(
+    conn, status: str = "kc_approved", name: str = "Assignment 439", progsnap_id: int = 439
+) -> int:
     turma_id = repos.TurmaRepository(conn).insert(
         models.Turma(id=None, name="Turma X", created_at=_NOW)
     )
@@ -33,6 +35,7 @@ def _seed_assignment(conn, status: str = "kc_approved", name: str = "Assignment 
             current_version_id=None,
             created_at=_NOW,
             status=status,
+            progsnap_assignment_id=progsnap_id,
         )
     )
 
@@ -55,7 +58,7 @@ def test_uncertainty_frame(api_client):
 def test_eda_without_model(api_client):
     # DASH-04: o EDA roda SEM modelo treinado — 200 com agregados do Parquet canônico.
     client, conn = api_client
-    aid = _seed_assignment(conn, status="eda_only")  # sem treino, sem current_version_id
+    aid = _seed_assignment(conn, status="statistics_only")  # sem treino, sem current_version_id
 
     resp = client.get(f"/dashboard/eda/{aid}")
     assert resp.status_code == 200
@@ -90,7 +93,7 @@ def test_list_assignments(api_client):
     # BACKLOG 999.2: GET /assignments expõe o id do DB + id ProgSnap2 + name + status, fechando
     # a ambiguidade de id-space (Pitfall 5) que forçava queries manuais no app.db na UAT da Fase 4.
     client, conn = api_client
-    aid = _seed_assignment(conn, name="439")
+    aid = _seed_assignment(conn, name="Lista de laços", progsnap_id=439)
 
     resp = client.get("/assignments")
     assert resp.status_code == 200
@@ -98,7 +101,7 @@ def test_list_assignments(api_client):
     assert isinstance(items, list)
     row = next(a for a in items if a["id"] == aid)
     assert "id" in row            # id interno do DB (autoincrement)
-    assert "progsnap_id" in row   # id ProgSnap2 (derivado do name, train.py:_progsnap_aid)
+    assert row["progsnap_id"] == 439  # id ProgSnap2 da coluna própria, não derivado do name
     assert "name" in row
     assert "status" in row
 
@@ -114,13 +117,13 @@ def test_eda_orphan_turma_404_not_500(api_client):
     # WR-01: um assignment cuja turma sumiu (linha removida sob um assignment órfão) fazia
     # turma.name explodir em AttributeError → 500 cru. A guarda devolve 404 limpo, não 500.
     client, conn = api_client
-    aid = _seed_assignment(conn, status="eda_only")
+    aid = _seed_assignment(conn, status="statistics_only")
     turma_id = repos.AssignmentRepository(conn).get(aid).turma_id
     # A FK assignment.turma_id→turma é enforced POR-CONEXÃO (PRAGMA foreign_keys=ON em db.py);
     # um assignment órfão surge quando uma conexão SEM enforcement removeu a turma. Reproduzimos
     # isso desligando o pragma só para o DELETE — o estado órfão que a guarda WR-01 cobre.
     conn.execute("PRAGMA foreign_keys=OFF;")
-    conn.execute("DELETE FROM turma WHERE id = ?;", (turma_id,))
+    conn.execute("DELETE FROM classroom WHERE id = ?;", (turma_id,))
     conn.execute("PRAGMA foreign_keys=ON;")
 
     resp = client.get(f"/dashboard/eda/{aid}")

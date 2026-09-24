@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import re
 from dataclasses import dataclass
 
 
@@ -17,12 +16,10 @@ class ProgSnapAssignmentId:
 
     value: int
 
-    @classmethod
-    def from_name(cls, assignment_name: str) -> "ProgSnapAssignmentId":
-        m = re.search(r"(\d+)", assignment_name)
-        if m is None:
-            raise ValueError(f"AssignmentID não derivável do nome: {assignment_name!r}")
-        return cls(int(m.group(1)))
+    def __post_init__(self) -> None:
+        # bool é subclasse de int e passaria calado; None chegaria como "assignment_None.parquet".
+        if isinstance(self.value, bool) or not isinstance(self.value, int):
+            raise ValueError(f"AssignmentID do ProgSnap2 precisa ser int: {self.value!r}")
 
     def __str__(self) -> str:
         return str(self.value)

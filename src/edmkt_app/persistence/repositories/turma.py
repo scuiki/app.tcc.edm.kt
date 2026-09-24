@@ -14,14 +14,14 @@ class TurmaRepository:
 
     def insert(self, turma: models.Turma) -> int:
         cur = self._conn.execute(
-            "INSERT INTO turma (name, created_at) VALUES (?, ?);",
+            "INSERT INTO classroom (name, created_at) VALUES (?, ?);",
             (turma.name, turma.created_at),
         )
         return cur.lastrowid
 
     def get(self, turma_id: int) -> Optional[models.Turma]:
         row = self._conn.execute(
-            "SELECT id, name, created_at FROM turma WHERE id = ?;", (turma_id,)
+            "SELECT id, name, created_at FROM classroom WHERE id = ?;", (turma_id,)
         ).fetchone()
         if row is None:
             return None
@@ -30,5 +30,5 @@ class TurmaRepository:
     def list_all(self) -> list[models.Turma]:
         return [
             models.Turma(id=r["id"], name=r["name"], created_at=r["created_at"])
-            for r in self._conn.execute("SELECT id, name, created_at FROM turma ORDER BY id;")
+            for r in self._conn.execute("SELECT id, name, created_at FROM classroom ORDER BY id;")
         ]

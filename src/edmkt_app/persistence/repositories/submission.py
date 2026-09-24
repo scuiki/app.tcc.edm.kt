@@ -14,7 +14,7 @@ class SubmissionRepository:
     def insert(self, submission: models.Submission) -> int:
         cur = self._conn.execute(
             "INSERT INTO submission "
-            "(assignment_id, code_state_id, subject_id, problem_id, score, created_at, event_type) "
+            "(assignment_id, code_snapshot_id, student_id, problem_id, score, created_at, event_type) "
             "VALUES (?, ?, ?, ?, ?, ?, ?);",
             (
                 submission.assignment_id,

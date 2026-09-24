@@ -38,7 +38,7 @@ class ModelingFrame:
 def load_modeling_frame(conn: sqlite3.Connection, assignment_id: int) -> ModelingFrame:
     """Resolve nomes → caminho → Parquet → recorte, e devolve o quadro já modelável.
 
-    `assignment_id` é o id do BANCO; o do ProgSnap2 sai do nome e volta no frame (999.2).
+    `assignment_id` é o id do BANCO; o do ProgSnap2 vem da coluna própria e volta no frame (999.2).
     """
     assignment = repos.AssignmentRepository(conn).get(assignment_id)
     if assignment is None:
@@ -50,7 +50,7 @@ def load_modeling_frame(conn: sqlite3.Connection, assignment_id: int) -> Modelin
         raise ValueError(f"turma {assignment.turma_id} inexistente")
 
     turma_slug = TurmaSlug.from_name(turma.name)
-    progsnap_aid = ProgSnapAssignmentId.from_name(assignment.name)
+    progsnap_aid = ProgSnapAssignmentId(assignment.progsnap_assignment_id)
     pq = data_layout.cleaned_submissions_path(turma_slug, progsnap_aid)
 
     return ModelingFrame(

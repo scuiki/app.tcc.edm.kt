@@ -33,9 +33,10 @@ def _seed(conn, data_root) -> int:
             id=None,
             turma_id=turma_id,
             name="Assignment 439",
+            progsnap_assignment_id=439,
             current_version_id=None,
             created_at=created,
-            status="trainable",
+            status="ready_for_kc_generation",
         )
     )
     base = pd.Timestamp("2019-03-01T08:00:00Z")
@@ -106,7 +107,7 @@ def test_orphan_turma_raises_instead_of_attributeerror(tmp_db, tmp_path, monkeyp
     # reproduz aqui desligando o PRAGMA — não um INSERT inválido, que a FK barraria.
     assignment_id = _seed(tmp_db, tmp_path)
     tmp_db.execute("PRAGMA foreign_keys=OFF;")
-    tmp_db.execute("DELETE FROM turma;")
+    tmp_db.execute("DELETE FROM classroom;")
     tmp_db.execute("PRAGMA foreign_keys=ON;")
 
     with pytest.raises(ValueError, match="turma"):

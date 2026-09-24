@@ -98,21 +98,24 @@ def test_confined_path_resolves_before_checking(tmp_path):
 # --- ProgSnapAssignmentId: o id do ProgSnap2, distinto do id do banco (999.2) ---------------
 
 
-def test_progsnap_assignment_id_extracts_the_numeric_suffix():
-    assert values.ProgSnapAssignmentId.from_name("Assignment 439").value == 439
-    assert values.ProgSnapAssignmentId.from_name("A439").value == 439
+def test_progsnap_assignment_id_wraps_the_dataset_int():
+    assert values.ProgSnapAssignmentId(439).value == 439
+    assert str(values.ProgSnapAssignmentId(439)) == "439"
 
 
-def test_progsnap_assignment_id_raises_without_digits():
+@pytest.mark.parametrize("not_an_int", [None, "439", 439.0, True])
+def test_progsnap_assignment_id_refuses_anything_but_an_int(not_an_int):
+    # None viraria "assignment_None.parquet" em silêncio; é a coluna vazia de um assignment
+    # que não veio da importação.
     with pytest.raises(ValueError):
-        values.ProgSnapAssignmentId.from_name("sem numero")
+        values.ProgSnapAssignmentId(not_an_int)
 
 
 def test_progsnap_assignment_id_is_not_interchangeable_with_a_db_id():
     # O ponto do tipo (999.2): assignment.id == 1 e o ProgSnap2 AssignmentID == 439 são ambos int
     # e significam coisas diferentes. Comparar um com o outro tem de ser falso, não acidentalmente
     # verdadeiro quando os números coincidem.
-    progsnap = values.ProgSnapAssignmentId.from_name("Assignment 1")
+    progsnap = values.ProgSnapAssignmentId(1)
     assert progsnap.value == 1
     assert progsnap != 1
 

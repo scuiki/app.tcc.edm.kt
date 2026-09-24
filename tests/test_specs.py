@@ -41,6 +41,7 @@ def _assignment(conn, status: str) -> int:
             current_version_id=None,
             created_at=created,
             status=status,
+            progsnap_assignment_id=439,
         )
     )
 
@@ -57,7 +58,7 @@ def test_assignment_in_status_passes_when_status_matches(tmp_db):
 
 
 def test_assignment_in_status_refuses_wrong_status(tmp_db):
-    dto = _Dto(assignment_id=_assignment(tmp_db, "trainable"))
+    dto = _Dto(assignment_id=_assignment(tmp_db, "ready_for_kc_generation"))
 
     assert TRAINING_SPEC.check(tmp_db, dto) == "Q-matrix ainda não aprovada pelo professor"
 
@@ -71,10 +72,10 @@ def test_assignment_in_status_refuses_missing_assignment_with_the_same_message(t
 
 
 def test_assignment_is_draft_reports_the_current_status(tmp_db):
-    dto = _Dto(assignment_id=_assignment(tmp_db, "trainable"))
+    dto = _Dto(assignment_id=_assignment(tmp_db, "ready_for_kc_generation"))
 
     assert specs.AssignmentIsDraft().check(tmp_db, dto) == (
-        "assignment não está em kc_draft (status atual: trainable)"
+        "assignment não está em kc_draft (status atual: ready_for_kc_generation)"
     )
 
 
@@ -138,7 +139,7 @@ def test_kcs_belong_to_assignment_passes_when_both_are_local(tmp_db):
 
 
 def test_turma_not_duplicated_refuses_a_slug_that_already_exists(tmp_db):
-    _assignment(tmp_db, "trainable")  # cria a turma "Turma X"
+    _assignment(tmp_db, "ready_for_kc_generation")  # cria a turma "Turma X"
 
     # Nome diferente, MESMO slug ("turma-x") — é o diretório que colide, não a string.
     msg = specs.TurmaNotDuplicated().check(tmp_db, _IngestDto(turma_name="  turma   x  "))
@@ -147,6 +148,6 @@ def test_turma_not_duplicated_refuses_a_slug_that_already_exists(tmp_db):
 
 
 def test_turma_not_duplicated_allows_a_new_turma(tmp_db):
-    _assignment(tmp_db, "trainable")
+    _assignment(tmp_db, "ready_for_kc_generation")
 
     assert specs.TurmaNotDuplicated().check(tmp_db, _IngestDto(turma_name="Turma Y")) is None

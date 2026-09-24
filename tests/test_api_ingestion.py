@@ -79,10 +79,10 @@ def test_process_persists_and_reports_trainable(api_client):
     # Ambas as classes presentes ⇒ assignment trainable (gate D-09).
     assert body["per_assignment"][0]["trainable"] is True
     # Persistiu pelas portas da Fase 2: 1 turma, 1 assignment.
-    n_turmas = conn.execute("SELECT COUNT(*) AS n FROM turma;").fetchone()["n"]
+    n_turmas = conn.execute("SELECT COUNT(*) AS n FROM classroom;").fetchone()["n"]
     assert n_turmas == 1
     status = conn.execute("SELECT status FROM assignment;").fetchone()["status"]
-    assert status == "trainable"
+    assert status == "ready_for_kc_generation"
     # `with lock` liberou a trava ao terminar (SC3).
     assert _holder_pid(conn) is None
 

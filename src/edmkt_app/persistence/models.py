@@ -30,7 +30,9 @@ class Assignment:
     name: str
     current_version_id: Optional[int]  # ponteiro para o ModelArtifact publicado; nasce None (D-06)
     created_at: str
-    status: Optional[str] = None  # estado de 1ª classe (D-05/D-08): 'eda_only' | 'trainable'
+    # Estado de 1ª classe: statistics_only | ready_for_kc_generation | kc_draft | kc_approved | trained
+    status: Optional[str] = None
+    progsnap_assignment_id: Optional[int] = None  # o AssignmentID do dataset, distinto do id do banco
 
 
 @dataclass
