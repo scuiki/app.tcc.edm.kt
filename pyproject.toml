@@ -3,9 +3,9 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "edmkt_core"
+name = "edmkt"
 version = "0.1.0"
-description = "EDM·KT scientific core: Code-DKT knowledge tracing over ProgSnap2 (TCC 2 deployment of TCC 1 research)."
+description = "EDM·KT: ml/ (Code-DKT knowledge tracing over ProgSnap2) and api/ (the teacher-facing FastAPI app). TCC 2 deployment of TCC 1 research."
 requires-python = ">=3.10,<3.13"
 
 # Runtime deps inherited from the TCC 1 environment (commit 0e8807c).

@@ -1,4 +1,4 @@
-# requirements.lock — edmkt_core dependency pins validated by the regression test (CORE-03).
+# requirements.lock — EDM·KT dependency pins validated by the regression test (CORE-03).
 #
 # The regression test is the version oracle (RESEARCH A2 / D-08): these are the EXACT versions
 # resolved inside the edmkt-core:dev image when tests/test_regression_a439.py::test_regression_a439

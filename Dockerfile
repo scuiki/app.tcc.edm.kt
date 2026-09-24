@@ -1,4 +1,4 @@
-# edmkt_core dev/test image.
+# EDM·KT dev/test image (ml/ + api/).
 # Base on the PyTorch CUDA runtime (CLAUDE.md containerization guidance).
 # FIXED TAG (no `latest`) — this image IS the reproducibility anchor (CORE-03): its conda
 # env ships torch==2.7.1+cu128 / numpy==2.2.6, the versions the regression test validated
@@ -15,4 +15,4 @@ COPY tests ./tests
 RUN pip install --no-cache-dir -e ".[dev]"
 
 # Default: run the quick suite (regression test deselected; needs EDMKT_CSEDM_PATH).
-CMD ["python", "-m", "pytest", "tests/", "-m", "not regression", "-q"]
+CMD ["python", "-m", "pytest", "-q"]
