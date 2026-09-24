@@ -1,6 +1,7 @@
 import type { ComponentType } from 'react'
-import { LayoutGrid, type LucideIcon } from 'lucide-react'
+import { LayoutGrid, Users, type LucideIcon } from 'lucide-react'
 
+import { ClassroomsPage } from '../features/classrooms/pages/ClassroomsPage'
 import { MasteryDashboardPage } from '../features/mastery_dashboard/pages/MasteryDashboardPage'
 
 export interface Route {
@@ -12,6 +13,7 @@ export interface Route {
 
 // A ordem é a do menu, e uma tela só entra aqui quando existe
 export const ROUTES: Route[] = [
+  { path: '/classrooms', label: 'Turmas', icon: Users, Page: ClassroomsPage },
   {
     path: '/mastery-dashboard',
     label: 'Domínio da turma',

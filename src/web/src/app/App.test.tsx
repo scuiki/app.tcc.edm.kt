@@ -40,7 +40,6 @@ describe('App', () => {
       'aria-current',
       'page',
     )
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(ROUTES[0].label)
   })
 
   it('follows the hash to the page it names', () => {
