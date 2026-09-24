@@ -20,7 +20,7 @@ def main(argv: list[str] | None = None) -> int:
 
     # Paths absolutos do env, não do cwd herdado (Pitfall 2): web e subprocess veem o MESMO
     # app.db e data/.
-    settings.settings.DB_PATH = os.environ.get("EDMKT_DB_PATH", str(Path(settings.DB_PATH).resolve()))
+    settings.DB_PATH =os.environ.get("EDMKT_DB_PATH", str(Path(settings.DB_PATH).resolve()))
     settings.DATA_ROOT = Path(os.environ.get("EDMKT_DATA_ROOT", str(settings.DATA_ROOT.resolve())))
 
     conn = connect(settings.DB_PATH)  # o subprocess abre a SUA conexão (Pitfall 2)
