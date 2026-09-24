@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
 from pathlib import Path
 
 import pandas as pd
@@ -22,10 +21,8 @@ from edmkt_app.persistence import models
 from edmkt_app.persistence import repositories as repos
 from edmkt_app.persistence.db import transaction
 from edmkt_app.values import ProgSnapAssignmentId, TurmaSlug
+from edmkt_app.clock import utc_now_iso
 
-
-def _now_iso() -> str:
-    return datetime.now(timezone.utc).isoformat()
 
 
 def _kc_body(conn, assignment_id: int, job_id: int) -> dict:
@@ -39,7 +36,7 @@ def _kc_body(conn, assignment_id: int, job_id: int) -> dict:
     turma_slug = TurmaSlug.from_name(turma.name)
     progsnap_aid = ProgSnapAssignmentId.from_name(asg.name)
 
-    job_repo.mark_running(job_id, started_at=_now_iso())
+    job_repo.mark_running(job_id, started_at=utc_now_iso())
 
     pq = settings.DATA_ROOT / turma_slug / "clean" / f"assignment_{progsnap_aid}.parquet"
     df = pd.read_parquet(pq, engine="pyarrow")
@@ -54,7 +51,7 @@ def _kc_body(conn, assignment_id: int, job_id: int) -> dict:
 
     # Etapa 2 (por problema): amostra por diversidade → gera KCs pela porta LLM. EmptyKCError de
     # um problema (0 KCs) sobe como falha-dura (D-04, capturada em _run_kc_pipeline).
-    job_repo.update_stage(job_id, stage="generate", updated_at=_now_iso())
+    job_repo.update_stage(job_id, stage="generate", updated_at=utc_now_iso())
     kc_raw: dict = {}
     for pid in problem_ids:
         pdf = correct_df[correct_df["ProblemID"].astype(str) == pid]
@@ -72,7 +69,7 @@ def _kc_body(conn, assignment_id: int, job_id: int) -> dict:
             if kc["name"] not in unique_names:
                 unique_names.append(kc["name"])
 
-    job_repo.update_stage(job_id, stage="cluster", updated_at=_now_iso())
+    job_repo.update_stage(job_id, stage="cluster", updated_at=utc_now_iso())
     if len(unique_names) < min(CANDIDATE_N_CLUSTERS):
         kc_to_cluster = {name: i for i, name in enumerate(unique_names)}
         cluster_names = {i: name for i, name in enumerate(unique_names)}
@@ -85,7 +82,7 @@ def _kc_body(conn, assignment_id: int, job_id: int) -> dict:
     kc_clusters = {"n_clusters_selected": n_clusters, "kc_to_cluster": kc_to_cluster}
 
     # Etapa 5: Q-matrix binária problemas × clusters.
-    job_repo.update_stage(job_id, stage="qmatrix", updated_at=_now_iso())
+    job_repo.update_stage(job_id, stage="qmatrix", updated_at=utc_now_iso())
     qmatrix = build_qmatrix(problem_ids, kc_raw, kc_clusters)
 
     # Validar-tudo-depois-persistir (D-04): cada problema precisa de ≥1 KC ANTES de abrir a txn.
@@ -125,7 +122,7 @@ def _kc_body(conn, assignment_id: int, job_id: int) -> dict:
         )
         # WR-01: mark_done DENTRO da txn — o flip de status e a conclusão do job são atômicos.
         # Fora dela, uma falha de mark_done deixaria assignment 'kc_draft' + job 'failed'.
-        job_repo.mark_done(job_id, updated_at=_now_iso())
+        job_repo.mark_done(job_id, updated_at=utc_now_iso())
 
     return {"n_clusters": n_clusters, "n_problems": len(problem_ids)}
 

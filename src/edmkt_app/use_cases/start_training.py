@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import subprocess
 import sys
-from datetime import datetime, timezone
 
 from pydantic import BaseModel
 
@@ -13,6 +12,7 @@ from edmkt_app.persistence import models
 from edmkt_app.persistence import repositories as repos
 from edmkt_app.persistence.lock import pipeline_busy
 from edmkt_app.use_cases.base import BaseWriteUseCase, PipelineBusy
+from edmkt_app.clock import utc_now_iso
 
 
 class StartTrainingDto(BaseModel):
@@ -38,7 +38,7 @@ class StartTrainingUseCase(BaseWriteUseCase):
                 id=None,
                 assignment_id=dto.assignment_id,
                 status="pending",
-                created_at=datetime.now(timezone.utc).isoformat(),
+                created_at=utc_now_iso(),
             )
         )
         # Dispatch list-form, SEM shell=True, ids inteiros validados pelo DTO — nunca

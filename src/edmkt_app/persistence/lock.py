@@ -12,9 +12,9 @@ from __future__ import annotations
 
 import os
 import sqlite3
-from datetime import datetime, timezone
 
 from edmkt_app.persistence.db import transaction
+from edmkt_app.clock import utc_now_iso
 
 
 def pid_alive(pid: int) -> bool:
@@ -43,9 +43,6 @@ def pipeline_busy(conn: sqlite3.Connection) -> bool:
     row = conn.execute("SELECT holder_pid FROM pipeline_lock WHERE id=1;").fetchone()
     return row is not None and row["holder_pid"] is not None and pid_alive(row["holder_pid"])
 
-
-def _now_iso() -> str:
-    return datetime.now(timezone.utc).isoformat()
 
 
 def reclaim_orphan_lock(conn: sqlite3.Connection) -> None:
@@ -100,7 +97,7 @@ class PipelineLock:
             conn.execute(
                 "UPDATE pipeline_lock SET holder_pid=?, operation=?, job_id=?, "
                 "acquired_at=? WHERE id=1;",
-                (os.getpid(), operation, job_id, _now_iso()),
+                (os.getpid(), operation, job_id, utc_now_iso()),
             )
         self._held = True
         return self

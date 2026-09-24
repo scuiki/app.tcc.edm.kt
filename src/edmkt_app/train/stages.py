@@ -6,7 +6,6 @@ simular falha e OOM de VRAM.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
 from pathlib import Path
 
 import torch
@@ -21,10 +20,8 @@ from edmkt_app.modeling_frame import load_modeling_frame
 from edmkt_app.persistence import repositories as repos
 from edmkt_app.persistence.artifacts import ArtifactStore, flip_current
 from edmkt_app import settings
+from edmkt_app.clock import utc_now_iso
 
-
-def _now_iso() -> str:
-    return datetime.now(timezone.utc).isoformat()
 
 
 def _make_epoch_writer(conn, job_id: int):
@@ -32,7 +29,7 @@ def _make_epoch_writer(conn, job_id: int):
         # Append, não UPDATE: sobrescrever destruía a curva a cada época (migração 0008).
         # Escrita curta sob WAL — o GET poll (D-04) lê concorrentemente sem bloquear.
         repos.TrainingMetricRepository(conn).append(
-            job_id, epoch=epoch, train_loss=float(avg_loss), recorded_at=_now_iso()
+            job_id, epoch=epoch, train_loss=float(avg_loss), recorded_at=utc_now_iso()
         )
 
     return on_epoch
@@ -42,7 +39,7 @@ def _train_body(conn, assignment_id: int, job_id: int) -> dict:
     job_repo = repos.TrainingJobRepository(conn)
 
     total_epochs = FROZEN_CONFIG["epochs"]
-    job_repo.mark_running(job_id, total_epochs=total_epochs, started_at=_now_iso())
+    job_repo.mark_running(job_id, total_epochs=total_epochs, started_at=utc_now_iso())
 
     frame = load_modeling_frame(conn, assignment_id, data_root=settings.DATA_ROOT)
     df, turma_slug, progsnap_aid = frame.events, frame.turma_slug, frame.assignment_id
@@ -87,7 +84,7 @@ def _train_body(conn, assignment_id: int, job_id: int) -> dict:
     )  # D-03: assignment flipa só no fim
     # O dict de retorno some com o subprocess fire-and-forget; a linha SQLite é a ponte que
     # sobrevive ao término do filho — sem isto a taxa nunca chega ao GET (SC-3/MODEL-05).
-    job_repo.mark_done(job_id, updated_at=_now_iso(), parse_rate=rate)
+    job_repo.mark_done(job_id, updated_at=utc_now_iso(), parse_rate=rate)
 
     return {
         "parse_rate": rate,

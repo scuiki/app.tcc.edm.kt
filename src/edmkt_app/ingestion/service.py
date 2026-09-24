@@ -12,7 +12,6 @@ vive em `persist.py`.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
 from pathlib import Path
 
 import pandas as pd
@@ -22,9 +21,6 @@ from edmkt_app.ingestion import clean, discover, summary, validate, viability
 from edmkt_app.ingestion.persist import _persist_atomic
 from edmkt_app.ingestion.report import IngestReport, ReportItem
 from edmkt_app.persistence.lock import PipelineLock
-
-def _now_iso() -> str:
-    return datetime.now(timezone.utc).isoformat()
 
 
 def _empty_report(items: list[ReportItem]) -> IngestReport:

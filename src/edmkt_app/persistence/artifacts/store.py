@@ -14,8 +14,9 @@ import torch
 
 from edmkt_core.models.code_dkt import CodeDKTModel
 
-from edmkt_app.persistence.artifacts.versioning import _now_iso, next_version_number
+from edmkt_app.persistence.artifacts.versioning import next_version_number
 from edmkt_app.persistence.db import transaction
+from edmkt_app.clock import utc_now_iso
 
 
 class ArtifactStore:
@@ -174,7 +175,7 @@ class ArtifactStore:
                         version_number,
                         saved["content_hash"],
                         saved["dir"],
-                        _now_iso(),
+                        utc_now_iso(),
                         first_auc,  # DASH-05: o AUC do treino entra na linha junto do blob (D-05)
                         # Proveniência (0008): qual código e qual dado produziram esta versão.
                         git_commit,
