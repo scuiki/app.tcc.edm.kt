@@ -15,7 +15,7 @@ from pathlib import Path
 
 from fastapi import FastAPI
 
-from api.assignments.presentation import assignments_controller
+from api.assignments.presentation.controllers import assignments_controller
 from api.classroom_import.presentation import classroom_import_controller
 from api.knowledge_components.presentation import knowledge_components_controller
 from api.mastery_dashboard.presentation import mastery_dashboard_controller

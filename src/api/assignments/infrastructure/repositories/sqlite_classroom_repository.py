@@ -1,10 +1,10 @@
-"""ClassroomRepository sobre SQLite: a turma é a raiz por professor; tudo pende dela."""
+"""IClassroomRepository sobre SQLite: a turma é a raiz por professor; tudo pende dela."""
 
 from __future__ import annotations
 
 import sqlite3
 
-from api.assignments.domain.classroom_entity import Classroom
+from api.assignments.domain.entities.classroom_entity import Classroom
 
 
 def _to_entity(row: sqlite3.Row) -> Classroom:

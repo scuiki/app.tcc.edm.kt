@@ -4,10 +4,10 @@ from __future__ import annotations
 
 from typing import Protocol
 
-from api.assignments.domain.assignment_entity import Assignment, AssignmentStatus
+from api.assignments.domain.entities.assignment_entity import Assignment, AssignmentStatus
 
 
-class AssignmentRepository(Protocol):
+class IAssignmentRepository(Protocol):
     def add(self, assignment: Assignment) -> int: ...
 
     def get(self, assignment_id: int) -> Assignment | None: ...

@@ -5,8 +5,12 @@ from __future__ import annotations
 import pandas as pd
 import pytest
 
-from api.assignments.infrastructure.sqlite_assignment_repository import SqliteAssignmentRepository
-from api.assignments.infrastructure.sqlite_classroom_repository import SqliteClassroomRepository
+from api.assignments.infrastructure.repositories.sqlite_assignment_repository import (
+    SqliteAssignmentRepository,
+)
+from api.assignments.infrastructure.repositories.sqlite_classroom_repository import (
+    SqliteClassroomRepository,
+)
 from api.classroom_import.infrastructure.parquet_cleaned_submissions_store import (
     ParquetCleanedSubmissionsStore,
 )

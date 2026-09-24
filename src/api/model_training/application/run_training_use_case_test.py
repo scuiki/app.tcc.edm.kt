@@ -10,8 +10,8 @@ import contextlib
 
 import pandas as pd
 
-from api.assignments.domain.assignment_entity import Assignment, AssignmentStatus
-from api.assignments.domain.classroom_entity import Classroom
+from api.assignments.domain.entities.assignment_entity import Assignment, AssignmentStatus
+from api.assignments.domain.entities.classroom_entity import Classroom
 from api.model_training.application.run_training_use_case import RunTrainingUseCase
 from api.model_training.domain.code_dkt_trainer import TrainingOutcome
 

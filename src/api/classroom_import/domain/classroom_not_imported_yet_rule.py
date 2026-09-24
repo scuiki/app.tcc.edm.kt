@@ -14,12 +14,12 @@ from __future__ import annotations
 
 from typing import Any
 
-from api.assignments.domain.classroom_repository import ClassroomRepository
-from api.assignments.domain.classroom_slug import ClassroomSlug
+from api.assignments.domain.interfaces.classroom_repository import IClassroomRepository
+from api.assignments.domain.value_objects.classroom_slug import ClassroomSlug
 
 
 class ClassroomNotImportedYetRule:
-    def __init__(self, classrooms: ClassroomRepository) -> None:
+    def __init__(self, classrooms: IClassroomRepository) -> None:
         self._classrooms = classrooms
 
     def check(self, dto: Any) -> str | None:

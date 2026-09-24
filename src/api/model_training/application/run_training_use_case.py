@@ -6,9 +6,9 @@ retorno se perde com o subprocess: o que sobrevive é a linha do job, a curva de
 
 from __future__ import annotations
 
-from api.assignments.domain.assignment_entity import AssignmentStatus
-from api.assignments.domain.assignment_repository import AssignmentRepository
-from api.assignments.domain.classroom_repository import ClassroomRepository
+from api.assignments.domain.entities.assignment_entity import AssignmentStatus
+from api.assignments.domain.interfaces.assignment_repository import IAssignmentRepository
+from api.assignments.domain.interfaces.classroom_repository import IClassroomRepository
 from api.classroom_import.domain.cleaned_submissions_store import CleanedSubmissionsStore
 from api.model_training.domain.code_dkt_trainer import CodeDktTrainer, TrainedModelStore
 from api.model_training.domain.training_dataset import load_training_dataset
@@ -24,8 +24,8 @@ from api.shared.application.interfaces.unit_of_work import IUnitOfWork
 class RunTrainingUseCase:
     def __init__(
         self,
-        assignments: AssignmentRepository,
-        classrooms: ClassroomRepository,
+        assignments: IAssignmentRepository,
+        classrooms: IClassroomRepository,
         cleaned_submissions: CleanedSubmissionsStore,
         trainer: CodeDktTrainer,
         model_store: TrainedModelStore,

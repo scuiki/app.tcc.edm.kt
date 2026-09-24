@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from api.assignments.domain.assignment_repository import AssignmentRepository
-from api.assignments.domain.existing_assignment import get_existing_assignment
+from api.assignments.domain.interfaces.assignment_repository import IAssignmentRepository
+from api.assignments.domain.services.existing_assignment import get_existing_assignment
 from api.mastery_dashboard.application.mastery_dashboard_dto import (
     CriticalKnowledgeComponentDTO,
     MasteryResponseDTO,
@@ -17,7 +17,7 @@ from api.mastery_dashboard.domain.mastery_level import (
 
 
 class GetMasteryUseCase:
-    def __init__(self, assignments: AssignmentRepository, mastery: PublishedModelMastery) -> None:
+    def __init__(self, assignments: IAssignmentRepository, mastery: PublishedModelMastery) -> None:
         self._assignments = assignments
         self._mastery = mastery
 

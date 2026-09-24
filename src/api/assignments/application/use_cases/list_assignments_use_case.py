@@ -2,15 +2,15 @@
 
 from __future__ import annotations
 
-from api.assignments.application.list_assignments_dto import (
+from api.assignments.application.dtos.list_assignments_dto import (
     AssignmentSummaryDTO,
     ListAssignmentsResponseDTO,
 )
-from api.assignments.domain.assignment_repository import AssignmentRepository
+from api.assignments.domain.interfaces.assignment_repository import IAssignmentRepository
 
 
 class ListAssignmentsUseCase:
-    def __init__(self, assignments: AssignmentRepository) -> None:
+    def __init__(self, assignments: IAssignmentRepository) -> None:
         self._assignments = assignments
 
     def execute(self) -> ListAssignmentsResponseDTO:

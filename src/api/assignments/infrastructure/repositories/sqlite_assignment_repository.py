@@ -1,10 +1,10 @@
-"""AssignmentRepository sobre SQLite. Todo SQL é parametrizado; nenhum dado é interpolado."""
+"""IAssignmentRepository sobre SQLite. Todo SQL é parametrizado; nenhum dado é interpolado."""
 
 from __future__ import annotations
 
 import sqlite3
 
-from api.assignments.domain.assignment_entity import Assignment, AssignmentStatus
+from api.assignments.domain.entities.assignment_entity import Assignment, AssignmentStatus
 
 _COLUMNS = (
     "id, classroom_id, name, published_model_id, created_at, status, progsnap_assignment_id"

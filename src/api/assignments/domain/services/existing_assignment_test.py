@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import pytest
 
-from api.assignments.domain.assignment_entity import Assignment
-from api.assignments.domain.existing_assignment import get_existing_assignment
+from api.assignments.domain.entities.assignment_entity import Assignment
+from api.assignments.domain.services.existing_assignment import get_existing_assignment
 from api.shared.domain.errors.not_found import NotFound
 
 

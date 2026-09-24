@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from api.assignments.domain.classroom_slug import ClassroomSlug
+from api.assignments.domain.value_objects.classroom_slug import ClassroomSlug
 from api.classroom_import.application.upload_classroom_dataset_dto import (
     UploadClassroomDatasetResponseDTO,
 )

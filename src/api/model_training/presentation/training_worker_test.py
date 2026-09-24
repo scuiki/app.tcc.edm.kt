@@ -13,10 +13,14 @@ import pandas as pd
 import pytest
 import torch
 
-from api.assignments.domain.assignment_entity import Assignment
-from api.assignments.domain.classroom_entity import Classroom
-from api.assignments.infrastructure.sqlite_assignment_repository import SqliteAssignmentRepository
-from api.assignments.infrastructure.sqlite_classroom_repository import SqliteClassroomRepository
+from api.assignments.domain.entities.assignment_entity import Assignment
+from api.assignments.domain.entities.classroom_entity import Classroom
+from api.assignments.infrastructure.repositories.sqlite_assignment_repository import (
+    SqliteAssignmentRepository,
+)
+from api.assignments.infrastructure.repositories.sqlite_classroom_repository import (
+    SqliteClassroomRepository,
+)
 from api.model_training.domain.training_job_entity import TrainingJob
 from api.model_training.infrastructure.ml_code_dkt_trainer import MlCodeDktTrainer
 from api.model_training.infrastructure.sqlite_trained_model_repository import (

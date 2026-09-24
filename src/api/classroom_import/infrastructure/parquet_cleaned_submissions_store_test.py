@@ -5,8 +5,8 @@ from __future__ import annotations
 import pandas as pd
 import pytest
 
-from api.assignments.domain.classroom_slug import ClassroomSlug
-from api.assignments.domain.progsnap_assignment_id import ProgSnapAssignmentId
+from api.assignments.domain.value_objects.classroom_slug import ClassroomSlug
+from api.assignments.domain.value_objects.progsnap_assignment_id import ProgSnapAssignmentId
 from api.classroom_import.domain.submission_cleaning import CLEANED_COLUMNS
 from api.classroom_import.infrastructure.parquet_cleaned_submissions_store import (
     ParquetCleanedSubmissionsStore,

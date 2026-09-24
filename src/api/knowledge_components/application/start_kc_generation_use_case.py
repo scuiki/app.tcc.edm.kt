@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from api.assignments.domain.assignment_entity import AssignmentStatus
-from api.assignments.domain.assignment_in_status_rule import AssignmentInStatusRule
-from api.assignments.domain.assignment_repository import AssignmentRepository
+from api.assignments.domain.entities.assignment_entity import AssignmentStatus
+from api.assignments.domain.rules.assignment_in_status_rule import AssignmentInStatusRule
+from api.assignments.domain.interfaces.assignment_repository import IAssignmentRepository
 from api.knowledge_components.application.start_kc_generation_dto import (
     StartedJobDTO,
     StartKnowledgeComponentGenerationDTO,
@@ -27,7 +27,7 @@ from api.shared.domain.value_objects.job_status import JobStatus
 class StartKnowledgeComponentGenerationUseCase(WriteUseCase):
     def __init__(
         self,
-        assignments: AssignmentRepository,
+        assignments: IAssignmentRepository,
         jobs: KnowledgeComponentGenerationJobRepository,
         job_lock: IJobLock,
         launcher: IBackgroundJobLauncher,

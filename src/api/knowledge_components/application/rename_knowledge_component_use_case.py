@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from api.assignments.domain.assignment_repository import AssignmentRepository
+from api.assignments.domain.interfaces.assignment_repository import IAssignmentRepository
 from api.knowledge_components.application.edit_qmatrix_dto import (
     KnowledgeComponentDTO,
     RenameKnowledgeComponentDTO,
@@ -19,7 +19,7 @@ from api.shared.domain.errors.not_found import NotFound
 class RenameKnowledgeComponentUseCase(WriteUseCase):
     def __init__(
         self,
-        assignments: AssignmentRepository,
+        assignments: IAssignmentRepository,
         knowledge_components: KnowledgeComponentRepository,
         unit_of_work: IUnitOfWork,
     ) -> None:

@@ -11,8 +11,8 @@ from typing import Protocol
 
 import pandas as pd
 
-from api.assignments.domain.classroom_slug import ClassroomSlug
-from api.assignments.domain.progsnap_assignment_id import ProgSnapAssignmentId
+from api.assignments.domain.value_objects.classroom_slug import ClassroomSlug
+from api.assignments.domain.value_objects.progsnap_assignment_id import ProgSnapAssignmentId
 
 
 class StagedCleanedSubmissions(Protocol):

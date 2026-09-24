@@ -7,10 +7,14 @@ estatísticas pré-treino respondem sem modelo, e que um id inexistente ou uma t
 
 from __future__ import annotations
 
-from api.assignments.infrastructure.sqlite_classroom_repository import SqliteClassroomRepository
-from api.assignments.infrastructure.sqlite_assignment_repository import SqliteAssignmentRepository
-from api.assignments.domain.classroom_entity import Classroom
-from api.assignments.domain.assignment_entity import Assignment
+from api.assignments.infrastructure.repositories.sqlite_classroom_repository import (
+    SqliteClassroomRepository,
+)
+from api.assignments.infrastructure.repositories.sqlite_assignment_repository import (
+    SqliteAssignmentRepository,
+)
+from api.assignments.domain.entities.classroom_entity import Classroom
+from api.assignments.domain.entities.assignment_entity import Assignment
 
 _NOW = "2026-06-21T00:00:00Z"
 
