@@ -1,9 +1,4 @@
-"""Contrato de saída estruturado da ingestão por severidade.
-
-Testes puros (sem I/O, sem SQLite, sem GPU): asseguram invariantes do contrato — has_fatal
-deriva da presença de ≥1 item fatal, ImportCheck é write-once (frozen), e o ClassroomImportReport
-preserva per_assignment. Nada de valores mágicos de AUC.
-"""
+# Testes puros do contrato de saída da ingestão, has_fatal, ImportCheck frozen e per_assignment.
 
 from __future__ import annotations
 

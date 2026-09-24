@@ -1,9 +1,4 @@
-"""Importa a MainTable escolhida: valida, limpa, checa a treinabilidade e grava tudo junto.
-
-Validar tudo, depois gravar: o pré-voo inteiro roda sem tocar o banco, e só sem nenhuma checagem
-fatal a gravação acontece, numa transação só. A trava de job é pega AQUI e não no upload, porque
-ela protege o estado compartilhado (o banco), que só é tocado na gravação.
-"""
+# Valida tudo antes de gravar; grava só sem falha fatal, com a trava de job pega aqui.
 
 from __future__ import annotations
 
@@ -75,7 +70,7 @@ class ImportClassroomDatasetUseCase(WriteUseCase):
     def _import(self, dto: ImportClassroomDatasetDTO) -> ClassroomImportReport:
         main_table, checks = self._tables.read_main_table(dto.main_table)
         if main_table is None:
-            return ClassroomImportReport.nothing_imported(checks)  # falha dura: nada é gravado
+            return ClassroomImportReport.nothing_imported(checks)  # falha dura, nada é gravado
 
         code_by_snapshot = self._tables.read_code_snapshots(dto.raw_dir)
         cleaned, cleaning_checks = clean_submissions(main_table, code_by_snapshot)
@@ -94,7 +89,7 @@ class ImportClassroomDatasetUseCase(WriteUseCase):
         cleaned: pd.DataFrame,
         per_assignment: list[AssignmentTrainability],
     ) -> None:
-        """A turma, os assignments e o dado limpo de cada um: tudo ou nada."""
+        # A turma, os assignments e o dado limpo de cada um, tudo ou nada.
         created_at = utc_now_iso()
         trainable = {a.progsnap_assignment_id: a.trainable for a in per_assignment}
         with self._unit_of_work:

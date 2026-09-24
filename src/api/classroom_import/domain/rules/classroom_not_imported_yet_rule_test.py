@@ -1,4 +1,4 @@
-"""ClassroomNotImportedYetRule: a mesma turma não é importada duas vezes, comparando pelo slug."""
+# ClassroomNotImportedYetRule, a mesma turma não é importada duas vezes, comparando pelo slug.
 
 from __future__ import annotations
 
@@ -19,7 +19,7 @@ class _InMemoryClassrooms:
 
 
 def test_refuses_a_name_whose_slug_already_exists():
-    # Nome diferente, MESMO slug ("turma-x"): é o diretório que colide, não a string.
+    # Nome diferente, MESMO slug ("turma-x"), é o diretório que colide, não a string.
     rule = ClassroomNotImportedYetRule(_InMemoryClassrooms("Turma X"))
 
     message = rule.check(SimpleNamespace(classroom_name="  turma   x  "))

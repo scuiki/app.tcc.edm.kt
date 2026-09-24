@@ -1,8 +1,4 @@
-"""SqliteSubmissionRepository: o DataFrame volta igual ao que foi gravado, tipos inclusive.
-
-O treino ordena por `submitted_at` e o ml/ compara ids: um tipo que mudasse no ida e volta mudaria a
-numérica em silêncio. Por isso a comparação é `assert_frame_equal` com dtype estrito.
-"""
+# O DataFrame volta igual ao que foi gravado, tipos inclusive; daí o assert_frame_equal estrito.
 
 from __future__ import annotations
 
@@ -29,7 +25,7 @@ def _assignment_id(conn, progsnap_assignment_id: int = 439) -> int:
 
 
 def _cleaned(student_ids, snapshot_ids) -> pd.DataFrame:
-    """Um dado limpo com os tipos que a limpeza produz."""
+    # Um dado limpo com os tipos que a limpeza produz.
     n = len(student_ids)
     df = pd.DataFrame(
         {
@@ -53,8 +49,8 @@ def _cleaned(student_ids, snapshot_ids) -> pd.DataFrame:
 @pytest.mark.parametrize(
     ("student_ids", "snapshot_ids"),
     [
-        ([9300, 9300, 17], [1720630, 1720631, 5]),  # CSEDM: o CSV traz números
-        (["S1", "S1", "S2"], ["c1", "c2", "c3"]),  # outro dataset: texto
+        ([9300, 9300, 17], [1720630, 1720631, 5]),  # CSEDM, o CSV traz números
+        (["S1", "S1", "S2"], ["c1", "c2", "c3"]),  # outro dataset, texto
     ],
     ids=["ids_numericos", "ids_em_texto"],
 )

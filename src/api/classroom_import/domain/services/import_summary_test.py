@@ -1,8 +1,4 @@
-"""Testes herméticos do resumo do dataset.
-
-`summarize_cleaned_submissions` deriva as 4 contagens de visão geral (alunos/assignments/problemas/submissões)
-sobre o stream canônico.
-"""
+# summarize_cleaned_submissions deriva as 4 contagens de visão geral sobre o stream canônico.
 
 from __future__ import annotations
 

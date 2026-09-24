@@ -1,9 +1,4 @@
-"""ISubmissionRepository sobre SQLite: o dado limpo na tabela `submission`.
-
-Quem lê recebe o mesmo DataFrame que a limpeza produziu, com as mesmas colunas, os mesmos tipos e a
-mesma ordem. O treino ordena por `submitted_at` e o ml/ compara ids, então um tipo que mudasse no
-caminho (um id que voltasse como texto, um horário sem fuso) mudaria a numérica sem nenhum erro.
-"""
+# O DataFrame lido tem que voltar com as mesmas colunas, tipos e ordem que a limpeza produziu.
 
 from __future__ import annotations
 
@@ -13,13 +8,12 @@ import pandas as pd
 
 from api.classroom_import.domain.services.submission_cleaning import CLEANED_COLUMNS
 
-# As colunas gravadas, na ordem do INSERT. O progsnap_assignment_id não é gravado por linha: ele
-# vem do assignment, pelo JOIN da leitura.
+# Colunas gravadas na ordem do INSERT; progsnap_assignment_id vem do assignment via JOIN.
 _STORED_COLUMNS = [c for c in CLEANED_COLUMNS if c != "progsnap_assignment_id"]
 
 
 def _sql_value(value):
-    """O valor do pandas no tipo que o sqlite3 aceita: NaN/NA viram NULL, horário vira ISO 8601."""
+    # O valor do pandas no tipo que o sqlite3 aceita; NaN/NA viram NULL, horário vira ISO 8601.
     if value is None or value is pd.NA or (isinstance(value, float) and value != value):
         return None
     if isinstance(value, pd.Timestamp):
@@ -32,8 +26,7 @@ class SqliteSubmissionRepository:
         self._conn = conn
 
     def add_many(self, assignment_id: int, events: pd.DataFrame) -> None:
-        # .tolist() devolve os tipos do Python (int, float, Timestamp), que o sqlite3 sabe gravar;
-        # um numpy.int64 seria recusado.
+        # .tolist() devolve tipos do Python que o sqlite3 grava; numpy.int64 seria recusado.
         columns = [events[c].tolist() for c in _STORED_COLUMNS]
         rows = [(assignment_id, *(_sql_value(v) for v in values)) for values in zip(*columns)]
         placeholders = ", ".join("?" * (len(_STORED_COLUMNS) + 1))
@@ -52,8 +45,7 @@ class SqliteSubmissionRepository:
             (assignment_id,),
         ).fetchall()
         df = pd.DataFrame([tuple(r) for r in rows], columns=CLEANED_COLUMNS)
-        # Os tipos que a limpeza produz. student_id e code_snapshot_id ficam como o SQLite os
-        # devolveu: número se o CSV trouxe número, texto se trouxe texto.
+        # Os tipos que a limpeza produz; student_id/code_snapshot_id ficam como o SQLite devolveu.
         return df.astype(
             {
                 "progsnap_assignment_id": "Int64",

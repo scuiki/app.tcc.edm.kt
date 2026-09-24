@@ -1,10 +1,4 @@
-"""Lê as tabelas CSV do ProgSnap2 do professor, sem confiar nos tipos que vierem.
-
-O pré-voo de falhas duras: o CSEDM é bem-comportado, um upload real não. Lê o MainTable, confere as
-colunas obrigatórias e coage os tipos; qualquer checagem `fatal` devolve None no lugar do
-DataFrame, e a importação aborta antes de gravar qualquer coisa. As mensagens carregam coluna e
-local agregados, NUNCA bytes do código do aluno.
-"""
+# Pré-voo de falhas duras; fatal devolve None sem gravar, sem mensagem com bytes do aluno.
 
 from __future__ import annotations
 
@@ -17,8 +11,7 @@ from api.classroom_import.infrastructure.implementations.progsnap_zip_extractor 
     find_code_snapshots_file,
 )
 
-# Obrigatórias DESTA ferramenta, além das mandatórias do padrão ProgSnap2:
-# sem elas o pipeline de mastery não tem como rotular first-attempts nem agrupar por aluno/KC.
+# Obrigatórias desta ferramenta, além do padrão; sem elas não dá pra rotular first-attempts.
 _REQUIRED_COLUMNS = (
     "SubjectID",
     "AssignmentID",
@@ -34,11 +27,10 @@ def read_main_table(main_path: Path) -> tuple[pd.DataFrame | None, list[ImportCh
     checks: list[ImportCheck] = []
 
     try:
-        # utf-8-sig consome o BOM transparente: BOM vira warning no clean, não
-        # falha aqui. Detecção heurística de encoding seria dependência + ambiguidade num v1.
+        # utf-8-sig consome o BOM; detecção heurística de encoding seria dependência extra num v1.
         df = pd.read_csv(main_path, encoding="utf-8-sig")
     except UnicodeDecodeError:
-        # Não interpolar o detalhe do erro: pode carregar bytes do código do aluno.
+        # Não interpolar o detalhe do erro, pode carregar bytes do código do aluno.
         checks.append(
             ImportCheck(
                 check="encoding",
@@ -61,26 +53,20 @@ def read_main_table(main_path: Path) -> tuple[pd.DataFrame | None, list[ImportCh
         )
 
     if any(c.severity == "fatal" for c in checks):
-        # Qualquer falha dura: nada a devolver; a importação aborta sem gravar.
+        # Qualquer falha dura, nada a devolver; a importação aborta sem gravar.
         return None, checks
 
-    # Coerção de tipos espelhando data_loader.load_main_table:17-27 — não confia nos tipos do
-    # CSV; errors="coerce" transforma lixo em NaT/NA em vez de explodir (a contagem de coerções
-    # falhas vira anomalia graduada no clean/viability, não aqui).
+    # A mesma coerção de tipos do TCC 1; valor inválido vira NaN/NA em vez de explodir.
     df["ServerTimestamp"] = pd.to_datetime(df["ServerTimestamp"], utc=True, errors="coerce")
     df["AssignmentID"] = pd.to_numeric(df["AssignmentID"], errors="coerce").astype("Int64")
     df["ProblemID"] = pd.to_numeric(df["ProblemID"], errors="coerce").astype("Int64")
 
-    # Score CONTÍNUO mas tipado: num ProgSnap2 real ele chega como string
-    # ("1.0"), vazio ou "N/A". Sem esta coerção a coluna fica object, `Score == 1.0` (clean.py)
-    # é False p/ toda linha — a binarização zera em silêncio e a turma inteira vira EDA-only —,
-    # e `float(row.Score)` estoura no persist. data_loader.load_main_table NÃO coage Score
-    # (CSEDM é bem-comportado); aqui é a fronteira que paga a tolerância do dado real.
+    # Score sai como string no CSV real; sem coagir aqui, a binarização zera em silêncio.
     n_before_nan = int(df["Score"].isna().sum())
     df["Score"] = pd.to_numeric(df["Score"], errors="coerce")
     n_coerce_failed = int(df["Score"].isna().sum()) - n_before_nan
     if n_coerce_failed > 0:
-        # Graduado, não fatal: NaN vira null no persist (pd.isna) e fica fora da binarização.
+        # Graduado, não fatal; NaN vira null no persist (pd.isna) e fica fora da binarização.
         checks.append(
             ImportCheck(
                 check="score_coercion",
@@ -94,11 +80,7 @@ def read_main_table(main_path: Path) -> tuple[pd.DataFrame | None, list[ImportCh
 
 
 def read_code_snapshots(raw_dir: Path) -> dict[str, str]:
-    """{CodeStateID: código Java}, para juntar o snapshot a cada evento na limpeza.
-
-    Sem CodeStates no upload, um dict vazio: a limpeza trata todo evento como órfão (aviso), nunca
-    explode.
-    """
+    # `{CodeStateID: código Java}`; sem CodeStates no upload, um dict vazio (tudo órfão, aviso).
     path = find_code_snapshots_file(Path(raw_dir))
     if path is None:
         return {}
@@ -106,9 +88,8 @@ def read_code_snapshots(raw_dir: Path) -> dict[str, str]:
     return dict(zip(table["CodeStateID"].astype(str), table["Code"].fillna("")))
 
 
+# IProgSnapTableReader sobre os CSVs do upload.
 class ProgSnapCsvReader:
-    """IProgSnapTableReader sobre os CSVs do upload."""
-
     def read_main_table(self, path: Path) -> tuple[pd.DataFrame | None, list[ImportCheck]]:
         return read_main_table(path)
 

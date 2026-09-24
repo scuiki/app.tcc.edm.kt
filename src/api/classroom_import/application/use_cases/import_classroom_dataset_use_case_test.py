@@ -1,9 +1,4 @@
-"""ImportClassroomDatasetUseCase com a infraestrutura real (fixture `import_classroom`).
-
-Cobre o que as etapas puras não exercitam: a gravação atômica (uma falha no meio não deixa resto),
-o dado limpo gravado no banco, a preservação do cru e a trava de job (ocupada não grava; liberada mesmo
-sob exceção). Herméticos, sobre `tmp_db` + tmp_path; nunca o CSEDM real.
-"""
+# ImportClassroomDatasetUseCase com infra real; gravação atômica, trava e dado limpo no banco.
 
 from __future__ import annotations
 
@@ -15,8 +10,7 @@ import pytest
 from api.classroom_import.domain.services.submission_cleaning import CLEANED_COLUMNS
 from tests.fixtures.job_lock import lock_holder_pid
 
-# MainTable com DUAS classes nos first-attempts (≥1 acerto E ≥1 erro) ⇒ assignment trainable
-#. CodeStateID casa 1:1 com o CodeStates.csv abaixo (sem órfãos neste fixture base).
+# MainTable com duas classes nos first-attempts, assignment trainable; CodeStateID casa um a um.
 _MAIN_TABLE = (
     "SubjectID,AssignmentID,ProblemID,CodeStateID,EventType,Score,ServerTimestamp\n"
     "S1,439,1,c1,Run.Program,0.0,2019-03-01T08:00:00Z\n"
@@ -25,8 +19,7 @@ _MAIN_TABLE = (
     "S2,439,2,c4,Run.Program,0.5,2019-03-01T08:03:00Z\n"
 )
 
-# CodeStates: o snapshot Java por CodeStateID, gravado junto com a tentativa. Score 0.5 acima
-# fica preservado contínuo.
+# CodeStates, o snapshot Java por CodeStateID; Score 0.5 acima fica preservado contínuo.
 _CODE_STATES = (
     "CodeStateID,Code\n"
     'c1,"public int f(){return 0;}"\n'
@@ -37,7 +30,7 @@ _CODE_STATES = (
 
 
 def _make_raw(root: Path, main_table: str = _MAIN_TABLE) -> tuple[Path, Path]:
-    """Monta data/<slug>/raw/ com MainTable.csv + CodeStates/CodeStates.csv. Devolve (raw, main)."""
+    # Monta data/<slug>/raw/ com MainTable.csv + CodeStates/CodeStates.csv.
     raw = root / "turma-x" / "raw"
     (raw / "CodeStates").mkdir(parents=True)
     main = raw / "MainTable.csv"
@@ -54,7 +47,7 @@ def _counts(conn) -> tuple[int, int, int]:
 
 
 class _FailsAfterWriting:
-    """Grava as submissões e só então falha: o meio da transação, com linhas já escritas."""
+    # Grava as submissões e só então falha, no meio da transação, com linhas já escritas.
 
     def __init__(self, real) -> None:
         self._real = real
@@ -64,7 +57,7 @@ class _FailsAfterWriting:
         raise RuntimeError("disk full depois dos INSERTs (simulado)")
 
 
-# --- caminho feliz: grava turma + assignments + submissões ------------------------------
+# --- caminho feliz, grava turma + assignments + submissões ------------------------------
 
 
 def test_happy_persists_classroom_assignment_and_submissions(import_classroom, tmp_db, data_root):
@@ -79,7 +72,7 @@ def test_happy_persists_classroom_assignment_and_submissions(import_classroom, t
     assert n_assign == 1  # um único AssignmentID (439) no fixture
     assert n_sub == 4  # 4 eventos Run.Program, todos com snapshot (sem órfão)
 
-    # Assignment ganhou status do gate: ambas as classes presentes ⇒ trainable.
+    # Assignment ganhou status do gate, ambas as classes presentes, então trainable.
     status = conn.execute("SELECT status FROM assignment;").fetchone()["status"]
     assert status == "ready_for_kc_generation"
 
@@ -94,7 +87,7 @@ def test_the_cleaned_data_is_readable_by_assignment(import_classroom, sqlite_sub
 
     # As 9 colunas que o ml/ consome, na ordem.
     assert list(back.columns) == CLEANED_COLUMNS
-    # Score contínuo preservado: o 0.5 não foi destruído na binarização.
+    # Score contínuo preservado, o 0.5 não foi destruído na binarização.
     assert 0.5 in set(back["score"].tolist())
     # O código Java vai junto (é o snapshot do treino e das estatísticas).
     assert back["code"].notna().all()
@@ -113,16 +106,16 @@ def test_raw_csv_preserved_after_ingest(import_classroom, tmp_db, data_root):
 
 
 def test_atomicity_failure_mid_persist_leaves_nothing(import_classroom, sqlite_submissions, tmp_db, data_root):
-    # Falha dura DEPOIS dos INSERTs das submissões: o ROLLBACK desfaz tudo, turma inclusive.
+    # Falha dura depois dos INSERTs das submissões; o ROLLBACK desfaz tudo, turma inclusive.
     conn = tmp_db
     raw, main = _make_raw(data_root)
 
     with pytest.raises(RuntimeError):
         import_classroom(raw, "Turma X", main, submissions=_FailsAfterWriting(sqlite_submissions))
 
-    # SQLite inalterado: 0 turmas/assignments/submissions (ROLLBACK).
+    # SQLite inalterado, 0 turmas/assignments/submissions (ROLLBACK).
     assert _counts(conn) == (0, 0, 0)
-    # Release garantido mesmo sob exceção: a trava voltou a NULL.
+    # Release garantido mesmo sob exceção; a trava voltou a NULL.
     assert lock_holder_pid(conn) is None
 
 
@@ -141,12 +134,11 @@ def test_fatal_preflight_persists_nothing(import_classroom, tmp_db, data_root):
     assert _counts(conn) == (0, 0, 0)
 
 
-# --- Lock Timing: busy não persiste; release garantido --------------------------------------
+# --- Lock Timing, busy não persiste; release garantido --------------------------------------
 
 
 def test_lock_busy_does_not_persist(import_classroom, tmp_db, data_root):
-    # Trava ocupada por um PID VIVO (o próprio processo de teste) ⇒ ingest devolve "busy" e
-    # NADA persiste (turma count inalterado). Não removemos a trava de outro dono.
+    # Trava ocupada por PID vivo; ingest devolve busy, nada persiste, não mexe na trava alheia.
     conn = tmp_db
     raw, main = _make_raw(data_root)
     conn.execute(

@@ -1,8 +1,4 @@
-"""Recebe o .zip do professor: extrai em data/<turma>/raw/ e lista as MainTable encontradas.
-
-Só escreve o estado privado deste upload (o cru, intocado) e NÃO pega a trava de job: prendê-la
-aqui a manteria presa enquanto o professor escolhe qual MainTable importar.
-"""
+# Só grava o estado cru deste upload; a trava de job fica no import, não aqui.
 
 from __future__ import annotations
 

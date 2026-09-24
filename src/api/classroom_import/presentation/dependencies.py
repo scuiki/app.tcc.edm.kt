@@ -1,4 +1,4 @@
-"""Composition root de classroom_import: qual implementação cada use case recebe."""
+# Composition root de classroom_import, qual implementação cada use case recebe.
 
 from __future__ import annotations
 

@@ -1,4 +1,4 @@
-"""Abrir o zip do professor. A implementação (zip) fica na infraestrutura."""
+# Abre o zip do professor; a implementação (zip) fica na infraestrutura.
 
 from __future__ import annotations
 
