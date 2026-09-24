@@ -4,9 +4,11 @@ from __future__ import annotations
 
 import sqlite3
 
+from edmkt_app import data_layout
 from edmkt_app import eda as eda_module
 from edmkt_app.persistence import repositories as repos
 from edmkt_app.use_cases.base import NotFound
+from edmkt_app.values import ProgSnapAssignmentId, TurmaSlug
 
 
 class GetEdaUseCase:
@@ -21,7 +23,9 @@ class GetEdaUseCase:
         if turma is None:  # WR-01: turma órfã → 404 explícito, não AttributeError em turma.name
             raise NotFound("turma inexistente")
 
-        pq = eda_module.canonical_parquet_path(turma.name, assignment.name)
+        pq = data_layout.cleaned_submissions_path(
+            TurmaSlug.from_name(turma.name), ProgSnapAssignmentId.from_name(assignment.name)
+        )
         if not pq.exists():
             # Degrada para agregados vazios quando a ingestão ainda não produziu o Parquet —
             # resiliente sem DADO, não só sem modelo.

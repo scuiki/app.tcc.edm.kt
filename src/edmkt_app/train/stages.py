@@ -14,12 +14,11 @@ from edmkt_core.config import FROZEN_CONFIG
 from edmkt_core.pipeline import split_by_subject, train_and_evaluate
 from edmkt_core.seeding import set_global_seed
 
-from edmkt_app import modeling_frame, provenance
+from edmkt_app import data_layout, provenance
 from edmkt_app.features_cache import build_cache_on_disk, parse_rate
 from edmkt_app.modeling_frame import load_modeling_frame
 from edmkt_app.persistence import repositories as repos
 from edmkt_app.persistence.artifacts import ArtifactStore, flip_current
-from edmkt_app import settings
 from edmkt_app.clock import utc_now_iso
 
 
@@ -41,7 +40,7 @@ def _train_body(conn, assignment_id: int, job_id: int) -> dict:
     total_epochs = FROZEN_CONFIG["epochs"]
     job_repo.mark_running(job_id, total_epochs=total_epochs, started_at=utc_now_iso())
 
-    frame = load_modeling_frame(conn, assignment_id, data_root=settings.DATA_ROOT)
+    frame = load_modeling_frame(conn, assignment_id)
     df, turma_slug, progsnap_aid = frame.events, frame.turma_slug, frame.assignment_id
 
     train_df, test_df = split_by_subject(df)
@@ -70,12 +69,12 @@ def _train_body(conn, assignment_id: int, job_id: int) -> dict:
 
     # Ordem load-bearing blob→INSERT→flip (Pitfall 2 artifacts): persist grava o v<N> e a
     # linha; flip_current só então aponta o ponteiro para um artefato já completo.
-    persisted = ArtifactStore(str(settings.DATA_ROOT / turma_slug / "models")).persist(
+    persisted = ArtifactStore(str(data_layout.trained_models_dir(turma_slug))).persist(
         conn, frame.turma_id, assignment_id, result["model"], result["vocab"], config,
         first_auc=result["first_auc"],  # DASH-05: o AUC sobrevive ao subprocess via a linha (D-05)
         git_commit=provenance.git_commit(Path.cwd()),
         data_hash=provenance.file_hash(
-            modeling_frame.canonical_parquet_path(settings.DATA_ROOT, turma_slug, progsnap_aid)
+            data_layout.cleaned_submissions_path(turma_slug, progsnap_aid)
         ),
     )
     flip_current(conn, assignment_id, persisted["artifact_id"])

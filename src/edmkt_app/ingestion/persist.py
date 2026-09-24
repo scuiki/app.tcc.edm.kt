@@ -14,7 +14,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from edmkt_app import settings
+from edmkt_app import data_layout
 from edmkt_app.ingestion import clean
 from edmkt_app.persistence import models, transaction
 from edmkt_app.persistence import repositories as repos
@@ -40,7 +40,8 @@ def _persist_atomic(
     escrito — sem dataset meio-gravado. O Parquet fica fora da txn porque um blob de FS não
     participa do ROLLBACK do SQLite; escrevê-lo dentro deixaria-o órfão num INSERT que falha.
     """
-    clean_dir = settings.DATA_ROOT / TurmaSlug.from_name(turma_name) / "clean"
+    turma_slug = TurmaSlug.from_name(turma_name)
+    clean_dir = data_layout.cleaned_submissions_dir(turma_slug)
     created_at = utc_now_iso()
 
     # 1. Blob (Parquet) FORA da txn — um arquivo por AssignmentID, colunas do seam (D-13).
@@ -52,7 +53,7 @@ def _persist_atomic(
     staged: list[tuple[Path, Path]] = []  # (tmp, destino final)
     try:
         for aid, group in canonical.groupby("AssignmentID", sort=True):
-            pq_path = clean_dir / f"assignment_{int(aid)}.parquet"
+            pq_path = data_layout.cleaned_submissions_path(turma_slug, int(aid))
             tmp_path = pq_path.with_suffix(".parquet.tmp")
             # to_parquet via pyarrow; index=False mantém só as colunas canônicas no arquivo.
             group[clean.CANONICAL_COLUMNS].to_parquet(tmp_path, engine="pyarrow", index=False)

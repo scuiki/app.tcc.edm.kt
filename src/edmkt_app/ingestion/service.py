@@ -16,7 +16,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from edmkt_app import settings
+from edmkt_app import data_layout
 from edmkt_app.ingestion import clean, discover, summary, validate, viability
 from edmkt_app.ingestion.persist import _persist_atomic
 from edmkt_app.ingestion.report import IngestReport, ReportItem
@@ -41,7 +41,7 @@ def detect_variants(zip_path: Path, turma_slug: str) -> dict:
     em data/<turma_slug>/raw/, estado privado deste upload (preserva o cru — D-13). Devolve o
     dict de discover.detect_variants acrescido de `raw_dir` para o caminho de processamento.
     """
-    raw_dir = settings.DATA_ROOT / turma_slug / "raw"
+    raw_dir = data_layout.raw_upload_dir(turma_slug)
     discover.extract_zip(Path(zip_path), raw_dir)
     variants = discover.detect_variants(raw_dir)
     variants["raw_dir"] = raw_dir

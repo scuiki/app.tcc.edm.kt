@@ -60,4 +60,8 @@ def test_every_consumer_reads_the_shared_root(monkeypatch, tmp_path):
         )
 
     # E o caminho derivado de fato aponta para o tmp — não é só ausência de atributo.
-    assert tmp_path in eda.canonical_parquet_path("Turma X", "Assignment 439").parents
+    from edmkt_app import data_layout
+    from edmkt_app.values import ProgSnapAssignmentId, TurmaSlug
+
+    path = data_layout.cleaned_submissions_path(TurmaSlug("turma-x"), ProgSnapAssignmentId(439))
+    assert tmp_path in path.parents

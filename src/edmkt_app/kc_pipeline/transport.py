@@ -9,11 +9,9 @@ from __future__ import annotations
 from pathlib import Path
 
 from edmkt_app.kc_cache import PROMPT_VERSION, cache_get, cache_put, kc_input_hash
-from edmkt_app import settings
 from edmkt_app.kc_pipeline.settings import MODEL_ID
 from edmkt_app.llm.claude_cli import ClaudeCLIClient
 from edmkt_app.llm.validation import call_with_retry
-from edmkt_app.values import ProgSnapAssignmentId, TurmaSlug
 
 
 def _llm_generate(system: str, prompt: str, schema: dict) -> dict:
@@ -56,8 +54,3 @@ class _CachedLLM:
         )
         return parsed
 
-
-def _kc_cache_dir(turma_slug: TurmaSlug, progsnap_aid: ProgSnapAssignmentId) -> Path:
-    # Diretório de cache derivado do slug interno + aid (nunca input de usuário) — sem traversal
-    # (KC-04). Espelha data/<slug>/kc/ dos artefatos do TCC.
-    return settings.DATA_ROOT / turma_slug / "kc" / f"assignment_{progsnap_aid}"
