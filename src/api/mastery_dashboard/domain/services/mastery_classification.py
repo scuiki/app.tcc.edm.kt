@@ -6,19 +6,12 @@ Não são ciência do modelo: são heurísticas do protótipo para o professor l
 
 from __future__ import annotations
 
-from enum import StrEnum
+from api.mastery_dashboard.domain.value_objects.mastery_level import MasteryLevel
+from api.mastery_dashboard.domain.value_objects.student_mastery_matrix import StudentMasteryMatrix
 
 LOW_MASTERY_THRESHOLD = 0.40
 HIGH_MASTERY_THRESHOLD = 0.70
 AT_RISK_LOW_KC_COUNT = 3
-
-StudentMasteryMatrix = dict[tuple[str, int], float]  # {(student_id, kc_id): mastery}
-
-
-class MasteryLevel(StrEnum):
-    LOW = "low"  # abaixo de 0,40
-    MEDIUM = "medium"  # de 0,40 a 0,70, inclusive
-    HIGH = "high"  # acima de 0,70
 
 
 def classify_mastery_level(mastery: float) -> MasteryLevel:

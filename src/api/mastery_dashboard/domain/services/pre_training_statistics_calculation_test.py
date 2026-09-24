@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import pytest
 
-from api.mastery_dashboard.domain.pre_training_statistics import (
-    PreTrainingStatistics,
+from api.mastery_dashboard.domain.value_objects.pre_training_statistics import PreTrainingStatistics
+from api.mastery_dashboard.domain.services.pre_training_statistics_calculation import (
     compile_error_rate_by_assignment,
     learning_curve,
     success_rate_by_assignment,

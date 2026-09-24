@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from api.mastery_dashboard.domain.student_mastery_entity import StudentMastery
-from api.mastery_dashboard.infrastructure.sqlite_student_mastery_repository import (
+from api.mastery_dashboard.domain.entities.student_mastery_entity import StudentMastery
+from api.mastery_dashboard.infrastructure.repositories.sqlite_student_mastery_repository import (
     SqliteStudentMasteryRepository,
 )
 

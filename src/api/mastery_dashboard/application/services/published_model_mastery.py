@@ -13,10 +13,12 @@ from api.assignments.domain.interfaces.assignment_repository import IAssignmentR
 from api.assignments.domain.interfaces.classroom_repository import IClassroomRepository
 from api.classroom_import.domain.interfaces.cleaned_submissions_store import ICleanedSubmissionsStore
 from api.knowledge_components.domain.interfaces.qmatrix_repository import IQMatrixRepository
-from api.mastery_dashboard.domain.mastery_level import StudentMasteryMatrix
-from api.mastery_dashboard.domain.student_mastery_entity import StudentMastery
-from api.mastery_dashboard.domain.student_mastery_repository import StudentMasteryRepository
-from api.mastery_dashboard.domain.trained_model_info import TrainedModelInfo
+from api.mastery_dashboard.domain.value_objects.student_mastery_matrix import StudentMasteryMatrix
+from api.mastery_dashboard.domain.entities.student_mastery_entity import StudentMastery
+from api.mastery_dashboard.domain.interfaces.student_mastery_repository import (
+    IStudentMasteryRepository,
+)
+from api.mastery_dashboard.domain.value_objects.trained_model_info import TrainedModelInfo
 from api.model_training.domain.interfaces.student_mastery_predictor import IStudentMasteryPredictor
 from api.model_training.domain.entities.trained_model_entity import TrainedModel
 from api.model_training.domain.interfaces.trained_model_repository import ITrainedModelRepository
@@ -32,7 +34,7 @@ class PublishedModelMastery:
         cleaned_submissions: ICleanedSubmissionsStore,
         trained_models: ITrainedModelRepository,
         qmatrix: IQMatrixRepository,
-        student_masteries: StudentMasteryRepository,
+        student_masteries: IStudentMasteryRepository,
         predictor: IStudentMasteryPredictor,
         unit_of_work: IUnitOfWork,
     ) -> None:

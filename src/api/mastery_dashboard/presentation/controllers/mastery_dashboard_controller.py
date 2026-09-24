@@ -8,14 +8,14 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Depends
 
-from api.mastery_dashboard.application.get_mastery_use_case import GetMasteryUseCase
-from api.mastery_dashboard.application.get_pre_training_statistics_use_case import (
+from api.mastery_dashboard.application.use_cases.get_mastery_use_case import GetMasteryUseCase
+from api.mastery_dashboard.application.use_cases.get_pre_training_statistics_use_case import (
     GetPreTrainingStatisticsUseCase,
 )
-from api.mastery_dashboard.application.get_recommendations_use_case import (
+from api.mastery_dashboard.application.use_cases.get_recommendations_use_case import (
     GetRecommendationsUseCase,
 )
-from api.mastery_dashboard.application.mastery_dashboard_dto import (
+from api.mastery_dashboard.application.dtos.mastery_dashboard_dto import (
     MasteryResponseDTO,
     PreTrainingStatisticsResponseDTO,
     RecommendationsResponseDTO,

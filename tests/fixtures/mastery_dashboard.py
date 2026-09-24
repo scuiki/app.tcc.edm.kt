@@ -17,8 +17,8 @@ from api.classroom_import.infrastructure.implementations.parquet_cleaned_submiss
 from api.knowledge_components.infrastructure.repositories.sqlite_qmatrix_repository import (
     SqliteQMatrixRepository,
 )
-from api.mastery_dashboard.application.published_model_mastery import PublishedModelMastery
-from api.mastery_dashboard.infrastructure.sqlite_student_mastery_repository import (
+from api.mastery_dashboard.application.services.published_model_mastery import PublishedModelMastery
+from api.mastery_dashboard.infrastructure.repositories.sqlite_student_mastery_repository import (
     SqliteStudentMasteryRepository,
 )
 from api.model_training.domain.services.training_dataset_loading import load_training_dataset

@@ -8,10 +8,13 @@ from api.assignments.domain.value_objects.classroom_slug import ClassroomSlug
 from api.assignments.domain.services.existing_assignment import get_existing_assignment
 from api.assignments.domain.value_objects.progsnap_assignment_id import ProgSnapAssignmentId
 from api.classroom_import.domain.interfaces.cleaned_submissions_store import ICleanedSubmissionsStore
-from api.mastery_dashboard.application.mastery_dashboard_dto import (
+from api.mastery_dashboard.application.dtos.mastery_dashboard_dto import (
     PreTrainingStatisticsResponseDTO,
 )
-from api.mastery_dashboard.domain.pre_training_statistics import PreTrainingStatistics
+from api.mastery_dashboard.domain.value_objects.pre_training_statistics import PreTrainingStatistics
+from api.mastery_dashboard.domain.services.pre_training_statistics_calculation import (
+    compute_pre_training_statistics,
+)
 from api.shared.domain.errors.not_found import NotFound
 
 
@@ -38,7 +41,7 @@ class GetPreTrainingStatisticsUseCase:
         # modelo. Leem o dado INTEIRO (com Compile.Error): a taxa de erro de compilação depende
         # justamente do que o recorte de treino remove.
         statistics = (
-            PreTrainingStatistics.of(self._cleaned_submissions.read(slug, progsnap_id))
+            compute_pre_training_statistics(self._cleaned_submissions.read(slug, progsnap_id))
             if self._cleaned_submissions.exists(slug, progsnap_id)
             else PreTrainingStatistics.empty()
         )

@@ -1,4 +1,6 @@
-"""ReinforcementRecommendation: o que reforçar em aula, do KC mais fraco ao mais forte. Sem LLM.
+"""Monta as ReinforcementRecommendation: o que reforçar em aula, do KC mais fraco ao mais forte.
+
+Sem LLM.
 
 O texto usa as mesmas faixas que classificam a matriz, então a recomendação e o dashboard sempre
 concordam.
@@ -6,23 +8,15 @@ concordam.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-
-from api.mastery_dashboard.domain.mastery_level import MasteryLevel, classify_mastery_level
+from api.mastery_dashboard.domain.value_objects.mastery_level import MasteryLevel
+from api.mastery_dashboard.domain.services.mastery_classification import classify_mastery_level
+from api.mastery_dashboard.domain.value_objects.reinforcement_recommendation import ReinforcementRecommendation
 
 _GUIDANCE = {
     MasteryLevel.LOW: "domínio baixo na turma — priorize reforço",
     MasteryLevel.MEDIUM: "domínio parcial — vale revisar",
     MasteryLevel.HIGH: "domínio consolidado",
 }
-
-
-@dataclass(frozen=True)
-class ReinforcementRecommendation:
-    kc_id: int
-    kc_name: str
-    mean_mastery: float
-    text: str  # em pt-BR, exibido como está
 
 
 def recommend_reinforcement(
