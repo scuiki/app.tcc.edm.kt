@@ -6,7 +6,7 @@ from typing import Callable
 
 import pandas as pd
 
-from api.assignments.domain.value_objects.classroom_slug import ClassroomSlug
+from api.classrooms.domain.value_objects.classroom_slug import ClassroomSlug
 from api.assignments.domain.value_objects.progsnap_assignment_id import ProgSnapAssignmentId
 from api.knowledge_components.domain.interfaces.knowledge_component_generator import (
     GeneratedKnowledgeComponents,

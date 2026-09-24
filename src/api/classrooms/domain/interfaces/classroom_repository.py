@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Protocol
 
-from api.assignments.domain.entities.classroom_entity import Classroom
+from api.classrooms.domain.entities.classroom_entity import Classroom
 
 
 class IClassroomRepository(Protocol):

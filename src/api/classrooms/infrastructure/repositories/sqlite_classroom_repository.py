@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import sqlite3
 
-from api.assignments.domain.entities.classroom_entity import Classroom
+from api.classrooms.domain.entities.classroom_entity import Classroom
 
 
 def _to_entity(row: sqlite3.Row) -> Classroom:

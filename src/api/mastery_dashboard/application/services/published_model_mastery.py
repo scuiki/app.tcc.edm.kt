@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from api.assignments.domain.entities.assignment_entity import Assignment
 from api.assignments.domain.interfaces.assignment_repository import IAssignmentRepository
-from api.assignments.domain.interfaces.classroom_repository import IClassroomRepository
+from api.classrooms.domain.interfaces.classroom_repository import IClassroomRepository
 from api.classroom_import.domain.interfaces.submission_repository import ISubmissionRepository
 from api.knowledge_components.domain.interfaces.qmatrix_repository import IQMatrixRepository
 from api.mastery_dashboard.domain.value_objects.student_mastery_matrix import StudentMasteryMatrix

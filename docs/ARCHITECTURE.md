@@ -15,7 +15,8 @@ Os nomes seguem o [glossário](GLOSSARY.md).
 
 | Pasta | Responsabilidade |
 |---|---|
-| `api/assignments/` | `Classroom`, `Assignment` e o ciclo de `AssignmentStatus`. Todas as outras dependem dela |
+| `api/classrooms/` | `Classroom`, a turma do professor, e o `ClassroomSlug` que vira o diretório dela em `data/` |
+| `api/assignments/` | `Assignment` e o ciclo de `AssignmentStatus`. O assignment pertence a uma turma, e todas as outras funcionalidades dependem dele |
 | `api/classroom_import/` | Upload do ProgSnap2, validação, limpeza, checagem de treinabilidade |
 | `api/knowledge_components/` | Gerar KCs com o LLM, editar e aprovar a Q-matrix |
 | `api/model_training/` | Disparar e acompanhar o treino do Code-DKT, guardar os modelos |

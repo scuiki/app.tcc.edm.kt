@@ -73,6 +73,7 @@ type = "layers"
 containers = [
     "api.shared",
     "api.assignments",
+    "api.classrooms",
     "api.classroom_import",
     "api.knowledge_components",
     "api.model_training",
@@ -106,6 +107,31 @@ name = "assignments: de outra funcionalidade, só o domain/ (a presentation/ mon
 type = "forbidden"
 source_modules = ["api.assignments.domain", "api.assignments.application", "api.assignments.infrastructure"]
 forbidden_modules = [
+    "api.classrooms.application",
+    "api.classrooms.infrastructure",
+    "api.classrooms.presentation",
+    "api.classroom_import.application",
+    "api.classroom_import.infrastructure",
+    "api.classroom_import.presentation",
+    "api.knowledge_components.application",
+    "api.knowledge_components.infrastructure",
+    "api.knowledge_components.presentation",
+    "api.model_training.application",
+    "api.model_training.infrastructure",
+    "api.model_training.presentation",
+    "api.mastery_dashboard.application",
+    "api.mastery_dashboard.infrastructure",
+    "api.mastery_dashboard.presentation",
+]
+
+[[tool.importlinter.contracts]]
+name = "classrooms: de outra funcionalidade, só o domain/ (a presentation/ monta tudo e fica de fora)"
+type = "forbidden"
+source_modules = ["api.classrooms.domain", "api.classrooms.application", "api.classrooms.infrastructure"]
+forbidden_modules = [
+    "api.assignments.application",
+    "api.assignments.infrastructure",
+    "api.assignments.presentation",
     "api.classroom_import.application",
     "api.classroom_import.infrastructure",
     "api.classroom_import.presentation",
@@ -128,6 +154,9 @@ forbidden_modules = [
     "api.assignments.application",
     "api.assignments.infrastructure",
     "api.assignments.presentation",
+    "api.classrooms.application",
+    "api.classrooms.infrastructure",
+    "api.classrooms.presentation",
     "api.knowledge_components.application",
     "api.knowledge_components.infrastructure",
     "api.knowledge_components.presentation",
@@ -147,6 +176,9 @@ forbidden_modules = [
     "api.assignments.application",
     "api.assignments.infrastructure",
     "api.assignments.presentation",
+    "api.classrooms.application",
+    "api.classrooms.infrastructure",
+    "api.classrooms.presentation",
     "api.classroom_import.application",
     "api.classroom_import.infrastructure",
     "api.classroom_import.presentation",
@@ -166,6 +198,9 @@ forbidden_modules = [
     "api.assignments.application",
     "api.assignments.infrastructure",
     "api.assignments.presentation",
+    "api.classrooms.application",
+    "api.classrooms.infrastructure",
+    "api.classrooms.presentation",
     "api.classroom_import.application",
     "api.classroom_import.infrastructure",
     "api.classroom_import.presentation",
@@ -185,6 +220,9 @@ forbidden_modules = [
     "api.assignments.application",
     "api.assignments.infrastructure",
     "api.assignments.presentation",
+    "api.classrooms.application",
+    "api.classrooms.infrastructure",
+    "api.classrooms.presentation",
     "api.classroom_import.application",
     "api.classroom_import.infrastructure",
     "api.classroom_import.presentation",
@@ -196,8 +234,9 @@ forbidden_modules = [
     "api.model_training.presentation",
 ]
 
+
 [[tool.importlinter.contracts]]
 name = "shared/ não conhece nenhuma funcionalidade"
 type = "forbidden"
 source_modules = ["api.shared"]
-forbidden_modules = ["api.assignments", "api.classroom_import", "api.knowledge_components", "api.model_training", "api.mastery_dashboard"]
+forbidden_modules = ["api.assignments", "api.classrooms", "api.classroom_import", "api.knowledge_components", "api.model_training", "api.mastery_dashboard"]

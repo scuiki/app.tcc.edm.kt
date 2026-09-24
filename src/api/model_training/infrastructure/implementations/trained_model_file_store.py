@@ -11,7 +11,7 @@ from pathlib import Path
 
 import torch
 
-from api.assignments.domain.value_objects.classroom_slug import ClassroomSlug
+from api.classrooms.domain.value_objects.classroom_slug import ClassroomSlug
 from api.model_training.domain.value_objects.training_outcome import TrainingOutcome
 from api.model_training.domain.entities.trained_model_entity import TrainedModel
 from api.model_training.domain.value_objects.training_dataset import TrainingDataset
