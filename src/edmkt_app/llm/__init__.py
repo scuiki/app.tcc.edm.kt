@@ -2,7 +2,7 @@
 
 Reexporta o transporte (`call_claude`, `ClaudeCLIClient`), as exceções de classificação
 (`TransientLLMError`, `EmptyContentError`) e os helpers de validação/retry. O core puro
-(`edmkt_core.kc.ports.LLMClient`) declara o contrato; este pacote o implementa via o binário
+(`ml.kc_generation.llm_client.LLMClient`) declara o contrato; este pacote o implementa via o binário
 `claude` — o SDK `anthropic` nunca é importado.
 """
 

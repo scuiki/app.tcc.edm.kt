@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import sqlite3
 
-from edmkt_core.mastery import at_risk_students, critical_kcs
+from edmkt_app.mastery_rules import find_critical_knowledge_components, find_students_at_risk
 
 from edmkt_app.use_cases.base import require_assignment
 from edmkt_app.use_cases.uncertainty_frame import uncertainty_frame
@@ -29,7 +29,7 @@ class GetMasteryUseCase:
                 for (subject_id, kc_id), mastery in matrix.items()
             ],
             "critical_kcs": [
-                {"kc_id": kc_id, "mean_mastery": mean} for kc_id, mean in critical_kcs(matrix)
+                {"kc_id": kc_id, "mean_mastery": mean} for kc_id, mean in find_critical_knowledge_components(matrix)
             ],
-            "at_risk_students": at_risk_students(matrix),
+            "at_risk_students": find_students_at_risk(matrix),
         }

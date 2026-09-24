@@ -78,7 +78,7 @@ def upload_and_detect(
 
     return {
         # str(): o value object é interno. Serializado cru, o FastAPI emitiria {"value": ...} e
-        # quebraria o contrato — mesma fronteira do desembrulho antes do edmkt_core.
+        # quebraria o contrato — mesma fronteira do desembrulho antes do ml.
         "turma_slug": str(slug),
         "raw_dir": str(variants["raw_dir"]),
         "main_tables": [str(p) for p in variants["main_tables"]],

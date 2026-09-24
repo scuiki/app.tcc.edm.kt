@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import sqlite3
 
-from edmkt_core.mastery import critical_kcs
+from edmkt_app.mastery_rules import find_critical_knowledge_components
 
 from edmkt_app.persistence import repositories as repos
 from edmkt_app.recommendations import recommend_reinforcement
@@ -25,7 +25,7 @@ class GetRecommendationsUseCase:
         }
         kc_means = [
             (kc_id, names.get(kc_id, f"KC {kc_id}"), mean)
-            for kc_id, mean in critical_kcs(matrix)
+            for kc_id, mean in find_critical_knowledge_components(matrix)
         ]
         return {
             "assignment_id": assignment_id,

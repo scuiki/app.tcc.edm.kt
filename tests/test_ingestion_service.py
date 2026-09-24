@@ -2,7 +2,7 @@
 
 Cobre o comportamento de BORDA que os estágios puros (planos 02-04) não exercitam: o commit
 atômico (D-06 — falha no meio não deixa resto), o round-trip de colunas do Parquet (D-13 — o
-seam do edmkt_core), a preservação do cru (D-13) e a trava global (Lock Timing — busy não
+seam do ml), a preservação do cru (D-13) e a trava global (Lock Timing — busy não
 persiste, release garantido sob exceção). Herméticos, CPU-only, sobre `tmp_db` + tmp_path;
 NUNCA o CSEDM real (Pitfall 2). As asserções pinam invariantes (0 linhas / colunas do seam /
 holder NULL), nunca valores mágicos de AUC. Espelha o estilo de rollback de test_artifacts.
@@ -124,7 +124,7 @@ def test_parquet_roundtrip_columns_and_score_continuous(tmp_db, data_root):
     pq = data_root / "turma-x" / "clean" / "assignment_439.parquet"
     back = pd.read_parquet(pq)
 
-    # As 9 colunas do seam edmkt_core, exatamente (D-13).
+    # As 9 colunas do seam ml, exatamente (D-13).
     assert set(back.columns) == set(clean.CANONICAL_COLUMNS)
     # Score contínuo preservado: o 0.5 não foi destruído na binarização (Pitfall 4).
     assert 0.5 in set(back["score"].tolist())

@@ -12,7 +12,7 @@ from typing import Optional
 
 import torch
 
-from edmkt_core.models.code_dkt import CodeDKTModel
+from ml.code_dkt.model import CodeDKTModel
 
 from edmkt_app.persistence.artifacts.versioning import next_version_number
 from edmkt_app.persistence import models
@@ -55,7 +55,7 @@ class ArtifactStore:
         """Grava state_dict + vocab.pkl + config.json num v<N> write-once; devolve dir+hash.
 
         n_problems é derivado do modelo vivo (model.input_dim / model.fc.out_features — Open
-        Q1), evitando alterar o edmkt_core. O diretório é criado SEM exist_ok: re-gravar uma
+        Q1), evitando alterar o ml. O diretório é criado SEM exist_ok: re-gravar uma
         versão existente levanta FileExistsError (write-once, D-05/D-06)."""
         vdir = self._version_dir(assignment_id, version_number)
         # parents=True cria a árvore-pai que falte (turma/assignment/models) sem falhar se já

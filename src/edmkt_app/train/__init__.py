@@ -9,7 +9,7 @@ Parquet cru — training-serving skew), aquece o cache de paths, treina pelo sea
 artefato versionado e flipa `assignment.status` para `trained`.
 
 O subprocess abre a SUA conexão SQLite, NUNCA compartilha objeto Python com o web (Pitfall 2).
-`edmkt_core` é só CHAMADO — nenhum numeric é tocado (Pitfall 1).
+`ml` é só CHAMADO — nenhum numeric é tocado (Pitfall 1).
 
 Divisão espelhando kc_pipeline: `settings` · `stages` (o corpo) · `runner` (trava + falha) ·
 `__main__` (CLI).

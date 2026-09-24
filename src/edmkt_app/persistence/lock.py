@@ -4,7 +4,7 @@ Primeira trava persistente do projeto. A trava NÃO vive em memória (uma trava 
 não sobrevive a restart nem é observável por consulta — Anti-Pattern RESEARCH): ela é a
 linha id=1 de pipeline_lock (flag SQLite + status), adquirida por escrita condicional sob
 BEGIN IMMEDIATE e liberada de forma garantida via context manager (release ao terminar E ao
-falhar, SC3). Espelha set_global_seed como única porta de seeding: estado explícito,
+falhar, SC3). Espelha seed_all_random_generators como única porta de seeding: estado explícito,
 contido e observável (seeding.py).
 """
 

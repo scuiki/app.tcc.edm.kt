@@ -1,6 +1,6 @@
 """SQLite connection + explicit-transaction context manager (RESEARCH Pattern 1, D-03).
 
-First SQLite I/O in the project: edmkt_core is framework-free (D-01), so this lives in the
+First SQLite I/O in the project: ml is framework-free (D-01), so this lives in the
 app layer and depends inward. The connection contract (autocommit + FK ON + WAL) is the
 foundation the migration runner (D-02), the pipeline lock (D-07/MODEL-03) and the atomic
 flip (D-06/MODEL-04) all build on.

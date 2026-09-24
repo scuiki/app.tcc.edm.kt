@@ -103,7 +103,7 @@ Os jobs (`TrainingJob`, `KnowledgeComponentGenerationJob`) têm os estados `pend
 |---|---|---|---|
 | 1 | `select_sample_solutions()` | Escolhe até 5 soluções corretas e diversas por problema | `diversity_sample` |
 | 2 | `generate_candidate_kcs()` | Pede ao LLM os KCs que cada problema exige | `generate_kcs_for_problem` |
-| 3 | `group_similar_kcs()` | Agrupa os nomes de KC parecidos (SBERT + clustering hierárquico) | `select_best_n_clusters` |
+| 3 | `choose_kc_group_count()` + `group_similar_kcs()` | Escolhe quantos grupos (silhouette) e agrupa os nomes de KC parecidos (SBERT + clustering hierárquico) | `select_best_n_clusters`, `_cluster_with_n` |
 | 4 | `name_kc_group()` | Pede ao LLM um nome para cada grupo | `label_cluster` |
 | 5 | `build_qmatrix()` | Monta a Q-matrix problema × KC | `build_qmatrix` |
 | — | `LLMResponseCache` | As respostas do LLM guardadas por hash, para não pagar duas vezes | `kc_cache` |

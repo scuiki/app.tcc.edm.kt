@@ -3,7 +3,7 @@
 `call_claude` invoca o binário `claude` em modo print (`-p`) via `subprocess.run` em list-form,
 restringe a saída por `--json-schema` e desabilita todo tool, depois parseia
 `envelope.structured_output` (o contrato confirmado ao vivo em 05-RESEARCH §Pattern 1).
-`ClaudeCLIClient` adapta isso ao `edmkt_core.kc.ports.LLMClient` Protocol (DIP). O SDK
+`ClaudeCLIClient` adapta isso ao `ml.kc_generation.llm_client.LLMClient` Protocol (DIP). O SDK
 `anthropic` NUNCA é importado: a auth é a credencial OAuth de subscription resolvida pelo CLI.
 
 A classificação de falhas (`TransientLLMError` vs `EmptyContentError`) e o retry com backoff
@@ -110,7 +110,7 @@ def call_claude(
 
 
 class ClaudeCLIClient:
-    """Adapta `call_claude` ao `edmkt_core.kc.ports.LLMClient` Protocol (DIP).
+    """Adapta `call_claude` ao `ml.kc_generation.llm_client.LLMClient` Protocol (DIP).
 
     O core puro recebe um LLMClient injetado e nunca toca subprocess/anthropic; trocar o
     transporte (ex.: mock nos testes) é trocar a instância.

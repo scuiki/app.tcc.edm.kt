@@ -158,7 +158,7 @@ def test_reload_contract_no_size_mismatch(tmp_path):
     # Reconstruir um CodeDKTModel real via meta.json (todos os args de construção) e
     # load_state_dict NÃO levanta RuntimeError de shape (Pitfall 1). Usa o modelo de verdade,
     # não o tiny_model, para exercitar o contrato completo de reconstrução.
-    from edmkt_core.models.code_dkt import CodeDKTModel
+    from ml.code_dkt.model import CodeDKTModel
 
     # CodeDKTModel real: input_dim=2M, output_dim=M (code_dkt.py:148,150) — distintos.
     M = 2  # n_problems = M; input_dim = 2M
@@ -319,7 +319,7 @@ def test_reader_and_writer_agree_on_the_root(tmp_path):
     a guarda passava a valer sobre a árvore data/ inteira — inclusive data/<turma>/raw/, que é
     onde o conteúdo do zip do professor é extraído.
     """
-    from edmkt_core.models.code_dkt import CodeDKTModel
+    from ml.code_dkt.model import CodeDKTModel
 
     M = 2
     model = CodeDKTModel(

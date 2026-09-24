@@ -37,7 +37,7 @@ def test_run_program_only_does_not_mutate_the_caller_frame():
 
 
 def test_run_program_only_reindexes():
-    # build_sequences/split_by_subject iteram por posição em vários pontos; um índice com
+    # build_student_sequences/split_students_into_train_and_test iteram por posição em vários pontos; um índice com
     # buracos (herdado do recorte) é fonte de desalinhamento silencioso.
     out = utils.run_program_only(_mixed_stream())
 

@@ -5,7 +5,7 @@ de `_slug`, `ProgSnapAssignmentId` 5 de `_progsnap_aid`, `CodeStateId` o `_safe_
 `ConfinedPath` o `_confine`.
 
 Regra de fronteira: o VO é construído e validado AQUI, na app layer, e desembrulhado para
-primitivo antes de sair dela — antes de entrar em `edmkt_core` (camada congelada, que compara
+primitivo antes de sair dela — antes de entrar em `ml` (camada congelada, que compara
 com colunas de DataFrame) e antes de virar corpo de resposta HTTP (serializado cru, o FastAPI
 emitiria `{"value": ...}` e quebraria o contrato).
 

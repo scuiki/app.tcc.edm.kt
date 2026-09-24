@@ -32,12 +32,12 @@ _JAVA_BODIES = [
 ]
 
 
-def _row(subject, problem, ts, score, code, csid):
+def _row(subject, problem, ts, score, code, snapshot_id):
     return {
         "student_id": subject,
         "progsnap_assignment_id": ASSIGNMENT_ID,
         "problem_id": problem,
-        "code_snapshot_id": csid,
+        "code_snapshot_id": snapshot_id,
         "code": code,
         "score": score,
         "submitted_at": ts,
@@ -151,7 +151,7 @@ def test_content_hard_fail_marks_failed_nothing_persisted(tmp_db, data_root, mon
 def test_small_dataset_skips_clustering_no_crash(tmp_db, data_root, monkeypatch):
     # CR-01: 2..10 nomes únicos de KC — abaixo do menor candidato {10,12,15}. O caminho real
     # é NÃO clusterizar (cada nome único = seu próprio cluster), sem tocar SBERT/silhouette.
-    # Antes do fix: select_best_n_clusters estourava ValueError em max() de dict vazio → job failed.
+    # Antes do fix: choose_kc_group_count estourava ValueError em max() de dict vazio → job failed.
     conn = tmp_db
     assignment_id, job_id = _seed_kc_ready(conn, data_root)
 
