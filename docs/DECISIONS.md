@@ -200,6 +200,18 @@ esquecesse uma escrevia no `data/` real.
 **`connect()` usa `isolation_level=None`.** O controle de transação padrão do `sqlite3` comita
 sozinho antes de DDL e quebraria a migration que aplica o DDL e o `user_version` juntos.
 
+**`connect()` usa `check_same_thread=False`.** O FastAPI abre a conexão da requisição (a
+dependência) numa thread do pool e roda a rota em outra. Com uma requisição por vez o pool costuma
+reusar a mesma thread, e com duas em paralelo o `sqlite3` recusava a conexão e a api respondia 500.
+É seguro porque cada requisição tem a própria conexão e a usa em sequência, nunca em duas threads
+ao mesmo tempo, e o escritor continua único.
+
+**O CLI do Claude é montado pelo link `~/.local/bin/claude`.** A montagem antiga apontava para uma
+versão fixa em `~/.local/share/claude/versions/`. Quando o CLI se atualizou e apagou aquela versão,
+o Docker criou uma pasta vazia no lugar, e toda geração de KCs passou a falhar com `Permission
+denied`. O link é o que o próprio CLI mantém apontando para a versão atual, e o Docker o resolve ao
+subir o container.
+
 **O `vocab.pkl` é lido com `pickle` sem restrição.** Por isso o diretório da versão, que vem do
 banco, é confinado ao `models/` da turma antes de abrir o arquivo. Um diretório adulterado viraria
 execução de código.

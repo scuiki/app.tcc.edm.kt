@@ -13,7 +13,7 @@
 set -euo pipefail
 
 REPO="/srv/dev/studies/app.tcc.edm.kt"
-CLAUDE_BIN="/home/leokuntz/.local/share/claude/versions/2.1.185"
+CLAUDE_BIN="/home/leokuntz/.local/bin/claude"
 PORT="${EDMKT_PORT:-8099}"
 BIND_IP="${EDMKT_BIND_IP:-127.0.0.1}"   # 127.0.0.1 = local only; 100.96.0.53 = Tailscale
 

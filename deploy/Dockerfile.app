@@ -2,9 +2,9 @@
 # Derives FROM the CORE-03 reproducibility anchor (edmkt-core:dev) so the regression-test numerics
 # image stays pure: this layer only ADDS a runtime concern — the pre-baked SBERT model.
 # The `claude` CLI (D-01 subscription transport) and the OAuth credential are deliberately NOT
-# baked: they are mounted read-only at run time (see run-app.sh). That pins the host's verified
-# CLI version (2.1.185) and keeps the secret out of the image layers (threat model: no credential
-# in env, no credential in image).
+# baked: they are mounted read-only at run time (see docker-compose.yml). The mount follows the
+# host's current CLI version and keeps the secret out of the image layers (threat model: no
+# credential in env, no credential in image).
 FROM edmkt-core:dev
 
 # Pre-bake the SBERT model so KC-gen never downloads at run time (offline reliability on nitro).

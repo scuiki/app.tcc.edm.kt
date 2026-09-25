@@ -27,10 +27,12 @@ services:
       - label=disable
     volumes:
       - ./:/app
-      # Subscription transport (D-01): the host's verified claude CLI + the two OAuth credential files
-      # are mounted READ-ONLY — never baked into the image, never via env (threat model: no secret in
-      # the web service, T-06.1-14; credential only on the api).
-      - /home/leokuntz/.local/share/claude/versions/2.1.185:/usr/local/bin/claude:ro
+      # Subscription transport (D-01): the host's claude CLI + the two OAuth credential files are
+      # mounted READ-ONLY — never baked into the image, never via env (threat model: no secret in
+      # the web service, T-06.1-14; credential only on the api). ~/.local/bin/claude is the link the
+      # CLI keeps pointing at its current version, resolved when the container starts: an update
+      # that deletes an old version no longer leaves an empty directory in its place.
+      - /home/leokuntz/.local/bin/claude:/usr/local/bin/claude:ro
       - /home/leokuntz/.claude/.credentials.json:/root/.claude/.credentials.json:ro
       - /home/leokuntz/.claude.json:/root/.claude.json:ro
     environment:

@@ -8,7 +8,8 @@ from typing import Iterator
 
 # isolation_level=None ativa autocommit, BEGIN/COMMIT explícitos evitam o commit implícito do DDL.
 def connect(path: str) -> sqlite3.Connection:
-    conn = sqlite3.connect(path, isolation_level=None)
+    # O FastAPI abre a conexão numa thread do pool e usa em outra, em sequência e nunca juntas
+    conn = sqlite3.connect(path, isolation_level=None, check_same_thread=False)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA journal_mode=WAL;")
     conn.execute("PRAGMA foreign_keys=ON;")  # OFF por padrão no SQLite, precisa ativar por conexão
