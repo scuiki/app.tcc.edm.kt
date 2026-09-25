@@ -16,6 +16,12 @@ export function pathOf(hash: string): string {
   return hash.replace(/^#/, '').split('?')[0]
 }
 
+// Um parâmetro da query do hash, com '#/knowledge-components?classroom=3' dando '3' para classroom
+export function hashParam(hash: string, name: string): string | null {
+  const query = hash.split('?')[1] ?? ''
+  return new URLSearchParams(query).get(name)
+}
+
 export function useHashPath(): string {
   return pathOf(useSyncExternalStore(subscribe, readHash))
 }

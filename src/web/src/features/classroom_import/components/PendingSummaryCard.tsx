@@ -5,7 +5,7 @@ import { Button } from '../../../components/ui/Button'
 import { Card } from '../../../components/ui/Card'
 import type { ImportCheck } from '../api/classroomImport'
 import { checkTitle } from '../importReport'
-import { OutcomeMessage } from './OutcomeMessage'
+import { OutcomeMessage } from '../../../components/OutcomeMessage'
 import './ImportCards.css'
 
 // O que ocupa o resumo entre a escolha do pacote e os dados gravados

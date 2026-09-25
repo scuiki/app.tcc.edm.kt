@@ -274,3 +274,30 @@ mostra a mensagem como veio. Por isso um aviso de viabilidade ainda não diz de 
 
 **Um segundo envio para a mesma turma segue, com aviso.** O backend cria exercícios novos em vez de
 substituir, e a tela avisa isso antes de processar, sem impedir.
+
+**A lista de conceitos do exercício sai invertendo a de problemas.** A tela de conceitos pede só
+`GET /assignments/{id}/problems/knowledge-components` e calcula quais problemas cada conceito
+marca. Pedir também `GET /knowledge-components` seria guardar o mesmo dado duas vezes, e as duas
+cópias poderiam discordar entre uma edição e a recarga.
+
+**O exercício treinado mostra os conceitos só para consulta.** O backend deixa editar, mas a
+situação continua `trained`, e os conceitos passariam a divergir dos que o modelo publicado usa.
+
+**A tela recusa deixar um problema sem conceito antes de chamar a api.** Os problemas e os conceitos
+de cada um já estão na tela, então ela sabe qual problema ficaria vazio e diz o número dele. O
+backend continua barrando, e se barrar mesmo assim, a mensagem dele aparece.
+
+**O xis só confirma quando o conceito sairia do exercício junto.** Tirar um conceito de um problema
+que continua marcado por ele em outros é rápido e fácil de refazer. Tirar do último problema remove
+o conceito, e sem restaurar.
+
+**O diálogo de extração não fecha enquanto o job roda.** Como reencontrar uma extração em andamento
+ficou fora do escopo, fechar perderia o acompanhamento. O Esc é bloqueado, o `Dialog` reabre se o
+navegador o fechar mesmo assim (o Chrome fecha no segundo Esc) e a aba pede confirmação antes de
+sair. A tela mostra os três estágios que o job informa, sem o progresso por problema.
+
+**A barra de ação e o `OutcomeMessage` subiram para `components/`.** Uma funcionalidade não importa
+os componentes de outra, e a importação e os conceitos precisavam dos dois.
+
+**Uma recarga que falha mantém o que já estava na tela.** O `QueryStates` só mostra o erro quando
+ainda não há dado; um soluço numa recarga em segundo plano não apaga uma lista que estava certa.

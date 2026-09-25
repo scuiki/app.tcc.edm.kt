@@ -83,6 +83,22 @@ describe('Dialog', () => {
     expect(onClose).toHaveBeenCalledOnce()
   })
 
+  it('keeps open on Esc when it is not dismissible', () => {
+    const onClose = vi.fn()
+    render(
+      <Dialog open onClose={onClose} title="Extraindo conceitos" dismissible={false}>
+        <p>Conteúdo</p>
+      </Dialog>,
+    )
+    const cancel = new Event('cancel', { cancelable: true })
+    fireEvent(screen.getByRole('dialog'), cancel)
+    expect(cancel.defaultPrevented).toBe(true)
+
+    fireEvent(screen.getByRole('dialog'), new Event('close'))
+    expect(onClose).not.toHaveBeenCalled()
+    expect(screen.getByRole('dialog')).toHaveAttribute('open')
+  })
+
   it('opens with a clean field after cancelling a half-typed form', () => {
     render(<DialogWithField />)
     fireEvent.click(screen.getByRole('button', { name: 'Abrir' }))

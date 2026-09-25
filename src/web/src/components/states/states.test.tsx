@@ -70,6 +70,19 @@ describe('QueryStates', () => {
     expect(query.refetch).toHaveBeenCalledOnce()
   })
 
+  it('keeps the content when a background refetch fails', () => {
+    render(
+      <QueryStates
+        query={fakeQuery<string[]>({ isError: true, data: ['a', 'b'] })}
+        loadingLabel="Carregando…"
+      >
+        {content}
+      </QueryStates>,
+    )
+    expect(screen.getByText('a, b')).toBeInTheDocument()
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  })
+
   it('shows the empty node when the caller says the data is empty', () => {
     render(
       <QueryStates

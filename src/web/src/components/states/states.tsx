@@ -77,7 +77,10 @@ export function QueryStates<T>({
   children,
 }: QueryStatesProps<T>) {
   if (query.isPending) return <LoadingState label={loadingLabel} />
-  if (query.isError) return <ErrorState message={errorMessage} onRetry={() => query.refetch()} />
+  // O erro só ocupa o lugar quando não há dado, e uma recarga que falha mantém o que já estava
+  if (query.data === undefined) {
+    return <ErrorState message={errorMessage} onRetry={() => query.refetch()} />
+  }
   if (empty && isEmpty?.(query.data)) return empty
   return children(query.data)
 }

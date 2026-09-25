@@ -1,12 +1,12 @@
 import { useState } from 'react'
 
+import { PageActionBar } from '../../../components/PageActionBar'
 import { PageHeader } from '../../../components/PageHeader'
 import { Button } from '../../../components/ui/Button'
 import type { ClassroomSummary } from '../../classrooms/api/classrooms'
 import { useImportClassroomDataset, useUploadClassroomDataset } from '../api/classroomImport'
 import { fatalChecksOf, missingTableOf, outcomeOf, pathInUpload } from '../importReport'
 import { ClassroomAndFileCard, type PackageState } from './ClassroomAndFileCard'
-import { ImportActionBar } from './ImportActionBar'
 import { ImportResult } from './ImportResult'
 import { ImportSteps, type ImportStep } from './ImportSteps'
 import { PendingSummaryCard, type PendingStatus } from './PendingSummaryCard'
@@ -79,11 +79,19 @@ export function ClassroomImportFlow({ classrooms, onRestart }: ClassroomImportFl
           fileName={fileName}
           mainTable={pathInUpload(mainTable, detected)}
         />
-        <ImportActionBar message="Próximo passo: extrair os conceitos de cada exercício.">
+        <PageActionBar message="Próximo passo: extrair os conceitos de cada exercício.">
           <Button variant="secondary" onClick={onRestart}>
             Importar outros dados
           </Button>
-        </ImportActionBar>
+          <Button
+            variant="primary"
+            onClick={() => {
+              window.location.hash = `#/knowledge-components?classroom=${classroom.id}`
+            }}
+          >
+            Extrair conceitos
+          </Button>
+        </PageActionBar>
       </div>
     )
   }
@@ -110,7 +118,7 @@ export function ClassroomImportFlow({ classrooms, onRestart }: ClassroomImportFl
           <PendingSummaryCard status={pendingStatus} onRetry={runImport} />
         </div>
       </div>
-      <ImportActionBar
+      <PageActionBar
         message={
           importDataset.isPending
             ? 'Processando. Não feche esta página.'
@@ -129,7 +137,7 @@ export function ClassroomImportFlow({ classrooms, onRestart }: ClassroomImportFl
         <Button variant="primary" onClick={runImport} disabled={!canProcess}>
           {importDataset.isPending ? 'Processando…' : 'Processar dados'}
         </Button>
-      </ImportActionBar>
+      </PageActionBar>
     </div>
   )
 }

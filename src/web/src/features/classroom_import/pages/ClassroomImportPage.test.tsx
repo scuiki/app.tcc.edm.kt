@@ -247,6 +247,10 @@ describe('ClassroomImportPage, processing', () => {
     expect(screen.getByText('Compilações repetidas descartadas')).toBeInTheDocument()
     expect(screen.getByText(/69627 evento\(s\) Compile plain/)).toBeInTheDocument()
     expect(currentStep()).toHaveTextContent('Conferir')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Extrair conceitos' }))
+    expect(window.location.hash).toBe('#/knowledge-components?classroom=1')
+    window.location.hash = ''
   })
 
   it('keeps the choices and lists the failed check when the package is refused', async () => {

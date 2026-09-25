@@ -9,11 +9,20 @@ interface DialogProps {
   title: string
   // O de exclusão vira alertdialog, com o ícone de alerta ao lado do título
   tone?: 'default' | 'danger'
+  // Falso enquanto algo roda e não pode ser largado no meio, e aí o Esc não fecha
+  dismissible?: boolean
   children: ReactNode
 }
 
 // O dialog nativo já prende o foco, fecha no Esc e escurece o fundo
-export function Dialog({ open, onClose, title, tone = 'default', children }: DialogProps) {
+export function Dialog({
+  open,
+  onClose,
+  title,
+  tone = 'default',
+  dismissible = true,
+  children,
+}: DialogProps) {
   const ref = useRef<HTMLDialogElement>(null)
   const titleId = useId()
 
@@ -32,7 +41,14 @@ export function Dialog({ open, onClose, title, tone = 'default', children }: Dia
       className={`dialog dialog--${tone}`}
       role={tone === 'danger' ? 'alertdialog' : undefined}
       aria-labelledby={titleId}
-      onClose={onClose}
+      onCancel={(event) => {
+        if (!dismissible) event.preventDefault()
+      }}
+      onClose={() => {
+        // O Chrome fecha no segundo Esc mesmo com o cancel bloqueado, então reabre
+        if (!dismissible && open) ref.current?.showModal()
+        else onClose()
+      }}
     >
       {open ? (
         <>

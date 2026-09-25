@@ -1,8 +1,9 @@
 import type { ComponentType } from 'react'
-import { Database, LayoutGrid, Users, type LucideIcon } from 'lucide-react'
+import { Database, LayoutGrid, Layers, Users, type LucideIcon } from 'lucide-react'
 
 import { ClassroomImportPage } from '../features/classroom_import/pages/ClassroomImportPage'
 import { ClassroomsPage } from '../features/classrooms/pages/ClassroomsPage'
+import { KnowledgeComponentsPage } from '../features/knowledge_components/pages/KnowledgeComponentsPage'
 import { MasteryDashboardPage } from '../features/mastery_dashboard/pages/MasteryDashboardPage'
 
 export interface Route {
@@ -20,6 +21,12 @@ export const ROUTES: Route[] = [
     label: 'Importar dados',
     icon: Database,
     Page: ClassroomImportPage,
+  },
+  {
+    path: '/knowledge-components',
+    label: 'Conceitos',
+    icon: Layers,
+    Page: KnowledgeComponentsPage,
   },
   {
     path: '/mastery-dashboard',

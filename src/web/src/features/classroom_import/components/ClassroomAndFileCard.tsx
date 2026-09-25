@@ -7,7 +7,7 @@ import { SelectField } from '../../../components/ui/SelectField'
 import type { ClassroomSummary } from '../../classrooms/api/classrooms'
 import { UploadTooLargeError, type DetectedUpload } from '../api/classroomImport'
 import { missingTableOf, pathInUpload } from '../importReport'
-import { OutcomeMessage } from './OutcomeMessage'
+import { OutcomeMessage } from '../../../components/OutcomeMessage'
 import './ImportCards.css'
 import './ClassroomAndFileCard.css'
 
