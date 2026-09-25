@@ -66,6 +66,8 @@ describe('stageStateOf', () => {
     status,
     stage,
     error_message: null,
+    progress_done: null,
+    progress_total: null,
   })
 
   it('marks the stages before the current one as done', () => {

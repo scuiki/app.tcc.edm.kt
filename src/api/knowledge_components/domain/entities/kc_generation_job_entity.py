@@ -17,3 +17,6 @@ class KnowledgeComponentGenerationJob:
     started_at: str | None = None
     updated_at: str | None = None
     error_message: str | None = None
+    # Dentro do estágio, quantos itens já terminaram e de quantos, vazio sem itens para contar
+    progress_done: int | None = None
+    progress_total: int | None = None

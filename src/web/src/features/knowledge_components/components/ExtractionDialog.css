@@ -23,6 +23,18 @@
   flex-shrink: 0;
 }
 
+.extraction-stages__label {
+  flex-grow: 1;
+}
+
+/* Quantos problemas ou grupos do estágio atual já terminaram */
+.extraction-stages__progress {
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--color-text-muted);
+}
+
 .extraction-stages__item--done {
   color: var(--color-text-body);
 }

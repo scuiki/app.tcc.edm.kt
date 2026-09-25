@@ -430,7 +430,7 @@ def test_migration_0014_adds_soft_delete_to_classroom_and_assignment(tmp_path):
     run_migrations(conn, migrations_dir=_migrations_up_to(tmp_path, 13))
     _seed_assignment(conn)
 
-    run_migrations(conn)
+    run_migrations(conn, migrations_dir=_migrations_up_to(tmp_path, 14))
 
     assert _user_version(conn) == 14
     assert "deleted_at" in _column_names(conn, "classroom")
@@ -438,3 +438,20 @@ def test_migration_0014_adds_soft_delete_to_classroom_and_assignment(tmp_path):
     row = conn.execute("SELECT deleted_at FROM assignment;").fetchone()
     assert row[0] is None  # o que já existia continua ativo
 
+
+# 0015 sobre um banco em user_version=14, o job de KCs ganha o progresso dentro do estágio.
+def test_migration_0015_adds_progress_to_the_kc_job(tmp_path):
+    conn = connect(str(tmp_path / "app.db"))
+    run_migrations(conn, migrations_dir=_migrations_up_to(tmp_path, 14))
+    assignment_id = _seed_assignment(conn)
+    conn.execute(
+        "INSERT INTO kc_job (assignment_id, status, created_at) VALUES (?, 'done', 't0');",
+        (assignment_id,),
+    )
+
+    run_migrations(conn, migrations_dir=_migrations_up_to(tmp_path, 15))
+
+    assert _user_version(conn) == 15
+    assert {"progress_done", "progress_total"} <= set(_column_names(conn, "kc_job"))
+    row = conn.execute("SELECT progress_done, progress_total FROM kc_job;").fetchone()
+    assert (row[0], row[1]) == (None, None)  # o job que já existia fica sem progresso

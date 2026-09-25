@@ -149,7 +149,16 @@ describe('KnowledgeComponentsPage, choosing the exercise', () => {
 
 describe('KnowledgeComponentsPage, extracting', () => {
   it('shows the running stages and does not let the dialog or the tab close', async () => {
-    fakeApi({ job: { job_id: 7, status: 'running', stage: 'cluster', error_message: null } })
+    fakeApi({
+      job: {
+        job_id: 7,
+        status: 'running',
+        stage: 'cluster',
+        error_message: null,
+        progress_done: 3,
+        progress_total: 8,
+      },
+    })
     renderWithClient(<KnowledgeComponentsPage />)
     await openAssignment('Assignment 487')
     fireEvent.click(await screen.findByRole('button', { name: 'Extrair conceitos' }))
@@ -159,6 +168,7 @@ describe('KnowledgeComponentsPage, extracting', () => {
       'Agrupando os conceitos parecidos e nomeando cada grupo',
     )
     expect(current.closest('li')).toHaveAttribute('aria-current', 'step')
+    expect(current.closest('li')).toHaveTextContent('3 de 8')
     expect(within(dialog).queryByRole('button')).not.toBeInTheDocument()
 
     const cancel = new Event('cancel', { cancelable: true })
@@ -170,7 +180,16 @@ describe('KnowledgeComponentsPage, extracting', () => {
   })
 
   it('shows the result when the job is done and opens the draft to review', async () => {
-    fakeApi({ job: { job_id: 7, status: 'done', stage: 'qmatrix', error_message: null } })
+    fakeApi({
+      job: {
+        job_id: 7,
+        status: 'done',
+        stage: 'qmatrix',
+        error_message: null,
+        progress_done: null,
+        progress_total: null,
+      },
+    })
     renderWithClient(<KnowledgeComponentsPage />)
     await openAssignment('Assignment 487')
     fireEvent.click(await screen.findByRole('button', { name: 'Extrair conceitos' }))
@@ -191,6 +210,8 @@ describe('KnowledgeComponentsPage, extracting', () => {
         status: 'failed',
         stage: 'generate',
         error_message: 'claude timeout após 120s',
+        progress_done: null,
+        progress_total: null,
       },
     })
     renderWithClient(<KnowledgeComponentsPage />)

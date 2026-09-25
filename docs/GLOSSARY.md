@@ -84,6 +84,10 @@ Todo `Protocol` da `api/` começa com `I` e fica numa pasta `interfaces/` (ver
 Os jobs (`TrainingJob`, `KnowledgeComponentGenerationJob`) têm os estados `pending`,
 `running`, `done` e `failed`.
 
+O `KnowledgeComponentGenerationJob` informa também o progresso dentro do estágio atual, em
+`progress_done` e `progress_total`: quantos itens já terminaram, de quantos (problemas no `generate`,
+grupos na nomeação do `cluster`). Os dois ficam vazios quando o estágio não tem itens para contar.
+
 ## Dashboard
 
 | Nome no código | O que é | Nome antigo |

@@ -11,8 +11,6 @@ from api.knowledge_components.infrastructure.implementations.llm_call_retry impo
     TransientLLMError,
 )
 
-# Sem tool nenhum o LLM não faz I/O, o que também fecha a injeção de prompt via código de aluno.
-DISALLOWED_TOOLS = "Bash,Read,Edit,Write,WebSearch,WebFetch,Glob,Grep"
 
 
 def _neutral_cwd() -> str:
@@ -58,8 +56,12 @@ def call_claude(
         system,
         "--json-schema",
         json.dumps(schema),
-        "--disallowedTools",
-        DISALLOWED_TOOLS,
+        # Sem ferramenta nenhuma o LLM não faz I/O, e o contexto cai de 10 mil tokens para mil
+        "--tools",
+        "",
+        # Nenhum servidor MCP do host sobe a cada chamada, e nenhuma sessão fica gravada em disco
+        "--strict-mcp-config",
+        "--no-session-persistence",
     ]
     try:
         # list-form, sem shell, fecha command injection.

@@ -19,5 +19,10 @@ class GetKnowledgeComponentGenerationJobUseCase:
         if job is None:
             raise NotFound("job inexistente")
         return KnowledgeComponentGenerationJobDTO(
-            job_id=job.id, status=job.status, stage=job.stage, error_message=job.error_message
+            job_id=job.id,
+            status=job.status,
+            stage=job.stage,
+            error_message=job.error_message,
+            progress_done=job.progress_done,
+            progress_total=job.progress_total,
         )

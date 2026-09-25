@@ -23,7 +23,7 @@ class SqliteKnowledgeComponentGenerationJobRepository:
     def get(self, job_id: int) -> KnowledgeComponentGenerationJob | None:
         row = self._conn.execute(
             "SELECT id, assignment_id, status, created_at, stage, started_at, updated_at, "
-            "error_message FROM kc_job WHERE id = ?;",
+            "error_message, progress_done, progress_total FROM kc_job WHERE id = ?;",
             (job_id,),
         ).fetchone()
         if row is None:
@@ -37,6 +37,8 @@ class SqliteKnowledgeComponentGenerationJobRepository:
             started_at=row["started_at"],
             updated_at=row["updated_at"],
             error_message=row["error_message"],
+            progress_done=row["progress_done"],
+            progress_total=row["progress_total"],
         )
 
     def mark_running(self, job_id: int, started_at: str) -> None:
@@ -46,8 +48,17 @@ class SqliteKnowledgeComponentGenerationJobRepository:
         )
 
     def update_stage(self, job_id: int, stage: str, updated_at: str) -> None:
+        # O estágio novo começa sem progresso, o do anterior não vale para ele
         self._conn.execute(
-            "UPDATE kc_job SET stage = ?, updated_at = ? WHERE id = ?;", (stage, updated_at, job_id)
+            "UPDATE kc_job SET stage = ?, progress_done = NULL, progress_total = NULL, "
+            "updated_at = ? WHERE id = ?;",
+            (stage, updated_at, job_id),
+        )
+
+    def update_progress(self, job_id: int, done: int, total: int, updated_at: str) -> None:
+        self._conn.execute(
+            "UPDATE kc_job SET progress_done = ?, progress_total = ?, updated_at = ? WHERE id = ?;",
+            (done, total, updated_at, job_id),
         )
 
     def mark_done(self, job_id: int, updated_at: str) -> None:

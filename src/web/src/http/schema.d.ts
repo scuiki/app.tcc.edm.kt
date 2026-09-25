@@ -540,6 +540,10 @@ export interface components {
             stage: string | null;
             /** Error Message */
             error_message: string | null;
+            /** Progress Done */
+            progress_done: number | null;
+            /** Progress Total */
+            progress_total: number | null;
         };
         /** KnowledgeComponentWithProblemsDTO */
         KnowledgeComponentWithProblemsDTO: {

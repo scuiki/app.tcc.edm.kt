@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import threading
 from pathlib import Path
 
 from api.knowledge_components.infrastructure.implementations.kc_generation_model import (
@@ -14,6 +15,9 @@ from ml.kc_generation.llm_client import LLMClient
 
 # Nome fixo no código, nunca string controlada pelo usuário, fecha path traversal.
 _CACHE_FILENAME = "kc_cache.json"
+
+# As chamadas ao LLM rodam em paralelo, e sem a trava duas gravações perderiam uma resposta
+_FILE_LOCK = threading.Lock()
 
 
 def kc_input_hash(
@@ -50,7 +54,8 @@ def _load(base_path) -> dict:
 
 def cache_get(base_path, *, problem_id: str, key: str) -> dict | None:
     # Registro de (problem_id, key), chave obsoleta vira miss e o caller re-chama o LLM.
-    store = _load(base_path)
+    with _FILE_LOCK:
+        store = _load(base_path)
     record = store.get(str(problem_id))
     if record is None:
         return None
@@ -64,11 +69,12 @@ def cache_put(base_path, *, problem_id: str, key: str, record: dict) -> None:
     # Grava só a entrada de `problem_id`, read-modify-write do arquivo inteiro, preserva as irmãs.
     f = _cache_file(base_path)
     f.parent.mkdir(parents=True, exist_ok=True)
-    store = _load(base_path)
     # Garante o input_hash mesmo sem o caller passar, cache_get usa pra achar entrada obsoleta.
     record = {"input_hash": key, **record}
-    store[str(problem_id)] = record
-    f.write_text(json.dumps(store, ensure_ascii=False, sort_keys=True, indent=2))
+    with _FILE_LOCK:
+        store = _load(base_path)
+        store[str(problem_id)] = record
+        f.write_text(json.dumps(store, ensure_ascii=False, sort_keys=True, indent=2))
 
 
 # LLMClient com cache e retry, resposta já paga não é pedida de novo.

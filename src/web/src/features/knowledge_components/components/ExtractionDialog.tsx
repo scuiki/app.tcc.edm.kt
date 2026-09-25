@@ -104,7 +104,12 @@ function RunningStages({ job }: { job: GenerationJob | undefined }) {
               aria-current={state === 'current' ? 'step' : undefined}
             >
               <Icon className="extraction-stages__icon" size={17} aria-hidden="true" />
-              <span>{label}</span>
+              <span className="extraction-stages__label">{label}</span>
+              {state === 'current' && job?.progress_total ? (
+                <span className="extraction-stages__progress mono">
+                  {job.progress_done ?? 0} de {job.progress_total}
+                </span>
+              ) : null}
             </li>
           )
         })}

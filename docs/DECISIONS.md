@@ -73,6 +73,28 @@ O modelo é sempre passado por quem chama (o pin científico). A CLI roda fora d
 **Retry só para erro transitório.** Rede, 429, 5xx e timeout são refeitos com espera. Conteúdo vazio
 ou inválido sobe na hora, porque refazer não muda um conteúdo já gerado e gastaria cota.
 
+**As chamadas de um estágio rodam em paralelo, até 4 de cada vez.** As chamadas do `generate` (uma
+por problema) e as da nomeação (uma por grupo) não dependem umas das outras, e em sequência a
+extração de 10 problemas levava uns 8 minutos. O paralelismo fica só no gerador da `api/`: a
+amostragem das soluções continua em sequência e na ordem de antes, os prompts são os mesmos, e os
+resultados são juntados por problema e por grupo, então a ordem em que as chamadas terminam não
+muda nada do que o KCGen-KT vê. O limite de 4 é para não esbarrar no limite de uso da assinatura.
+O cache de respostas grava o arquivo inteiro a cada resposta e por isso tem uma trava, e o
+progresso do job é gravado pela thread que disparou as chamadas, então a conexão SQLite do worker
+nunca é usada por duas threads ao mesmo tempo.
+
+**A CLI roda sem ferramenta nenhuma (`--tools ""`).** Medido no container, cada chamada custa uns 5
+segundos fixos para a CLI subir, e nenhuma flag reduz isso. Sem ferramentas, somem do contexto as
+definições delas, cerca de 9.600 tokens de entrada por chamada (numa chamada mínima, de 10.766 para
+1.112). Isso poupa a cota da assinatura, o que pesa com 4 chamadas ao mesmo tempo, e fecha de vez
+qualquer I/O do LLM. `--strict-mcp-config` e `--no-session-persistence`
+não mudam o tempo hoje, mas impedem que um servidor MCP do host suba a cada chamada e que sessões
+se acumulem em disco. O cache não inclui as flags na chave, porque elas não mudam o prompt.
+
+**O job informa quantos itens do estágio já terminaram.** `progress_done` e `progress_total`
+mostram o "7 de 10" do diálogo, em problemas no `generate` e em grupos na nomeação. Um estágio novo
+começa sem progresso, para a tela nunca mostrar a contagem do anterior.
+
 **A Q-matrix não inventa vínculos.** `build_qmatrix`, no `ml/`, bate célula a célula com o
 `qmatrix_A439.csv` do TCC 1. Um problema sem KC fica com a linha zerada, e quem recusa isso é a
 validação da geração. Na aplicação, cada célula 1 vira um `ProblemKnowledgeComponent`.

@@ -65,7 +65,10 @@ def test_invokes_list_form_claude_print_with_schema(monkeypatch, fake_claude_env
     assert args[0] == "claude"
     assert "-p" in args
     assert "--json-schema" in args
-    assert "--disallowedTools" in args
+    # Nenhuma ferramenta disponível, o que também fecha a injeção de prompt via código de aluno
+    assert args[args.index("--tools") + 1] == ""
+    assert "--strict-mcp-config" in args
+    assert "--no-session-persistence" in args
     # --bare força ANTHROPIC_API_KEY e pula a autenticação OAuth da assinatura, nunca presente.
     assert "--bare" not in args
     # shell=True nunca é passado ao subprocess.run.

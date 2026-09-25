@@ -57,6 +57,9 @@ class RunKnowledgeComponentGenerationUseCase:
             assignment.classroom_id,
             assignment_id,
             on_stage=lambda stage: self._jobs.update_stage(job_id, stage, utc_now_iso()),
+            on_progress=lambda done, total: self._jobs.update_progress(
+                job_id, done, total, utc_now_iso()
+            ),
         )
         # Valida tudo antes de abrir a transação, problema sem KC reprova a geração inteira.
         generated.ensure_every_problem_has_a_kc()

@@ -11,3 +11,6 @@ class KnowledgeComponentGenerationJobDTO(BaseModel):
     status: JobStatus
     stage: str | None  # generate | cluster | qmatrix
     error_message: str | None
+    # Dentro do estágio, quantos problemas ou grupos já terminaram e de quantos
+    progress_done: int | None
+    progress_total: int | None

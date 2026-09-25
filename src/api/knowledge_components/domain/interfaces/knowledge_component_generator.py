@@ -39,6 +39,7 @@ class IKnowledgeComponentGenerator(Protocol):
         classroom_id: int,
         assignment_id: int,
         on_stage: Callable[[str], None],
+        on_progress: Callable[[int, int], None],
     ) -> GeneratedKnowledgeComponents:
-        # Roda o KCGen-KT sobre o dado limpo, `on_stage` recebe cada etapa nomeada.
+        # Roda o KCGen-KT sobre o dado limpo, `on_stage` recebe cada etapa e `on_progress` os itens
         ...

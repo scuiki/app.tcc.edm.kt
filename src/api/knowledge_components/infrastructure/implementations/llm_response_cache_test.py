@@ -1,6 +1,8 @@
 # Chave é o hash de tudo que determina a resposta, um acerto não chama o LLM, isolado por problema.
 from __future__ import annotations
 
+import threading
+
 from api.knowledge_components.infrastructure.implementations.llm_response_cache import (
     cache_get,
     cache_put,
@@ -76,3 +78,18 @@ def test_per_problem_isolation(tmp_path):
     assert cache_get(tmp_path, problem_id="2", key=key2) is None
     # E o problema 1 segue intacto.
     assert cache_get(tmp_path, problem_id="1", key=key1) is not None
+
+
+def test_parallel_writes_keep_every_answer(tmp_path):
+    # As chamadas ao LLM rodam em paralelo, e cada uma grava a sua resposta no mesmo arquivo
+    def write(i: int) -> None:
+        cache_put(tmp_path, problem_id=f"p{i}", key=f"k{i}", record={"parsed": {"i": i}})
+
+    threads = [threading.Thread(target=write, args=(i,)) for i in range(32)]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join()
+
+    for i in range(32):
+        assert cache_get(tmp_path, problem_id=f"p{i}", key=f"k{i}")["parsed"] == {"i": i}
