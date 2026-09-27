@@ -342,8 +342,9 @@ substituir, e a tela avisa isso antes de processar, sem impedir.
 marca. Pedir também `GET /knowledge-components` seria guardar o mesmo dado duas vezes, e as duas
 cópias poderiam discordar entre uma edição e a recarga.
 
-**O exercício treinado mostra os conceitos só para consulta.** O backend deixa editar, mas a
-situação continua `trained`, e os conceitos passariam a divergir dos que o modelo publicado usa.
+**O exercício treinado mostra os conceitos só para consulta.** Os conceitos de um exercício
+treinado ficam congelados, e o backend também recusa a edição, porque passariam a divergir dos que
+o modelo publicado usa.
 
 **A tela recusa deixar um problema sem conceito antes de chamar a api.** Os problemas e os conceitos
 de cada um já estão na tela, então ela sabe qual problema ficaria vazio e diz o número dele. O
@@ -356,10 +357,51 @@ o conceito, e sem restaurar.
 **O diálogo de extração não fecha enquanto o job roda.** Como reencontrar uma extração em andamento
 ficou fora do escopo, fechar perderia o acompanhamento. O Esc é bloqueado, o `Dialog` reabre se o
 navegador o fechar mesmo assim (o Chrome fecha no segundo Esc) e a aba pede confirmação antes de
-sair. A tela mostra os três estágios que o job informa, sem o progresso por problema.
+sair. A tela mostra os três estágios que o job informa, com a contagem do estágio atual.
 
 **A barra de ação e o `OutcomeMessage` subiram para `components/`.** Uma funcionalidade não importa
 os componentes de outra, e a importação e os conceitos precisavam dos dois.
 
 **Uma recarga que falha mantém o que já estava na tela.** O `QueryStates` só mostra o erro quando
 ainda não há dado; um soluço numa recarga em segundo plano não apaga uma lista que estava certa.
+
+**O contexto mora no endereço, e a navegação é um menu em árvore com breadcrumb.** Turma e
+exercício entram na rota (`/classrooms/:classroomId/assignments/:assignmentId/analysis`), então um
+F5 ou um link abrem no lugar certo e nenhuma tela precisa de seletor. Das opções desenhadas, o menu
+em árvore com o caminho no topo foi o que deixou claro onde o professor está sem ocupar a tela.
+
+**No menu, escolher uma linha só navega, e o sinal na ponta abre e fecha.** Quando o clique também
+abria, uma linha já aberta fechava ao ser escolhida, e a tela Turmas abria no menu a mesma lista que
+já mostra. A única abertura automática é a de uma tela de exercício, para a linha atual aparecer
+marcada. O que fica aberto é lembrado no navegador.
+
+**As tabelas da Análise seguem o estilo das tabelas acadêmicas, em Arial.** Um traço preto sob os
+rótulos, um cinza no fim, nenhum vertical e nenhum traço acima dos rótulos. A legenda numerada não
+entrou, para não destoar do resto do app. Os números ficam centralizados sob os rótulos, que também
+são centralizados. À direita, a convenção de tabela de dados, pesa pouco com números curtos e o
+"355 de 386" desalinha de qualquer jeito, e à esquerda o valor cola na coluna anterior.
+
+**As dicas de hover são um componente, e não o `title` nativo.** O navegador espera perto de um
+segundo antes de mostrar o `title`, e isso não se configura. O `Tooltip` aparece no hover ou no
+foco, fixo na janela para não ser cortado pela rolagem da tabela, e o leitor de tela continua lendo
+o `aria-label`.
+
+**A janela não rola, só o conteúdo.** A barra superior e o menu ficam parados sem `sticky`, que
+pediria a barra sticky também. A tabela oculta do histograma, que dá os números ao leitor de tela,
+fica dentro de um `div` escondido, porque uma tabela ignora o `clip` do `visually-hidden` e esticava
+a página centenas de pixels.
+
+**O Chart.js desenha só a curva de perda.** As barras e os histogramas das tabelas são CSS, porque
+são dezenas por tela e um canvas para cada seria pesado sem ganho. No teste, o `react-chartjs-2` é
+trocado por um componente vazio, porque o jsdom não tem canvas, e o teste lê a tabela oculta ao lado
+do gráfico.
+
+**O diálogo de treino repete o da extração, e a lista de estágios virou um componente.** Três
+estágios, a época atual e a curva de perda ao vivo, sem fechar enquanto o job roda. Ao terminar, a
+curva é buscada uma última vez, porque as épocas finais caem depois da última consulta. O AUC não
+aparece, pela decisão do dashboard, e a fração do código lida pelo parser Java aparece como um dado
+da qualidade do treino.
+
+**A nota do rodapé da Análise só explica o marcador.** Fonte e versão do modelo saíram, e a nota
+diz em uma frase que o cérebro marca os dados estimados pelo modelo. Ela só aparece com modelo
+treinado, quando há colunas marcadas.

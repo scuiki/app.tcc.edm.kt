@@ -89,9 +89,9 @@ grupos na nomeação do `cluster`). Os dois ficam vazios quando o estágio não 
 
 ## Dashboard
 
-A tela "Domínio da turma" entrega o dado, não a interpretação. Dois blocos, nunca na mesma régua:
-"o que aconteceu" (contagens das execuções, desde a importação) e "o que o modelo prevê" (só com
-modelo publicado). Sem níveis, faixas, recomendações ou cortes.
+A tela "Análise" de cada exercício entrega o dado, não a interpretação. Duas famílias, nunca na
+mesma régua: "o que aconteceu" (contagens das execuções, desde a importação) e "o que o modelo
+prevê" (só com modelo publicado). Sem níveis, faixas, recomendações ou cortes.
 
 | Nome no código | O que é | Nome antigo |
 |---|---|---|
@@ -106,6 +106,8 @@ modelo publicado). Sem níveis, faixas, recomendações ou cortes.
 | `KnowledgeComponentStatistics` | A taxa de acerto de um conceito, somando as execuções dos problemas que o exigem | — |
 | `StudentActivity` | O que um aluno fez: problemas completados e tentados, execuções e erros de compilação | — |
 | completar (`completed`) | Ter ao menos uma execução correta no problema | "fechar" |
+| dado estimado (`EstimatedMark`) | O marcador de cérebro antes do rótulo de toda coluna que vem do modelo | badge "previsto" |
+| recorrência (`recurrence`) | Em quantos problemas do exercício um conceito aparece. Com um só, o valor do conceito é o desse problema, evidência fraca | cobertura |
 | `compute_problem_statistics()` / `compute_knowledge_component_statistics()` / `compute_student_activity()` | Calculam as três contagens acima do dado limpo, sem modelo (`services/submission_statistics_calculation.py`) | `compute_pre_training_statistics()` |
 | `first_attempt_auc` | A métrica primária: AUC só sobre as primeiras tentativas. Fica no banco e no teste de regressão; não vai para a tela | `first_auc` |
 

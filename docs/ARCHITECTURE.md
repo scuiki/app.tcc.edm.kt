@@ -193,23 +193,31 @@ os processos: o estado do job vive em `training_job` / `kc_job`.
 camadas de componente e uma fronteira de conhecimento entre elas.
 
 ```
-app/          o casco: barra superior, menu, a tabela de rotas e o ErrorBoundary
+app/          o casco: barra superior, menu em árvore, a tabela de rotas e o ErrorBoundary
 components/
-  ui/         primitivas sem domínio (Button, Card, Dialog, TextField, SearchField, Badge)
+  ui/         primitivas sem domínio (Button, Card, Dialog, Tabs, Tooltip, StageList, RatioBar…)
   states/     os quatro estados de toda tela (carregando, erro, vazio, conteúdo)
-  …           outros componentes de produto, como o PageHeader
+  …           outros componentes de produto, como o PageHeader e o Breadcrumb
 features/
   <funcionalidade>/
     api/        os hooks de dados (TanStack Query) e os tipos do DTO
     components/ os componentes que conhecem o domínio
     pages/      a página que entra na tabela de rotas
 http/         o cliente (a via única de dados) e o schema.d.ts gerado do OpenAPI
-lib/          funções puras transversais (formatação, rota por hash)
+lib/          funções puras transversais (formatação, rota por hash, caminhos das telas)
 styles/       os tokens da linguagem visual
 ```
 
 As funcionalidades têm o nome das do backend (`classrooms`, `assignments`, `mastery_dashboard`…), e
-uma pasta só existe quando tem conteúdo. `assignments/` hoje só tem `api/`.
+uma pasta só existe quando tem conteúdo. `assignments/` e `model_training/` hoje só têm `api/`.
+
+### Rotas
+
+O endereço carrega o contexto, como em `#/classrooms/1/assignments/2/analysis`. A tabela de
+`app/routes.ts` casa o caminho com um padrão (`matchPath`, só ids inteiros) e passa os parâmetros à
+página, e `lib/paths.ts` monta os caminhos. Nenhuma tela tem seletor de turma ou de exercício. O
+menu lateral lista turma, exercício e as telas de cada exercício, e o `Breadcrumb` no topo de cada
+tela mostra o mesmo caminho.
 
 ### Fronteiras
 
@@ -231,8 +239,9 @@ arquivo real. O ESLint não serve aqui, porque com imports relativos `../../comp
   teste próprio fica no arquivo de quem o usa.
 - Estado é o mínimo que não se calcula. Estados que se excluem viram um `status` só, e uma seleção
   guarda o id, nunca o objeto.
-- `useEffect` só sincroniza com algo de fora do React (o único hoje é o do `Dialog`, que chama o
-  `showModal()` do DOM). A rota lê o hash com `useSyncExternalStore`, sem effect.
+- `useEffect` só sincroniza com algo de fora do React. Hoje são o `showModal()` do `Dialog`, o
+  aviso de `beforeunload` dos diálogos de job e o `localStorage` do menu. A rota lê o hash com
+  `useSyncExternalStore`, sem effect.
 - Um formulário nasce limpo por remontagem, nunca por effect de reset. O `Dialog` só renderiza o
   conteúdo aberto.
 - Sem `useMemo`, `useCallback` ou `memo` defensivos.
@@ -244,6 +253,11 @@ CSS puro, com os tokens de `styles/tokens.css` e um `.css` ao lado de cada compo
 destrutiva e o botão de ícone das linhas de tabela), e uma variante sem uso não nasce. O vermelho
 só marca recusa e exclusão; o dashboard usa um cinza para o observado e um azul para o previsto,
 nunca uma cor de alerta sobre um número.
+
+As tabelas da Análise usam Arial no estilo das tabelas de trabalho acadêmico, com um traço preto
+sob os rótulos, um cinza no fim e nenhum vertical. Barras e histogramas são CSS, e o Chart.js
+desenha só a curva de perda do treino. As dicas de hover usam o `Tooltip`, nunca o `title` nativo.
+A janela não rola, só o conteúdo, então a barra superior e o menu ficam parados.
 
 ### Verificação
 
