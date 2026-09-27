@@ -60,14 +60,6 @@ export function editErrorText(error: Error): string {
   return 'Não foi possível salvar. Verifique se a API está no ar e tente de novo.'
 }
 
-export const ASSIGNMENT_STATUS_LABEL: Record<AssignmentStatus, string> = {
-  statistics_only: 'Só estatísticas',
-  ready_for_kc_generation: 'Pronto para conceitos',
-  kc_draft: 'Rascunho de conceitos',
-  kc_approved: 'Conceitos aprovados',
-  trained: 'Modelo treinado',
-}
-
 // Só o rascunho e o aprovado se editam, e o treinado fica para consulta para não divergir do modelo
 export function isEditable(status: AssignmentStatus | null | undefined): boolean {
   return status === 'kc_draft' || status === 'kc_approved'

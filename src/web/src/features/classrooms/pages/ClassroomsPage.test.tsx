@@ -88,6 +88,15 @@ describe('ClassroomsPage, the table', () => {
     expect(screen.getByText('2 turmas')).toBeInTheDocument()
   })
 
+  it('links each name to the page of the classroom', async () => {
+    fakeApi()
+    renderWithClient(<ClassroomsPage />)
+    expect(await screen.findByRole('link', { name: 'CSEDM Spring 2019' })).toHaveAttribute(
+      'href',
+      '#/classrooms/2',
+    )
+  })
+
   it('shows a dash instead of zero for a classroom without data', async () => {
     fakeApi()
     renderWithClient(<ClassroomsPage />)

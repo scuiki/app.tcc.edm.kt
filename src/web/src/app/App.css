@@ -1,5 +1,5 @@
 .app {
-  min-height: 100vh;
+  height: 100vh;
   display: flex;
   flex-direction: column;
 }
@@ -27,45 +27,11 @@
   min-height: 0;
 }
 
-/* O menu em lista única, sem rótulos de seção */
-.side-menu {
-  width: 240px;
-  flex-shrink: 0;
-  padding: 16px 10px;
-  background: var(--color-surface);
-  border-right: 1px solid var(--color-menu-rule);
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.side-menu__item {
-  height: 38px;
-  padding: 0 12px;
-  border-radius: var(--radius);
-  display: flex;
-  align-items: center;
-  gap: 11px;
-  font-size: 13px;
-  color: var(--color-text-body);
-  text-decoration: none;
-  transition: background-color var(--transition);
-}
-
-.side-menu__item:hover {
-  background: var(--color-hover);
-}
-
-/* A página atual com fundo azul suave e texto azul, sem barra lateral */
-.side-menu__item[aria-current='page'] {
-  background: var(--color-accent-soft);
-  color: var(--color-accent-text);
-  font-weight: 600;
-}
-
+/* Só o conteúdo rola; a barra e o menu ficam parados na janela */
 .app__main {
   flex-grow: 1;
   min-width: 0;
+  overflow-y: auto;
   padding: 20px 28px 28px;
   display: flex;
   flex-direction: column;

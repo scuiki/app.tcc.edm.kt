@@ -1,43 +1,51 @@
 import type { ComponentType } from 'react'
-import { Database, LayoutGrid, Layers, Users, type LucideIcon } from 'lucide-react'
 
 import { ClassroomImportPage } from '../features/classroom_import/pages/ClassroomImportPage'
+import { ClassroomPage } from '../features/classrooms/pages/ClassroomPage'
 import { ClassroomsPage } from '../features/classrooms/pages/ClassroomsPage'
 import { KnowledgeComponentsPage } from '../features/knowledge_components/pages/KnowledgeComponentsPage'
 import { MasteryDashboardPage } from '../features/mastery_dashboard/pages/MasteryDashboardPage'
+import { matchPath } from '../lib/hashRoute'
 
-export interface Route {
-  path: string
-  label: string
-  icon: LucideIcon
-  Page: ComponentType
+// O que o endereço carrega, a turma e, dentro dela, o exercício
+export interface RouteParams {
+  classroomId?: number
+  assignmentId?: number
 }
 
-// A ordem é a do menu, e uma tela só entra aqui quando existe
+export interface Route {
+  pattern: string
+  Page: ComponentType<RouteParams>
+}
+
+// O contexto está no endereço, então F5 e links abrem no lugar certo sem nenhum seletor
 export const ROUTES: Route[] = [
-  { path: '/classrooms', label: 'Turmas', icon: Users, Page: ClassroomsPage },
+  { pattern: '/classrooms', Page: ClassroomsPage },
+  { pattern: '/classrooms/:classroomId', Page: ClassroomPage },
   {
-    path: '/classroom-imports',
-    label: 'Importar dados',
-    icon: Database,
-    Page: ClassroomImportPage,
-  },
-  {
-    path: '/knowledge-components',
-    label: 'Conceitos',
-    icon: Layers,
+    pattern: '/classrooms/:classroomId/assignments/:assignmentId/knowledge-components',
     Page: KnowledgeComponentsPage,
   },
   {
-    path: '/mastery-dashboard',
-    label: 'Domínio da turma',
-    icon: LayoutGrid,
+    pattern: '/classrooms/:classroomId/assignments/:assignmentId/analysis',
     Page: MasteryDashboardPage,
   },
+  { pattern: '/classroom-imports', Page: ClassroomImportPage },
 ]
 
-// Sem hash, abre a primeira página do menu
-export function findRoute(path: string): Route | undefined {
-  if (path === '') return ROUTES[0]
-  return ROUTES.find((route) => route.path === path)
+export const HOME_PATH = '/classrooms'
+
+export interface RouteMatch {
+  route: Route
+  params: RouteParams
+}
+
+// Sem hash, abre Turmas
+export function matchRoute(path: string): RouteMatch | undefined {
+  const target = path === '' ? HOME_PATH : path
+  for (const route of ROUTES) {
+    const params = matchPath(route.pattern, target)
+    if (params) return { route, params }
+  }
+  return undefined
 }

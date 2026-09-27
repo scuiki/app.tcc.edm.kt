@@ -1,0 +1,13 @@
+.estimated-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin-right: 4px;
+  border-radius: 50%;
+  color: var(--color-accent-text);
+  background: var(--color-accent-soft);
+  vertical-align: middle;
+  cursor: help;
+}

@@ -1,0 +1,31 @@
+.ratio-bar {
+  display: grid;
+  grid-template-columns: minmax(80px, 1fr) 40px;
+  gap: 8px;
+  align-items: center;
+}
+
+.ratio-bar__track {
+  height: 10px;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  background: var(--color-bar-track);
+}
+
+/* A ponta arredondada é o dado; a base fica reta na régua */
+.ratio-bar__fill {
+  height: 100%;
+  border-radius: 0 4px 4px 0;
+}
+
+.ratio-bar__fill--observed {
+  background: var(--color-bar-observed);
+}
+
+.ratio-bar__fill--predicted {
+  background: var(--color-bar-predicted);
+}
+
+.ratio-bar__value {
+  font-size: inherit;
+  text-align: right;
+}

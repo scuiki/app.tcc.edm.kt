@@ -25,6 +25,7 @@ export default defineConfig({
       '/assignments': apiTarget,
       '/knowledge-components': apiTarget,
       '/mastery-dashboard': apiTarget,
+      '/training-jobs': apiTarget,
       '/openapi.json': apiTarget,
     },
   },

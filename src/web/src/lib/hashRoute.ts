@@ -16,10 +16,31 @@ export function pathOf(hash: string): string {
   return hash.replace(/^#/, '').split('?')[0]
 }
 
-// Um parâmetro da query do hash, com '#/knowledge-components?classroom=3' dando '3' para classroom
+// Um parâmetro da query do hash, com '#/classroom-imports?classroom=3' dando '3' para classroom
 export function hashParam(hash: string, name: string): string | null {
   const query = hash.split('?')[1] ?? ''
   return new URLSearchParams(query).get(name)
+}
+
+export type PathParams = Record<string, number>
+
+// Casa `/classrooms/:classroomId` com `/classrooms/3` e devolve `{ classroomId: 3 }`
+export function matchPath(pattern: string, path: string): PathParams | null {
+  const expected = pattern.split('/')
+  const actual = path.split('/')
+  if (expected.length !== actual.length) return null
+  const params: PathParams = {}
+  for (let index = 0; index < expected.length; index += 1) {
+    const segment = expected[index]
+    if (!segment.startsWith(':')) {
+      if (segment !== actual[index]) return null
+      continue
+    }
+    const value = Number(actual[index])
+    if (actual[index] === '' || !Number.isInteger(value) || value <= 0) return null
+    params[segment.slice(1)] = value
+  }
+  return params
 }
 
 export function useHashPath(): string {

@@ -1,0 +1,31 @@
+.histogram {
+  margin: 0;
+  display: grid;
+  gap: 3px;
+  min-width: 140px;
+}
+
+.histogram__bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 22px;
+}
+
+.histogram__bar {
+  flex: 1;
+  border-radius: 2px 2px 0 0;
+  background: var(--color-bar-predicted);
+}
+
+.histogram__bar:hover {
+  background: var(--color-accent-text);
+}
+
+.histogram__axis {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}

@@ -328,6 +328,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/mastery-dashboard/{assignment_id}/submission-statistics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Submission Statistics */
+        get: operations["get_submission_statistics_mastery_dashboard__assignment_id__submission_statistics_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/mastery-dashboard/{assignment_id}/mastery": {
         parameters: {
             query?: never;
@@ -345,15 +362,15 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/mastery-dashboard/{assignment_id}/recommendations": {
+    "/mastery-dashboard/{assignment_id}/students": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Get Recommendations */
-        get: operations["get_recommendations_mastery_dashboard__assignment_id__recommendations_get"];
+        /** List Students */
+        get: operations["list_students_mastery_dashboard__assignment_id__students_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -362,15 +379,15 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/mastery-dashboard/{assignment_id}/pre-training-statistics": {
+    "/mastery-dashboard/{assignment_id}/students/{student_id}": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Get Pre Training Statistics */
-        get: operations["get_pre_training_statistics_mastery_dashboard__assignment_id__pre_training_statistics_get"];
+        /** Get Student */
+        get: operations["get_student_mastery_dashboard__assignment_id__students__student_id__get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -470,13 +487,6 @@ export interface components {
             /** Name */
             name: string;
         };
-        /** CriticalKnowledgeComponentDTO */
-        CriticalKnowledgeComponentDTO: {
-            /** Kc Id */
-            kc_id: number;
-            /** Mean Mastery */
-            mean_mastery: number;
-        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -545,6 +555,39 @@ export interface components {
             /** Progress Total */
             progress_total: number | null;
         };
+        /** KnowledgeComponentMasteryDTO */
+        KnowledgeComponentMasteryDTO: {
+            /** Kc Id */
+            kc_id: number;
+            /** Kc Name */
+            kc_name: string;
+            /** Problem Ids */
+            problem_ids: number[];
+            /** Mean Mastery */
+            mean_mastery: number;
+            /** Histogram */
+            histogram: number[];
+        };
+        /** KnowledgeComponentRefDTO */
+        KnowledgeComponentRefDTO: {
+            /** Kc Id */
+            kc_id: number;
+            /** Kc Name */
+            kc_name: string;
+        };
+        /** KnowledgeComponentStatisticsDTO */
+        KnowledgeComponentStatisticsDTO: {
+            /** Kc Id */
+            kc_id: number;
+            /** Kc Name */
+            kc_name: string;
+            /** Problem Ids */
+            problem_ids: number[];
+            /** Success Rate */
+            success_rate: number;
+            /** Runs */
+            runs: number;
+        };
         /** KnowledgeComponentWithProblemsDTO */
         KnowledgeComponentWithProblemsDTO: {
             /** Id */
@@ -586,20 +629,22 @@ export interface components {
             /** Problems */
             problems: components["schemas"]["ProblemDTO"][];
         };
+        /** ListStudentsResponseDTO */
+        ListStudentsResponseDTO: {
+            /** Assignment Id */
+            assignment_id: number;
+            /** Students */
+            students: components["schemas"]["StudentSummaryDTO"][];
+        };
         /** MasteryResponseDTO */
         MasteryResponseDTO: {
             /** Assignment Id */
             assignment_id: number;
-            /** First Attempt Auc */
-            first_attempt_auc: number | null;
-            /** Trained At */
-            trained_at: string | null;
-            /** Matrix */
-            matrix: components["schemas"]["StudentMasteryDTO"][];
-            /** Critical Kcs */
-            critical_kcs: components["schemas"]["CriticalKnowledgeComponentDTO"][];
-            /** Students At Risk */
-            students_at_risk: string[];
+            model: components["schemas"]["TrainedModelDTO"] | null;
+            /** Knowledge Components */
+            knowledge_components: components["schemas"]["KnowledgeComponentMasteryDTO"][];
+            /** Problems */
+            problems: components["schemas"]["ProblemMasteryDTO"][];
         };
         /** MergeKnowledgeComponentsDTO */
         MergeKnowledgeComponentsDTO: {
@@ -616,23 +661,6 @@ export interface components {
             keep_kc_id: number;
             /** Drop Kc Id */
             drop_kc_id: number;
-        };
-        /** PreTrainingStatisticsResponseDTO */
-        PreTrainingStatisticsResponseDTO: {
-            /** Assignment Id */
-            assignment_id: number;
-            /** Success Rate */
-            success_rate: {
-                [key: string]: number;
-            };
-            /** Learning Curve */
-            learning_curve: {
-                [key: string]: number;
-            };
-            /** Compile Error Rate */
-            compile_error_rate: {
-                [key: string]: number;
-            };
         };
         /** ProblemDTO */
         ProblemDTO: {
@@ -657,23 +685,33 @@ export interface components {
             /** Knowledge Components */
             knowledge_components: components["schemas"]["KnowledgeComponentDTO"][];
         };
-        /** RecommendationsResponseDTO */
-        RecommendationsResponseDTO: {
-            /** Assignment Id */
-            assignment_id: number;
-            /** Recommendations */
-            recommendations: components["schemas"]["ReinforcementRecommendationDTO"][];
-        };
-        /** ReinforcementRecommendationDTO */
-        ReinforcementRecommendationDTO: {
-            /** Kc Id */
-            kc_id: number;
-            /** Kc Name */
-            kc_name: string;
+        /** ProblemMasteryDTO */
+        ProblemMasteryDTO: {
+            /** Problem Id */
+            problem_id: number;
             /** Mean Mastery */
             mean_mastery: number;
-            /** Text */
-            text: string;
+            /** Histogram */
+            histogram: number[];
+            /** Kcs */
+            kcs: components["schemas"]["KnowledgeComponentRefDTO"][];
+        };
+        /** ProblemStatisticsDTO */
+        ProblemStatisticsDTO: {
+            /** Problem Id */
+            problem_id: number;
+            /** Success Rate */
+            success_rate: number;
+            /** Median Attempts To Complete */
+            median_attempts_to_complete: number | null;
+            /** Students Attempted */
+            students_attempted: number;
+            /** Students Completed */
+            students_completed: number;
+            /** Compile Errors Per Run */
+            compile_errors_per_run: number;
+            /** Kcs */
+            kcs: components["schemas"]["KnowledgeComponentRefDTO"][];
         };
         /** RemovedClassroomDTO */
         RemovedClassroomDTO: {
@@ -726,14 +764,77 @@ export interface components {
             job_id: number;
             status: components["schemas"]["JobStatus"];
         };
-        /** StudentMasteryDTO */
-        StudentMasteryDTO: {
+        /** StudentDetailDTO */
+        StudentDetailDTO: {
             /** Student Id */
             student_id: string;
+            /** Mean Mastery */
+            mean_mastery: number;
+            /** Completed */
+            completed: number;
+            /** Attempted */
+            attempted: number;
+            /** Runs */
+            runs: number;
+            /** Compile Errors */
+            compile_errors: number;
+            /** Knowledge Components */
+            knowledge_components: components["schemas"]["StudentKnowledgeComponentMasteryDTO"][];
+            /** Problems */
+            problems: components["schemas"]["StudentProblemMasteryDTO"][];
+        };
+        /** StudentKnowledgeComponentMasteryDTO */
+        StudentKnowledgeComponentMasteryDTO: {
             /** Kc Id */
             kc_id: number;
+            /** Kc Name */
+            kc_name: string;
             /** Mastery */
             mastery: number;
+        };
+        /** StudentProblemMasteryDTO */
+        StudentProblemMasteryDTO: {
+            /** Problem Id */
+            problem_id: number;
+            /** Mastery */
+            mastery: number;
+        };
+        /** StudentSummaryDTO */
+        StudentSummaryDTO: {
+            /** Student Id */
+            student_id: string;
+            /** Mean Mastery */
+            mean_mastery: number;
+            /** Completed */
+            completed: number;
+            /** Attempted */
+            attempted: number;
+            /** Weakest Kcs */
+            weakest_kcs: components["schemas"]["StudentKnowledgeComponentMasteryDTO"][];
+        };
+        /** SubmissionStatisticsResponseDTO */
+        SubmissionStatisticsResponseDTO: {
+            /** Assignment Id */
+            assignment_id: number;
+            /** Student Count */
+            student_count: number;
+            /** Problems */
+            problems: components["schemas"]["ProblemStatisticsDTO"][];
+            /** Knowledge Components */
+            knowledge_components: components["schemas"]["KnowledgeComponentStatisticsDTO"][];
+        };
+        /** TrainedModelDTO */
+        TrainedModelDTO: {
+            /** Version Number */
+            version_number: number;
+            /** Trained At */
+            trained_at: string;
+            /** Student Count */
+            student_count: number;
+            /** Problem Count */
+            problem_count: number;
+            /** Knowledge Component Count */
+            knowledge_component_count: number;
         };
         /** TrainingEpochMetricDTO */
         TrainingEpochMetricDTO: {
@@ -1497,6 +1598,37 @@ export interface operations {
             };
         };
     };
+    get_submission_statistics_mastery_dashboard__assignment_id__submission_statistics_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                assignment_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SubmissionStatisticsResponseDTO"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_mastery_mastery_dashboard__assignment_id__mastery_get: {
         parameters: {
             query?: never;
@@ -1528,7 +1660,7 @@ export interface operations {
             };
         };
     };
-    get_recommendations_mastery_dashboard__assignment_id__recommendations_get: {
+    list_students_mastery_dashboard__assignment_id__students_get: {
         parameters: {
             query?: never;
             header?: never;
@@ -1545,7 +1677,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["RecommendationsResponseDTO"];
+                    "application/json": components["schemas"]["ListStudentsResponseDTO"];
                 };
             };
             /** @description Validation Error */
@@ -1559,12 +1691,13 @@ export interface operations {
             };
         };
     };
-    get_pre_training_statistics_mastery_dashboard__assignment_id__pre_training_statistics_get: {
+    get_student_mastery_dashboard__assignment_id__students__student_id__get: {
         parameters: {
             query?: never;
             header?: never;
             path: {
                 assignment_id: number;
+                student_id: string;
             };
             cookie?: never;
         };
@@ -1576,7 +1709,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PreTrainingStatisticsResponseDTO"];
+                    "application/json": components["schemas"]["StudentDetailDTO"];
                 };
             };
             /** @description Validation Error */

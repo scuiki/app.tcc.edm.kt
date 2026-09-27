@@ -16,6 +16,12 @@ export function formatCount(value: number): string {
   return countFormat.format(value)
 }
 
+// Um número com no máximo `digits` casas, com a vírgula do pt-BR e sem zeros à direita
+export function formatNumber(value: number | null | undefined, digits = 2): string {
+  if (value == null) return PLACEHOLDER
+  return new Intl.NumberFormat('pt-BR', { maximumFractionDigits: digits }).format(value)
+}
+
 // A data no fuso de quem está vendo, porque o backend grava em UTC
 export function formatDate(iso: string): string {
   return dateFormat.format(new Date(iso))

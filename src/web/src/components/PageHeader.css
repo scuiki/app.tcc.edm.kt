@@ -16,3 +16,14 @@
   margin: 0;
   color: var(--color-text-secondary);
 }
+
+.page-header__title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.page-header__icon {
+  flex-shrink: 0;
+  color: var(--color-text);
+}

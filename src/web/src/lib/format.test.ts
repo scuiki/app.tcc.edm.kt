@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { formatCount, formatDate, formatDateTime, formatPercent } from './format'
+import { formatCount, formatNumber, formatDate, formatDateTime, formatPercent } from './format'
 
 describe('formatPercent', () => {
   it('renders integer percentages', () => {
@@ -36,5 +36,14 @@ describe('formatDate and formatDateTime', () => {
 
   it('formats date and time without the comma', () => {
     expect(formatDateTime(iso)).toMatch(/^24\/09\/2026 \d{2}:\d{2}$/)
+  })
+})
+
+describe('formatNumber', () => {
+  it('uses the pt-BR comma and drops trailing zeros', () => {
+    expect(formatNumber(2.43)).toBe('2,43')
+    expect(formatNumber(5)).toBe('5')
+    expect(formatNumber(2.5, 1)).toBe('2,5')
+    expect(formatNumber(null)).toBe('—')
   })
 })

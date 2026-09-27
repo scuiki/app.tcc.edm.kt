@@ -68,3 +68,14 @@
 .classroom-table .classroom-table__no-match {
   color: var(--color-text-muted);
 }
+
+/* O nome leva à página da turma, sem o azul de link para a tabela continuar sóbria */
+.classroom-table__name a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.classroom-table__name a:hover {
+  color: var(--color-accent-text);
+  text-decoration: underline;
+}

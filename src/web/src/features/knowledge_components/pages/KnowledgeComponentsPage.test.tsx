@@ -102,42 +102,34 @@ function calls(spy: ReturnType<typeof fakeApi>, method: string, path: string) {
   return spy.mock.calls.filter(([url, init]) => url === path && (init?.method ?? 'GET') === method)
 }
 
-async function openAssignment(name: string) {
-  fireEvent.click(await screen.findByRole('button', { name: new RegExp(name) }))
-}
-
-describe('KnowledgeComponentsPage, choosing the exercise', () => {
-  it('lists the exercises of the only classroom with their status', async () => {
+describe('KnowledgeComponentsPage, the exercise in the address', () => {
+  it('shows the path and the status of the exercise named in the address', async () => {
     fakeApi()
-    renderWithClient(<KnowledgeComponentsPage />)
-    expect(await screen.findByRole('button', { name: /Assignment 439/ })).toHaveTextContent(
-      'Rascunho de conceitos',
+    renderWithClient(<KnowledgeComponentsPage classroomId={1} assignmentId={1} />)
+    const path = await screen.findByRole('navigation', { name: 'Caminho' })
+    expect(path).toHaveTextContent('Turmas›CSEDM Spring 2019›Assignment 439›Conceitos')
+    expect(path).toHaveTextContent('Rascunho de conceitos')
+    expect(screen.getByRole('link', { name: 'CSEDM Spring 2019' })).toHaveAttribute(
+      'href',
+      '#/classrooms/1',
     )
-    expect(screen.getByRole('button', { name: /Assignment 487/ })).toHaveTextContent(
-      'Pronto para conceitos',
-    )
-    expect(screen.getByText('Escolha um exercício')).toBeInTheDocument()
   })
 
-  it('takes the classroom from the hash, as when coming from the import', async () => {
-    window.location.hash = '#/knowledge-components?classroom=1'
-    fakeApi({ classrooms: [{ ...CLASSROOM, id: 9, name: 'Outra' }, CLASSROOM] })
-    renderWithClient(<KnowledgeComponentsPage />)
-    expect(await screen.findByRole('button', { name: /Assignment 439/ })).toBeInTheDocument()
-    expect(screen.getByLabelText('Turma')).toHaveDisplayValue('CSEDM Spring 2019')
+  it('says the exercise was not found for an id the classroom does not have', async () => {
+    fakeApi()
+    renderWithClient(<KnowledgeComponentsPage classroomId={1} assignmentId={99} />)
+    expect(await screen.findByText('Exercício não encontrado')).toBeInTheDocument()
   })
 
   it('says there is nothing to extract from a statistics only exercise', async () => {
     fakeApi()
-    renderWithClient(<KnowledgeComponentsPage />)
-    await openAssignment('Assignment 492')
+    renderWithClient(<KnowledgeComponentsPage classroomId={1} assignmentId={3} />)
     expect(await screen.findByText('Não há conceitos para extrair')).toBeInTheDocument()
   })
 
   it('shows a trained exercise for reference only, with no edit and no approval', async () => {
     fakeApi()
-    renderWithClient(<KnowledgeComponentsPage />)
-    await openAssignment('Assignment 502')
+    renderWithClient(<KnowledgeComponentsPage classroomId={1} assignmentId={4} />)
     expect(await screen.findByText(/já tem modelo treinado/)).toBeInTheDocument()
     expect(screen.getAllByText('Laços').length).toBeGreaterThan(0)
     expect(screen.queryByRole('button', { name: /^Tirar / })).not.toBeInTheDocument()
@@ -159,8 +151,7 @@ describe('KnowledgeComponentsPage, extracting', () => {
         progress_total: 8,
       },
     })
-    renderWithClient(<KnowledgeComponentsPage />)
-    await openAssignment('Assignment 487')
+    renderWithClient(<KnowledgeComponentsPage classroomId={1} assignmentId={2} />)
     fireEvent.click(await screen.findByRole('button', { name: 'Extrair conceitos' }))
 
     const dialog = await screen.findByRole('dialog', { name: 'Extraindo conceitos' })
@@ -190,8 +181,7 @@ describe('KnowledgeComponentsPage, extracting', () => {
         progress_total: null,
       },
     })
-    renderWithClient(<KnowledgeComponentsPage />)
-    await openAssignment('Assignment 487')
+    renderWithClient(<KnowledgeComponentsPage classroomId={1} assignmentId={2} />)
     fireEvent.click(await screen.findByRole('button', { name: 'Extrair conceitos' }))
 
     const dialog = await screen.findByRole('dialog', { name: 'Conceitos extraídos' })
@@ -214,8 +204,7 @@ describe('KnowledgeComponentsPage, extracting', () => {
         progress_total: null,
       },
     })
-    renderWithClient(<KnowledgeComponentsPage />)
-    await openAssignment('Assignment 487')
+    renderWithClient(<KnowledgeComponentsPage classroomId={1} assignmentId={2} />)
     fireEvent.click(await screen.findByRole('button', { name: 'Extrair conceitos' }))
 
     const dialog = await screen.findByRole('dialog', { name: 'A extração não terminou' })
@@ -228,8 +217,7 @@ describe('KnowledgeComponentsPage, extracting', () => {
 
   it('shows why the start was refused', async () => {
     fakeApi({ refuseStart: true })
-    renderWithClient(<KnowledgeComponentsPage />)
-    await openAssignment('Assignment 487')
+    renderWithClient(<KnowledgeComponentsPage classroomId={1} assignmentId={2} />)
     fireEvent.click(await screen.findByRole('button', { name: 'Extrair conceitos' }))
     const dialog = await screen.findByRole('dialog', {
       name: 'Não foi possível começar a extração',
@@ -241,8 +229,7 @@ describe('KnowledgeComponentsPage, extracting', () => {
 describe('KnowledgeComponentsPage, editing a draft', () => {
   async function openDraft() {
     const spy = fakeApi()
-    renderWithClient(<KnowledgeComponentsPage />)
-    await openAssignment('Assignment 439')
+    renderWithClient(<KnowledgeComponentsPage classroomId={1} assignmentId={1} />)
     await screen.findByRole('button', { name: 'Tirar Laços do problema 5' })
     return spy
   }

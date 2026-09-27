@@ -1,9 +1,8 @@
-import { act, screen } from '@testing-library/react'
+import { act, screen, within } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { jsonResponse, renderWithClient } from '../test/renderWithClient'
 import { App } from './App'
-import { ROUTES } from './routes'
 
 function goTo(hash: string) {
   act(() => {
@@ -25,34 +24,38 @@ afterEach(() => {
 })
 
 describe('App', () => {
-  it('shows the tool icon and one menu link per page', () => {
+  it('shows the tool icon and the two fixed entries of the menu', () => {
     renderWithClient(<App />)
     expect(screen.getByRole('img', { name: 'EDM·KT, ferramenta docente' })).toBeInTheDocument()
     const menu = screen.getByRole('navigation', { name: 'Navegação principal' })
-    for (const route of ROUTES) {
-      expect(menu).toContainElement(screen.getByRole('link', { name: route.label }))
-    }
+    expect(within(menu).getByRole('link', { name: 'Turmas' })).toBeInTheDocument()
+    expect(within(menu).getByRole('link', { name: 'Importar dados' })).toBeInTheDocument()
   })
 
-  it('opens the first page of the menu when there is no hash', () => {
+  it('opens Turmas when there is no hash', () => {
     renderWithClient(<App />)
-    expect(screen.getByRole('link', { name: ROUTES[0].label })).toHaveAttribute(
-      'aria-current',
-      'page',
-    )
+    expect(screen.getByRole('link', { name: 'Turmas' })).toHaveAttribute('aria-current', 'page')
   })
 
   it('follows the hash to the page it names', () => {
     renderWithClient(<App />)
-    const last = ROUTES[ROUTES.length - 1]
-    goTo(`#${last.path}`)
-    expect(screen.getByRole('link', { name: last.label })).toHaveAttribute('aria-current', 'page')
+    goTo('#/classroom-imports')
+    expect(screen.getByRole('link', { name: 'Importar dados' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    )
   })
 
   it('says the page was not found for an unknown hash', () => {
     renderWithClient(<App />)
     goTo('#/nao-existe')
     expect(screen.getByText('Página não encontrada')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: `Ir para ${ROUTES[0].label}` })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Ir para Turmas' })).toBeInTheDocument()
+  })
+
+  it('treats a non numeric id in the address as not found', () => {
+    renderWithClient(<App />)
+    goTo('#/classrooms/abc')
+    expect(screen.getByText('Página não encontrada')).toBeInTheDocument()
   })
 })

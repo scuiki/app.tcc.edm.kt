@@ -32,14 +32,16 @@
   --color-danger: #dc2626;
   --color-danger-text: #b91c1c;
 
-  /* As faixas de domínio, a única cor quente da interface */
-  --band-low: #dc2626;
-  --band-medium: #f59e0b;
-  --band-high: #16a34a;
+  /* As barras do dashboard, o observado em cinza e o previsto em azul, sobre a mesma régua */
+  --color-bar-observed: #475569;
+  --color-bar-predicted: #3b7be0;
+  --color-bar-track: #eef2f7;
 
   --font-sans: 'Open Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
   /* Contagem, percentual, data e identificador, com dígitos de largura fixa */
   --font-mono: ui-monospace, 'SF Mono', Menlo, monospace;
+  /* As tabelas da Análise, no padrão das tabelas de trabalho acadêmico */
+  --font-table: Arial, Helvetica, sans-serif;
 
   --radius: 2px;
   --shadow-bar: 0 1px 0 #e2e8f0, 0 2px 8px rgba(15, 23, 42, 0.06);
@@ -58,8 +60,11 @@
   box-sizing: border-box;
 }
 
+/* A janela nunca rola; a casca do app ocupa a altura toda e só o conteúdo rola */
 body {
   margin: 0;
+  height: 100vh;
+  overflow: hidden;
   font-family: var(--font-sans);
   font-size: 13px;
   line-height: 1.5;

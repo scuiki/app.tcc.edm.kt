@@ -1,7 +1,7 @@
 import { act, renderHook } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'
 
-import { hashParam, pathOf, useHashPath } from './hashRoute'
+import { hashParam, matchPath, pathOf, useHashPath } from './hashRoute'
 
 afterEach(() => {
   window.location.hash = ''
@@ -29,6 +29,31 @@ describe('hashParam', () => {
   })
 })
 
+describe('matchPath', () => {
+  it('captures the numeric ids named in the pattern', () => {
+    expect(matchPath('/classrooms/:classroomId', '/classrooms/3')).toEqual({ classroomId: 3 })
+    expect(
+      matchPath(
+        '/classrooms/:classroomId/assignments/:assignmentId/analysis',
+        '/classrooms/3/assignments/7/analysis',
+      ),
+    ).toEqual({ classroomId: 3, assignmentId: 7 })
+  })
+
+  it('matches a literal path with no params', () => {
+    expect(matchPath('/classrooms', '/classrooms')).toEqual({})
+  })
+
+  it('refuses a different length, a different literal, or an id that is not a positive integer', () => {
+    expect(matchPath('/classrooms/:classroomId', '/classrooms')).toBeNull()
+    expect(matchPath('/classrooms/:classroomId', '/classrooms/3/x')).toBeNull()
+    expect(matchPath('/classrooms/:classroomId', '/turmas/3')).toBeNull()
+    expect(matchPath('/classrooms/:classroomId', '/classrooms/abc')).toBeNull()
+    expect(matchPath('/classrooms/:classroomId', '/classrooms/0')).toBeNull()
+    expect(matchPath('/classrooms/:classroomId', '/classrooms/')).toBeNull()
+  })
+})
+
 describe('useHashPath', () => {
   it('follows the hash as it changes', () => {
     window.location.hash = '#/classrooms'
@@ -36,9 +61,9 @@ describe('useHashPath', () => {
     expect(result.current).toBe('/classrooms')
 
     act(() => {
-      window.location.hash = '#/mastery-dashboard'
+      window.location.hash = '#/classroom-imports'
       window.dispatchEvent(new HashChangeEvent('hashchange'))
     })
-    expect(result.current).toBe('/mastery-dashboard')
+    expect(result.current).toBe('/classroom-imports')
   })
 })

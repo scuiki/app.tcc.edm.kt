@@ -1,0 +1,21 @@
+.state-card__text {
+  margin: 0;
+  padding: 16px;
+  max-width: 68ch;
+  color: var(--color-text-body);
+  line-height: 1.55;
+}
+
+.state-card__action {
+  margin: 0;
+  padding: 0 16px 16px;
+}
+
+.state-card__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding-right: 16px;
+}

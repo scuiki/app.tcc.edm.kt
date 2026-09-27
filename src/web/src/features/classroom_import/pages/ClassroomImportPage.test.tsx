@@ -248,8 +248,8 @@ describe('ClassroomImportPage, processing', () => {
     expect(screen.getByText(/69627 evento\(s\) Compile plain/)).toBeInTheDocument()
     expect(currentStep()).toHaveTextContent('Conferir')
 
-    fireEvent.click(screen.getByRole('button', { name: 'Extrair conceitos' }))
-    expect(window.location.hash).toBe('#/knowledge-components?classroom=1')
+    fireEvent.click(screen.getByRole('button', { name: 'Ver os exercícios' }))
+    expect(window.location.hash).toBe('#/classrooms/1')
     window.location.hash = ''
   })
 

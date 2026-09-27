@@ -18,3 +18,12 @@ export function useAssignments(classroomId?: number | null) {
     queryFn: () => getJson<AssignmentsResponse>(path),
   })
 }
+
+// O nome humano de cada situação, que as telas de Conceitos e de Domínio mostram na etiqueta
+export const ASSIGNMENT_STATUS_LABEL: Record<AssignmentStatus, string> = {
+  statistics_only: 'Só estatísticas',
+  ready_for_kc_generation: 'Pronto para conceitos',
+  kc_draft: 'Rascunho de conceitos',
+  kc_approved: 'Conceitos aprovados',
+  trained: 'Modelo treinado',
+}

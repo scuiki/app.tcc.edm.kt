@@ -7,6 +7,7 @@ import { Button, IconButton } from '../../../components/ui/Button'
 import { Card } from '../../../components/ui/Card'
 import { SearchField } from '../../../components/ui/SearchField'
 import { formatCount, formatDate } from '../../../lib/format'
+import { classroomPath } from '../../../lib/paths'
 import type { ClassroomSummary } from '../api/classrooms'
 import { ClassroomStatusBadge } from './ClassroomStatusBadge'
 import './ClassroomTable.css'
@@ -116,7 +117,9 @@ interface ClassroomRowProps {
 function ClassroomRow({ classroom, onRename, onRemove }: ClassroomRowProps) {
   return (
     <tr>
-      <td className="classroom-table__name">{classroom.name}</td>
+      <td className="classroom-table__name">
+        <a href={`#${classroomPath(classroom.id)}`}>{classroom.name}</a>
+      </td>
       <CountCell value={classroom.problem_count} />
       <CountCell value={classroom.student_count} />
       <td className="mono classroom-table__date">{formatDate(classroom.created_at)}</td>

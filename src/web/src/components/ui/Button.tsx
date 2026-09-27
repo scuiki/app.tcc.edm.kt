@@ -1,6 +1,7 @@
 import type { ButtonHTMLAttributes } from 'react'
 import type { LucideIcon } from 'lucide-react'
 
+import { Tooltip } from './Tooltip'
 import './Button.css'
 
 // Cada variante tem a sua situação de uso, e nenhum botão recebe cor por fora
@@ -37,8 +38,10 @@ interface IconButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 
 
 export function IconButton({ icon: Icon, label, type = 'button', ...rest }: IconButtonProps) {
   return (
-    <button type={type} className="icon-btn" aria-label={label} title={label} {...rest}>
-      <Icon size={16} aria-hidden="true" />
-    </button>
+    <Tooltip text={label}>
+      <button type={type} className="icon-btn" aria-label={label} {...rest}>
+        <Icon size={16} aria-hidden="true" />
+      </button>
+    </Tooltip>
   )
 }

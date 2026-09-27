@@ -1,0 +1,20 @@
+/* A dica fica fixa na janela, centrada sob o elemento, fora de qualquer área com rolagem */
+.tooltip {
+  position: fixed;
+  z-index: 50;
+  max-width: 260px;
+  padding: 5px 8px;
+  border-radius: var(--radius);
+  background: var(--color-text);
+  color: var(--color-surface);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.4;
+  text-align: left;
+  text-transform: none;
+  letter-spacing: normal;
+  white-space: normal;
+  transform: translateX(-50%);
+  pointer-events: none;
+}

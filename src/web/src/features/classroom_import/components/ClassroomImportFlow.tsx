@@ -3,6 +3,8 @@ import { useState } from 'react'
 import { PageActionBar } from '../../../components/PageActionBar'
 import { PageHeader } from '../../../components/PageHeader'
 import { Button } from '../../../components/ui/Button'
+import { hashParam } from '../../../lib/hashRoute'
+import { classroomPath } from '../../../lib/paths'
 import type { ClassroomSummary } from '../../classrooms/api/classrooms'
 import { useImportClassroomDataset, useUploadClassroomDataset } from '../api/classroomImport'
 import { fatalChecksOf, missingTableOf, outcomeOf, pathInUpload } from '../importReport'
@@ -19,10 +21,12 @@ interface ClassroomImportFlowProps {
 }
 
 export function ClassroomImportFlow({ classrooms, onRestart }: ClassroomImportFlowProps) {
-  // Com uma turma só, ela já vem escolhida
-  const [classroomId, setClassroomId] = useState<number | null>(() =>
-    classrooms.length === 1 ? classrooms[0].id : null,
-  )
+  // A turma pode vir no endereço, como ao chegar pela página dela; com uma só, já vem escolhida
+  const [classroomId, setClassroomId] = useState<number | null>(() => {
+    const fromHash = Number(hashParam(window.location.hash, 'classroom'))
+    if (classrooms.some((classroom) => classroom.id === fromHash)) return fromHash
+    return classrooms.length === 1 ? classrooms[0].id : null
+  })
   const [chosenTable, setChosenTable] = useState<string | null>(null)
   const upload = useUploadClassroomDataset()
   const importDataset = useImportClassroomDataset()
@@ -86,10 +90,10 @@ export function ClassroomImportFlow({ classrooms, onRestart }: ClassroomImportFl
           <Button
             variant="primary"
             onClick={() => {
-              window.location.hash = `#/knowledge-components?classroom=${classroom.id}`
+              window.location.hash = `#${classroomPath(classroom.id)}`
             }}
           >
-            Extrair conceitos
+            Ver os exercícios
           </Button>
         </PageActionBar>
       </div>
