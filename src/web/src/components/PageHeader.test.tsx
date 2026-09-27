@@ -18,7 +18,7 @@ describe('PageHeader', () => {
   })
 
   it('renders without description nor action', () => {
-    render(<PageHeader title="Domínio da turma" />)
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Domínio da turma')
+    render(<PageHeader title="Minhas turmas" />)
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Minhas turmas')
   })
 })

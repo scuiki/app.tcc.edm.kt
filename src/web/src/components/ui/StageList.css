@@ -1,0 +1,51 @@
+.stage-list {
+  list-style: none;
+  margin: 4px 0 8px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.stage-list__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--color-text-disabled);
+}
+
+.stage-list__icon {
+  flex-shrink: 0;
+}
+
+.stage-list__label {
+  flex-grow: 1;
+}
+
+/* O andamento do estágio atual, à direita do nome */
+.stage-list__progress {
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--color-text-muted);
+}
+
+.stage-list__item--done {
+  color: var(--color-text-body);
+}
+
+.stage-list__item--done .stage-list__icon,
+.stage-list__item--current .stage-list__icon {
+  color: var(--color-accent);
+}
+
+.stage-list__item--current {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .stage-list__item--current .stage-list__icon {
+    animation: spin 1s linear infinite;
+  }
+}

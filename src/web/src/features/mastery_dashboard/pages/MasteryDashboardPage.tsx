@@ -54,12 +54,7 @@ export function MasteryDashboardPage({ classroomId, assignmentId }: MasteryDashb
         }
       />
       <PageHeader title={assignment.name} icon={ChartColumn} description={DESCRIPTION} />
-      <AssignmentDashboard
-        key={assignment.id}
-        assignment={assignment}
-        classroomId={classroom.id}
-        onTrain={() => undefined}
-      />
+      <AssignmentDashboard key={assignment.id} assignment={assignment} classroomId={classroom.id} />
     </>
   )
 }

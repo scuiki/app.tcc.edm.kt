@@ -3,58 +3,6 @@
   color: var(--color-text-muted);
 }
 
-.extraction-stages {
-  list-style: none;
-  margin: 4px 0 8px;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.extraction-stages__item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  color: var(--color-text-disabled);
-}
-
-.extraction-stages__icon {
-  flex-shrink: 0;
-}
-
-.extraction-stages__label {
-  flex-grow: 1;
-}
-
-/* Quantos problemas ou grupos do estágio atual já terminaram */
-.extraction-stages__progress {
-  flex-shrink: 0;
-  font-size: 12px;
-  font-weight: 400;
-  color: var(--color-text-muted);
-}
-
-.extraction-stages__item--done {
-  color: var(--color-text-body);
-}
-
-.extraction-stages__item--done .extraction-stages__icon,
-.extraction-stages__item--current .extraction-stages__icon {
-  color: var(--color-accent);
-}
-
-.extraction-stages__item--current {
-  font-weight: 600;
-  color: var(--color-text);
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .extraction-stages__item--current .extraction-stages__icon {
-    animation: spin 1s linear infinite;
-  }
-}
-
 .extraction__note {
   padding: 10px 12px;
   border-radius: var(--radius);

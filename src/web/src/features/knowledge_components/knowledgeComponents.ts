@@ -1,3 +1,4 @@
+import type { StageState } from '../../components/ui/StageList'
 import { ApiError } from '../../http/client'
 import type { AssignmentStatus } from '../assignments/api/useAssignments'
 import type { GenerationJob, ProblemKnowledgeComponents } from './api/knowledgeComponents'
@@ -75,8 +76,6 @@ export const GENERATION_STAGES = [
   { stage: 'cluster', label: 'Agrupando os conceitos parecidos e nomeando cada grupo' },
   { stage: 'qmatrix', label: 'Ligando os conceitos aos problemas' },
 ] as const
-
-export type StageState = 'done' | 'current' | 'todo'
 
 export function stageStateOf(stage: string, job: GenerationJob | undefined): StageState {
   if (job?.status === 'done') return 'done'

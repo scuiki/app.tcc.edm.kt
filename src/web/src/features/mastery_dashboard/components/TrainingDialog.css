@@ -1,0 +1,37 @@
+.training__subtitle {
+  margin: -8px 0 6px;
+  color: var(--color-text-muted);
+}
+
+.training__note {
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  background: var(--color-surface-subtle);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+}
+
+.training__fact {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.training__detail {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  background: var(--color-surface-subtle);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.training__detail-title {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}

@@ -1,3 +1,4 @@
+import type { StageState } from '../../components/ui/StageList'
 import type { TrainingJob } from '../model_training/api/training'
 
 // Os três estágios que o diálogo mostra; as épocas são a menor parte do tempo do treino
@@ -8,7 +9,6 @@ export const TRAINING_STAGES = [
 ] as const
 
 export type TrainingStage = (typeof TRAINING_STAGES)[number]['stage']
-export type StageState = 'done' | 'current' | 'todo'
 
 // O job só informa a época; antes da primeira está preparando, depois da última está publicando
 export function currentStageOf(job: TrainingJob | undefined): TrainingStage | null {

@@ -1,12 +1,12 @@
 import { useEffect } from 'react'
-import { Check, Circle, LoaderCircle } from 'lucide-react'
 
 import { OutcomeMessage } from '../../../components/OutcomeMessage'
 import { Button } from '../../../components/ui/Button'
 import { Dialog, DialogBody, DialogFooter } from '../../../components/ui/Dialog'
+import { StageList } from '../../../components/ui/StageList'
 import { ApiError } from '../../../http/client'
 import type { GenerationJob } from '../api/knowledgeComponents'
-import { GENERATION_STAGES, stageStateOf, type StageState } from '../knowledgeComponents'
+import { GENERATION_STAGES, stageStateOf } from '../knowledgeComponents'
 import type { Extraction } from '../useExtraction'
 import './ExtractionDialog.css'
 
@@ -84,36 +84,19 @@ function useWarnBeforeLeaving(active: boolean) {
   }, [active])
 }
 
-const STAGE_ICON: Record<StageState, typeof Check> = {
-  done: Check,
-  current: LoaderCircle,
-  todo: Circle,
-}
-
 function RunningStages({ job }: { job: GenerationJob | undefined }) {
   return (
     <>
-      <ol className="extraction-stages">
-        {GENERATION_STAGES.map(({ stage, label }) => {
+      <StageList
+        items={GENERATION_STAGES.map(({ stage, label }) => {
           const state = stageStateOf(stage, job)
-          const Icon = STAGE_ICON[state]
-          return (
-            <li
-              key={stage}
-              className={`extraction-stages__item extraction-stages__item--${state}`}
-              aria-current={state === 'current' ? 'step' : undefined}
-            >
-              <Icon className="extraction-stages__icon" size={17} aria-hidden="true" />
-              <span className="extraction-stages__label">{label}</span>
-              {state === 'current' && job?.progress_total ? (
-                <span className="extraction-stages__progress mono">
-                  {job.progress_done ?? 0} de {job.progress_total}
-                </span>
-              ) : null}
-            </li>
-          )
+          const progress =
+            state === 'current' && job?.progress_total
+              ? `${job.progress_done ?? 0} de ${job.progress_total}`
+              : null
+          return { key: stage, label, state, progress }
         })}
-      </ol>
+      />
       <p className="extraction__note">
         Leva alguns minutos. Não feche esta página. Enquanto a extração roda, nenhum treino ou outra
         extração começa.

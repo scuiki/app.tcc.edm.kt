@@ -42,8 +42,8 @@ export function TrainModelCard({ onTrain }: { onTrain: () => void }) {
     <Card title="Modelo">
       <div className="state-card__row">
         <p className="state-card__text">
-          Conceitos aprovados, modelo ainda não treinado. O treino leva cerca de um minuto na GPU e
-          o domínio da turma aparece aqui em seguida.
+          Conceitos aprovados, modelo ainda não treinado. O treino leva alguns minutos na GPU e as
+          colunas estimadas aparecem aqui em seguida.
         </p>
         <Button variant="primary" onClick={onTrain}>
           Treinar modelo

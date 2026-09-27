@@ -1,0 +1,8 @@
+.loss-chart {
+  margin: 4px 0 0;
+}
+
+.loss-chart__canvas {
+  position: relative;
+  height: 180px;
+}
