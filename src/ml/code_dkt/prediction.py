@@ -60,3 +60,41 @@ def predict_code_dkt(
             })
 
     return pd.DataFrame(rows)
+
+
+def predict_current_state(
+    model: CodeDKTModel,
+    sequences: list[dict],
+    problem_to_idx: dict[int, int],
+    vocab: dict,
+    ast_paths_by_snapshot: dict[str, list],
+    max_len: int = 50,
+    R: int = 50,
+) -> pd.DataFrame:
+    # Uma linha por aluno x problema, a chance de acerto se ele tentasse agora (último passo).
+
+    if not sequences:
+        return pd.DataFrame(columns=["student_id", "problem_id", "predicted_correct_probability"])
+
+    device = next(model.parameters()).device
+    model.eval()
+
+    with torch.no_grad():
+        X, _Y_next, _mask = build_model_input_tensors(
+            sequences, ast_paths_by_snapshot,
+            vocab["token_to_idx"], vocab["path_to_idx"],
+            problem_to_idx, max_len=max_len, R=R,
+        )
+        y_pred_np = model(X.to(device)).cpu().numpy()
+
+    rows = []
+    for i, seq in enumerate(sequences):
+        # Preenchimento à esquerda, então a última posição é sempre o passo final.
+        for problem_id, m in problem_to_idx.items():
+            rows.append({
+                "student_id": str(seq["student_id"]),
+                "problem_id": int(problem_id),
+                "predicted_correct_probability": float(y_pred_np[i, max_len - 1, m]),
+            })
+
+    return pd.DataFrame(rows)

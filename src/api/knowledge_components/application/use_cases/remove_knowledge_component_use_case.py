@@ -13,6 +13,7 @@ from api.knowledge_components.domain.services.active_knowledge_component import 
     get_active_knowledge_component,
 )
 from api.knowledge_components.domain.services.knowledge_component_edit import (
+    refuse_edit_after_training,
     ensure_every_problem_keeps_a_kc,
     revert_approval_after_edit,
 )
@@ -45,6 +46,7 @@ class RemoveKnowledgeComponentUseCase(WriteUseCase):
         affected_problems = self._problem_kcs.problems_of(dto.kc_id)
         removed_at = utc_now_iso()
         with self._unit_of_work:
+            refuse_edit_after_training(self._assignments, knowledge_component.assignment_id)
             self._problem_kcs.remove_all_of(dto.kc_id, removed_at)
             self._knowledge_components.remove(dto.kc_id, removed_at)
             ensure_every_problem_keeps_a_kc(

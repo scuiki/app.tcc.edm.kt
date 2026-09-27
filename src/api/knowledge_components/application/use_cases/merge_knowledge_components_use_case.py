@@ -17,6 +17,7 @@ from api.knowledge_components.domain.rules.knowledge_components_belong_to_assign
     KnowledgeComponentsBelongToAssignmentRule,
 )
 from api.knowledge_components.domain.services.knowledge_component_edit import (
+    refuse_edit_after_training,
     ensure_every_problem_keeps_a_kc,
     revert_approval_after_edit,
 )
@@ -64,6 +65,7 @@ class MergeKnowledgeComponentsUseCase(WriteUseCase):
         affected_problems = self._problem_kcs.problems_of(dto.drop_kc_id)
         removed_at = utc_now_iso()
         with self._unit_of_work:
+            refuse_edit_after_training(self._assignments, dto.assignment_id)
             self._problem_kcs.move_bindings(
                 dto.assignment_id, dto.drop_kc_id, dto.keep_kc_id, removed_at
             )

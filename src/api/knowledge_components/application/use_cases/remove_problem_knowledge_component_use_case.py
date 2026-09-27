@@ -17,6 +17,7 @@ from api.knowledge_components.domain.services.active_knowledge_component import 
     get_active_knowledge_component,
 )
 from api.knowledge_components.domain.services.knowledge_component_edit import (
+    refuse_edit_after_training,
     ensure_every_problem_keeps_a_kc,
     revert_approval_after_edit,
 )
@@ -46,6 +47,7 @@ class RemoveProblemKnowledgeComponentUseCase(WriteUseCase):
         assignment_id = knowledge_component.assignment_id
         removed_at = utc_now_iso()
         with self._unit_of_work:
+            refuse_edit_after_training(self._assignments, assignment_id)
             if not self._problem_kcs.remove(assignment_id, dto.kc_id, dto.problem_id, removed_at):
                 raise NotFound("o KC não está ligado a esse problema")
             # Levanta dentro da transação, o que desfaz a remoção

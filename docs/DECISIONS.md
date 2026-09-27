@@ -9,7 +9,7 @@ fica o raciocínio, para ninguém "consertar" o que foi feito de propósito.
 real, os `Compile.Error` são 57,6% das linhas, e treinar com eles derrubou o first-attempt AUC para
 0,6959, fora da banda. O recorte é montado num lugar só (`load_training_dataset`), porque antes
 treino e inferência liam o dado cada um por si e os dois esqueceram o filtro. O `Compile.Error`
-continua no dado limpo, porque as estatísticas pré-treino precisam dele.
+continua no dado limpo, porque as estatísticas das execuções precisam dele.
 
 **A banda de ±3pp do teste de regressão.** Ela absorve a variação de seed do TCC 1 (desvio de cerca
 de 1,34pp) e a diferença entre os hiperparâmetros congelados (protocolo de Shi et al.,
@@ -175,22 +175,62 @@ Agora ela cria os vínculos que faltam no KC que fica e marca os do descartado c
 **Um KC que perde o último problema sai junto.** Um KC sem problema não entra no treino nem no
 dashboard, e com soft delete isso é reversível.
 
-**O dashboard ainda mostra o nome de um KC removido.** O modelo publicado pode ter sido treinado
-antes da remoção e continuar prevendo aquele KC. As recomendações buscam os nomes incluindo os
-removidos, em vez de mostrar "KC 5".
+**Depois do treino não há remoção de KC.** Um modelo publicado prevê os conceitos que conheceu, e
+a edição é recusada em `trained` (ver Dashboard), então o dashboard nunca precisa do nome de um KC
+removido.
 
 ## Dashboard
+
+**A tela entrega o dado, não a interpretação.** Saíram os níveis de aluno ("em risco"), os KCs
+"críticos", as recomendações de reforço e as faixas de domínio (0,40 / 0,70). Cada uma era uma
+inferência do app sobre um número que o modelo não sustenta como veredito. O professor recebe as
+listas ordenáveis, a distribuição dos alunos em dez faixas de 10 pontos e decide sozinho.
+
+**O que aconteceu e o que o modelo prevê ficam em blocos separados, nunca na mesma régua.** A taxa
+de acerto observada é uma frequência; o domínio previsto é uma estimativa condicional ao histórico,
+ancorada na taxa-base da turma. Comparar os dois de olho, entre blocos, é leitura do professor.
+Colocar os dois na mesma barra diria "o modelo errou por x pontos", que não é o que a diferença
+significa.
+
+**O domínio é lido do vetor do último passo do Code-DKT.** É o estado atual do aluno, com todas as
+tentativas, para todos os problemas do exercício, inclusive os que ele nunca tentou (Piech et al.
+2015 leem a saída do DKT assim). Antes o app pegava, por problema tentado, a previsão feita um
+passo antes da última tentativa. Não foi uma decisão, foi carona na saída da avaliação
+(`predict_code_dkt`, uma linha por tentativa, que o AUC precisa). As duas leituras agora são
+funções distintas, e a de avaliação não muda.
+
+**A matriz é gravada por aluno × problema; o conceito é derivado na leitura.** O modelo prevê por
+problema; o domínio por conceito é a média dos problemas que o exigem, pela Q-matrix. Gravar só o
+nativo mantém uma fonte de verdade e libera a tela de problemas por domínio previsto. A média por
+conceito custa dez números por aluno.
+
+**Os conceitos de um exercício treinado não mudam.** Sem re-treino, editar um KC depois do treino
+mudaria o domínio derivado de um modelo já publicado. Qualquer edição em `trained` é recusada, e
+com isso a Q-matrix viva é a que o modelo conheceu, sem snapshot nem nomes "incluindo removidos".
 
 **A matriz de mastery é calculada uma vez por versão.** A versão publicada é resolvida uma vez por
 chamada, para não misturar versões se um treino publicar no meio. A inferência usa o mesmo recorte
 do treino. A gravação é numa transação, porque a checagem de "já calculado" só vê se existe alguma
-linha, e uma matriz parcial seria servida para sempre.
+linha, e uma matriz parcial seria servida para sempre. O cálculo continua na primeira leitura, não
+no treino, porque a diferença para o professor são segundos e o worker fica mais simples.
 
-**As estatísticas pré-treino leem o dado inteiro.** Ao contrário do treino, elas incluem os
-`Compile.Error`, porque a taxa de erro de compilação depende deles.
+**A métrica observada é a taxa de acerto em todas as execuções.** A 1ª tentativa é a métrica para
+avaliar modelos; aqui o modelo está sendo aplicado. "Tentativas até completar" é a mediana, para o
+aluno que tentou 68 vezes não puxar o número, sem outro tratamento de outlier.
+
+**As estatísticas das execuções leem o dado inteiro.** Ao contrário do treino, elas incluem os
+`Compile.Error`, porque os erros de compilação por execução dependem deles.
 
 **A taxa de erro de compilação é CE / Run.** E não CE / (CE + Run), que mistura os dois tipos de
-evento no denominador e varia com o ritmo de tentativas de cada aluno.
+evento no denominador e varia com o ritmo de tentativas de cada aluno. Pode passar de 1, e a tela
+diz "por execução".
+
+**A lista de alunos vem inteira, sem paginação.** O teto é a turma (386 no CSEDM), a resposta fica
+em dezenas de KB, e as colunas ordenáveis são calculadas, o que tornaria a ordenação no servidor
+cara à toa. A lista é leve; o detalhe do aluno é outra rota, chamada ao clicar.
+
+**O AUC não vai para a tela.** Fica no banco e no teste de regressão, que é o oráculo científico.
+Para o professor, o cartão do modelo diz versão, data e cobertura.
 
 ## Trava de job e infraestrutura
 

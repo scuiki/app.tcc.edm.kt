@@ -33,74 +33,145 @@ def _seed_assignment(
     )
 
 
-def test_mastery_always_carries_the_trained_model_info(api_client):
-    # a resposta de mastery nunca é um veredito cru, carrega first_auc + trained_at.
-    client, conn = api_client
-    aid = _seed_assignment(conn)
+# O que aconteceu, desde a importação
 
-    resp = client.get(f"/mastery-dashboard/{aid}/mastery")
+
+def test_submission_statistics_without_data_are_empty_not_an_error(api_client):
+    # o bloco "o que aconteceu" existe desde a importação, sem modelo; sem dado, listas vazias.
+    client, conn = api_client
+    aid = _seed_assignment(conn, status="statistics_only")
+
+    resp = client.get(f"/mastery-dashboard/{aid}/submission-statistics")
+
     assert resp.status_code == 200
-    body = resp.json()
-    # sem modelo publicado, o TrainedModelInfo vem vazio, mas vem
-    assert body["first_attempt_auc"] is None and body["trained_at"] is None
-    assert body["matrix"] == []
+    assert resp.json() == {
+        "assignment_id": aid, "student_count": 0, "problems": [], "knowledge_components": []
+    }
 
 
-def test_pre_training_statistics_without_a_model(api_client):
-    # as estatísticas pré-treino rodam sem modelo treinado, 200 com os agregados do dado limpo.
-    client, conn = api_client
-    aid = _seed_assignment(conn, status="statistics_only")  # sem treino, sem published_model_id
-
-    resp = client.get(f"/mastery-dashboard/{aid}/pre-training-statistics")
-    assert resp.status_code == 200
-    body = resp.json()
-    # os três agregados de estatísticas pré-treino estão no payload.
-    assert "success_rate" in body
-    assert "learning_curve" in body
-    assert "compile_error_rate" in body
-
-
-def test_mastery_shape(api_client):
-    # o payload de mastery traz a matriz + KCs críticos + alunos em atenção.
-    client, conn = api_client
-    aid = _seed_assignment(conn)
-
-    body = client.get(f"/mastery-dashboard/{aid}/mastery").json()
-    assert "critical_kcs" in body
-    assert "students_at_risk" in body
-
-
-def test_recommendations_shape(api_client):
-    # o endpoint de recomendações devolve uma lista rankeada (menor mastery primeiro).
-    client, conn = api_client
-    aid = _seed_assignment(conn)
-
-    resp = client.get(f"/mastery-dashboard/{aid}/recommendations")
-    assert resp.status_code == 200
-    assert isinstance(resp.json()["recommendations"], list)
-
-
-def test_mastery_unknown_assignment_404(api_client):
-    # id inteiro inexistente → 404 (nunca interpolar id como string em path/SQL).
-    client, _ = api_client
-    resp = client.get("/mastery-dashboard/999999/mastery")
-    assert resp.status_code == 404
-
-
-def test_with_a_published_model_the_mastery_is_computed_and_ranked(
+def test_submission_statistics_count_the_seeded_runs(
     api_client, trained_artifact, seed_cleaned_submissions
 ):
-    # Caminho completo com um modelo de verdade (mínimo), a matriz, os KCs críticos e o AUC juntos.
+    # 3 alunos, cada um erra e depois acerta o 1, acerta o 2 de primeira, erra o 3; 1 CE no 1.
+    client, _ = api_client
+    seed_cleaned_submissions(with_compile_errors=True)
+
+    body = client.get(
+        f"/mastery-dashboard/{trained_artifact.assignment_id}/submission-statistics"
+    ).json()
+
+    assert body["student_count"] == 3
+    by_id = {p["problem_id"]: p for p in body["problems"]}
+    assert [p["problem_id"] for p in body["problems"]] == [3, 1, 2]  # da menor taxa para a maior
+    assert by_id[1]["success_rate"] == 0.5 and by_id[1]["median_attempts_to_complete"] == 2.0
+    assert by_id[1]["students_completed"] == 3 and by_id[1]["compile_errors_per_run"] == 0.5
+    assert by_id[3]["students_completed"] == 0 and by_id[3]["median_attempts_to_complete"] is None
+    # o problema 3 exige os dois conceitos do trained_artifact, com nome
+    assert sorted(k["kc_name"] for k in by_id[3]["kcs"]) == ["Condicionais", "Laços"]
+    # Laços cobre 1 e 3 (3 acertos em 9 execuções); Condicionais cobre 2 e 3 (3 em 6)
+    assert [k["kc_name"] for k in body["knowledge_components"]] == ["Laços", "Condicionais"]
+
+
+def test_submission_statistics_hide_concepts_until_they_are_approved(
+    api_client, trained_artifact, seed_cleaned_submissions
+):
+    client, conn = api_client
+    seed_cleaned_submissions()
+    SqliteAssignmentRepository(conn).set_status(trained_artifact.assignment_id, "kc_draft")
+
+    body = client.get(
+        f"/mastery-dashboard/{trained_artifact.assignment_id}/submission-statistics"
+    ).json()
+
+    assert body["knowledge_components"] == [] and all(p["kcs"] == [] for p in body["problems"])
+
+
+# O que o modelo prevê, só com modelo publicado
+
+
+def test_without_a_published_model_the_mastery_is_empty_and_says_so(api_client):
+    client, conn = api_client
+    aid = _seed_assignment(conn)
+
+    mastery = client.get(f"/mastery-dashboard/{aid}/mastery")
+    students = client.get(f"/mastery-dashboard/{aid}/students")
+
+    assert mastery.status_code == 200
+    assert mastery.json() == {
+        "assignment_id": aid, "model": None, "knowledge_components": [], "problems": []
+    }
+    assert students.json() == {"assignment_id": aid, "students": []}
+    assert client.get(f"/mastery-dashboard/{aid}/students/Sa").status_code == 404
+
+
+def test_unknown_assignment_is_404(api_client):
+    # id inteiro inexistente → 404 (nunca interpolar id como string em path/SQL).
+    client, _ = api_client
+
+    assert client.get("/mastery-dashboard/999999/mastery").status_code == 404
+    assert client.get("/mastery-dashboard/999999/submission-statistics").status_code == 404
+    assert client.get("/mastery-dashboard/999999/students").status_code == 404
+
+
+def test_with_a_published_model_the_mastery_comes_by_concept_and_by_problem(
+    api_client, trained_artifact, seed_cleaned_submissions
+):
+    # Caminho completo com um modelo de verdade (mínimo), 3 alunos, 3 problemas, 2 conceitos.
     client, _ = api_client
     seed_cleaned_submissions()
 
     body = client.get(f"/mastery-dashboard/{trained_artifact.assignment_id}/mastery").json()
-    recommendations = client.get(
-        f"/mastery-dashboard/{trained_artifact.assignment_id}/recommendations"
-    ).json()["recommendations"]
 
-    assert body["trained_at"] is not None
-    assert body["matrix"] and {"student_id", "kc_id", "mastery"} <= set(body["matrix"][0])
-    means = [kc["mean_mastery"] for kc in body["critical_kcs"]]
+    assert body["model"] == {
+        "version_number": trained_artifact.version_number,
+        "trained_at": trained_artifact.trained_model.created_at,
+        "student_count": 3, "problem_count": 3, "knowledge_component_count": 2,
+    }
+    by_name = {kc["kc_name"]: kc for kc in body["knowledge_components"]}
+    assert by_name["Laços"]["problem_ids"] == [1, 3] and by_name["Condicionais"]["problem_ids"] == [2, 3]
+    means = [kc["mean_mastery"] for kc in body["knowledge_components"]]
+    assert means == sorted(means) and all(0.0 <= m <= 1.0 for m in means)
+    assert all(sum(kc["histogram"]) == 3 and len(kc["histogram"]) == 10 for kc in body["knowledge_components"])
+    assert [p["problem_id"] for p in sorted(body["problems"], key=lambda p: p["problem_id"])] == [1, 2, 3]
+    three = next(p for p in body["problems"] if p["problem_id"] == 3)
+    assert sorted(k["kc_name"] for k in three["kcs"]) == ["Condicionais", "Laços"]
+    assert sum(three["histogram"]) == 3
+
+
+def test_students_come_with_what_they_did_and_their_weakest_concepts(
+    api_client, trained_artifact, seed_cleaned_submissions
+):
+    client, _ = api_client
+    seed_cleaned_submissions()
+
+    body = client.get(f"/mastery-dashboard/{trained_artifact.assignment_id}/students").json()
+
+    assert sorted(s["student_id"] for s in body["students"]) == ["Sa", "Sb", "Sc"]
+    means = [s["mean_mastery"] for s in body["students"]]
     assert means == sorted(means)
-    assert [r["kc_name"] for r in recommendations] and recommendations[0]["text"]
+    for student in body["students"]:
+        # cada aluno completou os problemas 1 e 2 e tentou o 3; só há dois conceitos para listar
+        assert (student["completed"], student["attempted"]) == (2, 3)
+        assert [kc["kc_name"] for kc in student["weakest_kcs"]] and len(student["weakest_kcs"]) == 2
+        masteries = [kc["mastery"] for kc in student["weakest_kcs"]]
+        assert masteries == sorted(masteries)
+
+
+def test_the_student_detail_has_every_concept_and_every_problem(
+    api_client, trained_artifact, seed_cleaned_submissions
+):
+    client, _ = api_client
+    seed_cleaned_submissions(with_compile_errors=True)
+
+    resp = client.get(f"/mastery-dashboard/{trained_artifact.assignment_id}/students/Sb")
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["student_id"] == "Sb"
+    assert (body["completed"], body["attempted"], body["runs"], body["compile_errors"]) == (2, 3, 4, 1)
+    assert sorted(kc["kc_name"] for kc in body["knowledge_components"]) == ["Condicionais", "Laços"]
+    assert sorted(p["problem_id"] for p in body["problems"]) == [1, 2, 3]
+    assert 0.0 <= body["mean_mastery"] <= 1.0
+    assert client.get(
+        f"/mastery-dashboard/{trained_artifact.assignment_id}/students/ninguem"
+    ).status_code == 404

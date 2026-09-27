@@ -13,6 +13,7 @@ from api.knowledge_components.domain.services.active_knowledge_component import 
     get_active_knowledge_component,
 )
 from api.knowledge_components.domain.services.knowledge_component_edit import (
+    refuse_edit_after_training,
     revert_approval_after_edit,
 )
 from api.shared.application.interfaces.unit_of_work import IUnitOfWork
@@ -35,6 +36,7 @@ class RenameKnowledgeComponentUseCase(WriteUseCase):
             self._knowledge_components, self._assignments, dto.kc_id
         )
         with self._unit_of_work:
+            refuse_edit_after_training(self._assignments, knowledge_component.assignment_id)
             self._knowledge_components.rename(dto.kc_id, dto.name)
             revert_approval_after_edit(self._assignments, knowledge_component.assignment_id)
         return KnowledgeComponentDTO(id=dto.kc_id, name=dto.name)

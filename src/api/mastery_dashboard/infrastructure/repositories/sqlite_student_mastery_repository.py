@@ -13,12 +13,12 @@ class SqliteStudentMasteryRepository:
 
     def add(self, student_mastery: StudentMastery) -> int:
         cur = self._conn.execute(
-            "INSERT INTO mastery_prediction (model_artifact_id, student_id, kc_id, mastery) "
+            "INSERT INTO mastery_prediction (model_artifact_id, student_id, problem_id, mastery) "
             "VALUES (?, ?, ?, ?);",
             (
                 student_mastery.trained_model_id,
                 student_mastery.student_id,
-                student_mastery.kc_id,
+                student_mastery.problem_id,
                 student_mastery.mastery,
             ),
         )
@@ -33,7 +33,7 @@ class SqliteStudentMasteryRepository:
 
     def list_by_model(self, trained_model_id: int) -> list[StudentMastery]:
         rows = self._conn.execute(
-            "SELECT id, model_artifact_id, student_id, kc_id, mastery FROM mastery_prediction "
+            "SELECT id, model_artifact_id, student_id, problem_id, mastery FROM mastery_prediction "
             "WHERE model_artifact_id = ?;",
             (trained_model_id,),
         ).fetchall()
@@ -42,7 +42,7 @@ class SqliteStudentMasteryRepository:
                 id=r["id"],
                 trained_model_id=r["model_artifact_id"],
                 student_id=r["student_id"],
-                kc_id=r["kc_id"],
+                problem_id=r["problem_id"],
                 mastery=r["mastery"],
             )
             for r in rows

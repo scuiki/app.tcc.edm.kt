@@ -455,3 +455,11 @@ def test_migration_0015_adds_progress_to_the_kc_job(tmp_path):
     assert {"progress_done", "progress_total"} <= set(_column_names(conn, "kc_job"))
     row = conn.execute("SELECT progress_done, progress_total FROM kc_job;").fetchone()
     assert (row[0], row[1]) == (None, None)  # o job que já existia fica sem progresso
+
+
+def test_migration_0016_keys_the_matrix_by_problem(tmp_path):
+    conn = connect(str(tmp_path / "app.db"))
+    run_migrations(conn)
+    assert _user_version(conn) >= 16
+    columns = _column_names(conn, "mastery_prediction")
+    assert "problem_id" in columns and "kc_id" not in columns

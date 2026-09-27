@@ -12,9 +12,9 @@ class _SpyPredictor:
         self._real = real
         self.calls = []
 
-    def predict_mastery(self, trained_model, dataset, kcs_by_problem):
-        self.calls.append((trained_model, dataset, kcs_by_problem))
-        return self._real.predict_mastery(trained_model, dataset, kcs_by_problem)
+    def predict_current_mastery(self, trained_model, dataset):
+        self.calls.append((trained_model, dataset))
+        return self._real.predict_current_mastery(trained_model, dataset)
 
 
 class _FailsAfterFirstAdd:
@@ -41,21 +41,21 @@ def _rows(conn, model_id: int) -> int:
     ).fetchone()[0]
 
 
-def test_the_matrix_comes_from_the_predictor_and_carries_the_model_info(
+def test_the_matrix_comes_from_the_predictor_and_carries_the_model(
     published_model_mastery, published_assignment, real_mastery_predictor, seed_cleaned_submissions
 ):
     seed_cleaned_submissions()
     spy = _SpyPredictor(real_mastery_predictor)
 
-    matrix, model_info = published_model_mastery(predictor=spy).of(published_assignment)
+    matrix, model = published_model_mastery(predictor=spy).of(published_assignment)
 
     assert matrix
-    assert all(isinstance(s, str) and isinstance(k, int) and 0.0 <= v <= 1.0
-               for (s, k), v in matrix.items())
-    assert model_info.trained_at is not None
-    # Os KCs aprovados chegam ao preditor como problem_id -> [kc_id...].
-    _model, _dataset, kcs_by_problem = spy.calls[0]
-    assert sorted(kcs_by_problem) == [1, 2, 3] and len(kcs_by_problem[3]) == 2
+    assert all(isinstance(s, str) and isinstance(p, int) and 0.0 <= v <= 1.0
+               for (s, p), v in matrix.items())
+    assert model is not None and model.id == published_assignment.published_model_id
+    # A matriz é por problema, todos os problemas do dado para cada aluno.
+    assert {p for _s, p in matrix} == {1, 2, 3}
+    assert len(matrix) == 3 * 3
 
 
 def test_the_matrix_is_computed_once_per_version(
@@ -114,14 +114,14 @@ def test_inference_sees_only_program_runs(
 
     published_model_mastery(predictor=spy).of(published_assignment)
 
-    _model, dataset, _problem_kcs = spy.calls[0]
+    _model, dataset = spy.calls[0]
     assert set(dataset.events["event_type"].unique()) == {"Run.Program"}
 
 
 def test_without_a_published_model_the_matrix_is_empty(published_model_mastery, published_assignment):
     published_assignment.published_model_id = None
 
-    matrix, model_info = published_model_mastery().of(published_assignment)
+    matrix, model = published_model_mastery().of(published_assignment)
 
     assert matrix == {}
-    assert (model_info.first_attempt_auc, model_info.trained_at) == (None, None)
+    assert model is None

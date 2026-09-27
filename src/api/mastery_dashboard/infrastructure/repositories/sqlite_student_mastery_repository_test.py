@@ -1,4 +1,4 @@
-# SqliteStudentMasteryRepository grava a matriz aluno × KC por versão de modelo.
+# SqliteStudentMasteryRepository grava a matriz aluno × problema por versão de modelo.
 
 from __future__ import annotations
 
@@ -16,9 +16,6 @@ def test_masteries_round_trip_per_model(tmp_db):
         "INSERT INTO assignment (classroom_id, name, created_at) VALUES (?, 'A', 't0');",
         (classroom_id,),
     ).lastrowid
-    kc_id = tmp_db.execute(
-        "INSERT INTO kc (assignment_id, name) VALUES (?, 'laços');", (assignment_id,)
-    ).lastrowid
     model_id = tmp_db.execute(
         "INSERT INTO model_artifact (assignment_id, version_number, content_hash, artifact_dir, "
         "created_at) VALUES (?, 1, 'h', 'v1', 't0');",
@@ -27,11 +24,11 @@ def test_masteries_round_trip_per_model(tmp_db):
     repository = SqliteStudentMasteryRepository(tmp_db)
 
     mastery_id = repository.add(
-        StudentMastery(id=None, trained_model_id=model_id, student_id="S1", kc_id=kc_id, mastery=0.75)
+        StudentMastery(id=None, trained_model_id=model_id, student_id="S1", problem_id=13, mastery=0.75)
     )
 
     assert repository.count_by_model(model_id) == 1
     assert repository.list_by_model(model_id) == [
-        StudentMastery(id=mastery_id, trained_model_id=model_id, student_id="S1", kc_id=kc_id, mastery=0.75)
+        StudentMastery(id=mastery_id, trained_model_id=model_id, student_id="S1", problem_id=13, mastery=0.75)
     ]
     assert repository.count_by_model(model_id + 1) == 0

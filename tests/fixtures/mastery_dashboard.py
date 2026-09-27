@@ -12,9 +12,6 @@ from api.classroom_import.domain.services.submission_cleaning import CLEANED_COL
 from api.classroom_import.infrastructure.repositories.sqlite_submission_repository import (
     SqliteSubmissionRepository,
 )
-from api.knowledge_components.infrastructure.repositories.sqlite_problem_knowledge_component_repository import (
-    SqliteProblemKnowledgeComponentRepository,
-)
 from api.mastery_dashboard.application.services.published_model_mastery import PublishedModelMastery
 from api.mastery_dashboard.infrastructure.repositories.sqlite_student_mastery_repository import (
     SqliteStudentMasteryRepository,
@@ -104,7 +101,6 @@ def published_model_mastery(trained_artifact, real_mastery_predictor, sqlite_stu
             assignments=SqliteAssignmentRepository(conn),
             submissions=SqliteSubmissionRepository(conn),
             trained_models=SqliteTrainedModelRepository(conn),
-            problem_kcs=SqliteProblemKnowledgeComponentRepository(conn),
             student_masteries=student_masteries or sqlite_student_masteries,
             predictor=predictor or real_mastery_predictor,
             unit_of_work=SqliteUnitOfWork(conn),

@@ -56,10 +56,3 @@ class SqliteKnowledgeComponentRepository:
             "UPDATE kc SET deleted_at = ? WHERE id = ? AND deleted_at IS NULL;",
             (removed_at, kc_id),
         )
-
-    def names_including_removed(self, assignment_id: int) -> dict[int, str]:
-        # Um modelo treinado antes de uma remoção ainda prevê o KC removido, e o nome dele fica
-        rows = self._conn.execute(
-            "SELECT id, name FROM kc WHERE assignment_id = ?;", (assignment_id,)
-        ).fetchall()
-        return {r["id"]: r["name"] for r in rows}

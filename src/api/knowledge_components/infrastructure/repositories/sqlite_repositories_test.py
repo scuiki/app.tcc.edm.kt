@@ -61,7 +61,6 @@ def test_rename_and_remove_keeps_the_row_as_history(tmp_db, assignment_id):
     assert repository.list_by_assignment(assignment_id) == []
     row = tmp_db.execute("SELECT name, deleted_at FROM kc WHERE id = ?;", (kc_id,)).fetchone()
     assert tuple(row) == ("b", "t1")  # a linha fica, só marcada como removida
-    assert repository.names_including_removed(assignment_id) == {kc_id: "b"}
 
 
 def test_bindings_union_on_move_and_ignore_duplicates(tmp_db, assignment_id):

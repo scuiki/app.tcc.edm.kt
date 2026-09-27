@@ -275,6 +275,23 @@ def test_editing_after_approval_reverts_status(api_client):
     assert SqliteAssignmentRepository(conn).get(aid).status == "kc_draft"
 
 
+def test_editing_after_training_is_refused(api_client):
+    # sem re-treino, o modelo publicado fixa os conceitos; qualquer edição é 409 e nada muda.
+    client, conn = api_client
+    aid = _seed_assignment(conn, status="trained")
+    a = _seed_kc(conn, aid, "a")
+    b = _seed_kc(conn, aid, "b")
+    _bind(conn, aid, a, problem_id=1)
+    _bind(conn, aid, b, problem_id=1)
+
+    renamed = client.put(f"/knowledge-components/{a}", json={"name": "a-editado"})
+    removed = client.delete(f"/knowledge-components/{a}")
+
+    assert renamed.status_code == 409 and removed.status_code == 409
+    assert SqliteKnowledgeComponentRepository(conn).get(a).name == "a"
+    assert SqliteAssignmentRepository(conn).get(aid).status == "trained"
+
+
 # Tirar um KC de um problema só, o xis do chip, e o caminho de volta
 
 

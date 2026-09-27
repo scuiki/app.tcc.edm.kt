@@ -1,4 +1,4 @@
-# Duas consequências de editar os KCs, avaliadas dentro da transação da própria edição.
+# As consequências de editar os KCs, avaliadas dentro da transação da própria edição.
 from __future__ import annotations
 
 from collections.abc import Iterable
@@ -27,3 +27,10 @@ def revert_approval_after_edit(assignments: IAssignmentRepository, assignment_id
     assignment = assignments.get(assignment_id)
     if assignment is not None and assignment.status == AssignmentStatus.KC_APPROVED:
         assignments.set_status(assignment_id, AssignmentStatus.KC_DRAFT)
+
+
+def refuse_edit_after_training(assignments: IAssignmentRepository, assignment_id: int) -> None:
+    # Sem re-treino, o modelo publicado fixa os conceitos; editar mudaria o domínio já calculado.
+    assignment = assignments.get(assignment_id)
+    if assignment is not None and assignment.status == AssignmentStatus.TRAINED:
+        raise BusinessRuleViolation(["os conceitos de um exercício treinado não mudam"])

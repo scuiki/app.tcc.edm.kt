@@ -1,4 +1,4 @@
-# StudentMastery, a probabilidade de domínio de um aluno em um KC, segundo uma versão de modelo.
+# StudentMastery, a chance prevista de um aluno acertar um problema agora, por versão de modelo.
 
 from __future__ import annotations
 
@@ -10,5 +10,5 @@ class StudentMastery:
     id: int | None
     trained_model_id: int  # a mastery vale para a versão que a calculou
     student_id: str
-    kc_id: int
+    problem_id: int
     mastery: float | None

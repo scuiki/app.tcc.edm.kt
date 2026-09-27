@@ -15,6 +15,7 @@ from api.knowledge_components.domain.rules.problems_belong_to_assignment_rule im
     ProblemsBelongToAssignmentRule,
 )
 from api.knowledge_components.domain.services.knowledge_component_edit import (
+    refuse_edit_after_training,
     revert_approval_after_edit,
 )
 from api.knowledge_components.domain.interfaces.problem_knowledge_component_repository import (
@@ -45,6 +46,7 @@ class AddKnowledgeComponentUseCase(WriteUseCase):
 
     def _run(self, dto: AddKnowledgeComponentDTO) -> KnowledgeComponentDTO:
         with self._unit_of_work:
+            refuse_edit_after_training(self._assignments, dto.assignment_id)
             # Um KC do professor não veio de um grupo do KCGen-KT, group_index fica vazio.
             kc_id = self._knowledge_components.add(
                 KnowledgeComponent(id=None, assignment_id=dto.assignment_id, name=dto.name)

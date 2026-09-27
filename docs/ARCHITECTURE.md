@@ -4,7 +4,7 @@ Três partes em `src/`. A maior parte deste documento trata das duas em Python (
 terceira, `web/`, é a SPA em React, com o próprio `package.json`, e tem a sua seção no fim
 ([Frontend](#frontend)).
 
-- **`ml/`**: a ciência (Code-DKT, KCGen-KT, AUC, agregação de mastery). É uma biblioteca, como o
+- **`ml/`**: a ciência (Code-DKT, KCGen-KT, AUC). É uma biblioteca, como o
   torch: não conhece HTTP, banco nem disco da aplicação, e **nunca importa de `api/`**. É o que o
   teste de regressão contra o TCC 1 exercita.
 - **`api/`**: a aplicação. Organizada **por funcionalidade primeiro**, com as camadas de clean
@@ -22,7 +22,7 @@ Os nomes seguem o [glossário](GLOSSARY.md).
 | `api/classroom_import/` | Upload do ProgSnap2, validação, limpeza, checagem de treinabilidade |
 | `api/knowledge_components/` | Gerar KCs com o LLM, editar os KCs de cada problema e aprová-los |
 | `api/model_training/` | Disparar e acompanhar o treino do Code-DKT, guardar os modelos |
-| `api/mastery_dashboard/` | Mastery, recomendações e estatísticas pré-treino |
+| `api/mastery_dashboard/` | O que aconteceu nas execuções e o que o modelo prevê, por problema, conceito e aluno |
 | `api/shared/` | O que todas usam: erros, base de use case, banco, trava, settings |
 
 Toda funcionalidade tem as quatro pastas, mesmo que alguma fique com um arquivo só. Dentro de
@@ -241,8 +241,9 @@ arquivo real. O ESLint não serve aqui, porque com imports relativos `../../comp
 
 CSS puro, com os tokens de `styles/tokens.css` e um `.css` ao lado de cada componente. Nenhuma cor
 é escrita no ponto de uso. Cada variante de botão tem a sua situação de uso (primária, secundária,
-destrutiva e o botão de ícone das linhas de tabela), e uma variante sem uso não nasce. Vermelho,
-âmbar e verde são só das faixas de domínio.
+destrutiva e o botão de ícone das linhas de tabela), e uma variante sem uso não nasce. O vermelho
+só marca recusa e exclusão; o dashboard usa um cinza para o observado e um azul para o previsto,
+nunca uma cor de alerta sobre um número.
 
 ### Verificação
 

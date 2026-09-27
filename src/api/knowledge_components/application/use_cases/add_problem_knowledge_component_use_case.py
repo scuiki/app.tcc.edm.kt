@@ -28,6 +28,7 @@ from api.knowledge_components.domain.services.active_knowledge_component import 
     get_active_knowledge_component,
 )
 from api.knowledge_components.domain.services.knowledge_component_edit import (
+    refuse_edit_after_training,
     revert_approval_after_edit,
 )
 from api.shared.application.interfaces.unit_of_work import IUnitOfWork
@@ -78,6 +79,7 @@ class AddProblemKnowledgeComponentUseCase(WriteUseCase):
 
     def _run(self, request: _LinkRequest) -> ProblemKnowledgeComponentDTO:
         with self._unit_of_work:
+            refuse_edit_after_training(self._assignments, request.assignment_id)
             self._problem_kcs.add(
                 ProblemKnowledgeComponent(
                     id=None,
