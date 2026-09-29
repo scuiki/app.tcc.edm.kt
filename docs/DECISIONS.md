@@ -375,11 +375,53 @@ abria, uma linha já aberta fechava ao ser escolhida, e a tela Turmas abria no m
 já mostra. A única abertura automática é a de uma tela de exercício, para a linha atual aparecer
 marcada. O que fica aberto é lembrado no navegador.
 
-**As tabelas da Análise seguem o estilo das tabelas acadêmicas, em Arial.** Um traço preto sob os
-rótulos, um cinza no fim, nenhum vertical e nenhum traço acima dos rótulos. A legenda numerada não
-entrou, para não destoar do resto do app. Os números ficam centralizados sob os rótulos, que também
-são centralizados. À direita, a convenção de tabela de dados, pesa pouco com números curtos e o
-"355 de 386" desalinha de qualquer jeito, e à esquerda o valor cola na coluna anterior.
+**As tabelas da Análise seguem o estilo das tabelas acadêmicas.** Um traço escuro sob os rótulos e
+no fim, nenhum vertical e nenhum traço acima dos rótulos, sem seguir a ABNT à risca. A legenda
+numerada e a fonte abaixo da tabela não entraram, para não destoar do resto do app. Os números ficam
+centralizados sob os rótulos, que também são centralizados. À direita, a convenção de tabela de
+dados, pesa pouco com números curtos e o "355 de 386" desalinha de qualquer jeito, e à esquerda o
+valor cola na coluna anterior. A tabela usa Arial, a fonte de dados do app.
+
+**O app passou a ser formal e cinza, e o azul ficou só com o modelo.** Na linguagem anterior o azul
+de ação estava no botão primário, no menu, nas abas e nos links, e um azul quase igual pintava o
+domínio previsto. O professor via a mesma cor no botão e no dado sem que um tivesse a ver com o
+outro. Com a interface em cinza, o azul passa a ser a única cor que diz alguma coisa, que existe um
+Code-DKT por trás, e o olho vai para o dado do modelo sem legenda. As referências foram o Carbon
+(componentes e gráficos), o padrão de gráfico do gov.br (título, subtítulo e fonte na figura) e o
+Distill (o tom acadêmico), comparadas em três rodadas registradas no `DESIGN.md`.
+
+**A paleta tem três papéis, sem verde nem âmbar.** Cinza para a interface, azul para o modelo e
+vermelho para erro e exclusão. O verde e o âmbar existiam para as faixas de domínio, que saíram com
+a decisão de entregar o dado. Um sucesso verde seria uma cor a mais só para dizer "deu certo", e o
+ícone de ✓ já diz isso.
+
+**O observado é cinza 80 e não preto puro.** O preto `#161616` é também o texto e o traço da
+tabela, e a barra de 10px ao lado dos nomes em negrito deixava a linha pesada. O `#393939` ainda
+lê como preto e separa bem do azul, inclusive para daltonismo.
+
+**Raio 0 em tudo, e sombra só no que é objeto.** As barras quadradas, os botões e os gráficos
+vieram do Carbon, e manter os 2px nos cartões e no menu deixaria dois raios convivendo. A sombra
+fica no cartão, no diálogo e na barra superior, para separar objetos do fundo, e nada dentro deles
+tem sombra, para ela continuar querendo dizer "isto é um objeto".
+
+**Duas fontes, cada uma com um papel, a Public Sans na interface e o Arial nos dados.** O app já
+separava uma fonte de dados (a mono, para contagem, percentual, data e identificador), e o Arial
+assume esse papel e ganha a tabela e o gráfico inteiros. O motivo é o tom e a monografia, que está
+em Arial, então tabelas e figuras capturadas do app entram no texto sem destoar. A Open Sans saiu
+porque a Public Sans é mais sóbria na interface. Duas sem serifa parecidas só funcionam com a
+fronteira nítida, por isso a regra é por papel e não por gosto, e uma etiqueta com número continua
+inteira em Public Sans. No Linux o Arial cai na Liberation Sans, que tem as mesmas medidas, e o
+layout não muda. A serifa nos títulos foi testada e descartada.
+
+**A linha de tabela tem 32px.** É a densidade compacta do Carbon, e o professor vê mais alunos
+sem rolar. A linha que tem histograma cresce o necessário, porque barras e eixo não cabem em 32px.
+
+**A cor dos estágios segue a origem do trabalho.** A lista de estágios serve a dois diálogos. A
+extração de conceitos é feita pelo LLM e fica preta. O treino é o Code-DKT nascendo e fica azul.
+Pintar os dois de azul diria que o LLM é o modelo.
+
+**O capelo da barra superior é preto.** Ele é a marca do app e não fala do modelo, então não pode
+ser azul pela regra.
 
 **As dicas de hover são um componente, e não o `title` nativo.** O navegador espera perto de um
 segundo antes de mostrar o `title`, e isso não se configura. O `Tooltip` aparece no hover ou no

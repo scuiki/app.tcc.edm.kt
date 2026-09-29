@@ -248,16 +248,15 @@ arquivo real. O ESLint não serve aqui, porque com imports relativos `../../comp
 
 ### Linguagem visual
 
-CSS puro, com os tokens de `styles/tokens.css` e um `.css` ao lado de cada componente. Nenhuma cor
-é escrita no ponto de uso. Cada variante de botão tem a sua situação de uso (primária, secundária,
-destrutiva e o botão de ícone das linhas de tabela), e uma variante sem uso não nasce. O vermelho
-só marca recusa e exclusão; o dashboard usa um cinza para o observado e um azul para o previsto,
-nunca uma cor de alerta sobre um número.
+O que o app desenha (cores, tipografia, componentes, tabelas e gráficos) está em `docs/DESIGN.md`.
+Aqui fica só como o CSS é escrito.
 
-As tabelas da Análise usam Arial no estilo das tabelas de trabalho acadêmico, com um traço preto
-sob os rótulos, um cinza no fim e nenhum vertical. Barras e histogramas são CSS, e o Chart.js
-desenha só a curva de perda do treino. As dicas de hover usam o `Tooltip`, nunca o `title` nativo.
-A janela não rola, só o conteúdo, então a barra superior e o menu ficam parados.
+CSS puro, com os tokens de `styles/tokens.css` e um `.css` ao lado de cada componente. Nenhuma cor
+é escrita no ponto de uso. Cada variante tem a sua situação de uso, escolhida por uma prop
+`variant` que troca a classe, e uma variante sem uso não nasce. Barras e histogramas são CSS, e o
+Chart.js desenha só a curva de perda do treino, lendo a cor do token na hora. As dicas de hover
+usam o `Tooltip`, nunca o `title` nativo. A janela não rola, só o conteúdo, então a barra superior
+e o menu ficam parados.
 
 ### Verificação
 

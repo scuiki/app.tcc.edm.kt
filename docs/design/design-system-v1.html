@@ -1,0 +1,656 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EDM·KT Design System v1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700&display=swap">
+<style>
+/* A referência visual da versão 1, com os nomes de token planejados para o tokens.css */
+:root {
+  --color-page: #f4f4f4;
+  --color-surface: #ffffff;
+  --color-surface-subtle: #f4f4f4;
+  --color-hover: #e8e8e8;
+  --color-active: #e0e0e0;
+  --color-rule: #e0e0e0;
+  --color-control-border: #8d8d8d;
+  --color-text: #161616;
+  --color-text-body: #393939;
+  --color-text-secondary: #525252;
+  --color-text-muted: #6f6f6f;
+  --color-text-disabled: #a8a8a8;
+  --color-primary: #161616;
+  --color-primary-hover: #393939;
+  --color-focus: #161616;
+  --color-model: #3b7be0;
+  --color-model-strong: #2a64c2;
+  --color-model-soft: #eaf1fc;
+  --color-model-soft-border: #c4d7f5;
+  --color-observed: #393939;
+  --color-bar-track: #efefef;
+  --color-danger: #da1e28;
+  --color-danger-text: #a2191f;
+  --backdrop: rgba(22, 22, 22, 0.42);
+
+  --font-sans: 'Public Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  /* Tabela, gráfico, contagem, percentual, data, versão e identificador, no padrão da monografia */
+  --font-data: Arial, 'Liberation Sans', Arimo, Helvetica, sans-serif;
+  --shadow-bar: 0 1px 0 #e0e0e0, 0 2px 8px rgba(22, 22, 22, 0.06);
+  --shadow-card: 0 1px 2px rgba(22, 22, 22, 0.06), 0 3px 10px rgba(22, 22, 22, 0.07);
+  --shadow-dialog: 0 20px 50px rgba(22, 22, 22, 0.28);
+
+  --control-height: 36px;
+  --control-height-compact: 32px;
+  --table-row-height: 32px;
+  --transition: 200ms ease-out;
+
+  /* A moldura desta página, fora do sistema */
+  --doc-bg: #e9e9ea;
+  --doc-ink: #1c1c1e;
+  --doc-muted: #5f6166;
+}
+
+* { box-sizing: border-box; border-radius: 0; }
+html { color-scheme: light; }
+body { margin: 0; background: var(--doc-bg); color: var(--doc-ink); font-family: var(--font-sans); font-size: 14px; line-height: 1.5; -webkit-font-smoothing: antialiased; padding: 32px 24px 72px; }
+.wrap { max-width: 1180px; margin: 0 auto; display: grid; gap: 44px; }
+
+.doc-head { display: grid; gap: 10px; max-width: 78ch; }
+.doc-head h1 { margin: 0; font-size: 28px; font-weight: 700; letter-spacing: -0.01em; }
+.doc-head p { margin: 0; color: var(--doc-muted); }
+.doc-meta { display: flex; flex-wrap: wrap; gap: 8px; }
+.eyebrow { font-size: 11.5px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--doc-muted); }
+.toc { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; }
+.toc a { color: var(--doc-ink); }
+
+.section { display: grid; gap: 16px; scroll-margin-top: 16px; }
+.section > header { display: grid; gap: 4px; max-width: 82ch; }
+.section h2 { margin: 0; font-size: 20px; font-weight: 700; }
+.section h3 { margin: 0; font-size: 14px; font-weight: 700; }
+.section > header p { margin: 0; color: var(--doc-muted); }
+.grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.specimen { background: var(--color-page); color: var(--color-text); font-size: 13px; padding: 18px; display: grid; gap: 12px; align-content: start; min-width: 0; }
+.specimen-title { font-size: 11.5px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--doc-muted); }
+.rule-text { margin: 0; font-size: 12.5px; color: var(--doc-muted); max-width: 70ch; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+
+.principles { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.principles li { background: var(--color-surface); padding: 14px 16px; display: grid; gap: 4px; }
+.principles b { font-size: 14px; }
+.principles span { color: var(--color-text-secondary); font-size: 13px; }
+
+.swatch-group { display: grid; gap: 8px; }
+.swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 8px; }
+.swatch { background: var(--color-surface); display: grid; grid-template-columns: 34px 1fr; gap: 10px; align-items: center; padding: 8px; }
+.swatch i { width: 34px; height: 34px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.1); }
+.swatch code { font-size: 11.5px; font-family: ui-monospace, Menlo, monospace; color: var(--color-text); display: block; }
+.swatch small { font-size: 11.5px; color: var(--color-text-muted); }
+
+.t-page-title { margin: 0; font-size: 22px; font-weight: 600; line-height: 1.25; }
+.t-section-title { margin: 0; font-size: 16px; font-weight: 600; line-height: 1.3; }
+.t-body { margin: 0; color: var(--color-text-body); line-height: 1.55; }
+.t-support { font-size: 12px; color: var(--color-text-muted); }
+.num { font-family: var(--font-data); font-variant-numeric: tabular-nums; }
+.scale { display: grid; gap: 10px; }
+.scale-row { display: grid; grid-template-columns: 150px 1fr; gap: 12px; align-items: baseline; }
+.scale-row code { font-size: 11.5px; font-family: ui-monospace, Menlo, monospace; color: var(--color-text-muted); }
+
+.spec-table { width: 100%; border-collapse: collapse; background: var(--color-surface); font-size: 13px; }
+.spec-table th, .spec-table td { text-align: left; padding: 0 12px; height: 32px; }
+.spec-table th { font-weight: 600; border-bottom: 1px solid var(--color-text); }
+.spec-table tbody tr + tr td { border-top: 1px solid var(--color-rule); }
+.spec-table code { font-size: 11.5px; font-family: ui-monospace, Menlo, monospace; }
+
+/* Os componentes, como o app deve desenhá-los */
+.btn { height: var(--control-height); padding: 0 16px; border: 1px solid transparent; font: 600 13px var(--font-sans); display: inline-flex; align-items: center; gap: 7px; flex-shrink: 0; cursor: pointer; transition: background-color var(--transition), border-color var(--transition); }
+.btn--compact { height: 28px; padding: 0 10px; font-size: 12.5px; }
+.btn--primary { background: var(--color-primary); border-color: var(--color-primary); color: #ffffff; }
+.btn--primary:hover, .btn--primary.is-hover { background: var(--color-primary-hover); border-color: var(--color-primary-hover); }
+.btn--secondary { background: var(--color-surface); border-color: var(--color-control-border); color: var(--color-text); }
+.btn--secondary:hover, .btn--secondary.is-hover { background: var(--color-hover); }
+.btn--destructive { background: var(--color-danger); border-color: var(--color-danger); color: #ffffff; }
+.btn--destructive:hover, .btn--destructive.is-hover { background: var(--color-danger-text); border-color: var(--color-danger-text); }
+.btn:disabled { background: var(--color-rule); border-color: var(--color-rule); color: var(--color-text-disabled); cursor: not-allowed; }
+.icon-btn { width: var(--control-height-compact); height: var(--control-height-compact); padding: 0; border: 1px solid var(--color-control-border); background: var(--color-surface); color: var(--color-text-secondary); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
+.icon-btn:hover { background: var(--color-hover); }
+.link { color: var(--color-text); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+.link:hover, .link.is-hover { text-decoration-thickness: 2px; }
+.specimen :focus-visible, .is-focus { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+
+.field { display: grid; gap: 6px; }
+.field label { font-size: 12px; font-weight: 600; color: var(--color-text-body); }
+.field input { height: var(--control-height); padding: 0 10px; border: 1px solid var(--color-control-border); background: var(--color-surface); font: 13px var(--font-sans); color: var(--color-text); }
+.field input.is-focus { outline-offset: 0; }
+.field--error input { border-color: var(--color-danger); }
+.field__error { font-size: 12px; color: var(--color-danger-text); }
+
+.badge { display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border: 1px solid; font-size: 11.5px; font-weight: 600; white-space: nowrap; }
+.badge--neutral { background: var(--color-hover); border-color: var(--color-rule); color: var(--color-text-secondary); }
+.badge--model { background: var(--color-model-soft); border-color: var(--color-model-soft-border); color: var(--color-model-strong); }
+
+.card { background: var(--color-surface); box-shadow: var(--shadow-card); display: flex; flex-direction: column; min-width: 0; }
+.card__header { height: 48px; display: flex; align-items: center; gap: 12px; padding: 0 16px; border-bottom: 1px solid var(--color-rule); }
+.card__title { margin: 0; flex-grow: 1; font-size: 13px; font-weight: 600; }
+.card__body { padding: 14px 16px; display: grid; gap: 10px; }
+.card__footer { height: 44px; display: flex; align-items: center; padding: 0 16px; border-top: 1px solid var(--color-rule); font-size: 12px; color: var(--color-text-muted); }
+.kv { display: grid; grid-template-columns: 110px 1fr; gap: 4px 12px; margin: 0; }
+.kv dt { color: var(--color-text-muted); }
+.kv dd { margin: 0; }
+
+.dialog-scene { position: relative; min-height: 280px; background: var(--color-page); overflow: hidden; }
+.dialog-scene__ghost { position: absolute; inset: 16px; display: grid; gap: 12px; align-content: start; }
+.dialog-scene__ghost .card { height: 90px; }
+.dialog-scene__veil { position: absolute; inset: 0; background: var(--backdrop); }
+.dialog { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(400px, calc(100% - 32px)); background: var(--color-surface); box-shadow: var(--shadow-dialog); }
+.dialog__head { padding: 16px 20px 6px; }
+.dialog__head h4 { margin: 0; font-size: 16px; font-weight: 600; }
+.dialog__body { padding: 4px 20px 18px; color: var(--color-text-body); }
+.dialog__footer { display: flex; justify-content: flex-end; gap: 8px; padding: 12px 20px; background: var(--color-surface-subtle); border-top: 1px solid var(--color-rule); }
+
+.topbar { height: 56px; display: flex; align-items: center; padding: 0 20px; background: var(--color-surface); box-shadow: var(--shadow-bar); position: relative; z-index: 1; color: var(--color-text); }
+.shell { display: grid; grid-template-rows: 56px 1fr; min-height: 380px; background: var(--color-page); }
+.shell__body { display: grid; grid-template-columns: 260px 1fr; min-height: 0; }
+.shell__main { padding: 20px 24px; display: grid; gap: 12px; align-content: start; }
+.shell__main .card { height: 120px; }
+
+.side-menu { background: var(--color-surface); border-right: 1px solid var(--color-rule); padding: 16px 10px; display: grid; gap: 2px; align-content: start; }
+.side-menu__item { height: 38px; padding: 0 12px; display: flex; align-items: center; gap: 11px; color: var(--color-text-body); cursor: pointer; font-size: 13px; }
+.side-menu__item:hover { background: var(--color-hover); }
+.side-menu__item--main { font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
+.side-menu__item--classroom { padding-left: 22px; font-weight: 600; }
+.side-menu__item--assignment { padding-left: 32px; }
+.side-menu__item--screen { padding-left: 48px; color: var(--color-text-secondary); }
+.side-menu__item[aria-current="page"] { background: var(--color-active); color: var(--color-text); font-weight: 600; }
+.side-menu__spacer { flex-grow: 1; }
+.side-menu__sign { color: var(--color-text-muted); width: 20px; text-align: center; }
+.dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; border: 1.5px solid var(--color-text); }
+.dot--awaiting { border-color: var(--color-control-border); }
+.dot--kc_approved { background: linear-gradient(90deg, var(--color-text) 50%, transparent 50%); }
+.dot--trained { background: var(--color-model); border-color: var(--color-model); }
+
+.tabs { display: flex; gap: 2px; padding: 8px 12px 0; border-bottom: 1px solid var(--color-rule); background: var(--color-surface); }
+.tabs__tab { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 12px; margin-bottom: -1px; border: 0; border-bottom: 2px solid transparent; background: transparent; font: 13px var(--font-sans); color: var(--color-text-secondary); cursor: pointer; }
+.tabs__tab:hover { color: var(--color-text); }
+.tabs__tab[aria-selected="true"] { color: var(--color-text); border-bottom-color: var(--color-text); font-weight: 600; }
+
+.dropzone { min-height: 130px; padding: 20px; border: 1px dashed var(--color-control-border); background: var(--color-surface); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-align: center; cursor: pointer; }
+.dropzone:hover { border-color: var(--color-text); }
+.dropzone--dragging { border-style: solid; border-color: var(--color-text); background: var(--color-hover); }
+.dropzone--disabled { border-color: var(--color-rule); cursor: not-allowed; opacity: .6; }
+.dropzone__icon { color: var(--color-text-body); margin-bottom: 4px; }
+.dropzone__title { font-weight: 600; }
+.dropzone__hint { color: var(--color-text-secondary); }
+.dropzone__detail { font-size: 12px; color: var(--color-text-muted); }
+
+.stage-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.stage-list__item { display: flex; align-items: center; gap: 10px; color: var(--color-text-disabled); }
+.stage-list__label { flex-grow: 1; }
+.stage-list__progress { font-family: var(--font-data); font-size: 12px; color: var(--color-text-muted); font-variant-numeric: tabular-nums; }
+.stage-list__item--done { color: var(--color-text-body); }
+.stage-list__item--current { color: var(--color-text); font-weight: 600; }
+.stage-list--neutral .stage-list__item--done svg, .stage-list--neutral .stage-list__item--current svg { color: var(--color-text); }
+.stage-list--model .stage-list__item--done svg, .stage-list--model .stage-list__item--current svg { color: var(--color-model); }
+.spin { animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading { display: flex; align-items: center; gap: 10px; color: var(--color-text-muted); }
+.loading svg { color: var(--color-text); }
+.empty-state { display: grid; justify-items: center; gap: 6px; padding: 18px; text-align: center; }
+.empty-state__icon { width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; background: var(--color-hover); color: var(--color-text-secondary); }
+
+.outcome { display: flex; align-items: flex-start; gap: 10px; }
+.outcome svg { flex-shrink: 0; margin-top: 1px; color: var(--color-text); }
+.outcome__title { font-weight: 600; }
+.outcome__body { margin: 2px 0 0; color: var(--color-text-body); line-height: 1.55; }
+.outcome--danger svg { color: var(--color-danger); }
+.outcome--danger .outcome__title { color: var(--color-danger-text); }
+
+.estimated-mark { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; margin-right: 4px; border-radius: 50%; color: var(--color-model-strong); background: var(--color-model-soft); vertical-align: middle; }
+.info-hint { display: inline-flex; margin-left: 4px; color: var(--color-text-muted); vertical-align: middle; }
+.sort-icon { display: inline-flex; margin-left: 2px; color: var(--color-text); vertical-align: middle; }
+.tooltip { display: inline-block; max-width: 260px; padding: 5px 8px; background: var(--color-text); color: var(--color-surface); font-size: 12px; line-height: 1.4; }
+
+/* A tabela da Análise, sem fio vertical, traço escuro sob o cabeçalho, fio entre as linhas e linha de 32px */
+.table-scroll { overflow-x: auto; }
+.analysis-table { width: 100%; min-width: 900px; border-collapse: collapse; font-family: var(--font-data); font-size: 13.5px; color: var(--color-text); border-bottom: 1px solid var(--color-text); }
+.analysis-table th { height: 44px; padding: 4px 8px; font-size: 12.5px; font-weight: 600; line-height: 1.25; color: var(--color-text-body); text-align: center; vertical-align: middle; border-bottom: 1px solid var(--color-text); }
+.analysis-table td { height: var(--table-row-height); padding: 4px 8px; vertical-align: middle; }
+.analysis-table th:first-child, .analysis-table td:first-child { text-align: left; padding-left: 4px; }
+.analysis-table tbody tr + tr td { border-top: 1px solid var(--color-rule); }
+.analysis-table tbody tr:hover td { background: var(--color-surface-subtle); }
+.analysis-table__name { font-weight: 700; white-space: nowrap; }
+.analysis-table__num { text-align: center; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.analysis-table__sub { color: var(--color-text-muted); font-size: 12px; }
+.ratio-bar { display: grid; grid-template-columns: minmax(80px, 1fr) 40px; gap: 8px; align-items: center; min-width: 150px; }
+.ratio-bar__track { height: 10px; background: var(--color-bar-track); }
+.ratio-bar__fill { height: 100%; }
+.ratio-bar__fill--observed { background: var(--color-observed); }
+.ratio-bar__fill--predicted { background: var(--color-model); }
+.ratio-bar__value { font-variant-numeric: tabular-nums; }
+.histogram { display: grid; gap: 2px; min-width: 140px; }
+.histogram__bars { display: flex; align-items: flex-end; gap: 2px; height: 20px; }
+.histogram__bar { flex: 1; background: var(--color-model); }
+.histogram__bar:hover { background: var(--color-model-strong); }
+.histogram__axis { display: flex; justify-content: space-between; font-size: 10px; line-height: 1; color: var(--color-text-muted); font-variant-numeric: tabular-nums; }
+
+.figures { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.figure { margin: 0; font-family: var(--font-data); background: var(--color-surface); box-shadow: var(--shadow-card); padding: 14px 16px; display: grid; gap: 6px; min-width: 0; }
+.figure__title { margin: 0; font-size: 13px; font-weight: 600; }
+.figure__subtitle { margin: 0; font-size: 12px; color: var(--color-text-muted); }
+.figure__source { margin: 0; font-size: 11px; color: var(--color-text-muted); }
+.figure svg { width: 100%; height: auto; display: block; overflow: visible; }
+.figure svg text { font-family: var(--font-data); fill: var(--color-text-muted); font-size: 10.5px; font-variant-numeric: tabular-nums; }
+.figure svg .grid { stroke: var(--color-rule); stroke-width: 1; }
+.figure svg .axis { stroke: var(--color-text); stroke-width: 1; }
+.figure svg .hit { fill: transparent; cursor: crosshair; }
+.figure svg .mark-observed { fill: var(--color-observed); }
+.figure svg .mark-model { fill: var(--color-model); }
+.figure svg .line { fill: none; stroke: var(--color-model); stroke-width: 2; stroke-linejoin: round; }
+.figure svg .end { fill: var(--color-model); stroke: var(--color-surface); stroke-width: 2; }
+.figure svg .cross { stroke: var(--color-text-muted); stroke-width: 1; stroke-dasharray: 2 2; }
+.figure svg .value { fill: var(--color-text); font-weight: 600; }
+.figure svg .label { fill: var(--color-text-body); }
+#tip { position: fixed; z-index: 10; pointer-events: none; max-width: 260px; padding: 5px 8px; background: var(--color-text); color: var(--color-surface); font-size: 12px; line-height: 1.4; }
+
+.pending { background: var(--color-surface); padding: 18px; color: var(--color-text-secondary); border: 1px dashed var(--color-control-border); }
+.versions td:first-child { font-weight: 700; }
+
+@media (max-width: 1000px) { .grid-3, .figures, .principles { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 760px) { .grid-2 { grid-template-columns: minmax(0, 1fr); } .shell__body { grid-template-columns: 1fr; } .shell__main { display: none; } }
+@media (max-width: 480px) { body { padding: 20px 16px 48px; } .scale-row { grid-template-columns: 1fr; } }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="doc-head">
+    <span class="eyebrow">EDM·KT · referência visual</span>
+    <h1>Design System v1</h1>
+    <div class="doc-meta"><span class="badge badge--neutral">Versão 1</span><span class="badge badge--neutral">29/09/2026</span><span class="badge badge--neutral">Especificação</span></div>
+    <p>O desenho que o app deve seguir. As regras e o porquê estão em <code>docs/DESIGN.md</code> e <code>docs/DECISIONS.md</code>. Esta página mostra como cada peça fica. Os nomes de token são os planejados para o <code>tokens.css</code>, que ainda não foi migrado. Os números são da turma CSEDM Spring 2019, Assignment 439, modelo versão 5.</p>
+    <nav class="toc" aria-label="Seções">
+      <a href="#principios">Princípios</a><a href="#cor">Cor</a><a href="#tipografia">Tipografia</a><a href="#forma">Forma e espaço</a>
+      <a href="#componentes">Componentes</a><a href="#tabelas">Tabelas</a><a href="#graficos">Gráficos</a><a href="#paginas">Páginas</a><a href="#versoes">Versões</a>
+    </nav>
+  </header>
+
+  <section class="section" id="principios">
+    <header><h2>Princípios</h2></header>
+    <ul class="principles">
+      <li><b>Entregar o dado, não a interpretação</b><span>Sem níveis, faixas ou cores de alerta sobre um número. O professor ordena e lê.</span></li>
+      <li><b>Azul significa modelo</b><span>O azul só aparece quando existe um Code-DKT por trás do que está na tela.</span></li>
+      <li><b>Três papéis de cor</b><span>Cinza para a interface, azul para o modelo, vermelho para erro e exclusão. Sem verde, sem âmbar.</span></li>
+      <li><b>Sombra marca objeto</b><span>Só o cartão, o diálogo e a barra superior têm sombra. Nada dentro deles.</span></li>
+      <li><b>Raio 0</b><span>Botões, campos, cartões, barras e histogramas têm canto vivo. Só os pontos de situação são redondos.</span></li>
+      <li><b>Duas fontes, dois papéis</b><span>Public Sans na interface. Arial nos dados técnicos, com tabela, gráfico e número, no padrão da monografia.</span></li>
+    </ul>
+  </section>
+
+  <section class="section" id="cor">
+    <header><h2>Cor</h2><p>Cada token tem uma situação de uso. Nenhuma cor é escrita no ponto de uso.</p></header>
+    <div id="swatches" class="grid-2"></div>
+  </section>
+
+  <section class="section" id="tipografia">
+    <header><h2>Tipografia</h2><p>Duas fontes com papéis fixos. <code>--font-sans</code> é a Public Sans, nos pesos 400, 600 e 700, para títulos, menu, abas, botões, campos, etiquetas, balões e texto corrido. <code>--font-data</code> é o Arial, o mesmo da monografia, para a tabela inteira, o gráfico inteiro e todo número fora deles. A escala tem quatro níveis e a tabela usa 13,5px no corpo e 12,5px no cabeçalho.</p></header>
+    <div class="specimen scale">
+      <div class="scale-row"><code>.t-page-title 22/600</code><p class="t-page-title">Assignment 439</p></div>
+      <div class="scale-row"><code>.t-section-title 16/600</code><p class="t-section-title">Problemas</p></div>
+      <div class="scale-row"><code>corpo 13/400</code><p class="t-body">A taxa de acerto conta todas as execuções desde a importação. O domínio é a chance estimada de o aluno acertar o próximo problema.</p></div>
+      <div class="scale-row"><code>.t-support 12/400</code><span class="t-support">386 alunos · 10 problemas · treinado em 12/08/2026</span></div>
+      <div class="scale-row"><code>.num --font-data</code><span class="num" style="font-size:15px">355 de 386 · 12% · 2,43 · 0,498 · 12/08/2026</span></div>
+      <div class="scale-row"><code>lado a lado</code><span><span style="font-size:15px">Public Sans na interface</span> &nbsp;·&nbsp; <span class="num" style="font-size:15px">Arial nos dados, 386 alunos</span></span></div>
+    </div>
+  </section>
+
+  <section class="section" id="forma">
+    <header><h2>Forma e espaço</h2><p>Raio 0 em tudo. Três sombras, cada uma com um só lugar.</p></header>
+    <div class="grid-2">
+      <table class="spec-table">
+        <thead><tr><th>Medida</th><th>Valor</th><th>Onde</th></tr></thead>
+        <tbody>
+          <tr><td><code>--control-height</code></td><td class="num">36px</td><td>Botão, campo, aba</td></tr>
+          <tr><td><code>--control-height-compact</code></td><td class="num">32px</td><td>Botão de ícone</td></tr>
+          <tr><td>Botão compacto</td><td class="num">28px</td><td>Ação secundária dentro de cartão</td></tr>
+          <tr><td><code>--table-row-height</code></td><td class="num">32px</td><td>Altura mínima da linha de tabela</td></tr>
+          <tr><td>Cabeçalho de cartão</td><td class="num">48px</td><td>Todo cartão com título</td></tr>
+          <tr><td>Linha do menu</td><td class="num">38px</td><td>Menu lateral</td></tr>
+          <tr><td>Barra superior</td><td class="num">56px</td><td>Uma por app</td></tr>
+          <tr><td>Etiqueta</td><td class="num">22px</td><td>Situação e contagem</td></tr>
+        </tbody>
+      </table>
+      <div class="specimen">
+        <span class="specimen-title">Sombras</span>
+        <div class="card" style="height:64px"><div class="card__body"><code>--shadow-card</code> cartão e figura</div></div>
+        <div class="card" style="height:64px;box-shadow:var(--shadow-dialog)"><div class="card__body"><code>--shadow-dialog</code> diálogo</div></div>
+        <div class="card" style="height:64px;box-shadow:var(--shadow-bar)"><div class="card__body"><code>--shadow-bar</code> barra superior</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="componentes">
+    <header><h2>Componentes</h2><p>Cada variante existe porque tem uma situação de uso. Uma variante sem uso não nasce.</p></header>
+
+    <div class="grid-2">
+      <div class="specimen">
+        <span class="specimen-title">Botões</span>
+        <div class="row"><button class="btn btn--primary" type="button"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"/></svg>Treinar modelo</button><button class="btn btn--primary is-hover" type="button">Hover</button><button class="btn btn--primary" type="button" disabled>Desabilitado</button></div>
+        <div class="row"><button class="btn btn--secondary" type="button">Cancelar</button><button class="btn btn--secondary is-hover" type="button">Hover</button><button class="btn btn--secondary btn--compact" type="button">Compacto</button></div>
+        <div class="row"><button class="btn btn--destructive" type="button">Remover</button><button class="icon-btn" type="button" aria-label="Editar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg></button><button class="icon-btn" type="button" aria-label="Remover"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 11v6"/><path d="M14 11v6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button><button class="btn btn--secondary is-focus" type="button">Foco do teclado</button></div>
+        <p class="rule-text">Primário é a ação principal, um por tela ou diálogo. Secundário é a alternativa neutra. Destrutivo só no diálogo que confirma uma exclusão. O botão de ícone é a ação de linha em tabela. O foco é um anel preto de 2px com 2px de folga, nunca removido.</p>
+      </div>
+      <div class="specimen">
+        <span class="specimen-title">Campo, link e etiquetas</span>
+        <div class="field"><label for="f1">Nome</label><input id="f1" value="CSEDM Spring 2019"></div>
+        <div class="field"><label for="f2">Nome com foco</label><input id="f2" class="is-focus" value="CSEDM Spring 2019"></div>
+        <div class="field field--error"><label for="f3">Nome</label><input id="f3" value=""><span class="field__error">Informe um nome para a turma.</span></div>
+        <p class="t-body">O professor pode <a class="link" href="#componentes">ver os conceitos do exercício</a> antes de treinar.</p>
+        <div class="row"><span class="badge badge--model">Treinado</span><span class="badge badge--neutral">Conceitos aprovados</span><span class="badge badge--neutral">10 problemas</span></div>
+        <p class="rule-text">O campo tem caixa inteira, como o botão secundário, e o erro troca o contorno por vermelho. O link é sublinhado na cor do texto e engrossa no hover. A etiqueta azul só diz respeito ao modelo, e as demais são neutras.</p>
+      </div>
+    </div>
+
+    <div class="specimen">
+      <span class="specimen-title">Barra superior e menu lateral</span>
+      <div class="shell">
+        <div class="topbar"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M22 10v6"/><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/></svg></div>
+        <div class="shell__body">
+          <nav class="side-menu" aria-label="Menu de exemplo">
+            <div class="side-menu__item side-menu__item--main"><span>Turmas</span><span class="side-menu__spacer"></span><span class="side-menu__sign">−</span></div>
+            <div class="side-menu__item side-menu__item--classroom"><span>CSEDM Spring 2019</span><span class="side-menu__spacer"></span><span class="side-menu__sign">−</span></div>
+            <div class="side-menu__item side-menu__item--assignment"><span>Assignment 439</span><span class="dot dot--trained" title="Treinado"></span><span class="side-menu__spacer"></span><span class="side-menu__sign">−</span></div>
+            <div class="side-menu__item side-menu__item--screen">Conceitos</div>
+            <div class="side-menu__item side-menu__item--screen" aria-current="page">Análise</div>
+            <div class="side-menu__item side-menu__item--assignment"><span>Assignment 487</span><span class="dot dot--kc_approved" title="Conceitos aprovados"></span><span class="side-menu__spacer"></span><span class="side-menu__sign">+</span></div>
+            <div class="side-menu__item side-menu__item--assignment"><span>Assignment 492</span><span class="dot dot--awaiting" title="Aguardando conceitos"></span><span class="side-menu__spacer"></span><span class="side-menu__sign">+</span></div>
+            <div class="side-menu__item side-menu__item--classroom"><span>Turma teste</span><span class="side-menu__spacer"></span><span class="side-menu__sign">+</span></div>
+          </nav>
+          <div class="shell__main"><div class="card"></div><div class="card"></div></div>
+        </div>
+      </div>
+      <p class="rule-text">A barra é branca com sombra e só o capelo preto, sem texto. O item ativo do menu tem fundo cinza e negrito, sem barra lateral. O ponto de situação é vazio quando aguarda conceitos, meio preenchido com os conceitos aprovados e azul quando existe um modelo treinado.</p>
+    </div>
+
+    <div class="grid-2">
+      <div class="specimen">
+        <span class="specimen-title">Cartão e abas</span>
+        <article class="card">
+          <div class="tabs" role="tablist">
+            <button class="tabs__tab" role="tab" aria-selected="true" type="button"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg>Problemas</button>
+            <button class="tabs__tab" role="tab" aria-selected="false" type="button"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"/><path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12"/><path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17"/></svg>Conceitos</button>
+            <button class="tabs__tab" role="tab" aria-selected="false" type="button"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><path d="M16 3.128a4 4 0 0 1 0 7.744"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/></svg>Alunos</button>
+          </div>
+          <div class="card__body"><span class="t-support">10 problemas do Assignment 439</span></div>
+        </article>
+        <article class="card">
+          <header class="card__header"><h4 class="card__title">Modelo</h4><span class="badge badge--model">Treinado</span></header>
+          <div class="card__body"><dl class="kv"><dt>Versão</dt><dd class="num">5</dd><dt>Treinado em</dt><dd class="num">12/08/2026</dd><dt>Cobertura</dt><dd><span class="num">386</span> alunos, <span class="num">10</span> problemas, <span class="num">15</span> conceitos</dd></dl></div>
+          <footer class="card__footer">Code-DKT, estado no último passo de cada aluno</footer>
+        </article>
+        <p class="rule-text">O cartão tem cabeçalho próprio de 48px e se separa do fundo pela sombra, sem borda. A aba ativa tem texto preto em negrito e traço preto de 2px, sobre a faixa branca.</p>
+      </div>
+      <div class="specimen">
+        <span class="specimen-title">Diálogo</span>
+        <div class="dialog-scene">
+          <div class="dialog-scene__ghost"><div class="card"></div><div class="card"></div></div>
+          <div class="dialog-scene__veil"></div>
+          <div class="dialog" role="presentation">
+            <div class="dialog__head"><h4>Remover turma</h4></div>
+            <div class="dialog__body">A turma CSEDM Spring 2019 sai da lista. Os dados continuam no histórico.</div>
+            <div class="dialog__footer"><button class="btn btn--secondary" type="button">Cancelar</button><button class="btn btn--destructive" type="button">Remover</button></div>
+          </div>
+        </div>
+        <p class="rule-text">O diálogo usa a sombra longa sobre o fundo escurecido. O rodapé cinza carrega as ações à direita, e a principal fica por último.</p>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="specimen">
+        <span class="specimen-title">Área de soltar arquivo</span>
+        <div class="dropzone"><span class="dropzone__icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 13v8"/><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="m8 17 4-4 4 4"/></svg></span><span class="dropzone__title">Arraste o arquivo .zip aqui</span><span class="dropzone__hint">ou clique para escolher no computador</span><span class="dropzone__detail">ProgSnap2 v6 · até 512 MB</span></div>
+        <div class="dropzone dropzone--dragging"><span class="dropzone__icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 13v8"/><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="m8 17 4-4 4 4"/></svg></span><span class="dropzone__title">Solte para enviar</span><span class="dropzone__detail">CSEDM_Spring2019.zip</span></div>
+        <div class="dropzone dropzone--disabled"><span class="dropzone__icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 13v8"/><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="m8 17 4-4 4 4"/></svg></span><span class="dropzone__title">Arraste o arquivo .zip aqui</span><span class="dropzone__hint">Escolha a turma antes do arquivo</span></div>
+        <p class="rule-text">Importar dados vem antes de qualquer modelo, então a área é preta e cinza. Com o arquivo por cima, o contorno fica sólido e o fundo cinza.</p>
+      </div>
+      <div class="specimen">
+        <span class="specimen-title">Estágios, carregamento e vazio</span>
+        <article class="card"><header class="card__header"><h4 class="card__title">Extraindo conceitos</h4></header><div class="card__body">
+          <ol class="stage-list stage-list--neutral">
+            <li class="stage-list__item stage-list__item--done"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span class="stage-list__label">Identificando os conceitos de cada problema</span></li>
+            <li class="stage-list__item stage-list__item--current"><svg class="spin" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg><span class="stage-list__label">Agrupando os conceitos parecidos e nomeando cada grupo</span><span class="stage-list__progress">7 de 10</span></li>
+            <li class="stage-list__item"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/></svg><span class="stage-list__label">Ligando os conceitos aos problemas</span></li>
+          </ol></div></article>
+        <article class="card"><header class="card__header"><h4 class="card__title">Treinando o modelo</h4></header><div class="card__body">
+          <ol class="stage-list stage-list--model">
+            <li class="stage-list__item stage-list__item--done"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span class="stage-list__label">Preparando o código dos alunos</span></li>
+            <li class="stage-list__item stage-list__item--current"><svg class="spin" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg><span class="stage-list__label">Treinando o modelo</span><span class="stage-list__progress">época 25 de 40</span></li>
+            <li class="stage-list__item"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/></svg><span class="stage-list__label">Avaliando e publicando</span></li>
+          </ol></div></article>
+        <div class="card"><div class="card__body"><div class="loading"><svg class="spin" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>Carregando a turma</div></div></div>
+        <div class="card"><div class="empty-state"><span class="empty-state__icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg></span><b>Nenhum exercício ainda</b><span class="t-support">Importe os dados da turma para começar.</span></div></div>
+        <p class="rule-text">A lista de estágios tem duas variantes pela origem do trabalho. A extração de conceitos é feita pelo LLM e fica preta. O treino é o Code-DKT e fica azul. O carregamento genérico é preto.</p>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="specimen">
+        <span class="specimen-title">Mensagens de resultado</span>
+        <div class="card"><div class="card__body"><div class="outcome outcome--danger"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg><div><span class="outcome__title">O pedido foi recusado</span><p class="outcome__body">Já existe um treino em andamento. Espere ele terminar para começar outro.</p></div></div></div></div>
+        <div class="card"><div class="card__body"><div class="outcome"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg><div><span class="outcome__title">Dados importados</span><p class="outcome__body">413 alunos e 50 problemas na turma CSEDM Spring 2019.</p></div></div></div></div>
+        <p class="rule-text">O erro é vermelho. O sucesso é neutro, com o ícone preto e sem verde.</p>
+      </div>
+      <div class="specimen">
+        <span class="specimen-title">Marcador de estimado, dica e ordenação</span>
+        <div class="card"><div class="card__body">
+          <table class="analysis-table" style="min-width:0">
+            <thead><tr><th>Aluno</th><th><span class="estimated-mark" title="Estimado pelo modelo"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 18V5"/><path d="M15 13a4.17 4.17 0 0 1-3-4 4.17 4.17 0 0 1-3 4"/><path d="M17.598 6.5A3 3 0 1 0 12 5a3 3 0 1 0-5.598 1.5"/><path d="M17.997 5.125a4 4 0 0 1 2.526 5.77"/><path d="M18 18a4 4 0 0 0 2-7.464"/><path d="M19.967 17.483A4 4 0 1 1 12 18a4 4 0 1 1-7.967-.517"/><path d="M6 18a4 4 0 0 1-2-7.464"/><path d="M6.003 5.125a4 4 0 0 0-2.526 5.77"/></svg></span>Domínio<span class="sort-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></span><span class="info-hint"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg></span></th><th>Completou</th><th>Tentou</th></tr></thead>
+          </table>
+          <span class="tooltip">Chance estimada de o aluno acertar o próximo problema, não a fração aprendida.</span>
+        </div></div>
+        <p class="rule-text">O cabeçalho é da tabela e usa Arial, e o balão é interface e usa Public Sans. O cérebro azul marca toda coluna que vem do modelo. A dica é o ícone de alerta em cinza, e a seta preta mostra a ordenação ativa. O balão é preto, sem raio, e aparece no hover ou no foco, nunca pelo title nativo.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="tabelas">
+    <header><h2>Tabelas</h2><p>A tabela inteira usa <code>--font-data</code>, cabeçalho incluído. Sem fio vertical, traço escuro sob o cabeçalho e no fim, fio claro entre as linhas e 32px de altura mínima por linha. A linha com histograma cresce o necessário. Na Análise, o nome fica à esquerda e os números centralizados sob rótulos centralizados. Nas demais tabelas tudo fica à esquerda, e só a coluna de botões fica à direita. O observado é cinza 80 e o que vem do modelo é azul.</p></header>
+    <div class="specimen">
+      <article class="card">
+        <header class="card__header"><h4 class="card__title">Problemas</h4><span class="badge badge--neutral">10 problemas</span></header>
+        <div class="card__body"><div class="table-scroll"><table class="analysis-table">
+          <thead><tr><th>Problema</th><th>Taxa de acerto</th><th>Tentativas até completar<span class="info-hint"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg></span></th><th>Alunos que completaram</th><th>Erros de compilação por execução</th>
+          <th><span class="estimated-mark"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 18V5"/><path d="M15 13a4.17 4.17 0 0 1-3-4 4.17 4.17 0 0 1-3 4"/><path d="M17.598 6.5A3 3 0 1 0 12 5a3 3 0 1 0-5.598 1.5"/><path d="M17.997 5.125a4 4 0 0 1 2.526 5.77"/><path d="M18 18a4 4 0 0 0 2-7.464"/><path d="M19.967 17.483A4 4 0 1 1 12 18a4 4 0 1 1-7.967-.517"/><path d="M6 18a4 4 0 0 1-2-7.464"/><path d="M6.003 5.125a4 4 0 0 0-2.526 5.77"/></svg></span>Domínio</th><th><span class="estimated-mark"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 18V5"/><path d="M15 13a4.17 4.17 0 0 1-3-4 4.17 4.17 0 0 1-3 4"/><path d="M17.598 6.5A3 3 0 1 0 12 5a3 3 0 1 0-5.598 1.5"/><path d="M17.997 5.125a4 4 0 0 1 2.526 5.77"/><path d="M18 18a4 4 0 0 0 2-7.464"/><path d="M19.967 17.483A4 4 0 1 1 12 18a4 4 0 1 1-7.967-.517"/><path d="M6 18a4 4 0 0 1-2-7.464"/><path d="M6.003 5.125a4 4 0 0 0-2.526 5.77"/></svg></span>Distribuição<span class="info-hint"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg></span></th></tr></thead>
+          <tbody id="problems"></tbody>
+        </table></div></div>
+      </article>
+      <article class="card">
+        <header class="card__header"><h4 class="card__title">Alunos</h4><span class="badge badge--neutral">386 alunos</span></header>
+        <div class="card__body"><div class="table-scroll"><table class="analysis-table">
+          <thead><tr><th>Aluno</th><th><span class="estimated-mark"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 18V5"/><path d="M15 13a4.17 4.17 0 0 1-3-4 4.17 4.17 0 0 1-3 4"/><path d="M17.598 6.5A3 3 0 1 0 12 5a3 3 0 1 0-5.598 1.5"/><path d="M17.997 5.125a4 4 0 0 1 2.526 5.77"/><path d="M18 18a4 4 0 0 0 2-7.464"/><path d="M19.967 17.483A4 4 0 1 1 12 18a4 4 0 1 1-7.967-.517"/><path d="M6 18a4 4 0 0 1-2-7.464"/><path d="M6.003 5.125a4 4 0 0 0-2.526 5.77"/></svg></span>Domínio<span class="sort-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></span></th><th>Completou</th><th>Tentou</th></tr></thead>
+          <tbody id="students"></tbody>
+        </table></div></div>
+      </article>
+    </div>
+  </section>
+
+  <section class="section" id="graficos">
+    <header><h2>Gráficos</h2><p>A figura inteira usa <code>--font-data</code>, título e fonte do dado incluídos, para entrar na monografia como está. Cada figura tem título, subtítulo com a unidade e a fonte do dado. As barras são quadradas e o eixo começa em zero. A curva não precisa começar em zero. Observado e previsto nunca dividem a mesma régua. Toda marca mostra o valor no hover, e o Chart.js desenha só a curva de perda.</p></header>
+    <div class="specimen"><div class="figures" id="figures"></div></div>
+  </section>
+
+  <section class="section" id="paginas">
+    <header><h2>Organização das páginas</h2></header>
+    <div class="pending">A organização das páginas (cabeçalho, barra de ações e ordem dos cartões) é a próxima rodada e entra na versão 2.</div>
+  </section>
+
+  <section class="section" id="versoes">
+    <header><h2>Versões</h2></header>
+    <table class="spec-table versions">
+      <thead><tr><th>Versão</th><th>Data</th><th>O que mudou</th></tr></thead>
+      <tbody><tr><td>1</td><td class="num">29/09/2026</td><td>A linguagem formal. Interface em cinza, azul só no modelo, raio 0, Public Sans na interface e Arial nos dados, componentes no estilo Carbon.</td></tr></tbody>
+    </table>
+  </section>
+</div>
+<div id="tip" hidden></div>
+
+<script>
+// Os dados do Assignment 439, turma CSEDM Spring 2019, modelo versão 5
+const PROBLEMS = [
+  { id: 13, rate: 0.124, attempts: 5, done: 355, tried: 386, errors: 2.43, mastery: 0.405, hist: [1, 24, 49, 84, 147, 78, 3, 0, 0, 0] },
+  { id: 232, rate: 0.176, attempts: 3, done: 366, tried: 378, errors: 2.03, mastery: 0.248, hist: [11, 103, 191, 61, 14, 5, 1, 0, 0, 0] },
+  { id: 3, rate: 0.28, attempts: 2, done: 342, tried: 363, errors: 0.7, mastery: 0.399, hist: [15, 67, 68, 61, 45, 47, 44, 28, 11, 0] },
+  { id: 5, rate: 0.29, attempts: 2, done: 349, tried: 365, errors: 0.53, mastery: 0.374, hist: [3, 82, 81, 64, 45, 57, 31, 23, 0, 0] },
+  { id: 233, rate: 0.315, attempts: 2, done: 348, tried: 364, errors: 0.68, mastery: 0.407, hist: [0, 12, 67, 117, 84, 79, 27, 0, 0, 0] },
+  { id: 234, rate: 0.315, attempts: 2, done: 350, tried: 367, errors: 0.96, mastery: 0.429, hist: [1, 22, 67, 84, 73, 78, 61, 0, 0, 0] },
+];
+const STUDENTS = [
+  { id: '14316', mastery: 0.187, completed: 7, attempted: 10 },
+  { id: '14431', mastery: 0.189, completed: 6, attempted: 10 },
+  { id: '13523', mastery: 0.191, completed: 10, attempted: 10 },
+  { id: '14173', mastery: 0.2, completed: 10, attempted: 10 },
+  { id: '14485', mastery: 0.206, completed: 10, attempted: 10 },
+  { id: '14424', mastery: 0.208, completed: 10, attempted: 10 },
+];
+const LOSS = [0.67, 0.637, 0.617, 0.6, 0.598, 0.586, 0.581, 0.578, 0.579, 0.576, 0.578, 0.57, 0.561, 0.565, 0.561, 0.564, 0.553, 0.551, 0.549, 0.546, 0.548, 0.54, 0.532, 0.535, 0.529, 0.532, 0.527, 0.527, 0.524, 0.519, 0.512, 0.52, 0.508, 0.508, 0.513, 0.508, 0.508, 0.497, 0.504, 0.498];
+
+// Os papéis de cor, na ordem em que o DESIGN.md os apresenta
+const SWATCHES = [
+  ['Interface', [
+    ['--color-page', 'Fundo da página'], ['--color-surface', 'Cartão, menu, barra'], ['--color-surface-subtle', 'Hover de linha, rodapé de diálogo'],
+    ['--color-hover', 'Hover de controle'], ['--color-active', 'Item ativo do menu'], ['--color-rule', 'Fio dentro do cartão'],
+    ['--color-control-border', 'Contorno de campo e botão secundário'],
+  ]],
+  ['Texto e ação', [
+    ['--color-text', 'Texto, traço do cabeçalho de tabela'], ['--color-text-body', 'Texto corrido'], ['--color-text-secondary', 'Menu, aba inativa'],
+    ['--color-text-muted', 'Apoio, eixo, dica'], ['--color-text-disabled', 'Desabilitado'], ['--color-primary', 'Botão primário'],
+    ['--color-primary-hover', 'Hover do primário'], ['--color-focus', 'Anel de foco'],
+  ]],
+  ['Modelo', [
+    ['--color-model', 'Domínio, distribuição, curva, ponto treinado'], ['--color-model-strong', 'Hover e texto sobre o azul claro'],
+    ['--color-model-soft', 'Fundo da etiqueta e do cérebro'], ['--color-model-soft-border', 'Contorno da etiqueta Treinado'],
+  ]],
+  ['Observado e erro', [
+    ['--color-observed', 'Taxa de acerto e barras do observado'], ['--color-bar-track', 'Trilho das barras'],
+    ['--color-danger', 'Ícone de erro, botão destrutivo'], ['--color-danger-text', 'Texto de erro, hover do destrutivo'],
+  ]],
+];
+
+const pct = v => Math.round(v * 100) + '%';
+const dec = (v, n = 2) => v.toFixed(n).replace('.', ',');
+const css = getComputedStyle(document.documentElement);
+
+document.getElementById('swatches').innerHTML = SWATCHES.map(([group, items]) => `
+  <div class="swatch-group"><h3>${group}</h3><div class="swatches">${items.map(([token, use]) => {
+    const value = css.getPropertyValue(token).trim();
+    return `<div class="swatch"><i style="background:var(${token})"></i><div><code>${token}</code><code>${value}</code><small>${use}</small></div></div>`;
+  }).join('')}</div></div>`).join('');
+
+function ratioBar(value, kind, label) {
+  return `<div class="ratio-bar" data-tip="${label}: ${pct(value)}"><div class="ratio-bar__track"><div class="ratio-bar__fill ratio-bar__fill--${kind}" style="width:${value * 100}%"></div></div><span class="ratio-bar__value">${pct(value)}</span></div>`;
+}
+
+document.getElementById('problems').innerHTML = PROBLEMS.map(p => {
+  const max = Math.max(...p.hist);
+  const bars = p.hist.map((n, i) => `<span class="histogram__bar" style="height:${(n / max * 100).toFixed(1)}%" data-tip="${i * 10} a ${i * 10 + 10}%, ${n} alunos"></span>`).join('');
+  return `<tr>
+    <td class="analysis-table__name">Problema ${p.id}</td>
+    <td>${ratioBar(p.rate, 'observed', 'Taxa de acerto')}</td>
+    <td class="analysis-table__num">${p.attempts}</td>
+    <td class="analysis-table__num">${p.done} <span class="analysis-table__sub">de ${p.tried}</span></td>
+    <td class="analysis-table__num">${dec(p.errors)}</td>
+    <td>${ratioBar(p.mastery, 'predicted', 'Domínio estimado')}</td>
+    <td><div class="histogram"><div class="histogram__bars">${bars}</div><div class="histogram__axis"><span>0</span><span>50</span><span>100</span></div></div></td>
+  </tr>`;
+}).join('');
+
+document.getElementById('students').innerHTML = STUDENTS.map(s => `<tr>
+  <td class="analysis-table__name num">${s.id}</td>
+  <td>${ratioBar(s.mastery, 'predicted', 'Domínio estimado')}</td>
+  <td class="analysis-table__num">${s.completed}</td>
+  <td class="analysis-table__num">${s.attempted}</td>
+</tr>`).join('');
+
+function figure(title, subtitle, source, svg) {
+  return `<figure class="figure"><p class="figure__title">${title}</p><p class="figure__subtitle">${subtitle}</p>${svg}<p class="figure__source">${source}</p></figure>`;
+}
+
+// Barras horizontais do observado, régua de 0 a 50%, valor escrito na ponta
+function ratioFigure() {
+  const W = 320, rowH = 26, top = 6, left = 78, right = 40, H = top + PROBLEMS.length * rowH + 20;
+  const x = v => left + v / 0.5 * (W - left - right);
+  const ticks = [0, 0.25, 0.5].map(t => `<line class="grid" x1="${x(t)}" x2="${x(t)}" y1="${top}" y2="${H - 18}"/><text x="${x(t)}" y="${H - 4}" text-anchor="middle">${pct(t)}</text>`).join('');
+  const bars = PROBLEMS.map((p, i) => {
+    const y = top + i * rowH;
+    return `<text class="label" x="${left - 8}" y="${y + 14}" text-anchor="end">Problema ${p.id}</text>
+      <rect class="mark-observed" x="${x(0)}" y="${y + 5}" width="${x(p.rate) - x(0)}" height="12"/>
+      <text class="value" x="${x(p.rate) + 6}" y="${y + 14}">${pct(p.rate)}</text>
+      <rect class="hit" x="0" y="${y}" width="${W}" height="${rowH}" data-tip="Problema ${p.id}, ${pct(p.rate)} das execuções acertaram"/>`;
+  }).join('');
+  return figure('Taxa de acerto por problema', 'Execuções com nota 1,0, em %', 'Fonte: execuções importadas',
+    `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Taxa de acerto por problema">${ticks}<line class="axis" x1="${x(0)}" x2="${x(0)}" y1="${top}" y2="${H - 18}"/>${bars}</svg>`);
+}
+
+// Histograma do domínio no problema 13, dez faixas de 10 pontos, eixo desde zero
+function histogramFigure() {
+  const p = PROBLEMS[0], W = 320, H = 170, left = 30, right = 6, top = 12, bottom = 32, max = 150;
+  const bw = (W - left - right) / 10;
+  const y = v => top + (1 - v / max) * (H - top - bottom);
+  const grid = [0, 50, 100, 150].map(t => `<line class="grid" x1="${left}" x2="${W - right}" y1="${y(t)}" y2="${y(t)}"/><text x="${left - 6}" y="${y(t) + 3.5}" text-anchor="end">${t}</text>`).join('');
+  const bars = p.hist.map((n, i) => {
+    const bx = left + i * bw + 1;
+    return `<rect class="mark-model" x="${bx}" y="${y(n)}" width="${bw - 2}" height="${y(0) - y(n)}"/><rect class="hit" x="${bx - 1}" y="${top}" width="${bw}" height="${H - top - bottom}" data-tip="${i * 10} a ${i * 10 + 10}%, ${n} alunos"/>`;
+  }).join('');
+  const xt = [0, 50, 100].map(t => `<text x="${left + t / 10 * bw}" y="${H - bottom + 14}" text-anchor="middle">${t}%</text>`).join('');
+  const peak = p.hist.indexOf(Math.max(...p.hist));
+  return figure('Distribuição do domínio, Problema 13', 'Alunos por faixa de domínio estimado', 'Fonte: Code-DKT versão 5',
+    `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Histograma do domínio no problema 13">${grid}${bars}<text class="value" x="${left + peak * bw + bw / 2}" y="${y(p.hist[peak]) - 5}" text-anchor="middle">${p.hist[peak]}</text><line class="axis" x1="${left}" x2="${W - right}" y1="${y(0)}" y2="${y(0)}"/>${xt}<text x="${(W + left) / 2}" y="${H - 2}" text-anchor="middle">Domínio estimado</text></svg>`);
+}
+
+// Curva de perda das 40 épocas, com mira no hover e o último valor marcado
+function lossFigure() {
+  const W = 320, H = 170, left = 34, right = 30, top = 10, bottom = 32, lo = 0.48, hi = 0.68;
+  const x = i => left + i / (LOSS.length - 1) * (W - left - right);
+  const y = v => top + (hi - v) / (hi - lo) * (H - top - bottom);
+  const grid = [0.5, 0.55, 0.6, 0.65].map(t => `<line class="grid" x1="${left}" x2="${W - right}" y1="${y(t)}" y2="${y(t)}"/><text x="${left - 6}" y="${y(t) + 3.5}" text-anchor="end">${dec(t)}</text>`).join('');
+  const path = LOSS.map((v, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)} ${y(v).toFixed(1)}`).join('');
+  const xt = [1, 10, 20, 30, 40].map(e => `<text x="${x(e - 1)}" y="${H - bottom + 14}" text-anchor="middle">${e}</text>`).join('');
+  const step = (W - left - right) / (LOSS.length - 1), last = LOSS.length - 1;
+  const hits = LOSS.map((v, i) => `<rect class="hit" data-epoch="${i}" x="${x(i) - step / 2}" y="${top}" width="${step}" height="${H - top - bottom}" data-tip="Época ${i + 1}, perda ${dec(v, 3)}"/>`).join('');
+  return figure('Perda de treino por época', 'Entropia cruzada binária, 40 épocas', 'Fonte: treino versão 5',
+    `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Curva de perda" class="loss">${grid}<line class="axis" x1="${left}" x2="${W - right}" y1="${H - bottom}" y2="${H - bottom}"/>
+      <line class="cross" x1="0" x2="0" y1="${top}" y2="${H - bottom}" visibility="hidden"/>
+      <path class="line" d="${path}"/><rect class="end" x="${x(last) - 4}" y="${y(LOSS[last]) - 4}" width="8" height="8"/>
+      <text class="value" x="${x(last) + 7}" y="${y(LOSS[last]) + 4}">${dec(LOSS[last], 3)}</text>${xt}<text x="${(W + left - right) / 2}" y="${H - 2}" text-anchor="middle">Época</text>${hits}</svg>`);
+}
+
+document.getElementById('figures').innerHTML = ratioFigure() + histogramFigure() + lossFigure();
+
+// Um único balão para todo elemento com data-tip, e a mira da curva segue a época sob o mouse
+const tip = document.getElementById('tip');
+document.addEventListener('pointermove', e => {
+  const target = e.target.closest ? e.target.closest('[data-tip]') : null;
+  document.querySelectorAll('svg.loss .cross').forEach(c => c.setAttribute('visibility', 'hidden'));
+  if (!target) { tip.hidden = true; return; }
+  tip.textContent = target.dataset.tip;
+  tip.hidden = false;
+  const r = tip.getBoundingClientRect();
+  let left = e.clientX + 12, top = e.clientY - r.height - 10;
+  if (left + r.width > innerWidth - 8) left = e.clientX - r.width - 12;
+  if (top < 8) top = e.clientY + 16;
+  tip.style.left = left + 'px';
+  tip.style.top = top + 'px';
+  if (target.dataset.epoch !== undefined) {
+    const cross = target.ownerSVGElement.querySelector('.cross');
+    const cx = parseFloat(target.getAttribute('x')) + parseFloat(target.getAttribute('width')) / 2;
+    cross.setAttribute('x1', cx);
+    cross.setAttribute('x2', cx);
+    cross.setAttribute('visibility', 'visible');
+  }
+});
+document.addEventListener('pointerleave', () => { tip.hidden = true; });
+</script>
+</body>
+</html>
