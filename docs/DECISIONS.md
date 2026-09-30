@@ -485,3 +485,45 @@ ficou para depois. Com ele aberto, as etiquetas de "Conceitos mais fracos" ficav
 
 **O menu recolhe em tela estreita.** Abaixo de 900px ele fica atrás de um botão da barra superior e
 abre por cima do conteúdo. O menu fixo de 260px espremia a Análise numa faixa ilegível no celular.
+
+**Os exercícios da turma são uma tabela, e não cartões.** São itens do mesmo tipo com os mesmos
+atributos, e os cartões com borda dentro do cartão com sombra quebravam a regra de que a sombra marca
+objeto. A tabela também deixa ler juntas colunas que nenhuma tela mostrava, como os alunos por
+exercício, que caem de 386 para 306 ao longo do semestre na CSEDM.
+
+**Cada exercício tem um botão de próximo passo, escolhido pela situação.** Com dois links fixos, o
+professor tinha de adivinhar qual tela abrir. O botão diz a ação que a situação pede e leva o ícone
+da tela de destino. É orientação de fluxo, não interpretação de dado, e Conceitos e Análise continuam
+no menu.
+
+**A lista de alunos da turma é paginada, ao contrário da Análise.** A Análise lista os alunos de um
+exercício, e a lista leve cabe inteira. A turma soma todos os exercícios e cresce com o semestre, e
+dez por página com busca pelo identificador mantém a tela curta.
+
+**O domínio do aluno na turma é a média dos exercícios treinados.** Com um exercício treinado ele é o
+domínio desse exercício. Com vários, a média mistura modelos treinados sobre dados diferentes, e a
+dica da coluna diz isso. Quem não fez nenhum exercício treinado mostra "sem modelo".
+
+**A figura de execuções por dia é a figura da turma.** Ela mostra o ritmo dentro de cada janela de
+exercício, que a tabela não tem, como a concentração no fim do prazo. Funciona com qualquer
+ProgSnap2, porque o `ServerTimestamp` é obrigatório na importação, com quatro regras para dados
+diferentes da CSEDM. A agregação vira semanal acima de cerca de 120 dias, os rótulos de janelas que
+se sobrepõem empilham em até três faixas, o eixo fica limitado às janelas para uma data errada não
+esticá-lo, e o dia segue o `ServerTimezone`, que a importação ainda precisa passar a ler.
+
+**A atividade recente mostra treinos e extrações de conceitos.** Com só as turmas criadas, a lista
+não dizia nada que a tabela ao lado não mostrasse. Os eventos que o professor provocou (dados
+importados, conceitos extraídos, modelo treinado) contam o que aconteceu desde a última visita.
+
+**Os ícones têm um significado só.** Blocos são Conceitos, código são Problemas e o cérebro é o
+modelo, no marcador de estimado e na etiqueta Treinado. A lista, cogitada para Conceitos, ficaria
+parecida com a prancheta de Problemas. As etiquetas de situação levam o ícone da etapa, mas o menu
+mantém o ponto vazio, meio ou cheio, para a lista longa de exercícios ficar discreta.
+
+**A tela Turmas não soma alunos.** Duas turmas podem ser recortes do mesmo dado, como a Turma teste,
+e a soma contaria o mesmo aluno duas vezes.
+
+**No Linux, o Arial das tabelas cai na Liberation Sans.** O Fedora não tem o Arial, e a licença não
+permite servi-lo pela web. A Liberation Sans tem as mesmas medidas, então o layout não muda, só o
+desenho de alguns caracteres. Capturas feitas no nitro saem nela.
+

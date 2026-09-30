@@ -4,12 +4,12 @@ As regras visuais do app docente. O porquê de cada decisão fica em `DECISIONS.
 Frontend. Os valores (hex, sombras, medidas) ficam no `src/web/src/styles/tokens.css`, e aqui cada
 papel é citado pelo nome do token.
 
-**Versão 2, 29/09/2026.** Referência visual em [`design/design-system-v2.html`](design/design-system-v2.html),
+**Versão 3, 29/09/2026.** Referência visual em [`design/design-system-v3.html`](design/design-system-v3.html),
 que abre direto no navegador.
 
 **Estado.** Este documento é a especificação. O `tokens.css` e os componentes ainda seguem a
-linguagem anterior (azul de ação, Open Sans com Arial nas tabelas, raio de 2px), e a Análise ainda
-tem a organização antiga. Os dois serão migrados depois da rodada das páginas. Até lá, os valores
+linguagem anterior (azul de ação, Open Sans com Arial nas tabelas, raio de 2px), e Análise, Turmas e
+Turma ainda têm a organização antiga. Tudo será migrado depois da rodada das páginas. Até lá, os valores
 estão na página de referência, e os nomes de token abaixo são os planejados.
 
 ## Princípios
@@ -117,7 +117,9 @@ substituto. O link é sublinhado na cor do texto e engrossa no hover.
 fica vermelho e a mensagem aparece abaixo, em `--color-danger-text`.
 
 **Etiqueta.** Retangular, de 22px. A neutra é cinza. A de modelo (Treinado) usa o azul claro, e é
-a única etiqueta com cor.
+a única etiqueta com cor. A etiqueta de situação leva o ícone da etapa, os blocos nas etapas de
+conceitos (pronto, rascunho e aprovados) e o cérebro no Treinado. As demais situações ficam sem
+ícone.
 
 **Barra superior.** Branca, com `--shadow-bar`, só com o ícone do capelo em `--color-text`, sem
 texto ao lado.
@@ -158,6 +160,37 @@ texto branco, sem raio, e aparece no hover ou no foco pelo `Tooltip`, nunca pelo
 
 **Cabeçalho ordenável.** A seta da ordenação ativa é `--color-text`, e o rótulo ordenado também.
 
+**Botão de próximo passo.** O secundário compacto, na última coluna da tabela de exercícios, com o
+ícone da tela para onde leva. Um por linha, escolhido pela situação: "Extrair conceitos" e "Revisar
+conceitos" com os blocos, "Treinar modelo" com o play e "Ver análise" com o gráfico de colunas.
+
+**Busca.** Um campo de 32px com a lupa, na faixa das abas à direita, só na aba que ele filtra, ou no
+cabeçalho do cartão quando não há abas.
+
+**Paginação.** Dez linhas por página. À esquerda a contagem ("1 a 10 de 413 alunos"), à direita o
+anterior, a primeira e a última página, a atual e as vizinhas, com reticências no meio, e o próximo.
+A página atual tem contorno `--color-text`.
+
+**Atividade recente.** Uma lista dos eventos que o professor provocou, do mais novo para o mais
+antigo, cada um com o ícone do que mudou, o que foi, onde e a data. Os eventos são turma criada,
+dados importados, conceitos extraídos e modelo treinado.
+
+## Ícones
+
+Os ícones vêm do lucide, com traço de 2px. Cada ícone representa uma coisa só, e a mesma coisa leva
+o mesmo ícone em todo lugar. O menu mantém o ponto de situação e não usa os ícones de etapa, para a
+lista longa ficar discreta.
+
+| Ícone (lucide) | Representa | Onde |
+|---|---|---|
+| `blocks` | Conceitos | Menu, aba, botões e etiquetas das etapas de conceitos |
+| `file-code` | Problemas | Aba Problemas da Análise |
+| `brain` | O modelo | Marcador de estimado, etiqueta Treinado, evento de treino |
+| `chart-column` | Análise | Menu e botão "Ver análise" |
+| `clipboard-pen` | Exercício | Menu e aba Exercícios |
+| `users` | Turmas e alunos | Menu, aba Alunos, evento de turma criada |
+| `upload` | Importar dados | Botão do cabeçalho da turma |
+
 ## Tabelas
 
 - A tabela inteira usa `--font-data`.
@@ -197,6 +230,12 @@ da direita. A oportunidade é cada execução do aluno num problema que exige o 
 quando menos de 10% da turma chega à oportunidade. Um conceito por vez, escolhido num seletor, com a
 linha de fatos da 1ª, da 5ª, da 10ª e da última oportunidade mostrada.
 
+**Execuções por dia.** As execuções da turma em barras de `--color-observed`, com a janela de cada
+exercício rotulada acima pelo número dele. Por dia até cerca de 120 dias de disciplina, e por semana
+acima disso. Quando exercícios se sobrepõem no tempo, os rótulos empilham em até três faixas, e acima
+disso somem, porque o período está na tabela. O eixo vai só da primeira à última janela de exercício,
+e o que cair fora é contado numa nota. O dia é o do fuso do dado, lido da coluna `ServerTimezone`.
+
 ## Organização das páginas
 
 Toda página abre com o caminho, o título e, quando houver, a etiqueta de situação ao lado do título.
@@ -220,10 +259,34 @@ linha da turma. Na aba Alunos, a coluna "Conceitos mais fracos" mostra três eti
 cortado e o valor, com o nome inteiro no hover. O painel lateral do aluno foi desenhado e ficou para
 depois.
 
+### Turmas
+
+1. **Cabeçalho.** O título "Turmas", a linha de fatos com turmas e exercícios e "Nova turma" como
+   botão primário à direita. A linha não soma alunos, porque duas turmas podem ter os mesmos alunos.
+2. **Cartão das turmas**, com a busca no cabeçalho e a tabela com turma, exercícios, problemas,
+   alunos, data de criação, situação e os botões de renomear e remover à direita.
+3. **Atividade recente**, ao lado.
+
+### Turma
+
+1. **Caminho.** Turmas › turma.
+2. **Cabeçalho.** O nome da turma, a etiqueta de situação ao lado, "Importar dados" como botão
+   secundário à direita e a linha de fatos com alunos, problemas, exercícios, execuções e a data de
+   criação.
+3. **Execuções por dia**, a figura do semestre.
+4. **Cartão da turma**, com as abas Exercícios e Alunos.
+   - **Exercícios.** A tabela com exercício, período, alunos, execuções, taxa de acerto, situação e
+     o botão de próximo passo. Conceitos e Análise de cada exercício continuam no menu.
+   - **Alunos.** A tabela paginada com aluno, exercícios de que participou, problemas completados dos
+     que tentou, execuções, taxa de acerto, erros de compilação, última atividade e domínio médio nos
+     exercícios treinados, com "sem modelo" para quem não fez nenhum. A busca pelo identificador fica
+     na faixa das abas.
+
 ## Versões
 
 | Versão | Data | O que mudou |
 |---|---|---|
+| 3 | 29/09/2026 | Turmas e Turma. Tabela de exercícios com próximo passo, alunos da turma com busca e paginação de 10, execuções por dia, atividade recente com treinos e extrações, e os ícones de Conceitos, Problemas e Treinado nas etiquetas de situação |
 | 2 | 29/09/2026 | A organização da Análise. Linha de fatos, abas com Conceitos primeiro, curva de aprendizagem com dois eixos, cabeçalho de tabela com 32px e rótulo truncado, histograma da tabela sem eixo, menu que recolhe em tela estreita |
 | 1 | 29/09/2026 | A linguagem formal. Interface em cinza, azul só no modelo, raio 0, Public Sans na interface e Arial nos dados, componentes no estilo Carbon |
 
@@ -232,4 +295,5 @@ anteriores. As rodadas que levaram à versão 1 estão nos artifacts
 [rodada 1](https://claude.ai/artifact/KqNSGX5HSt9MZi7yHQf1nP),
 [rodada 2](https://claude.ai/artifact/LQwhxenEuDJ21oNZLAk7TK) e
 [rodada 3](https://claude.ai/artifact/CQZsNUAHJXBUWXW9sZdW1R). A da versão 2 está em
-[organização da Análise](https://claude.ai/artifact/VZeKyWCQVGZDrcsmDyqYUX).
+[organização da Análise](https://claude.ai/artifact/VZeKyWCQVGZDrcsmDyqYUX), e a da versão 3 em
+[Turmas e Turma](https://claude.ai/artifact/2AsBMzpMUcaQQPEcfwdU8q).

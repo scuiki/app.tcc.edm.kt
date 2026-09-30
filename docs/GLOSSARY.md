@@ -113,6 +113,19 @@ prevê" (só com modelo publicado). Sem níveis, faixas, recomendações ou cort
 | `compute_problem_statistics()` / `compute_knowledge_component_statistics()` / `compute_student_activity()` | Calculam as três contagens acima do dado limpo, sem modelo (`services/submission_statistics_calculation.py`) | `compute_pre_training_statistics()` |
 | `first_attempt_auc` | A métrica primária: AUC só sobre as primeiras tentativas. Fica no banco e no teste de regressão; não vai para a tela | `first_auc` |
 
+## Turma
+
+As telas Turmas e Turma resumem o que aconteceu em cada exercício e com cada aluno da turma, sem
+modelo, exceto o domínio médio dos exercícios treinados.
+
+| Nome no código | O que é | Nome antigo |
+|---|---|---|
+| `AssignmentOverview` | O resumo de um exercício na turma: período (primeira e última execução), alunos que participaram, execuções e taxa de acerto | — |
+| `ClassroomStudentSummary` | A linha de um aluno na turma: exercícios de que participou, problemas completados dos que tentou, execuções, taxa de acerto, erros de compilação, última atividade e domínio médio nos exercícios treinados | — |
+| `DailyRuns` | As execuções da turma por dia, ou por semana acima de cerca de 120 dias, para a figura de execuções por dia | — |
+| `ActivityEvent` | Um evento da atividade recente: turma criada, dados importados, conceitos extraídos ou modelo treinado, com onde e quando | — |
+| próximo passo | A ação que a situação do exercício pede, mostrada como um botão na tabela de exercícios (extrair conceitos, revisar conceitos, treinar modelo, ver análise) | — |
+
 ## Pipeline de dados
 
 | Nome no código | O que é | Nome antigo |
