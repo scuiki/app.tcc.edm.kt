@@ -96,7 +96,7 @@ prevê" (só com modelo publicado). Sem níveis, faixas, recomendações ou cort
 | Nome no código | O que é | Nome antigo |
 |---|---|---|
 | `StudentMasteryMatrix` | A matriz `{(student_id, problem_id): mastery}`, o dado nativo do modelo | matriz aluno × KC |
-| domínio (`mastery`) | A chance prevista de o aluno acertar um problema se tentasse agora, lida do último passo do Code-DKT. Não é a fração do conceito aprendida. Na tela, sempre com o ícone "!" e essa frase | — |
+| domínio (`mastery`) | A chance prevista de o aluno acertar um problema se tentasse agora, lida do último passo do Code-DKT. Não é a fração do conceito aprendida. Na tela, sempre com o marcador de cérebro (`EstimatedMark`) e a dica com essa frase | — |
 | `aggregate_by_knowledge_component()` | O domínio por conceito, a média dos problemas que o exigem, derivado da matriz na leitura e nunca gravado (`services/mastery_by_knowledge_component.py`) | `aggregate_student_mastery` (em `ml/mastery/`) |
 | `mean_and_histogram()` | A média e a distribuição em dez faixas de 10 pontos de uma lista de masteries (`services/mastery_distribution.py`) | `MasteryLevel`, `classify_mastery_level()` |
 | `mean_mastery_by_student()` / `weakest_knowledge_components()` | A média do aluno sobre os problemas e os três conceitos em que ele está mais fraco (`services/student_mastery.py`) | `find_students_at_risk()` |
@@ -105,6 +105,8 @@ prevê" (só com modelo publicado). Sem níveis, faixas, recomendações ou cort
 | `ProblemStatistics` | O que aconteceu num problema: taxa de acerto em todas as execuções, mediana de tentativas até completar, alunos que tentaram e que completaram, erros de compilação por execução | `PreTrainingStatistics` (por assignment), EDA |
 | `KnowledgeComponentStatistics` | A taxa de acerto de um conceito, somando as execuções dos problemas que o exigem | — |
 | `StudentActivity` | O que um aluno fez: problemas completados e tentados, execuções e erros de compilação | — |
+| curva de aprendizagem (`LearningCurve`) | A taxa de erro de um conceito em cada oportunidade, com quantos alunos chegaram a cada uma. Para quando menos de 10% da turma chega à oportunidade. Sai das execuções e dos vínculos problema × conceito, sem modelo | — |
+| oportunidade (`opportunity`) | Cada execução de um aluno num problema que exige o conceito, contada em ordem por aluno e conceito. A 1ª oportunidade é a primeira execução dele num desses problemas | — |
 | completar (`completed`) | Ter ao menos uma execução correta no problema | "fechar" |
 | dado estimado (`EstimatedMark`) | O marcador de cérebro antes do rótulo de toda coluna que vem do modelo | badge "previsto" |
 | recorrência (`recurrence`) | Em quantos problemas do exercício um conceito aparece. Com um só, o valor do conceito é o desse problema, evidência fraca | cobertura |

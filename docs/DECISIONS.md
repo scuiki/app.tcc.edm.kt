@@ -413,8 +413,10 @@ fronteira nítida, por isso a regra é por papel e não por gosto, e uma etiquet
 inteira em Public Sans. No Linux o Arial cai na Liberation Sans, que tem as mesmas medidas, e o
 layout não muda. A serifa nos títulos foi testada e descartada.
 
-**A linha de tabela tem 32px.** É a densidade compacta do Carbon, e o professor vê mais alunos
-sem rolar. A linha que tem histograma cresce o necessário, porque barras e eixo não cabem em 32px.
+**A linha e o cabeçalho de tabela têm 32px.** É a densidade compacta do Carbon, e o professor vê
+mais alunos sem rolar. O cabeçalho com a mesma altura das linhas deixa a tabela com um ritmo só, e
+um rótulo longo trunca com o texto inteiro no hover, em vez de quebrar em duas linhas. O histograma
+da tabela perdeu o eixo para caber nos 32px, e a escala de 0 a 100% está na dica do cabeçalho.
 
 **A cor dos estágios segue a origem do trabalho.** A lista de estágios serve a dois diálogos. A
 extração de conceitos é feita pelo LLM e fica preta. O treino é o Code-DKT nascendo e fica azul.
@@ -447,3 +449,39 @@ da qualidade do treino.
 **A nota do rodapé da Análise só explica o marcador.** Fonte e versão do modelo saíram, e a nota
 diz em uma frase que o cérebro marca os dados estimados pelo modelo. Ela só aparece com modelo
 treinado, quando há colunas marcadas.
+
+**Uma figura só entra com um dado que a tabela não tem.** Uma visão geral por problema e os
+pequenos múltiplos da distribuição por conceito foram desenhados e saíram, porque redesenhavam os
+números das tabelas. A figura da Análise é a curva de aprendizagem, que mostra a ordem das
+tentativas, uma dimensão que nenhuma tabela tem.
+
+**A curva de aprendizagem usa a taxa de erro por oportunidade.** É a convenção do PSLC DataShop e
+da literatura de KCs, então a banca lê a curva caindo como aprendizado sem explicação. A oportunidade
+é cada execução do aluno num problema que exige o conceito. Quem acerta para de praticar, e nas
+oportunidades altas sobram os alunos com dificuldade, o que faz o fim da curva subir. Por isso a
+curva para quando menos de 10% da turma chega à oportunidade.
+
+**A curva de aprendizagem tem dois eixos, uma exceção consciente.** Dois eixos costumam enganar,
+porque o cruzamento entre as séries depende só das escalas escolhidas. Aqui os alunos em cada
+oportunidade são contexto da taxa de erro, e não uma medida para comparar com ela. Juntos no mesmo
+gráfico, eles mostram por que o fim da curva sobe. Para não confundir, as barras ficam atrás e
+apagadas, cada eixo leva a cor e o título da sua série, e a legenda diz qual eixo é de qual.
+
+**A linha de fatos substitui a descrição da Análise.** A frase fixa era igual em todo exercício. A
+linha diz alunos, problemas, conceitos, execuções e a versão do modelo com a data do treino, e com
+isso volta o que o cartão do modelo decidido para o dashboard dizia e que nunca chegou à tela. A
+etiqueta de situação saiu do caminho, que só navega, e foi para o lado do título.
+
+**Conceitos é a primeira aba da Análise.** A pergunta central do app é quais conceitos a turma ainda
+não domina. A ordem padrão dentro da aba continua sendo a taxa de acerto.
+
+**Observado e modelo se distinguem pela cor e pelo cérebro, sem mais nada.** Um cabeçalho agrupado
+("O que aconteceu" e "O que o modelo prevê") e uma linha fixa da turma foram desenhados e saíram. O
+cabeçalho repetia o que a cor e o marcador já dizem, e a linha da turma ficava vazia nas colunas que
+não têm um total que faça sentido, como os alunos que completaram.
+
+**O detalhe do aluno continua no diálogo.** Um painel lateral que empurra a tabela foi desenhado e
+ficou para depois. Com ele aberto, as etiquetas de "Conceitos mais fracos" ficavam cortadas demais.
+
+**O menu recolhe em tela estreita.** Abaixo de 900px ele fica atrás de um botão da barra superior e
+abre por cima do conteúdo. O menu fixo de 260px espremia a Análise numa faixa ilegível no celular.

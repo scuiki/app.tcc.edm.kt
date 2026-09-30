@@ -4,13 +4,13 @@ As regras visuais do app docente. O porquê de cada decisão fica em `DECISIONS.
 Frontend. Os valores (hex, sombras, medidas) ficam no `src/web/src/styles/tokens.css`, e aqui cada
 papel é citado pelo nome do token.
 
-**Versão 1, 29/09/2026.** Referência visual em [`design/design-system-v1.html`](design/design-system-v1.html),
+**Versão 2, 29/09/2026.** Referência visual em [`design/design-system-v2.html`](design/design-system-v2.html),
 que abre direto no navegador.
 
 **Estado.** Este documento é a especificação. O `tokens.css` e os componentes ainda seguem a
-linguagem anterior (azul de ação, Open Sans com Arial nas tabelas, raio de 2px) e serão migrados depois da rodada das
-páginas. Até lá, os valores estão na página de referência, e os nomes de token abaixo são os
-planejados.
+linguagem anterior (azul de ação, Open Sans com Arial nas tabelas, raio de 2px), e a Análise ainda
+tem a organização antiga. Os dois serão migrados depois da rodada das páginas. Até lá, os valores
+estão na página de referência, e os nomes de token abaixo são os planejados.
 
 ## Princípios
 
@@ -92,7 +92,7 @@ A tabela usa 13,5px no corpo e 12,5px no cabeçalho. O título de cartão usa 13
 | `--control-height` | 36px | Botão, campo, aba |
 | `--control-height-compact` | 32px | Botão de ícone |
 | Botão compacto | 28px | Ação secundária dentro de cartão |
-| `--table-row-height` | 32px | Altura mínima da linha de tabela |
+| `--table-row-height` | 32px | Linha e cabeçalho de tabela |
 | Cabeçalho de cartão | 48px | Todo cartão com título |
 | Linha do menu | 38px | Menu lateral |
 | Barra superior | 56px | Uma por app |
@@ -163,7 +163,10 @@ texto branco, sem raio, e aparece no hover ou no foco pelo `Tooltip`, nunca pelo
 - A tabela inteira usa `--font-data`.
 - Sem fio vertical. Traço `--color-text` sob o cabeçalho e no fim da tabela, fio `--color-rule`
   entre as linhas, em todas as tabelas.
-- Linha com 32px de altura mínima. A linha que tem histograma cresce o necessário.
+- Linha e cabeçalho com a mesma altura, 32px. Um rótulo longo trunca com reticências e mostra o
+  texto inteiro no hover, e em tela larga aparece inteiro.
+- O histograma da tabela não tem eixo. A escala fica na dica do cabeçalho, e a faixa sem aluno é um
+  traço de 1px em `--color-control-border`.
 - Na Análise, o nome fica à esquerda e os números centralizados sob rótulos centralizados. Nas
   demais tabelas, tudo fica à esquerda, e só a coluna de botões fica à direita.
 - A taxa de acerto usa a barra em `--color-observed`. Domínio e distribuição usam `--color-model`
@@ -172,28 +175,61 @@ texto branco, sem raio, e aparece no hover ou no foco pelo `Tooltip`, nunca pelo
 
 ## Gráficos
 
+- Uma figura só entra quando mostra um dado que a tabela não tem. Redesenhar os números da tabela
+  em outra forma não é motivo para uma figura.
 - A figura inteira usa `--font-data`, para entrar na monografia como está.
 - Cada figura tem título, subtítulo com a unidade e a fonte do dado (por exemplo, "Fonte: Code-DKT
   versão 5").
-- As barras são quadradas e o eixo delas começa em zero. A curva não precisa começar em zero.
+- As barras são quadradas e o eixo delas começa em zero. A linha não precisa começar em zero.
 - Observado e previsto nunca dividem a mesma régua.
+- Dois eixos só quando a segunda série é contexto da primeira. Ela fica atrás e apagada, cada eixo
+  leva a cor e o título da sua série, e a legenda diz qual eixo é de qual.
 - Grade em `--color-rule`, eixo em `--color-text`, rótulos em `--color-text-muted` e o valor
   destacado em `--color-text`.
 - Toda marca mostra o valor no hover. A curva de perda marca o último valor.
-- O Chart.js desenha só a curva de perda. O resto é CSS ou SVG.
+- O Chart.js desenha as curvas, a de perda e a de aprendizagem. Barras e histogramas das tabelas
+  são CSS.
+
+**Curva de aprendizagem.** A taxa de erro em cada oportunidade de praticar um conceito, em
+`--color-observed`, com os alunos que chegaram a cada oportunidade em barras atrás, em
+`--color-text-disabled` a 35%. A taxa de erro fica no eixo da esquerda, de 0 a 100%, e os alunos no
+da direita. A oportunidade é cada execução do aluno num problema que exige o conceito. A curva para
+quando menos de 10% da turma chega à oportunidade. Um conceito por vez, escolhido num seletor, com a
+linha de fatos da 1ª, da 5ª, da 10ª e da última oportunidade mostrada.
 
 ## Organização das páginas
 
-A próxima rodada. Entra na versão 2.
+Toda página abre com o caminho, o título e, quando houver, a etiqueta de situação ao lado do título.
+Abaixo de 900px o menu recolhe atrás de um botão na barra superior e abre por cima do conteúdo, com
+o fundo escurecido. As tabelas rolam de lado dentro do cartão.
+
+### Análise
+
+1. **Caminho.** Turmas › turma › exercício › Análise. Só navega, sem etiqueta.
+2. **Cabeçalho.** O nome do exercício, a etiqueta Treinado ao lado e a linha de fatos abaixo, com
+   alunos, problemas, conceitos, execuções e a versão do modelo com a data do treino. A linha de
+   fatos substitui a descrição fixa.
+3. **Cartão de situação**, só antes do treino, como hoje.
+4. **Cartão da análise**, com as abas Conceitos, Problemas e Alunos, nessa ordem. A aba Conceitos
+   tem a vista "Tabela | Curva de aprendizagem" à direita das abas. O rodapé explica o marcador de
+   estimado.
+5. **Diálogo do aluno**, ao clicar numa linha da aba Alunos.
+
+Observado e modelo se distinguem pela cor e pelo marcador de estimado, sem cabeçalho agrupado e sem
+linha da turma. Na aba Alunos, a coluna "Conceitos mais fracos" mostra três etiquetas com o nome
+cortado e o valor, com o nome inteiro no hover. O painel lateral do aluno foi desenhado e ficou para
+depois.
 
 ## Versões
 
 | Versão | Data | O que mudou |
 |---|---|---|
+| 2 | 29/09/2026 | A organização da Análise. Linha de fatos, abas com Conceitos primeiro, curva de aprendizagem com dois eixos, cabeçalho de tabela com 32px e rótulo truncado, histograma da tabela sem eixo, menu que recolhe em tela estreita |
 | 1 | 29/09/2026 | A linguagem formal. Interface em cinza, azul só no modelo, raio 0, Public Sans na interface e Arial nos dados, componentes no estilo Carbon |
 
 A cada versão, a página de referência é renomeada (`git mv`) para o número novo, e o git guarda as
 anteriores. As rodadas que levaram à versão 1 estão nos artifacts
 [rodada 1](https://claude.ai/artifact/KqNSGX5HSt9MZi7yHQf1nP),
 [rodada 2](https://claude.ai/artifact/LQwhxenEuDJ21oNZLAk7TK) e
-[rodada 3](https://claude.ai/artifact/CQZsNUAHJXBUWXW9sZdW1R).
+[rodada 3](https://claude.ai/artifact/CQZsNUAHJXBUWXW9sZdW1R). A da versão 2 está em
+[organização da Análise](https://claude.ai/artifact/VZeKyWCQVGZDrcsmDyqYUX).
