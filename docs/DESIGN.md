@@ -4,25 +4,26 @@ As regras visuais do app docente. O porquê de cada decisão fica em `DECISIONS.
 Frontend. Os valores (hex, sombras, medidas) ficam no `src/web/src/styles/tokens.css`, e aqui cada
 papel é citado pelo nome do token.
 
-**Versão 3, 29/09/2026.** Referência visual em [`design/design-system-v3.html`](design/design-system-v3.html),
+**Versão 4, 30/09/2026.** Referência visual em [`design/design-system-v4.html`](design/design-system-v4.html),
 que abre direto no navegador.
 
 **Estado.** Este documento é a especificação. O `tokens.css` e os componentes ainda seguem a
-linguagem anterior (azul de ação, Open Sans com Arial nas tabelas, raio de 2px), e Análise, Turmas e
-Turma ainda têm a organização antiga. Tudo será migrado depois da rodada das páginas. Até lá, os valores
+linguagem anterior (azul de ação, Open Sans com Arial nas tabelas, raio de 2px), e Análise, Turmas,
+Turma e Conceitos ainda têm a organização antiga. Tudo será migrado depois da rodada das páginas. Até lá, os valores
 estão na página de referência, e os nomes de token abaixo são os planejados.
 
 ## Princípios
 
 - **Entregar o dado, não a interpretação.** Sem níveis, faixas ou cores de alerta sobre um número.
   O professor ordena e lê.
-- **Azul significa modelo.** O azul só aparece quando existe um Code-DKT por trás do que está na
-  tela. Botão, link, foco, menu e abas não são azuis.
+- **Azul significa modelo.** O azul só aparece quando um modelo produziu o que está na tela, e o
+  ícone diz qual. O cérebro é o Code-DKT e as estrelas são o modelo de linguagem. Botão, link, foco,
+  menu e abas não são azuis.
 - **Três papéis de cor.** Cinza para a interface, azul para o modelo, vermelho para erro e
   exclusão. Não há verde nem âmbar.
 - **Sombra marca objeto.** Só o cartão, o diálogo e a barra superior têm sombra. Nada dentro deles.
 - **Raio 0.** Botões, campos, cartões, etiquetas, barras e histogramas têm canto vivo. Só os pontos
-  de situação e o marcador de estimado são redondos.
+  de situação e os marcadores de modelo são redondos.
 - **Duas fontes, dois papéis.** Public Sans na interface. Arial nos dados técnicos (tabela, gráfico
   e número), o mesmo da monografia.
 - **Texto em português.** "Dados", nunca "dataset". O código continua em inglês.
@@ -50,7 +51,7 @@ de uso.
 | | `--color-focus` | Anel de foco |
 | Modelo | `--color-model` | Domínio, distribuição, curva de perda, ponto de treinado, estágios do treino |
 | | `--color-model-strong` | Hover das marcas do modelo, texto sobre o azul claro |
-| | `--color-model-soft` e `--color-model-soft-border` | Etiqueta Treinado, fundo do marcador de estimado |
+| | `--color-model-soft` e `--color-model-soft-border` | Etiqueta Treinado, fundo dos marcadores de modelo |
 | Observado | `--color-observed` | Taxa de acerto e toda barra do que aconteceu |
 | | `--color-bar-track` | Trilho das barras |
 | Erro | `--color-danger` | Ícone de erro, contorno de campo com erro, botão destrutivo |
@@ -75,6 +76,9 @@ Linux a reserva é a Liberation Sans, que tem as mesmas medidas do Arial, e o la
 máquinas. Os algarismos do Arial já têm largura fixa, e `.num` mantém `tabular-nums` mesmo assim.
 A migração troca `--font-mono` e `--font-table` por `--font-data`.
 
+A única exceção é `--font-code`, uma fonte mono do sistema, só em bloco de código, porque o
+alinhamento e a indentação do código dependem da largura fixa.
+
 | Nível | Classe | Tamanho e peso |
 |---|---|---|
 | Título da página | `.t-page-title` | 22px, 600 |
@@ -88,7 +92,7 @@ A tabela usa 13,5px no corpo e 12,5px no cabeçalho. O título de cartão usa 13
 
 | Medida | Valor | Onde |
 |---|---|---|
-| `--radius` | 0 | Tudo, exceto pontos de situação e marcador de estimado |
+| `--radius` | 0 | Tudo, exceto pontos de situação e marcadores de modelo |
 | `--control-height` | 36px | Botão, campo, aba |
 | `--control-height-compact` | 32px | Botão de ícone |
 | Botão compacto | 28px | Ação secundária dentro de cartão |
@@ -142,9 +146,8 @@ dele. O rodapé opcional tem 44px e texto de apoio.
 o contorno fica sólido em `--color-text` e o fundo `--color-hover`. Importar dados vem antes de
 qualquer modelo, então a área não tem azul.
 
-**Lista de estágios.** Duas variantes pela origem do trabalho. A neutra, em `--color-text`, serve a
-extração de conceitos, que é feita pelo LLM. A de modelo, em `--color-model`, serve o treino do
-Code-DKT.
+**Lista de estágios.** Em `--color-model`, tanto na extração de conceitos, feita pelo modelo de
+linguagem, quanto no treino do Code-DKT, porque os dois são trabalho de modelo.
 
 **Carregamento e vazio.** O giro de carregamento é `--color-text`. O estado vazio tem o ícone num
 quadrado `--color-hover`, um título e uma frase de apoio.
@@ -152,11 +155,33 @@ quadrado `--color-hover`, um título e uma frase de apoio.
 **Mensagem de resultado.** O erro tem ícone `--color-danger` e título `--color-danger-text`. O
 sucesso é neutro, com o ícone em `--color-text`.
 
-**Marcador de estimado.** O cérebro em `--color-model-strong` sobre um círculo `--color-model-soft`,
-antes do rótulo de toda coluna que vem do modelo.
+**Marcadores de modelo.** Um ícone em `--color-model-strong` sobre um círculo `--color-model-soft`
+de 18px, com a dica de onde o dado veio.
+- `GeneratedByML`, o cérebro, "Estimado pelo modelo", para o que o Code-DKT produziu. Fica antes do
+  rótulo de toda coluna que vem do modelo.
+- `GeneratedByLLM`, as estrelas, "Gerado pelo modelo de linguagem", para o que o LLM escreveu, como
+  o nome do conceito e a descrição do problema. Fica no fim do texto (20px, e 24px num título) ou
+  antes do rótulo de coluna. Some do nome do conceito quando o professor o renomeia, porque o nome
+  passa a ser dele.
 
-**Dica e balão.** A dica é o ícone de alerta em `--color-text-muted`. O balão é `--color-text` com
-texto branco, sem raio, e aparece no hover ou no foco pelo `Tooltip`, nunca pelo `title` nativo.
+**Dica, alerta e balão.** A dica é o ícone de ? (`circle-question-mark`) em `--color-text-muted`. O
+ícone de ! (`circle-alert`) fica só para alerta e erro, em `--color-danger`, como um problema sem
+conceito. O balão é `--color-text` com texto branco, sem raio, e aparece no hover ou no foco pelo
+`Tooltip`, nunca pelo `title` nativo.
+
+**Bloco de código.** Em `--font-code`, sobre `--color-surface-subtle`, com a numeração de linha à
+esquerda em `--color-text-disabled`. Quando há mais de um arquivo, abas presas ao topo do bloco
+trocam o código, e a aba ativa tem o traço de 2px em `--color-text`.
+
+**Matriz de conceitos.** A célula é um quadrado de 20px, preenchido em `--color-text` quando o
+conceito está ligado ao problema, que liga e desliga no clique. No exercício treinado a célula fica
+em `--color-observed` e não responde. As ações da linha do conceito são lupa, lápis e lixeira, nessa
+ordem. Mesclar não existe, porque um conceito duplicado é removido e o outro fica.
+
+**Origem do conceito.** Um diálogo aberto pela lupa, com o nome do conceito e o marcador de gerado,
+a linha de fatos, os problemas em que ele aparece em abas e, para cada um, a descrição e as até cinco
+soluções corretas que o modelo de linguagem leu, num bloco de código com abas. A tentativa em que
+cada aluno acertou fica na dica da aba.
 
 **Cabeçalho ordenável.** A seta da ordenação ativa é `--color-text`, e o rótulo ordenado também.
 
@@ -185,11 +210,16 @@ lista longa ficar discreta.
 |---|---|---|
 | `blocks` | Conceitos | Menu, aba, botões e etiquetas das etapas de conceitos |
 | `file-code` | Problemas | Aba Problemas da Análise |
-| `brain` | O modelo | Marcador de estimado, etiqueta Treinado, evento de treino |
+| `brain` | O Code-DKT | Marcador `GeneratedByML`, etiqueta Treinado, evento de treino |
+| `sparkles` | O modelo de linguagem | Marcador `GeneratedByLLM`, no nome do conceito e na descrição do problema |
 | `chart-column` | Análise | Menu e botão "Ver análise" |
 | `clipboard-pen` | Exercício | Menu e aba Exercícios |
 | `users` | Turmas e alunos | Menu, aba Alunos, evento de turma criada |
 | `upload` | Importar dados | Botão do cabeçalho da turma |
+| `file-check` | Solução correta | Abas das soluções na origem do conceito |
+| `search` | Inspecionar | Lupa da linha do conceito, campo de busca |
+| `circle-question-mark` | Dica | Todo ícone de dica |
+| `circle-alert` | Alerta | Só em vermelho, em alerta e erro |
 
 ## Tabelas
 
@@ -203,7 +233,7 @@ lista longa ficar discreta.
 - Na Análise, o nome fica à esquerda e os números centralizados sob rótulos centralizados. Nas
   demais tabelas, tudo fica à esquerda, e só a coluna de botões fica à direita.
 - A taxa de acerto usa a barra em `--color-observed`. Domínio e distribuição usam `--color-model`
-  e levam o marcador de estimado no rótulo.
+  e levam o marcador `GeneratedByML` no rótulo.
 - As barras e os histogramas das tabelas são CSS, com canto vivo.
 
 ## Gráficos
@@ -239,6 +269,7 @@ e o que cair fora é contado numa nota. O dia é o do fuso do dado, lido da colu
 ## Organização das páginas
 
 Toda página abre com o caminho, o título e, quando houver, a etiqueta de situação ao lado do título.
+Abaixo do título vem a linha de fatos, com os itens separados por vírgula.
 Abaixo de 900px o menu recolhe atrás de um botão na barra superior e abre por cima do conteúdo, com
 o fundo escurecido. As tabelas rolam de lado dentro do cartão.
 
@@ -254,7 +285,7 @@ o fundo escurecido. As tabelas rolam de lado dentro do cartão.
    estimado.
 5. **Diálogo do aluno**, ao clicar numa linha da aba Alunos.
 
-Observado e modelo se distinguem pela cor e pelo marcador de estimado, sem cabeçalho agrupado e sem
+Observado e modelo se distinguem pela cor e pelo marcador `GeneratedByML`, sem cabeçalho agrupado e sem
 linha da turma. Na aba Alunos, a coluna "Conceitos mais fracos" mostra três etiquetas com o nome
 cortado e o valor, com o nome inteiro no hover. O painel lateral do aluno foi desenhado e ficou para
 depois.
@@ -282,10 +313,31 @@ depois.
      exercícios treinados, com "sem modelo" para quem não fez nenhum. A busca pelo identificador fica
      na faixa das abas.
 
+### Conceitos
+
+1. **Caminho.** Turmas › turma › exercício › Conceitos.
+2. **Cabeçalho.** O nome do exercício, a etiqueta de situação ao lado e a linha de fatos com
+   problemas, conceitos, a data da extração e quantos problemas estão sem conceito, este último como
+   alerta em vermelho quando houver.
+3. **Cartão dos conceitos**, com as abas Conceitos por problema e Problemas.
+   - **Conceitos por problema.** A matriz, com os conceitos nas linhas e os problemas nas colunas, a
+     recorrência de cada conceito à direita, quantos conceitos cada problema tem na última linha e as
+     ações lupa, lápis e lixeira. A dica do número do problema traz a descrição com as estrelas. Novo
+     conceito e Aprovar conceitos ficam à direita das abas, e o Aprovar fica desabilitado enquanto
+     houver problema sem conceito.
+   - **Problemas.** A tabela com problema, descrição e quantos conceitos cada um tem, com as estrelas
+     antes do rótulo Descrição. Sem descrição, como no exercício extraído antes de a descrição
+     existir, a célula mostra "sem descrição" em cinza.
+4. **Origem do conceito**, o diálogo aberto pela lupa.
+
+No exercício treinado a matriz é só consulta, com a lupa e sem lápis e lixeira. Pronto para
+conceitos, o cartão é o estado vazio com os blocos e um único "Extrair conceitos".
+
 ## Versões
 
 | Versão | Data | O que mudou |
 |---|---|---|
+| 4 | 30/09/2026 | Conceitos. Matriz problema × conceito com abas, origem do conceito com as soluções em abas de código, marcador `GeneratedByLLM` com as estrelas, dica com ?, vírgula na linha de fatos, estágios da extração em azul e a fonte mono só em bloco de código |
 | 3 | 29/09/2026 | Turmas e Turma. Tabela de exercícios com próximo passo, alunos da turma com busca e paginação de 10, execuções por dia, atividade recente com treinos e extrações, e os ícones de Conceitos, Problemas e Treinado nas etiquetas de situação |
 | 2 | 29/09/2026 | A organização da Análise. Linha de fatos, abas com Conceitos primeiro, curva de aprendizagem com dois eixos, cabeçalho de tabela com 32px e rótulo truncado, histograma da tabela sem eixo, menu que recolhe em tela estreita |
 | 1 | 29/09/2026 | A linguagem formal. Interface em cinza, azul só no modelo, raio 0, Public Sans na interface e Arial nos dados, componentes no estilo Carbon |
@@ -296,4 +348,5 @@ anteriores. As rodadas que levaram à versão 1 estão nos artifacts
 [rodada 2](https://claude.ai/artifact/LQwhxenEuDJ21oNZLAk7TK) e
 [rodada 3](https://claude.ai/artifact/CQZsNUAHJXBUWXW9sZdW1R). A da versão 2 está em
 [organização da Análise](https://claude.ai/artifact/VZeKyWCQVGZDrcsmDyqYUX), e a da versão 3 em
-[Turmas e Turma](https://claude.ai/artifact/2AsBMzpMUcaQQPEcfwdU8q).
+[Turmas e Turma](https://claude.ai/artifact/2AsBMzpMUcaQQPEcfwdU8q), e a da versão 4 em
+[Conceitos](https://claude.ai/artifact/TskaC5xtKnyTjKiq3FwtGo).

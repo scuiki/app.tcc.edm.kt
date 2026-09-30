@@ -385,8 +385,9 @@ valor cola na coluna anterior. A tabela usa Arial, a fonte de dados do app.
 **O app passou a ser formal e cinza, e o azul ficou só com o modelo.** Na linguagem anterior o azul
 de ação estava no botão primário, no menu, nas abas e nos links, e um azul quase igual pintava o
 domínio previsto. O professor via a mesma cor no botão e no dado sem que um tivesse a ver com o
-outro. Com a interface em cinza, o azul passa a ser a única cor que diz alguma coisa, que existe um
-Code-DKT por trás, e o olho vai para o dado do modelo sem legenda. As referências foram o Carbon
+outro. Com a interface em cinza, o azul passa a ser a única cor que diz alguma coisa, que um modelo
+produziu o dado, e o olho vai para ele sem legenda. Na versão 4 do design a regra passou a valer para
+os dois modelos do app, o Code-DKT e o modelo de linguagem, e o ícone diz qual. As referências foram o Carbon
 (componentes e gráficos), o padrão de gráfico do gov.br (título, subtítulo e fonte na figura) e o
 Distill (o tom acadêmico), comparadas em três rodadas registradas no `DESIGN.md`.
 
@@ -418,9 +419,10 @@ mais alunos sem rolar. O cabeçalho com a mesma altura das linhas deixa a tabela
 um rótulo longo trunca com o texto inteiro no hover, em vez de quebrar em duas linhas. O histograma
 da tabela perdeu o eixo para caber nos 32px, e a escala de 0 a 100% está na dica do cabeçalho.
 
-**A cor dos estágios segue a origem do trabalho.** A lista de estágios serve a dois diálogos. A
-extração de conceitos é feita pelo LLM e fica preta. O treino é o Code-DKT nascendo e fica azul.
-Pintar os dois de azul diria que o LLM é o modelo.
+**Os estágios da extração e do treino são azuis.** A lista de estágios serve a dois diálogos, e os
+dois são trabalho de modelo, o modelo de linguagem na extração de conceitos e o Code-DKT no treino.
+Até a versão 3 do design a extração ficava preta, porque o azul era só do Code-DKT. Com as estrelas
+distinguindo o modelo de linguagem pelo desenho, o azul passou a valer para os dois.
 
 **O capelo da barra superior é preto.** Ele é a marca do app e não fala do modelo, então não pode
 ser azul pela regra.
@@ -515,8 +517,9 @@ esticá-lo, e o dia segue o `ServerTimezone`, que a importação ainda precisa p
 não dizia nada que a tabela ao lado não mostrasse. Os eventos que o professor provocou (dados
 importados, conceitos extraídos, modelo treinado) contam o que aconteceu desde a última visita.
 
-**Os ícones têm um significado só.** Blocos são Conceitos, código são Problemas e o cérebro é o
-modelo, no marcador de estimado e na etiqueta Treinado. A lista, cogitada para Conceitos, ficaria
+**Os ícones têm um significado só.** Blocos são Conceitos, código são Problemas, o cérebro é o
+Code-DKT, no marcador de estimado e na etiqueta Treinado, e as estrelas são o modelo de linguagem.
+O cérebro com circuito foi comparado e perdeu, porque em 13px vira meio cérebro e meio rabisco. A lista, cogitada para Conceitos, ficaria
 parecida com a prancheta de Problemas. As etiquetas de situação levam o ícone da etapa, mas o menu
 mantém o ponto vazio, meio ou cheio, para a lista longa de exercícios ficar discreta.
 
@@ -526,4 +529,43 @@ e a soma contaria o mesmo aluno duas vezes.
 **No Linux, o Arial das tabelas cai na Liberation Sans.** O Fedora não tem o Arial, e a licença não
 permite servi-lo pela web. A Liberation Sans tem as mesmas medidas, então o layout não muda, só o
 desenho de alguns caracteres. Capturas feitas no nitro saem nela.
+
+**A tela Conceitos é uma matriz problema × conceito.** As duas vistas de antes, os conceitos de cada
+problema e a lista de conceitos, eram a mesma informação desenhada duas vezes, numa página longa de
+etiquetas com xis. A matriz é a Q-matrix da literatura, cabe numa tela com 15 conceitos e 10
+problemas e mostra nas margens a recorrência de cada conceito e quantos conceitos cada problema tem.
+No código ela continua sendo os vínculos problema × conceito. As descrições dos problemas ficam numa
+segunda aba, como as abas da Análise.
+
+**Mesclar conceitos saiu.** Com dois conceitos duplicados, o professor remove um e o outro fica, e
+isso é mais simples de entender do que um diálogo de mescla.
+
+**A origem do conceito mostra só as soluções que o modelo de linguagem leu.** O professor precisa
+ver de onde o conceito veio para validá-lo, e a evidência é o código. As frases candidatas do modelo
+foram desenhadas e saíram, porque repetiam o nome do conceito com outras palavras. Destacar as linhas
+que "influenciaram" o conceito ficou de fora, porque não há como medir influência num modelo acessado
+pela CLI. Pedir as linhas numa chamada separada daria uma explicação feita depois, e mudar o prompt
+da extração quebraria os prompts congelados do KCGen-KT. Para o diálogo existir, a extração passa a
+gravar quais soluções sorteou.
+
+**A fonte mono volta, só em bloco de código.** O sistema tem duas fontes com papéis fixos, e o código
+é a exceção, porque a indentação e o alinhamento dependem da largura fixa. Fora do bloco de código,
+números e identificadores continuam em Arial.
+
+**A dica é o ?, e o ! fica para alerta.** O mesmo círculo com ! marcava uma explicação em cinza e um
+problema em vermelho, e o professor não tinha como saber qual dos dois estava vendo antes de ler.
+
+**A linha de fatos separa os itens por vírgula.** O ponto médio parecia ponto final, e um traço
+vertical foi testado e pesou demais. A vírgula lê como frase.
+
+**O que o modelo de linguagem escreveu leva as estrelas, e não o texto em azul.** O nome do conceito
+e a descrição do problema vêm do modelo, porque o ProgSnap2 não traz enunciado. Pintar o texto de
+azul encheria as telas, porque o nome do conceito aparece em toda parte, e cansaria a leitura em
+tabela densa. O marcador no fim do texto diz a origem sem esses custos. Quando o professor renomeia
+um conceito, o nome passa a ser dele e o marcador some, o que pede o app registrar se o nome foi
+editado.
+
+**Aprovar conceitos fica na faixa das abas.** A barra fixa no rodapé era o único lugar do app com uma
+ação presa à janela. Ao lado de Novo conceito, na aba da matriz, o Aprovar fica junto do que ele
+aprova, e desabilitado enquanto houver problema sem conceito.
 

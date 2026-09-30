@@ -108,7 +108,8 @@ prevê" (só com modelo publicado). Sem níveis, faixas, recomendações ou cort
 | curva de aprendizagem (`LearningCurve`) | A taxa de erro de um conceito em cada oportunidade, com quantos alunos chegaram a cada uma. Para quando menos de 10% da turma chega à oportunidade. Sai das execuções e dos vínculos problema × conceito, sem modelo | — |
 | oportunidade (`opportunity`) | Cada execução de um aluno num problema que exige o conceito, contada em ordem por aluno e conceito. A 1ª oportunidade é a primeira execução dele num desses problemas | — |
 | completar (`completed`) | Ter ao menos uma execução correta no problema | "fechar" |
-| dado estimado (`EstimatedMark`) | O marcador de cérebro antes do rótulo de toda coluna que vem do modelo | badge "previsto" |
+| dado estimado (`GeneratedByML`) | O marcador de cérebro antes do rótulo de toda coluna que vem do Code-DKT | `EstimatedMark`, badge "previsto" |
+| gerado pelo modelo de linguagem (`GeneratedByLLM`) | O marcador de estrelas no que o LLM escreveu, o nome do conceito e a descrição do problema. Some do nome quando o professor o renomeia | — |
 | recorrência (`recurrence`) | Em quantos problemas do exercício um conceito aparece. Com um só, o valor do conceito é o desse problema, evidência fraca | cobertura |
 | `compute_problem_statistics()` / `compute_knowledge_component_statistics()` / `compute_student_activity()` | Calculam as três contagens acima do dado limpo, sem modelo (`services/submission_statistics_calculation.py`) | `compute_pre_training_statistics()` |
 | `first_attempt_auc` | A métrica primária: AUC só sobre as primeiras tentativas. Fica no banco e no teste de regressão; não vai para a tela | `first_auc` |
@@ -125,6 +126,13 @@ modelo, exceto o domínio médio dos exercícios treinados.
 | `DailyRuns` | As execuções da turma por dia, ou por semana acima de cerca de 120 dias, para a figura de execuções por dia | — |
 | `ActivityEvent` | Um evento da atividade recente: turma criada, dados importados, conceitos extraídos ou modelo treinado, com onde e quando | — |
 | próximo passo | A ação que a situação do exercício pede, mostrada como um botão na tabela de exercícios (extrair conceitos, revisar conceitos, treinar modelo, ver análise) | — |
+
+## Conceitos
+
+| Nome no código | O que é | Nome antigo |
+|---|---|---|
+| `SampledSolution` | Uma das até cinco soluções corretas que o KCGen-KT sorteou para um problema, a primeira de um aluno, uma por faixa de tentativas até acertar. Gravada na extração, pelo `code_snapshot_id` | — |
+| origem do conceito | O diálogo com as soluções sorteadas de cada problema em que o conceito aparece | — |
 
 ## Pipeline de dados
 
