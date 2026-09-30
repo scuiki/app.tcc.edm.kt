@@ -4,13 +4,14 @@ As regras visuais do app docente. O porquê de cada decisão fica em `DECISIONS.
 Frontend. Os valores (hex, sombras, medidas) ficam no `src/web/src/styles/tokens.css`, e aqui cada
 papel é citado pelo nome do token.
 
-**Versão 4, 30/09/2026.** Referência visual em [`design/design-system-v4.html`](design/design-system-v4.html),
+**Versão 5, 30/09/2026.** Referência visual em [`design/design-system-v5.html`](design/design-system-v5.html),
 que abre direto no navegador.
 
 **Estado.** Este documento é a especificação. O `tokens.css` e os componentes ainda seguem a
-linguagem anterior (azul de ação, Open Sans com Arial nas tabelas, raio de 2px), e Análise, Turmas,
-Turma e Conceitos ainda têm a organização antiga. Tudo será migrado depois da rodada das páginas. Até lá, os valores
-estão na página de referência, e os nomes de token abaixo são os planejados.
+linguagem anterior (azul de ação, Open Sans com Arial nas tabelas, raio de 2px), e as cinco telas
+ainda têm a organização antiga. A rodada das páginas terminou com as cinco organizadas, e a migração
+vem depois. Até lá, os valores estão na página de referência, e os nomes de token abaixo são os
+planejados.
 
 ## Princípios
 
@@ -146,6 +147,32 @@ dele. O rodapé opcional tem 44px e texto de apoio.
 o contorno fica sólido em `--color-text` e o fundo `--color-hover`. Importar dados vem antes de
 qualquer modelo, então a área não tem azul.
 
+**Caixa do pacote.** A área de soltar do pacote é horizontal, com o ícone à esquerda e as duas
+linhas à direita. Depois do envio, a mesma caixa mostra o arquivo com a pasta (`folder`), o tamanho,
+o Trocar e uma linha de estado, e na recusa essa linha é o erro em duas linhas. A caixa tem 104px
+nos três estados, para a tela não pular entre os passos.
+
+**Lista de requisitos.** Cada linha é um `PackageRequirement`, com uma marca quadrada de 20px à
+esquerda, vazia antes do envio, preenchida em `--color-text` com o visto quando atendido e em
+`--color-danger` com o xis quando falta. O texto de apoio diz o que se espera e, depois do envio, o
+arquivo que atendeu.
+
+**Indicador de passos.** Os passos numerados em linha, ligados por um fio. O atual é preenchido em
+`--color-text`, o feito leva o visto com contorno `--color-text` e o que falta fica com contorno
+`--color-control-border`.
+
+**Título de cartão com ícone.** Quando o cartão reúne coisas que o app já representa por ícone, os
+ícones ficam juntos antes do texto do título, em `--color-text-secondary`, e não se repetem nos
+rótulos dos campos, como em "Turma e arquivo" com as pessoas e a pasta.
+
+**Rodapé com as ações do formulário.** As ações de um formulário ficam no rodapé do cartão, com o
+fio acima, a frase de apoio à esquerda e os botões à direita, o primário por último. O app não tem
+barra fixa presa à janela.
+
+**O que o sistema ajustou.** Os avisos de uma importação que não a impedem, como compilações
+repetidas descartadas, numa lista neutra de título e detalhe, sem ícone de alerta. O ! vermelho fica
+para a recusa, que não grava nada.
+
 **Lista de estágios.** Em `--color-model`, tanto na extração de conceitos, feita pelo modelo de
 linguagem, quanto no treino do Code-DKT, porque os dois são trabalho de modelo.
 
@@ -220,6 +247,8 @@ lista longa ficar discreta.
 | `search` | Inspecionar | Lupa da linha do conceito, campo de busca |
 | `circle-question-mark` | Dica | Todo ícone de dica |
 | `circle-alert` | Alerta | Só em vermelho, em alerta e erro |
+| `list-checks` | Requisitos | Título do cartão "O que o pacote precisa ter" |
+| `folder` | Pacote e arquivo | Título do cartão "Turma e arquivo", arquivo enviado |
 
 ## Tabelas
 
@@ -333,10 +362,31 @@ depois.
 No exercício treinado a matriz é só consulta, com a lupa e sem lápis e lixeira. Pronto para
 conceitos, o cartão é o estado vazio com os blocos e um único "Extrair conceitos".
 
+### Importar dados
+
+1. **Cabeçalho.** O título "Importar dados" e o indicador de passos à direita (Turma e arquivo,
+   Processar, Conferir), sem frase de descrição.
+2. **Passo 1**, em duas colunas com a mesma altura em todos os estados.
+   - **Turma e arquivo**, com as pessoas e a pasta no título, a escolha da turma, que vem escolhida
+     quando se chega pela página dela, e a caixa do pacote, que só abre com a turma escolhida. O
+     rodapé traz a frase de apoio, Cancelar e Processar dados, que só habilita com os requisitos
+     atendidos. Enquanto processa, o botão diz Processando e o formulário trava.
+   - **O que o pacote precisa ter**, com a lista de requisitos (tabela de eventos, código dos
+     alunos, formato ProgSnap2 v6 e até 512 MB) e um rodapé com o estado ("Envie o pacote para
+     conferir os requisitos", "Tudo certo para processar", "Falta 1 requisito").
+3. **Resultado.** A mensagem de sucesso com a linha de fatos (alunos, problemas, exercícios,
+   submissões), Importar outros dados e Ver a turma como primário. Abaixo, a tabela de exercícios da
+   Turma, com o próximo passo de cada um, e o cartão O que foi importado, com turma, arquivo, tabela
+   usada e o que o sistema ajustou.
+
+A recusa não grava nada. O requisito que faltou ganha o xis vermelho, e a caixa do pacote diz o que
+fazer.
+
 ## Versões
 
 | Versão | Data | O que mudou |
 |---|---|---|
+| 5 | 30/09/2026 | Importar dados. Requisitos do pacote no lugar das caixas vazias, caixa do pacote de altura fixa, ações no rodapé do cartão e o fim da barra fixa, passos em preto e cinza, resultado com a tabela de exercícios da Turma e os ajustes numa lista neutra |
 | 4 | 30/09/2026 | Conceitos. Matriz problema × conceito com abas, origem do conceito com as soluções em abas de código, marcador `GeneratedByLLM` com as estrelas, dica com ?, vírgula na linha de fatos, estágios da extração em azul e a fonte mono só em bloco de código |
 | 3 | 29/09/2026 | Turmas e Turma. Tabela de exercícios com próximo passo, alunos da turma com busca e paginação de 10, execuções por dia, atividade recente com treinos e extrações, e os ícones de Conceitos, Problemas e Treinado nas etiquetas de situação |
 | 2 | 29/09/2026 | A organização da Análise. Linha de fatos, abas com Conceitos primeiro, curva de aprendizagem com dois eixos, cabeçalho de tabela com 32px e rótulo truncado, histograma da tabela sem eixo, menu que recolhe em tela estreita |
@@ -349,4 +399,5 @@ anteriores. As rodadas que levaram à versão 1 estão nos artifacts
 [rodada 3](https://claude.ai/artifact/CQZsNUAHJXBUWXW9sZdW1R). A da versão 2 está em
 [organização da Análise](https://claude.ai/artifact/VZeKyWCQVGZDrcsmDyqYUX), e a da versão 3 em
 [Turmas e Turma](https://claude.ai/artifact/2AsBMzpMUcaQQPEcfwdU8q), e a da versão 4 em
-[Conceitos](https://claude.ai/artifact/TskaC5xtKnyTjKiq3FwtGo).
+[Conceitos](https://claude.ai/artifact/TskaC5xtKnyTjKiq3FwtGo), e a da versão 5 em
+[Importar dados](https://claude.ai/artifact/Aeka6LFAfDiisWLk56Axjs).

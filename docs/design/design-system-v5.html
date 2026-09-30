@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>EDM·KT Design System v4</title>
+<title>EDM·KT Design System v5</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700&display=swap">
@@ -305,6 +305,59 @@ body { margin: 0; background: var(--doc-bg); color: var(--doc-ink); font-family:
 .dlg-static__h { margin: 0; font-weight: 600; display: flex; align-items: center; gap: 2px; }
 .analysis-table td.desc { color: var(--color-text-body); line-height: 1.45; }
 
+/* As peças da versão 5, passos, requisitos, caixa do pacote e rodapé com as ações */
+.steps { list-style: none; margin: 0; padding: 0; display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--color-text-muted); flex-wrap: wrap; }
+.steps li { display: inline-flex; align-items: center; gap: 8px; }
+.steps__n { width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--color-control-border); font: 600 12px var(--font-data); color: var(--color-text-secondary); }
+.steps li.is-current { color: var(--color-text); font-weight: 600; }
+.steps li.is-current .steps__n { background: var(--color-text); border-color: var(--color-text); color: #fff; }
+.steps li.is-done { color: var(--color-text-body); }
+.steps li.is-done .steps__n { border-color: var(--color-text); color: var(--color-text); }
+.steps__line { width: 36px; height: 1px; background: var(--color-control-border); }
+.card__title--icon { display: inline-flex; align-items: center; gap: 8px; }
+.card__title--icon svg { color: var(--color-text-secondary); }
+.title-icons { display: inline-flex; gap: 4px; color: var(--color-text-secondary); }
+.reqs { list-style: none; margin: 0; padding: 0 16px; display: grid; background: var(--color-surface); }
+.req { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--color-rule); }
+.req:last-child { border-bottom: 0; }
+.req > div { display: grid; gap: 2px; font-size: 13px; }
+.req > div span { color: var(--color-text-secondary); font-size: 12.5px; word-break: break-all; }
+.req__mark { width: 20px; height: 20px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--color-control-border); margin-top: 1px; }
+.req__mark--ok { background: var(--color-text); border-color: var(--color-text); color: #fff; }
+.req__mark--bad { background: var(--color-danger); border-color: var(--color-danger); color: #fff; }
+.req.is-bad b { color: var(--color-danger-text); }
+.pkg { height: 104px; }
+.pkg--drop { border: 1px dashed var(--color-control-border); background: var(--color-surface); display: flex; align-items: center; justify-content: center; gap: 14px; color: var(--color-text-body); }
+.pkg--drop > div { display: grid; gap: 2px; }
+.pkg--drop span { color: var(--color-text-secondary); }
+.pkg--file { border: 1px solid var(--color-rule); background: var(--color-surface-subtle); display: grid; align-content: start; gap: 8px; padding: 10px 12px; }
+.file-row { display: flex; align-items: center; gap: 10px; height: 32px; }
+.file-row > svg { color: var(--color-text-secondary); }
+.pkg__status { display: inline-flex; align-items: flex-start; gap: 6px; font-size: 13px; color: var(--color-text-body); }
+.pkg__status svg { margin-top: 2px; flex-shrink: 0; }
+.pkg__status--bad svg { color: var(--color-danger); }
+.pkg__status--bad b { color: var(--color-danger-text); }
+.form { gap: 16px; padding: 16px; }
+.field { display: grid; gap: 6px; }
+.field > span { font-size: 12px; font-weight: 600; color: var(--color-text-body); }
+.field select { height: 36px; padding: 0 10px; border: 1px solid var(--color-control-border); background: var(--color-surface); font: 13px var(--font-sans); color: var(--color-text); }
+.field small { font-size: 12px; color: var(--color-text-muted); }
+.form-foot { gap: 8px; height: 60px; }
+.form-foot > span:first-child { font-size: 12px; color: var(--color-text-muted); max-width: 300px; }
+.req-foot { gap: 6px; height: 60px; color: var(--color-text-body); font-size: 12.5px; }
+.split--imp { grid-template-columns: minmax(0, 1fr) 420px; align-items: stretch; }
+.split--imp > .card { height: 100%; }
+.split--imp > .card > .card__body { flex: 1; }
+.kv-h { margin: 6px 0 0; font-weight: 600; font-size: 13px; display: flex; align-items: center; gap: 2px; }
+.adjust { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.adjust li { display: grid; gap: 1px; font-size: 13px; }
+.adjust span { color: var(--color-text-secondary); font-size: 12.5px; }
+.success { display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: var(--color-surface); box-shadow: var(--shadow-card); flex-wrap: wrap; }
+.success > svg { color: var(--color-text); flex-shrink: 0; align-self: flex-start; margin-top: 2px; }
+.success > div { display: grid; gap: 2px; }
+.success .facts { margin: 0; }
+@media (max-width: 1000px) { .split--imp { grid-template-columns: minmax(0, 1fr); } }
+
 .histogram__bar.is-zero { background: var(--color-control-border); height: 1px; }
 /* O rótulo longo do cabeçalho trunca, e o texto inteiro aparece no hover */
 .th { display: inline-flex; align-items: center; justify-content: center; gap: 2px; max-width: 100%; vertical-align: middle; }
@@ -386,8 +439,8 @@ body { margin: 0; background: var(--doc-bg); color: var(--doc-ink); font-family:
 <div class="wrap">
   <header class="doc-head">
     <span class="eyebrow">EDM·KT · referência visual</span>
-    <h1>Design System v4</h1>
-    <div class="doc-meta"><span class="badge badge--neutral">Versão 4</span><span class="badge badge--neutral">29/09/2026</span><span class="badge badge--neutral">Especificação</span></div>
+    <h1>Design System v5</h1>
+    <div class="doc-meta"><span class="badge badge--neutral">Versão 5</span><span class="badge badge--neutral">29/09/2026</span><span class="badge badge--neutral">Especificação</span></div>
     <p>O desenho que o app deve seguir. As regras e o porquê estão em <code>docs/DESIGN.md</code> e <code>docs/DECISIONS.md</code>. Esta página mostra como cada peça fica. Os nomes de token são os planejados para o <code>tokens.css</code>, que ainda não foi migrado. Os números são da turma CSEDM Spring 2019, Assignment 439, modelo versão 5.</p>
     <nav class="toc" aria-label="Seções">
       <a href="#principios">Princípios</a><a href="#cor">Cor</a><a href="#tipografia">Tipografia</a><a href="#forma">Forma e espaço</a>
@@ -633,6 +686,41 @@ body { margin: 0; background: var(--doc-bg); color: var(--doc-ink); font-family:
         <p class="rule-text">A extração é feita pelo modelo de linguagem, então os estágios dela também ficam azuis, como os do treino.</p>
       </div>
     </div>
+    <div class="grid-2">
+      <div class="specimen">
+        <span class="specimen-title">Indicador de passos e título com ícone</span>
+        <ol class="steps" aria-label="Passos"><li class="is-done"><span class="steps__n"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></span>Turma e arquivo</li><li class="steps__line" aria-hidden="true"></li><li class="is-current"><span class="steps__n">2</span>Processar</li><li class="steps__line" aria-hidden="true"></li><li><span class="steps__n">3</span>Conferir</li></ol>
+        <article class="card"><header class="card__header"><h4 class="card__title card__title--icon"><span class="title-icons"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><path d="M16 3.128a4 4 0 0 1 0 7.744"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/></svg><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg></span>Turma e arquivo</h4></header><div class="card__body"><span class="t-support">Os ícones do título ficam juntos antes do texto e não se repetem nos rótulos dos campos.</span></div></article>
+        <p class="rule-text">O passo atual é preenchido de preto, o feito leva o visto e o que falta fica com contorno cinza. O título de cartão leva ícone quando o cartão reúne coisas que o app já representa por ícone, como turma e pacote.</p>
+      </div>
+      <div class="specimen">
+        <span class="specimen-title">Lista de requisitos</span>
+        <ul class="reqs">
+          <li class="req"><span class="req__mark"></span><div><b>Tabela de eventos</b><span>MainTable.csv, com as execuções dos alunos</span></div></li>
+          <li class="req"><span class="req__mark req__mark--ok"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></span><div><b>Formato ProgSnap2 v6</b><span>colunas obrigatórias presentes</span></div></li>
+          <li class="req is-bad"><span class="req__mark req__mark--bad"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></span><div><b>Código dos alunos</b><span>CodeStates.csv não veio no pacote</span></div></li>
+        </ul>
+        <p class="rule-text">Cada requisito é um PackageRequirement, com a marca vazia antes do envio, o visto preto quando atendido e o xis vermelho quando falta. O texto de apoio diz o que se espera e, depois do envio, o arquivo que atendeu.</p>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="specimen">
+        <span class="specimen-title">Caixa do pacote</span>
+        <div class="pkg pkg--drop"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 13v8"/><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="m8 17 4-4 4 4"/></svg><div><b>Arraste o arquivo .zip aqui</b><span>ou clique para escolher no computador</span></div></div>
+        <div class="pkg pkg--file"><div class="file-row"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg><span class="num">CSEDM_Spring2019.zip</span><span class="t-support">86,4 MB</span><span class="head__spacer"></span><button class="btn btn--secondary btn--compact" type="button">Trocar</button></div><span class="pkg__status"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Pacote conferido, pronto para processar.</span></div>
+        <div class="pkg pkg--file"><div class="file-row"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg><span class="num">CSEDM_Spring2019.zip</span><span class="t-support">86,4 MB</span><span class="head__spacer"></span><button class="btn btn--secondary btn--compact" type="button">Trocar</button></div><span class="pkg__status pkg__status--bad"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg><span><b>O pacote não tem CodeStates.csv.</b> Confira se o .zip foi exportado completo e envie de novo.</span></span></div>
+        <p class="rule-text">A caixa tem 104px nos três estados, para a tela não pular entre os passos. A área de soltar é horizontal, e depois do envio a mesma caixa mostra o arquivo com a pasta, o Trocar e uma linha de estado.</p>
+      </div>
+      <div class="specimen">
+        <span class="specimen-title">Rodapé com as ações e o que o sistema ajustou</span>
+        <article class="card"><div class="card__body"><span class="t-support">O conteúdo do formulário</span></div>
+          <footer class="card__footer form-foot"><span>Processar grava os dados na turma escolhida.</span><span class="head__spacer"></span><button class="btn btn--secondary" type="button">Cancelar</button><button class="btn btn--primary" type="button">Processar dados</button></footer></article>
+        <p class="kv-h">O que o sistema ajustou<span class="info-hint" title="Ajustes não impedem a importação. Eles registram o que o sistema corrigiu sozinho."><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg></span></p>
+        <ul class="adjust"><li><b>Compilações repetidas descartadas</b><span>eventos de compilação duplicados</span></li><li><b>Eventos sem código descartados</b><span>execuções sem CodeState correspondente</span></li></ul>
+        <p class="rule-text">As ações de um formulário ficam no rodapé do cartão, separadas por um fio, com a frase de apoio à esquerda. O app não tem barra fixa presa à janela. Os ajustes da importação são uma lista neutra, sem o ! vermelho, que fica para a recusa.</p>
+      </div>
+    </div>
   </section>
 
   <section class="section" id="icones">
@@ -647,7 +735,7 @@ body { margin: 0; background: var(--doc-bg); color: var(--doc-ink); font-family:
         <tr><td><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 4h2a2 2 0 0 1 2 2v2"/><path d="M21.34 15.664a1 1 0 1 0-3.004-3.004l-5.01 5.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/><path d="M8 22H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></td><td><code>clipboard-pen</code></td><td>Exercício</td><td>Menu e aba Exercícios</td></tr>
         <tr><td><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><path d="M16 3.128a4 4 0 0 1 0 7.744"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/></svg></td><td><code>users</code></td><td>Turmas e alunos</td><td>Menu, aba Alunos, evento de turma criada</td></tr>
         <tr><td><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m17 8-5-5-5 5"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/></svg></td><td><code>upload</code></td><td>Importar dados</td><td>Botão do cabeçalho da turma</td></tr>
-      <tr><td><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/><path d="M20 2v4"/><path d="M22 4h-4"/><circle cx="4" cy="20" r="2"/></svg></td><td><code>sparkles</code></td><td>O modelo de linguagem</td><td>Marcador GeneratedByLLM, no nome do conceito e na descrição do problema</td></tr><tr><td><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="m9 15 2 2 4-4"/></svg></td><td><code>file-check</code></td><td>Solução correta</td><td>Abas das soluções no diálogo da origem do conceito</td></tr><tr><td><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg></td><td><code>search</code></td><td>Inspecionar</td><td>Lupa da linha do conceito e campo de busca</td></tr><tr><td><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg></td><td><code>circle-question-mark</code></td><td>Dica</td><td>Todo ícone de dica, com o texto no hover</td></tr><tr><td><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg></td><td><code>circle-alert</code></td><td>Alerta</td><td>Só em vermelho, em alerta e erro</td></tr></tbody>
+      <tr><td><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/><path d="M20 2v4"/><path d="M22 4h-4"/><circle cx="4" cy="20" r="2"/></svg></td><td><code>sparkles</code></td><td>O modelo de linguagem</td><td>Marcador GeneratedByLLM, no nome do conceito e na descrição do problema</td></tr><tr><td><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="m9 15 2 2 4-4"/></svg></td><td><code>file-check</code></td><td>Solução correta</td><td>Abas das soluções no diálogo da origem do conceito</td></tr><tr><td><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg></td><td><code>search</code></td><td>Inspecionar</td><td>Lupa da linha do conceito e campo de busca</td></tr><tr><td><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg></td><td><code>circle-question-mark</code></td><td>Dica</td><td>Todo ícone de dica, com o texto no hover</td></tr><tr><td><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg></td><td><code>circle-alert</code></td><td>Alerta</td><td>Só em vermelho, em alerta e erro</td></tr><tr><td><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 5h8"/><path d="M13 12h8"/><path d="M13 19h8"/><path d="m3 17 2 2 4-4"/><path d="m3 7 2 2 4-4"/></svg></td><td><code>list-checks</code></td><td>Requisitos</td><td>Título do cartão O que o pacote precisa ter</td></tr><tr><td><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg></td><td><code>folder</code></td><td>Pacote e arquivo</td><td>Título do cartão Turma e arquivo, arquivo enviado</td></tr></tbody>
     </table>
   </section>
 
@@ -677,7 +765,7 @@ body { margin: 0; background: var(--doc-bg); color: var(--doc-ink); font-family:
   </section>
 
   <section class="section" id="paginas">
-    <header><h2>Organização das páginas</h2><p>Análise, Turmas, Turma e Conceitos estão organizadas. Importar dados entra numa próxima versão.</p></header>
+    <header><h2>Organização das páginas</h2><p>As cinco telas estão organizadas, Análise, Turmas, Turma, Conceitos e Importar dados.</p></header>
     <div class="specimen">
       <span class="specimen-title">Análise</span>
       <nav class="crumbs" aria-label="Caminho"><a href="#paginas">Turmas</a><i>›</i><a href="#paginas">CSEDM Spring 2019</a><i>›</i><span>Assignment 439</span><i>›</i><span aria-current="page">Análise</span></nav>
@@ -783,6 +871,41 @@ body { margin: 0; background: var(--doc-bg); color: var(--doc-ink); font-family:
     </div>
 
     <div class="specimen">
+      <span class="specimen-title">Importar dados, passo 1</span>
+      <div class="page-head"><div class="page-head__row"><p class="t-page-title">Importar dados</p><span class="head__spacer"></span><ol class="steps" aria-label="Passos"><li class="is-current"><span class="steps__n">1</span>Turma e arquivo</li><li class="steps__line" aria-hidden="true"></li><li><span class="steps__n">2</span>Processar</li><li class="steps__line" aria-hidden="true"></li><li><span class="steps__n">3</span>Conferir</li></ol></div></div>
+      <div class="split split--imp">
+        <article class="card"><header class="card__header"><h4 class="card__title card__title--icon"><span class="title-icons"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><path d="M16 3.128a4 4 0 0 1 0 7.744"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/></svg><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg></span>Turma e arquivo</h4></header>
+          <div class="card__body form">
+            <label class="field"><span>Turma</span><select><option>CSEDM Spring 2019</option></select><small>Não encontrou a turma? Crie em <a class="link" href="#paginas">Nova turma</a>.</small></label>
+            <div class="field"><span>Pacote</span><div class="pkg pkg--file"><div class="file-row"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg><span class="num">CSEDM_Spring2019.zip</span><span class="t-support">86,4 MB</span><span class="head__spacer"></span><button class="btn btn--secondary btn--compact" type="button">Trocar</button></div><span class="pkg__status"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Pacote conferido, pronto para processar.</span></div></div>
+          </div>
+          <footer class="card__footer form-foot"><span>Processar grava os dados na turma escolhida e leva de alguns segundos a um minuto.</span><span class="head__spacer"></span><button class="btn btn--secondary" type="button">Cancelar</button><button class="btn btn--primary" type="button">Processar dados</button></footer></article>
+        <article class="card"><header class="card__header"><h4 class="card__title card__title--icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 5h8"/><path d="M13 12h8"/><path d="M13 19h8"/><path d="m3 17 2 2 4-4"/><path d="m3 7 2 2 4-4"/></svg>O que o pacote precisa ter</h4></header>
+          <div class="card__body"><ul class="reqs">
+            <li class="req"><span class="req__mark req__mark--ok"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></span><div><b>Tabela de eventos</b><span class="num">Release/Train/MainTable.csv</span></div></li>
+            <li class="req"><span class="req__mark req__mark--ok"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></span><div><b>Código dos alunos</b><span class="num">Release/Train/Data/CodeStates/CodeStates.csv</span></div></li>
+            <li class="req"><span class="req__mark req__mark--ok"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></span><div><b>Formato ProgSnap2 v6</b><span>colunas obrigatórias presentes</span></div></li>
+            <li class="req"><span class="req__mark req__mark--ok"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></span><div><b>Até 512 MB</b><span class="num">86,4 MB</span></div></li>
+          </ul></div>
+          <footer class="card__footer req-foot"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Tudo certo para processar.</footer></article>
+      </div>
+      <ul class="page-rules">
+        <li>O formulário fica à esquerda e os requisitos à direita, os dois com a mesma altura em todos os estados, cada um com o seu rodapé.</li>
+        <li>A turma vem escolhida quando se chega pela página dela. A área de soltar só abre com a turma escolhida, e Processar dados só habilita com os requisitos atendidos.</li>
+        <li>O processamento é uma requisição só, sem estágios. Enquanto roda, o botão diz Processando e o formulário trava.</li>
+      </ul>
+    </div>
+
+    <div class="specimen">
+      <span class="specimen-title">Importar dados, resultado</span>
+      <div class="success"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg><div><b>CSEDM_Spring2019.zip importado em CSEDM Spring 2019.</b><p class="facts"><span><span class="num">413</span> alunos</span><span><span class="num">50</span> problemas</span><span><span class="num">5</span> exercícios</span><span><span class="num">131.943</span> submissões</span></p><span class="t-support">Os 5 exercícios estão prontos para a extração de conceitos.</span></div><span class="head__spacer"></span><button class="btn btn--secondary" type="button">Importar outros dados</button><button class="btn btn--primary" type="button">Ver a turma</button></div>
+      <ul class="page-rules">
+        <li>Abaixo da mensagem vem a tabela de exercícios da Turma, com o próximo passo de cada um, e o cartão O que foi importado, com turma, arquivo, tabela usada e o que o sistema ajustou.</li>
+        <li>A recusa não grava nada, marca o requisito que faltou com o xis vermelho e explica na caixa do pacote o que fazer.</li>
+      </ul>
+    </div>
+
+    <div class="specimen">
       <span class="specimen-title">Tela estreita</span>
       <div class="phone"><div class="topbar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16"/><path d="M4 12h16"/><path d="M4 19h16"/></svg><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M22 10v6"/><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/></svg></div><div class="phone__main"><nav class="crumbs"><a href="#paginas">Turmas</a><i>›</i><span aria-current="page">Análise</span></nav><div class="page-head__row"><p class="t-page-title">Assignment 439</p><span class="badge badge--model"><span class="badge__icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 18V5"/><path d="M15 13a4.17 4.17 0 0 1-3-4 4.17 4.17 0 0 1-3 4"/><path d="M17.598 6.5A3 3 0 1 0 12 5a3 3 0 1 0-5.598 1.5"/><path d="M17.997 5.125a4 4 0 0 1 2.526 5.77"/><path d="M18 18a4 4 0 0 0 2-7.464"/><path d="M19.967 17.483A4 4 0 1 1 12 18a4 4 0 1 1-7.967-.517"/><path d="M6 18a4 4 0 0 1-2-7.464"/><path d="M6.003 5.125a4 4 0 0 0-2.526 5.77"/></svg></span>Treinado</span></div><div class="card" style="height:120px"></div></div></div>
       <p class="rule-text">Abaixo de 900px o menu recolhe atrás do botão da barra superior e abre por cima do conteúdo, com o fundo escurecido. A tabela rola de lado dentro do cartão.</p>
@@ -793,7 +916,7 @@ body { margin: 0; background: var(--doc-bg); color: var(--doc-ink); font-family:
     <header><h2>Versões</h2></header>
     <table class="spec-table versions">
       <thead><tr><th>Versão</th><th>Data</th><th>O que mudou</th></tr></thead>
-      <tbody><tr><td>4</td><td class="num">30/09/2026</td><td>Conceitos. Matriz problema × conceito com abas, origem do conceito com as soluções em abas de código, marcador GeneratedByLLM com as estrelas, dica com ?, vírgula na linha de fatos, estágios da extração em azul e a fonte mono só em bloco de código.</td></tr><tr><td>3</td><td class="num">29/09/2026</td><td>Turmas e Turma. Tabela de exercícios com próximo passo, alunos da turma com busca e paginação de 10, execuções por dia, atividade recente com treinos e extrações, e os ícones de Conceitos, Problemas e Treinado nas etiquetas de situação.</td></tr><tr><td>2</td><td class="num">29/09/2026</td><td>A organização da Análise. Linha de fatos, abas com Conceitos primeiro, curva de aprendizagem com dois eixos, cabeçalho de tabela com 32px e rótulo truncado, histograma da tabela sem eixo, menu que recolhe em tela estreita.</td></tr><tr><td>1</td><td class="num">29/09/2026</td><td>A linguagem formal. Interface em cinza, azul só no modelo, raio 0, Public Sans na interface e Arial nos dados, componentes no estilo Carbon.</td></tr></tbody>
+      <tbody><tr><td>5</td><td class="num">30/09/2026</td><td>Importar dados. Requisitos do pacote no lugar das caixas vazias, caixa do pacote de altura fixa, ações no rodapé do cartão e o fim da barra fixa, passos em preto e cinza, resultado com a tabela de exercícios da Turma e ajustes numa lista neutra.</td></tr><tr><td>4</td><td class="num">30/09/2026</td><td>Conceitos. Matriz problema × conceito com abas, origem do conceito com as soluções em abas de código, marcador GeneratedByLLM com as estrelas, dica com ?, vírgula na linha de fatos, estágios da extração em azul e a fonte mono só em bloco de código.</td></tr><tr><td>3</td><td class="num">29/09/2026</td><td>Turmas e Turma. Tabela de exercícios com próximo passo, alunos da turma com busca e paginação de 10, execuções por dia, atividade recente com treinos e extrações, e os ícones de Conceitos, Problemas e Treinado nas etiquetas de situação.</td></tr><tr><td>2</td><td class="num">29/09/2026</td><td>A organização da Análise. Linha de fatos, abas com Conceitos primeiro, curva de aprendizagem com dois eixos, cabeçalho de tabela com 32px e rótulo truncado, histograma da tabela sem eixo, menu que recolhe em tela estreita.</td></tr><tr><td>1</td><td class="num">29/09/2026</td><td>A linguagem formal. Interface em cinza, azul só no modelo, raio 0, Public Sans na interface e Arial nos dados, componentes no estilo Carbon.</td></tr></tbody>
     </table>
   </section>
 </div>

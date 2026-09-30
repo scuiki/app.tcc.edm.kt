@@ -134,6 +134,12 @@ modelo, exceto o domínio médio dos exercícios treinados.
 | `SampledSolution` | Uma das até cinco soluções corretas que o KCGen-KT sorteou para um problema, a primeira de um aluno, uma por faixa de tentativas até acertar. Gravada na extração, pelo `code_snapshot_id` | — |
 | origem do conceito | O diálogo com as soluções sorteadas de cada problema em que o conceito aparece | — |
 
+## Importação
+
+| Nome no código | O que é | Nome antigo |
+|---|---|---|
+| `PackageRequirement` | Um requisito do pacote ProgSnap2 (tabela de eventos, código dos alunos, formato ProgSnap2 v6, até 512 MB), conferido depois do envio, atendido ou não | "O que veio no pacote" |
+
 ## Pipeline de dados
 
 | Nome no código | O que é | Nome antigo |

@@ -360,7 +360,7 @@ navegador o fechar mesmo assim (o Chrome fecha no segundo Esc) e a aba pede conf
 sair. A tela mostra os três estágios que o job informa, com a contagem do estágio atual.
 
 **A barra de ação e o `OutcomeMessage` subiram para `components/`.** Uma funcionalidade não importa
-os componentes de outra, e a importação e os conceitos precisavam dos dois.
+os componentes de outra, e a importação e os conceitos precisavam dos dois. Na versão 5 do design a barra de ação sai do app, e a migração remove o `PageActionBar`.
 
 **Uma recarga que falha mantém o que já estava na tela.** O `QueryStates` só mostra o erro quando
 ainda não há dado; um soluço numa recarga em segundo plano não apaga uma lista que estava certa.
@@ -568,4 +568,32 @@ editado.
 **Aprovar conceitos fica na faixa das abas.** A barra fixa no rodapé era o único lugar do app com uma
 ação presa à janela. Ao lado de Novo conceito, na aba da matriz, o Aprovar fica junto do que ele
 aprova, e desabilitado enquanto houver problema sem conceito.
+
+**O app não tem barra fixa presa à janela.** A barra de ação no rodapé existia na importação e nos
+conceitos. Ela separava os botões do que eles enviam e ficava sobre o conteúdo. As ações de um
+formulário passam para o rodapé do cartão, junto dos campos, e as da tela para o cabeçalho ou a faixa
+das abas.
+
+**Os requisitos do pacote ocupam a coluna das caixas vazias.** Antes do processamento, o resumo dos
+dados mostrava quatro caixas cinzas sem número, que não diziam nada. A coluna passa a listar o que o
+pacote precisa ter, e depois do envio cada requisito ganha o visto ou o xis. A lista "O que veio no
+pacote" deixa de existir como bloco à parte, porque o requisito já diz o arquivo que o atendeu.
+
+**A altura da importação não muda entre os passos.** A caixa do pacote tem 104px na área de soltar,
+com o arquivo e na recusa, e os dois cartões do passo 1 têm sempre a mesma altura, cada um com o seu
+rodapé. Uma caixa de processamento que aparecia e sumia e a mensagem de recusa longa faziam a tela
+pular a cada passo.
+
+**O resultado da importação reusa a tabela de exercícios da Turma.** Os quatro números grandes viram
+a linha de fatos, e a tabela Exercício | Situação vira a mesma tabela da Turma, com período, alunos,
+execuções, taxa de acerto e o próximo passo. O professor vê o que foi importado no formato em que vai
+encontrar depois, e a tela não ganha um componente só dela.
+
+**Os ajustes da importação ficam neutros.** Compilações repetidas descartadas e poucos alunos num
+exercício não impedem a gravação, e o app não tem âmbar para um meio-termo. Uma lista neutra, com
+título e detalhe, registra o que o sistema corrigiu sozinho, e o vermelho fica para a recusa.
+
+**Os ícones do cartão ficam só no título.** "Turma e arquivo" leva as pessoas e a pasta juntas antes
+do texto, e os rótulos dos campos logo abaixo ficam sem ícone, para o mesmo sinal não aparecer duas
+vezes seguidas. A pasta é a simples, e a pasta compactada foi testada e descartada.
 
