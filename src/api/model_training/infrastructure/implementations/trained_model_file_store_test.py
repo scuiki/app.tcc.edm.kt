@@ -90,7 +90,7 @@ def test_save_writes_blob_and_sidecars(tmp_path, tiny_model, tiny_vocab, tiny_co
         assert meta[key] == tiny_config[key]
     assert meta["node_count"] == tiny_vocab["node_count"]
     assert meta["path_count"] == tiny_vocab["path_count"]
-    assert meta["format_version"] == TRAINED_MODEL_FORMAT_VERSION
+    assert meta["format_version"] == TRAINED_MODEL_FORMAT_VERSION == 2
     # input_dim/output_dim derivados do objeto vivo, no CodeDKTModel real input_dim != output_dim.
     assert meta["input_dim"] == tiny_model.input_dim
     assert meta["output_dim"] == tiny_model.fc.out_features == meta["n_problems"]
@@ -174,13 +174,12 @@ def test_reload_contract_no_size_mismatch(tmp_path):
         output_dim=M,
         node_count=4,
         path_count=3,
-        dropout=0.1,
         R=4,
         node_embed_dim=6,
         path_embed_dim=6,
     )
     vocab = {"token_to_idx": {}, "path_to_idx": {}, "node_count": 4, "path_count": 3}
-    config = {"hidden_dim": 8, "dropout": 0.1, "R": 4, "node_embed_dim": 6, "path_embed_dim": 6}
+    config = {"hidden_dim": 8, "R": 4, "node_embed_dim": 6, "path_embed_dim": 6}
 
     store = ModelVersionFiles(tmp_path / "data")
     result = store.write(
@@ -197,7 +196,8 @@ def test_reload_contract_no_size_mismatch(tmp_path):
         assert torch.equal(loaded.state_dict()[name], tensor)
 
 
-@pytest.mark.parametrize("format_version", [None, TRAINED_MODEL_FORMAT_VERSION - 1])
+# O 1 é o formato de antes do W_0, cujos pesos a rede de agora não carrega
+@pytest.mark.parametrize("format_version", [None, 1])
 def test_an_artifact_of_another_format_is_refused_before_reading_it(
     tmp_path, tiny_model, tiny_vocab, tiny_config, format_version
 ):
@@ -322,10 +322,10 @@ def test_reader_and_writer_agree_on_the_root(tmp_path):
     M = 2
     model = CodeDKTModel(
         input_dim=2 * M, hidden_dim=8, output_dim=M, node_count=4, path_count=3,
-        dropout=0.1, R=4, node_embed_dim=6, path_embed_dim=6,
+        R=4, node_embed_dim=6, path_embed_dim=6,
     )
     vocab = {"token_to_idx": {}, "path_to_idx": {}, "node_count": 4, "path_count": 3}
-    config = {"hidden_dim": 8, "dropout": 0.1, "R": 4, "node_embed_dim": 6, "path_embed_dim": 6}
+    config = {"hidden_dim": 8, "R": 4, "node_embed_dim": 6, "path_embed_dim": 6}
 
     data_root = tmp_path / "data"
     base = data_root / "turma-x" / "models"

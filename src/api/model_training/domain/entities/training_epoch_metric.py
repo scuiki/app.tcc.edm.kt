@@ -1,4 +1,4 @@
-# TrainingEpochMetric, a loss de uma época; a curva de loss de um treino é a lista delas.
+# A perda média por aluno de uma época, na mesma escala para qualquer turma; a curva é a lista.
 
 from __future__ import annotations
 

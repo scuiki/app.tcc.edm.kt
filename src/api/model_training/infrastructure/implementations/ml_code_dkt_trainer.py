@@ -54,7 +54,7 @@ class MlCodeDktTrainer:
         )
         java_parse_rate = compute_java_parse_rate(list(code_by_snapshot.values()), config)
 
-        # Não estrito na GPU, o treino confia na banda de ±3pp em vez do determinismo bit a bit.
+        # Não estrito na GPU, só com o cuDNN determinístico, sem o custo do modo estrito
         seed_all_random_generators(config["seed"], strict=False)
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 

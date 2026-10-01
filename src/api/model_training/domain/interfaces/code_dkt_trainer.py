@@ -15,5 +15,5 @@ class ICodeDktTrainer(Protocol):
     def train(
         self, dataset: TrainingDataset, on_epoch: Callable[[int, float], None]
     ) -> TrainingOutcome:
-        # `on_epoch(época, loss_média)` é chamado ao fim de cada época.
+        # `on_epoch(época, perda média por aluno)` é chamado ao fim de cada época.
         ...

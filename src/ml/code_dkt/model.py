@@ -1,4 +1,4 @@
-# Rede do Code-DKT (Shi et al. 2022), LSTM + atenção code2vec sobre AST paths; TCC 1, congelada.
+# Rede do Code-DKT (Shi et al. 2022), LSTM + atenção code2vec sobre AST paths, com o W_0 do paper.
 
 from __future__ import annotations
 
@@ -18,7 +18,6 @@ class CodeDKTModel(nn.Module):
         node_count: int,
         path_count: int,
         n_layers: int = 1,
-        dropout: float = 0.0,
         R: int = 100,
         node_embed_dim: int = 100,
         path_embed_dim: int = 100,
@@ -40,6 +39,8 @@ class CodeDKTModel(nn.Module):
         self.path_transformation_layer = nn.Linear(full_dim, full_dim)
         # Softmax dim=2 (sobre R paths) segue o paper; o repo oficial usa dim=1 (sequência).
         self.attention_layer = nn.Linear(full_dim, 1)
+        # O W_0 leva a média ponderada dos paths ao vetor de código z, sem viés como na equação
+        self.code_vector_layer = nn.Linear(full_dim, full_dim, bias=False)
 
         # LSTM, input = concat(x_t, code_vector) = 2M + (2M+300) = 340
         self.rnn = nn.LSTM(
@@ -48,7 +49,6 @@ class CodeDKTModel(nn.Module):
             num_layers=n_layers,
             batch_first=True,
         )
-        self.dropout = nn.Dropout(p=dropout)
         self.fc = nn.Linear(hidden_dim, output_dim)
 
     def forward(self, x: Tensor) -> Tensor:
@@ -83,11 +83,11 @@ class CodeDKTModel(nn.Module):
         attn_weights = torch.softmax(
             self.attention_layer(transformed), dim=2
         )                                                              # (B, L, R, 1)
-        code_vectors = (full_embed * attn_weights).sum(dim=2)         # (B, L, 320)
+        weighted_paths = (full_embed * attn_weights).sum(dim=2)       # (B, L, 320)
+        code_vectors = self.code_vector_layer(weighted_paths)         # z = W_0 (Σ α_i e_i)
 
         # Input do LSTM é concat(x_t, code_vector), Shi et al. (2022), Seção 3
         rnn_input = torch.cat([rnn_first_part, code_vectors], dim=2)  # (B, L, 340)
 
         out, _ = self.rnn(rnn_input)                                  # (B, L, hidden)
-        out = self.dropout(out)
         return torch.sigmoid(self.fc(out))                            # (B, L, M)

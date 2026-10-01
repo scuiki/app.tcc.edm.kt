@@ -303,14 +303,15 @@ first-attempt AUC da validação em menos de um ponto (notebook 06, célula 24),
 
 Com o R=100 da linha 1, o lote de 128 não cabe nos 6 GB da GPU do app, uma RTX 4050 que também
 alimenta a tela. O passo de treino estourou a memória no `backward`. O app então passa cada lote de
-128 em pedaços de 64 alunos, o `batch_chunk_size`, soma o gradiente dos pedaços e só depois corta e
-dá o passo do Adam, um por lote, como antes (critério 5). O gradiente esperado é o mesmo do lote
-inteiro, porque o Code-DKT não tem camada que misture os alunos de um lote, como o BatchNorm, e cada
-pedaço pesa pela fração dele nos eventos da perda. A numérica muda, porque a soma em float depende da
-ordem e o dropout sorteia as máscaras a cada pedaço. A inferência e a avaliação também vão em pedaços
-de 64 alunos, o `INFERENCE_CHUNK_SIZE`, e nenhum forward passa do pico do treino. Outra saída mantinha
-o lote inteiro com a numérica idêntica, mudando só a configuração do alocador do PyTorch, mas deixava
-cerca de 800 MiB livres na GPU que o desktop também usa.
+128 em pedaços de 64 alunos, o `batch_chunk_size`, soma o gradiente dos pedaços e só depois dá o
+passo do Adam, um por lote, como antes (critério 5). O gradiente esperado é o mesmo do lote inteiro,
+porque o Code-DKT não tem camada que misture os alunos de um lote, como o BatchNorm, e a perda da
+linha 16 soma a média de cada aluno, então a soma das perdas dos pedaços é a perda do lote. A
+numérica muda, porque a soma em float depende da ordem e o dropout sorteia as máscaras a cada
+pedaço. A inferência e a avaliação também vão em pedaços de 64 alunos, o `INFERENCE_CHUNK_SIZE`, e
+nenhum forward passa do pico do treino. Outra saída mantinha o lote inteiro com a numérica idêntica,
+mudando só a configuração do alocador do PyTorch, mas deixava cerca de 800 MiB livres na GPU que o
+desktop também usa.
 
 **15. Corte de gradiente.** O paper não fala de corte. O DKT corta o gradiente acima de um limiar que
 não informa (Piech et al., 2015, subseção Optimization). O repositório não corta
@@ -429,8 +430,8 @@ para mostrar ao professor o domínio de cada aluno, e isso não está no paper.
 | 3 | Decidida em 30/09/2026, implementada em 01/10/2026 |
 | 4 | Decidida em 30/09/2026, sem mudança no código |
 | 5 | Decidida em 30/09/2026, sem mudança no código |
-| 6 | Decidida em 30/09/2026, não implementada |
-| 7 | Decidida em 30/09/2026, não implementada |
+| 6 | Decidida em 30/09/2026, implementada em 01/10/2026 |
+| 7 | Decidida em 30/09/2026, implementada em 01/10/2026 |
 | 8 | Decidida em 30/09/2026, sem mudança no código |
 | 9 | Decidida em 30/09/2026, implementada em 01/10/2026. No A439 entram os 386 alunos com `Run.Program` |
 | 10 | Decidida em 30/09/2026, sem mudança no código |
@@ -438,9 +439,9 @@ para mostrar ao professor o domínio de cada aluno, e isso não está no paper.
 | 12 | Decidida em 01/10/2026, sem mudança no código |
 | 13 | Decidida em 01/10/2026, implementada em 01/10/2026. A importação preserva a ordem do arquivo, conferida por teste, e no A439 o app separa os mesmos 78 alunos de teste do procedimento do repositório |
 | 14 | Decidida em 01/10/2026, sem mudança no hidden nem no lote. O lote em pedaços de 64, decisão do app pelo critério 5, foi implementado em 01/10/2026 |
-| 15 | Decidida em 01/10/2026, não implementada |
-| 16 | Decidida em 01/10/2026, não implementada |
-| 17 | Decidida em 30/09/2026, não implementada |
+| 15 | Decidida em 01/10/2026, implementada em 01/10/2026 |
+| 16 | Decidida em 01/10/2026, implementada em 01/10/2026 |
+| 17 | Decidida em 30/09/2026, implementada em 01/10/2026. Duas execuções da regressão do A439 com a seed 42, em processos diferentes, deram o mesmo first-attempt AUC na 4ª casa, e a repetição das dez seeds ainda vai ser medida |
 | 18 | Decidida em 30/09/2026, não implementada |
 | 19 | Decidida em 30/09/2026, não implementada |
 | 20 | Decidida em 01/10/2026, sem mudança no código |

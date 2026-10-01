@@ -28,7 +28,7 @@ from api.shared.infrastructure.database.sqlite_connection import transaction
 from ml.code_dkt.model import CodeDKTModel
 
 # Sobe quando a rede, o vocabulário ou o que o config.json guarda mudam de um jeito incompatível
-TRAINED_MODEL_FORMAT_VERSION = 1
+TRAINED_MODEL_FORMAT_VERSION = 2
 
 _INCOMPATIBLE_FORMAT = (
     "Este modelo foi gravado num formato anterior do Code-DKT e não pode ser carregado. "
@@ -104,7 +104,6 @@ class ModelVersionFiles:
             output_dim=meta["output_dim"],
             node_count=meta["node_count"],
             path_count=meta["path_count"],
-            dropout=meta["dropout"],
             R=meta["R"],
             node_embed_dim=meta["node_embed_dim"],
             path_embed_dim=meta["path_embed_dim"],

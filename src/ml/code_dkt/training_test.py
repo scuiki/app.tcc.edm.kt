@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import pytest
 import torch
 import torch.nn as nn
 
@@ -34,7 +35,7 @@ def test_train_default_on_epoch_is_silent(training_inputs, cpu_device, capsys):
 def test_the_batch_in_chunks_gives_the_gradient_of_the_whole_batch(
     training_inputs, cpu_device, monkeypatch
 ):
-    # Sem dropout, o lote em pedaços de 1 aluno dá o gradiente do lote inteiro, que pesa os eventos
+    # Sem dropout, o lote em pedaços de 1 aluno dá o gradiente do lote inteiro
     sequences, cache, vocab, problem_to_idx, config = training_inputs
     monkeypatch.setattr(torch.nn.functional, "dropout", lambda x, *args, **kwargs: x)
     recorded = []
@@ -76,3 +77,43 @@ def test_the_batch_in_chunks_gives_the_gradient_of_the_whole_batch(
             assert g_chunked is None
         else:
             torch.testing.assert_close(g_chunked, g_whole, rtol=1e-4, atol=1e-6)
+
+
+def test_the_epoch_loss_is_the_mean_per_student_with_a_prediction(
+    training_inputs, cpu_device, monkeypatch
+):
+    # Sem passo do otimizador, a perda da época não depende do lote nem de quem não tem previsão
+    sequences, cache, vocab, problem_to_idx, config = training_inputs
+    first_run_only = sequences[0]["events"].iloc[:1].reset_index(drop=True)
+    one_run = {"student_id": "S_one", "events": first_run_only}
+    monkeypatch.setattr(torch.nn.functional, "dropout", lambda x, *args, **kwargs: x)
+
+    class _Frozen:
+        def __init__(self, params, lr):
+            self.params = list(params)
+
+        def zero_grad(self):
+            for p in self.params:
+                p.grad = None
+
+        def step(self):
+            pass
+
+    monkeypatch.setattr(torch.optim, "Adam", _Frozen)
+
+    def epoch_loss(students, batch_size=128):
+        reported = []
+        seed_all_random_generators(42, strict=True)
+        train_code_dkt(
+            students, problem_to_idx, vocab, {**config, "epochs": 1, "batch_size": batch_size},
+            cache, device=cpu_device, on_epoch=lambda epoch, loss: reported.append(loss),
+        )
+        return reported[0]
+
+    with_one_run = epoch_loss(sequences + [one_run])
+    assert epoch_loss(sequences + [one_run], batch_size=1) == pytest.approx(with_one_run)
+    assert epoch_loss(sequences) == pytest.approx(with_one_run)
+
+    # Com os pesos parados, a perda de dois alunos é a média da perda de cada um sozinho
+    a, b = sequences[0], sequences[-1]
+    assert epoch_loss([a, b]) == pytest.approx((epoch_loss([a]) + epoch_loss([b])) / 2)

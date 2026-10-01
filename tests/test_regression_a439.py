@@ -164,7 +164,7 @@ def test_regression_a439(csedm_main_table) -> None:
         max_path_width=CODE_DKT_HYPERPARAMETERS["max_path_width"],
     )
 
-    # Não estrito na GPU, confia na banda de ±3pp em vez de pagar o custo do determinismo bit a bit.
+    # Não estrito na GPU, com o cuDNN determinístico, como o treino do app
     seed_all_random_generators(CODE_DKT_HYPERPARAMETERS["seed"], strict=False)
 
     result = train_and_evaluate(

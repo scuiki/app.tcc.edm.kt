@@ -81,7 +81,7 @@ def tiny_vocab() -> dict:
 def tiny_config() -> dict:
     # A seed do sorteio difere da congelada, para o teste ver que a inferência usa a da versão
     return {
-        "hidden_dim": 8, "dropout": 0.1, "R": 4, "path_sampling_seed": 7,
+        "hidden_dim": 8, "R": 4, "path_sampling_seed": 7,
         "node_embed_dim": 6, "path_embed_dim": 6,
     }
 
@@ -133,7 +133,6 @@ def trained_artifact(tmp_db, data_root, tiny_vocab, tiny_config):
         output_dim=problem_count,
         node_count=tiny_vocab["node_count"],
         path_count=tiny_vocab["path_count"],
-        dropout=tiny_config["dropout"],
         R=tiny_config["R"],
         node_embed_dim=tiny_config["node_embed_dim"],
         path_embed_dim=tiny_config["path_embed_dim"],

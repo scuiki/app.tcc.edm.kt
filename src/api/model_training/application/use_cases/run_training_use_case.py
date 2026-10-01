@@ -42,10 +42,10 @@ class RunTrainingUseCase:
             assignment_id, self._assignments, self._submissions
         )
 
-        def record_epoch(epoch: int, average_loss: float) -> None:
+        def record_epoch(epoch: int, loss_per_student: float) -> None:
             # Append, não UPDATE (sobrescrever apagaria a curva); escrita curta sob WAL.
             self._epoch_metrics.append(
-                job_id, TrainingEpochMetric(epoch, float(average_loss), utc_now_iso())
+                job_id, TrainingEpochMetric(epoch, float(loss_per_student), utc_now_iso())
             )
 
         outcome = self._trainer.train(dataset, on_epoch=record_epoch)

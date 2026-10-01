@@ -1,4 +1,4 @@
-# seed_all_random_generators é a porta única de semente; cudnn.benchmark sempre off, estrito é raro.
+# seed_all_random_generators é a porta única de semente; cuDNN determinístico e sem benchmark.
 
 from __future__ import annotations
 
@@ -60,8 +60,11 @@ def test_strict_sets_deterministic_env():
     assert torch.are_deterministic_algorithms_enabled() is True
 
 
-def test_non_strict_does_not_force_deterministic_algorithms():
-    # strict=False mantém use_deterministic_algorithms off, a GPU confia na banda de regressão.
+def test_non_strict_turns_on_only_the_deterministic_cudnn():
+    # O treino na GPU tem o cuDNN determinístico, como o repositório, sem o resto do modo estrito
     seed_all_random_generators(42, strict=True)
+    # O padrão do PyTorch é desligado, como num processo novo
+    torch.backends.cudnn.deterministic = False
     seed_all_random_generators(99, strict=False)
+    assert torch.backends.cudnn.deterministic is True
     assert torch.are_deterministic_algorithms_enabled() is False
