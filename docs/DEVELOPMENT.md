@@ -14,6 +14,8 @@ método. As decisões de engenharia continuam no `DECISIONS.md`.
 - **Repositório oficial.** [YangAzure/Code-DKT](https://github.com/YangAzure/Code-DKT), commit
   `8ddd13e`. Os arquivos e as linhas citados são desse commit. Um caminho `src/` sem indicação é
   desse repositório, e os do TCC 1, do app e do code2vec vêm marcados.
+- **App.** As linhas do app citadas, marcadas como "do app", são do commit `eb95fa0`, de antes da
+  implementação. O plano que leva as decisões ao código está no `CODE_DKT_PLAN.md`.
 - **Padrões citados pelo paper.** Para o que não especifica, o paper diz "All other parameters were
   defaulted as the original settings of code2vec and DKT" (p. 55 (PDF 6)). O code2vec é Alon et al.
   (2019), com o repositório [tech-srl/code2vec](https://github.com/tech-srl/code2vec), commit
@@ -89,7 +91,7 @@ pediram decisão.
 | 3 | Token fora do vocabulário | não trata | índice próprio | o 0 do preenchimento | o 0 do preenchimento | índice próprio |
 | 4 | Nota da atenção | α = SoftMax(E·W_a) (p. 54) | camada com tanh antes da nota | igual ao repositório | igual ao repositório | igual ao repositório |
 | 5 | Eixo do softmax | os R paths (p. 54) | o tempo | os R paths | os R paths | os R paths |
-| 6 | W_0 depois da soma ponderada | z = W_0(Σ α_i e_i) (p. 54) | não tem | não tem | não tem | incluído, quadrado, do tamanho de e_r (2M + 300) |
+| 6 | W_0 depois da soma ponderada | z = W_0(Σ α_i e_i) (p. 54) | não tem | não tem | não tem | incluído, quadrado, do tamanho de e_r (2M + 300), sem viés |
 | 7 | Dropout na saída do LSTM | não trata | criado e nunca usado | 0 no padrão, 0,1 na grade | 0,1 | nenhum |
 | 8 | Dropout dos embeddings na avaliação | não trata | ligado | desligado | desligado | desligado |
 
@@ -154,15 +156,19 @@ dos paths (`tensorflow_model.py:260` do repositório dele). O TCC 1 já usava o 
 (`src/models/code_dkt.py:91-92` do TCC 1), e o app mantém (critério 4).
 
 **6. W_0.** O paper multiplica a média ponderada dos paths por uma matriz W_0 para obter o vetor de
-código z, e isso aparece no texto, na equação e na Figura 3, como "Linear Layer W_0" (p. 54
-(PDF 5)). O repositório não tem essa camada e manda a média ponderada direto para o LSTM
+código z, e isso aparece no texto, na equação e na Figura 3, como "Linear Layer W_0" (p. 54 (PDF
+5)). O repositório não tem essa camada e manda a média ponderada direto para o LSTM
 (`src/c2vRNNModel.py:59-60`). O TCC 1 também não tem, e a documentação dele chamava de W_0 a camada
 com tanh da atenção (`docs/code_dkt_implementation.md:320-321` do TCC 1), que é outra. O app inclui
 o W_0 (critério 1) como uma camada linear quadrada, do tamanho de e_r, de 2M + 300 para 2M + 300,
-que dá 320 nos exercícios de 10 problemas da CSEDM, porque o paper não dá o tamanho de z
-(critério 5). A primeira operação do LSTM sobre a entrada também é linear, e duas operações lineares
-seguidas equivalem a uma. Por isso o W_0 não aumenta o que o modelo consegue representar, e muda só
-o número de parâmetros e o caminho do treino.
+que dá 320 nos exercícios de 10 problemas da CSEDM, porque o paper não dá o tamanho de z (critério
+5). A camada é sem viés, porque o texto diz que a média ponderada "is then multiplied by a matrix
+W0" e a equação é z = W_0(Σ α_i e_i) (critério 1). O "bias terms are omitted for simplicity" da p.
+53 (PDF 4) fala só das duas equações do RNN, e não do W_0. A camada é criada no `__init__` depois
+das camadas da atenção e antes do LSTM, e essa posição muda o consumo do gerador aleatório na
+inicialização das camadas seguintes (critério 5). A primeira operação do LSTM sobre a entrada também
+é linear, e duas operações lineares seguidas equivalem a uma. Por isso o W_0 não aumenta o que o
+modelo consegue representar, e muda só o número de parâmetros e o caminho do treino.
 
 **7. Dropout na saída do LSTM.** O paper não fala desse dropout. O repositório cria a camada com 0,1
 (`src/c2vRNNModel.py:32`), mas a linha que a usaria está comentada (`src/c2vRNNModel.py:65-66`). O
@@ -234,7 +240,7 @@ A numeração continua a da seção 3.
 | 18 | Execuções | dez, com a média (p. 55) | dez, seed 0 uma vez | dez, seeds 42 a 51 | uma, seed 42 | dez na avaliação, seeds 42 a 51, e uma no treino real, seed 42 |
 | 19 | Oráculo | Tabelas 1 e 2 (p. 55) | não tem | o paper, e mediu 73,27% em dez seeds | 73,27% ± 3pp, uma execução | regressão centrada na medida do app e comparação com o paper registrada |
 | 20 | Preenchimento | não trata | posições vazias antes das execuções | igual ao repositório | igual ao repositório | igual ao repositório |
-| 21 | Vocabulário | não trata | todos os paths das soluções de treino | só os 50 sorteados, dentro da janela de 50 | só os R sorteados, antes do truncamento | a decidir |
+| 21 | Vocabulário | não trata | todos os paths das soluções de treino | só os 50 sorteados, dentro da janela de 50 | só os R sorteados, antes do truncamento | todos os paths das soluções de treino |
 
 #### Justificativas
 
@@ -306,9 +312,12 @@ previsões (Piech et al., 2015, Eq. 3), e com a soma cada previsão pesa igual. 
 média dos erros de cada aluno e soma essas médias no lote (`src/evaluation.py:171-190`), então cada
 aluno pesa igual, tenha poucas ou muitas execuções. O TCC 1 e o app tiravam a média de todas as
 previsões do lote (`src/ml/code_dkt/loss.py:15-26` do app), e, como no DKT, um aluno com muitas
-execuções pesava mais. O app passa a seguir o repositório (critério 3), que também vale onde o padrão
-do DKT difere dele. A diferença de escala entre somar e tirar a média quase não afeta o Adam, e o que
-muda é o peso de cada aluno.
+execuções pesava mais. O app passa a seguir o repositório (critério 3), que também vale onde o
+padrão do DKT difere dele. Do repositório vem só a agregação. A média de cada aluno sai dos passos
+válidos do app, que começam na primeira execução real e preveem a próxima, e não inclui a previsão
+da primeira execução a partir das posições vazias, que a linha 12 não segue. O aluno sem nenhuma
+previsão válida, que no repositório não existe, fica fora da perda (critério 5). A diferença de
+escala entre somar e tirar a média quase não afeta o Adam, e o que muda é o peso de cada aluno.
 
 **17. Determinismo na GPU.** O paper não trata. O repositório liga o cuDNN determinístico e desliga a
 escolha automática de algoritmo (`src/run.py:23-24`), e o TCC 1 fazia o mesmo (notebook 06, célula 3).
@@ -328,7 +337,9 @@ fica a confirmar na implementação.
 variation (e.g. due to random initialization)" (p. 55 (PDF 6)). O repositório fixa a seed 0 uma vez
 e roda as dez em sequência (`src/run.py:31` e `45`), e assim nenhuma execução pode ser refeita
 sozinha. Na avaliação, o app passa a rodar dez execuções com as seeds 42 a 51, como o TCC 1, uma por
-execução (critério 5). No treino real, o app continua com uma execução e a seed 42, porque o
+execução (critério 5). As seeds mudam só a inicialização, o dropout e a ordem dos lotes, e o sorteio
+dos paths fica com a `path_sampling_seed` 42 em todas, como no TCC 1, que lia os paths de um cache
+único (notebook 08, célula 3). No treino real, o app continua com uma execução e a seed 42, porque o
 professor recebe um modelo só, e o AUC guardado com o modelo vem dessa execução.
 
 **19. Oráculo.** O TCC 1 se conferia contra o valor do paper e mediu 73,27% de first-attempt AUC no
@@ -362,8 +373,13 @@ repositório conta todos os paths de cada solução de treino, antes de ficar co
 (`src/readdata.py:140`), e o app conta só os R sorteados (`src/ml/code_dkt/ast_paths.py:126-128` do
 app). No app, um path do treino que não foi sorteado vira desconhecido. No repositório ele ganha um
 índice, e, se nunca for uma das entradas do treino, o vetor dele fica com o valor aleatório do
-começo. O TCC 1 contava só os 50 sorteados, dentro da janela de 50 (notebook 06, células 11 e 14). A
-decidir.
+começo. O TCC 1 contava só os 50 sorteados, dentro da janela de 50 (notebook 06, células 11 e 14). O
+app passa a contar todos os paths das soluções de treino, como o repositório (critério 3). O paper
+não trata do vocabulário, e o vetor sem treino de um path que nunca foi entrada não é um defeito
+pelos termos do critério 4, porque não deixa o futuro entrar na previsão nem o acaso na avaliação. O
+sorteio de 100 da linha 1 tende a deixar menos paths sem treino do que os 100 primeiros, porque não
+fica sempre com o começo do método. Para contar todos, o cache passa a guardar todos os paths de
+cada solução, e o sorteio acontece na montagem da entrada.
 
 #### Fora do escopo
 
@@ -417,7 +433,7 @@ para mostrar ao professor o domínio de cada aluno, e isso não está no paper.
 | 18 | Decidida em 30/09/2026, não implementada |
 | 19 | Decidida em 30/09/2026, não implementada |
 | 20 | Decidida em 01/10/2026, sem mudança no código |
-| 21 | A decidir |
+| 21 | Decidida em 01/10/2026, não implementada |
 
 ## KCGen-KT
 

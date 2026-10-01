@@ -5,6 +5,9 @@ fica o raciocínio, para ninguém "consertar" o que foi feito de propósito.
 
 ## Reprodutibilidade científica
 
+As entradas sobre o método do Code-DKT estão sendo revistas pelo `CODE_DKT_PLAN.md`, e, onde
+divergirem dele, vale o `DEVELOPMENT.md`.
+
 **O treino usa só eventos `Run.Program`.** É o que Shi et al. (2022) e o TCC 1 fizeram. No A439
 real, os `Compile.Error` são 57,6% das linhas, e treinar com eles derrubou o first-attempt AUC para
 0,6959, fora da banda. O recorte é montado num lugar só (`load_training_dataset`), porque antes
@@ -34,8 +37,8 @@ repositório oficial usa `dim=1`. A divergência é consciente.
 **A extração de AST paths depende do `PYTHONHASHSEED`.** O javalang devolve os modificadores Java
 num `set`, e a ordem de um `set` de texto muda com a semente de hash do processo. Snapshots com
 dois ou mais modificadores geram paths diferentes em processos diferentes. Isso explica o A439
-alternar entre 0,7595 e 0,7608. O código vem do TCC 1 e a correção muda a numérica, então segue
-em aberto.
+alternar entre 0,7595 e 0,7608. O app mantém o código do repositório e fixa o `PYTHONHASHSEED=0`
+nas imagens, decisão da linha 2 do `DEVELOPMENT.md`.
 
 **O cache de AST paths é compartilhado entre treino e inferência.** Ele guarda todos os snapshots,
 inclusive os de teste, e isso é seguro porque o vocabulário só com o treino é montado depois. Ele
@@ -44,6 +47,27 @@ processo novo não garantiria (ver o item anterior).
 
 **Na inferência, o vocabulário é o da versão treinada.** Ele é sempre recarregado do disco, nunca
 reconstruído, porque reconstruir incluiria snapshots da partição de teste.
+
+**Um artefato de outro formato é recusado, e não lido.** O `config.json` de cada modelo guarda a
+`format_version`, e o artefato sem a versão atual é recusado com o `IncompatibleTrainedModelError`,
+uma resposta 409 com mensagem clara. As mudanças de fidelidade do Code-DKT (o W_0, o vocabulário
+com o desconhecido em 1, o cache com todos os paths) tornam os modelos antigos ilegíveis. O W_0 faria
+a leitura quebrar com um erro cru, e o vocabulário antigo seria lido sem erro nenhum, com o
+desconhecido caindo num token real. A recusa troca as duas falhas por uma mensagem. A matriz de
+domínio já gravada de um modelo antigo continua servindo o painel, porque não recarrega o modelo.
+
+**A curva de perda mostra a perda média por aluno.** O treino soma, em cada lote, a perda média de
+cada aluno, como o repositório do Code-DKT, e esse número cresce com o tamanho do lote e da turma.
+Cada `TrainingEpochMetric` guarda a soma da época dividida pelos alunos que entraram na perda, os que
+têm ao menos uma previsão válida, e a curva fica na mesma escala para qualquer turma. O treino não
+muda.
+
+**A comparação com o paper roda à parte e não falha pelos números.** O teste do marcador
+`literature` treina os cinco exercícios da CSEDM com as dez seeds e imprime a tabela ao lado das
+Tabelas 1 e 2 de Shi et al. (2022), sem asserção contra elas. As correções do app ao repositório,
+como a ordem por tempo, podem afastar o número do paper de forma legítima, e um teste que exigisse o
+número do paper empurraria o código de volta para os defeitos. Ele fica fora da suíte padrão porque
+leva perto de uma hora na GPU, e falha só por erro de execução ou por AUC indefinido.
 
 ## Geração de KCs
 
@@ -132,6 +156,11 @@ O teto contra zip-bomb conta os bytes realmente descomprimidos, porque o tamanho
 **O dado limpo volta do banco com os mesmos tipos.** O treino ordena por `submitted_at` e o `ml/`
 compara ids, então um id que voltasse como texto ou um horário sem fuso mudaria a numérica sem
 erro. Por isso o teste do repositório compara com `assert_frame_equal` em dtype estrito.
+
+**O aviso de poucos alunos conta todo aluno com `Run.Program`.** O `trainability_check` espelha a
+partição do treino, que passa a não filtrar os alunos com menos de três execuções, porque um aluno não
+sai da análise por ter feito pouco do exercício. O espelho é escrito à mão, porque o domínio da
+importação não pode importar o `ml/`.
 
 ## Problemas
 
