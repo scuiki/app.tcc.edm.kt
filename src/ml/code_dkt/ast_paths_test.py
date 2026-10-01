@@ -2,10 +2,19 @@
 
 from __future__ import annotations
 
+import sys
+
 from ml.code_dkt.ast_paths import build_ast_path_vocabulary, extract_ast_paths
 
 _JAVA_OK = "public int f(int x) { return x + 1; }"
 _JAVA_BAD = "public int oops( { return ;;; }"
+
+
+def test_process_runs_with_hash_seed_zero():
+    # A ordem dos modificadores Java sai de um set e depende do hash, que o app fixa em 0
+    assert sys.flags.hash_randomization == 0, (
+        "PYTHONHASHSEED não é 0 neste processo, e os AST paths não saem na ordem que o app fixa"
+    )
 
 
 def test_extract_paths_returns_paths_for_valid_java():

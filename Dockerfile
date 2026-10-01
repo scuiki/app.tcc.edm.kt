@@ -1,10 +1,8 @@
-# EDM·KT dev/test image (ml/ + api/).
-# Base on the PyTorch CUDA runtime (CLAUDE.md containerization guidance).
-# FIXED TAG (no `latest`) — this image IS the reproducibility anchor (CORE-03): its conda
-# env ships torch==2.7.1+cu128 / numpy==2.2.6, the versions the regression test validated
-# (A439 first-attempt AUC = 0.7608, in band [0.7027, 0.7627]). nitro GPU is an RTX 4050
-# (Ada, sm_89), covered by the cu128 wheels. requirements.lock records the resolved env.
+# Imagem de teste do EDM·KT e base da do app, com a tag fixa que guarda o torch e o numpy
 FROM pytorch/pytorch:2.7.1-cuda12.8-cudnn9-runtime
+
+# A ordem dos modificadores Java nos AST paths sai de um set e depende do hash, que o app fixa em 0
+ENV PYTHONHASHSEED=0
 
 WORKDIR /app
 

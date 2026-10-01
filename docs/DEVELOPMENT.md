@@ -414,7 +414,7 @@ para mostrar ao professor o domínio de cada aluno, e isso não está no paper.
 | # | Estado |
 |---|---|
 | 1 | Decidida em 30/09/2026, não implementada. O TCC 1 mediu 2,2 GB de VRAM com R=50, e o R=100 será medido na implementação |
-| 2 | Decidida em 30/09/2026, não implementada |
+| 2 | Decidida em 30/09/2026, implementada em 01/10/2026. Com o hash 0, o teste de regressão de antes do plano, na partição do TCC 1 com 410 alunos, uma seed, `strict=False` e na GPU, deu 0,7595 |
 | 3 | Decidida em 30/09/2026, não implementada |
 | 4 | Decidida em 30/09/2026, sem mudança no código |
 | 5 | Decidida em 30/09/2026, sem mudança no código |

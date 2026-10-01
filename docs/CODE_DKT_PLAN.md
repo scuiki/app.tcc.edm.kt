@@ -191,4 +191,5 @@ Cada etapa é um commit, com uma revisão independente do diff contra as decisõ
 | Etapa | Estado |
 |---|---|
 | 0 | Concluída |
-| 1 a 6 | A fazer |
+| 1 | Concluída |
+| 2 a 6 | A fazer |

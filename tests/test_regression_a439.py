@@ -11,6 +11,7 @@
 from __future__ import annotations
 
 import os
+import sys
 from pathlib import Path
 
 import pandas as pd
@@ -52,6 +53,11 @@ def csedm_main_table() -> pd.DataFrame:
     # Só eventos Run.Program (filtro que o Code-DKT do TCC 1 treinou), correto é Score == 1.0.
 
     # Reproduz a partição de referência (random_state=1, min_attempts=3), como no TCC 1.
+
+    # Fora do hash 0 os AST paths não saem na ordem do app e o AUC não se compara, falha sem pular
+    assert sys.flags.hash_randomization == 0, (
+        "PYTHONHASHSEED não é 0 neste processo, e os AST paths não saem na ordem que o app fixa"
+    )
     data_dir = _resolve_csedm_path()
 
     df = pd.read_csv(data_dir / "MainTable.csv")
