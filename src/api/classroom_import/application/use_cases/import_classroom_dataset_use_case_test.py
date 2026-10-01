@@ -5,6 +5,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
+import pandas as pd
 import pytest
 
 from api.classroom_import.domain.services.submission_cleaning import CLEANED_COLUMNS
@@ -29,13 +30,32 @@ _CODE_STATES = (
 )
 
 
-def _make_raw(root: Path, main_table: str = _MAIN_TABLE) -> tuple[Path, Path]:
+# Dois exercícios intercalados e horários fora de ordem, para a ordem do arquivo ser a única pista
+_UNSORTED_MAIN_TABLE = (
+    "SubjectID,AssignmentID,ProblemID,CodeStateID,EventType,Score,ServerTimestamp\n"
+    "S3,439,2,o1,Run.Program,1.0,2019-03-01T09:00:00Z\n"
+    "S1,439,1,o2,Compile.Error,0.0,2019-03-01T08:30:00Z\n"
+    "S2,492,1,o3,Run.Program,0.0,2019-03-01T08:00:00Z\n"
+    "S1,439,1,o4,Compile,0.0,2019-03-01T08:30:00Z\n"
+    "S1,439,1,o5,Run.Program,0.0,2019-03-01T08:40:00Z\n"
+    "S2,439,1,o6,Run.Program,1.0,2019-03-01T07:00:00Z\n"
+    "S1,492,2,o7,Run.Program,1.0,2019-03-01T07:30:00Z\n"
+    "S3,439,1,o8,Run.Program,0.0,2019-03-01T08:10:00Z\n"
+)
+_UNSORTED_CODE_STATES = "CodeStateID,Code\n" + "".join(
+    f'o{i},"public int f{i}(){{return {i};}}"\n' for i in range(1, 9)
+)
+
+
+def _make_raw(
+    root: Path, main_table: str = _MAIN_TABLE, code_states: str = _CODE_STATES
+) -> tuple[Path, Path]:
     # Monta data/<slug>/raw/ com MainTable.csv + CodeStates/CodeStates.csv.
     raw = root / "turma-x" / "raw"
     (raw / "CodeStates").mkdir(parents=True)
     main = raw / "MainTable.csv"
     main.write_text(main_table, encoding="utf-8")
-    (raw / "CodeStates" / "CodeStates.csv").write_text(_CODE_STATES, encoding="utf-8")
+    (raw / "CodeStates" / "CodeStates.csv").write_text(code_states, encoding="utf-8")
     return raw, main
 
 
@@ -93,6 +113,27 @@ def test_the_cleaned_data_is_readable_by_assignment(import_classroom, sqlite_sub
     assert 0.5 in set(back["score"].tolist())
     # O código Java vai junto (é o snapshot do treino e das estatísticas).
     assert back["code"].notna().all()
+
+
+def test_each_assignment_reads_back_in_file_order(
+    import_classroom, sqlite_submissions, tmp_db, data_root
+):
+    # A partição do treino lista os alunos na ordem das linhas, e essa ordem tem de vir do arquivo
+    raw, main = _make_raw(data_root, _UNSORTED_MAIN_TABLE, _UNSORTED_CODE_STATES)
+    import_classroom(raw, "Turma X", main)
+
+    by_progsnap_id = {
+        r["progsnap_assignment_id"]: r["id"]
+        for r in tmp_db.execute("SELECT id, progsnap_assignment_id FROM assignment;")
+    }
+    a439 = sqlite_submissions.list_by_assignment(by_progsnap_id[439])
+    a492 = sqlite_submissions.list_by_assignment(by_progsnap_id[492])
+
+    # O Compile plain sai na limpeza, e o resto segue a ordem do arquivo em cada exercício
+    assert a439["code_snapshot_id"].tolist() == ["o1", "o2", "o5", "o6", "o8"]
+    assert a492["code_snapshot_id"].tolist() == ["o3", "o7"]
+    program_runs = a439[a439["event_type"] == "Run.Program"]
+    assert pd.unique(program_runs["student_id"]).tolist() == ["S3", "S1", "S2"]
 
 
 def test_raw_csv_preserved_after_ingest(import_classroom, tmp_db, data_root):

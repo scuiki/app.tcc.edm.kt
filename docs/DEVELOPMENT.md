@@ -421,11 +421,11 @@ para mostrar ao professor o domínio de cada aluno, e isso não está no paper.
 | 6 | Decidida em 30/09/2026, não implementada |
 | 7 | Decidida em 30/09/2026, não implementada |
 | 8 | Decidida em 30/09/2026, sem mudança no código |
-| 9 | Decidida em 30/09/2026, não implementada |
+| 9 | Decidida em 30/09/2026, implementada em 01/10/2026. No A439 entram os 386 alunos com `Run.Program` |
 | 10 | Decidida em 30/09/2026, sem mudança no código |
 | 11 | Decidida em 01/10/2026, sem mudança no código |
 | 12 | Decidida em 01/10/2026, sem mudança no código |
-| 13 | Decidida em 01/10/2026, não implementada. Depende de a importação preservar a ordem do arquivo |
+| 13 | Decidida em 01/10/2026, implementada em 01/10/2026. A importação preserva a ordem do arquivo, conferida por teste, e no A439 o app separa os mesmos 78 alunos de teste do procedimento do repositório |
 | 14 | Decidida em 01/10/2026, sem mudança no código |
 | 15 | Decidida em 01/10/2026, não implementada |
 | 16 | Decidida em 01/10/2026, não implementada |

@@ -16,6 +16,7 @@ from pathlib import Path
 
 import pandas as pd
 import pytest
+from sklearn.model_selection import train_test_split
 
 from ml.code_dkt.train_and_evaluate import train_and_evaluate
 from ml.reproducibility.code_dkt_hyperparameters import CODE_DKT_HYPERPARAMETERS
@@ -52,7 +53,7 @@ def csedm_main_table() -> pd.DataFrame:
 
     # Só eventos Run.Program (filtro que o Code-DKT do TCC 1 treinou), correto é Score == 1.0.
 
-    # Reproduz a partição de referência (random_state=1, min_attempts=3), como no TCC 1.
+    # A partição fica com cada teste, por exercício como no repositório oficial.
 
     # Fora do hash 0 os AST paths não saem na ordem do app e o AUC não se compara, falha sem pular
     assert sys.flags.hash_randomization == 0, (
@@ -80,7 +81,7 @@ def csedm_main_table() -> pd.DataFrame:
     df = df.rename(columns={**PROGSNAP_TO_CLEANED_COLUMNS, "correct": "is_correct"})
     return df.reset_index(drop=True)
 
-# Partição de referência do TCC 1.
+# O exercício do teste de regressão, o mesmo do repositório oficial.
 A439 = 439
 
 # Execução de referência do TCC 1, Code-DKT A439 first-attempt AUC (comparison_summary.json).
@@ -127,12 +128,31 @@ def test_regression_skipped_without_path(monkeypatch) -> None:
 
 
 @pytest.mark.regression
+def test_a439_split_matches_the_official_repository(csedm_main_table) -> None:
+    # O procedimento literal do src/preprocessing.py do repositório, sem treinar
+    main_df = pd.read_csv(_resolve_csedm_path() / "MainTable.csv")
+    main_df = main_df[main_df["EventType"] == "Run.Program"]
+    main_df = main_df[main_df["AssignmentID"] == 439]
+    students = pd.unique(main_df["SubjectID"])
+    repo_train, repo_test = train_test_split(students, test_size=0.2, random_state=1)
+
+    train_df, test_df = split_students_into_train_and_test(
+        csedm_main_table, progsnap_assignment_id=A439
+    )
+
+    assert len(students) == 386
+    assert len(repo_test) == 78
+    assert set(test_df["student_id"]) == set(repo_test)
+    assert set(train_df["student_id"]) == set(repo_train)
+
+
+@pytest.mark.regression
 def test_regression_a439(csedm_main_table) -> None:
     # Retreina A439 no CSEDM real; first-attempt AUC precisa cair em [0.7027, 0.7627].
 
-    # Reproduz a partição do TCC 1 (random_state=1, min_attempts=3) e roda o seam público.
+    # Divide os alunos do A439 como o repositório oficial (random_state=1, sem piso) e treina.
     train_df, test_df = split_students_into_train_and_test(
-        csedm_main_table, test_size=0.2, random_state=1, min_attempts=3
+        csedm_main_table, progsnap_assignment_id=A439, test_size=0.2, random_state=1
     )
 
     # Não estrito na GPU, confia na banda de ±3pp em vez de pagar o custo do determinismo bit a bit.

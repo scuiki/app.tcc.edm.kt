@@ -44,7 +44,9 @@ def train_and_evaluate(
 ) -> dict:
     # Aceita 1 DataFrame (dividido aqui) ou treino/teste prontos; seed é de quem chama.
     if test_df is None:
-        train_df, test_df = split_students_into_train_and_test(df_or_train)
+        train_df, test_df = split_students_into_train_and_test(
+            df_or_train, progsnap_assignment_id=progsnap_assignment_id
+        )
     else:
         train_df = df_or_train
 

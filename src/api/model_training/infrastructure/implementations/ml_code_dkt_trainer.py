@@ -37,7 +37,11 @@ class MlCodeDktTrainer:
         self, dataset: TrainingDataset, on_epoch: Callable[[int, float], None]
     ) -> TrainingOutcome:
         config = dict(self._hyperparameters)
-        train_df, test_df = split_students_into_train_and_test(dataset.events)
+        # int, não o value object (o ml/ compara com a coluna; VO casaria com zero linhas).
+        progsnap_assignment_id = dataset.progsnap_assignment_id.value
+        train_df, test_df = split_students_into_train_and_test(
+            dataset.events, progsnap_assignment_id=progsnap_assignment_id
+        )
 
         # Aquece o cache de paths (reaproveitado no próximo treino/inferência); parse rate sai daqui
         code_by_snapshot = code_by_snapshot_id(dataset.events)
@@ -58,8 +62,7 @@ class MlCodeDktTrainer:
             train_df,
             config=config,
             test_df=test_df,
-            # int, não o value object (o ml/ compara com a coluna; VO casaria com zero linhas).
-            progsnap_assignment_id=dataset.progsnap_assignment_id.value,
+            progsnap_assignment_id=progsnap_assignment_id,
             device=device,
             on_epoch=on_epoch,
             n_workers=None,

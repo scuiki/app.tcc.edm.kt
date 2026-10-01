@@ -12,23 +12,21 @@ from ml.code_dkt.ast_paths import build_ast_path_vocabulary
 
 def split_students_into_train_and_test(
     df: pd.DataFrame,
+    *,
+    progsnap_assignment_id: int,
     test_size: float = 0.2,
-    random_state: int = 1,  # a partição do TCC 1 usa random_state=1, NÃO a semente 42
-    min_attempts: int = 3,
+    random_state: int = 1,  # o random_state do repositório oficial, e não a seed 42 do treino
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
-    # Divide eventos em treino/teste por aluno, do TCC 1 (load_spring2019_split), sem ler CSV.
-    run = df[df["event_type"] == "Run.Program"]
-    attempts = run.groupby("student_id").size()
-    eligible = attempts[attempts >= min_attempts].index
-    df_filtered = df[df["student_id"].isin(eligible)]
-
-    students = df_filtered["student_id"].unique()
+    # Os alunos com Run.Program no exercício, na ordem das linhas e sem piso, como o repositório
+    assignment_df = df[df["progsnap_assignment_id"] == progsnap_assignment_id]
+    runs = assignment_df[assignment_df["event_type"] == "Run.Program"]
+    students = pd.unique(runs["student_id"])
     train_s, test_s = train_test_split(
         students, test_size=test_size, random_state=random_state
     )
 
-    train_df = df_filtered[df_filtered["student_id"].isin(train_s)].reset_index(drop=True)
-    test_df = df_filtered[df_filtered["student_id"].isin(test_s)].reset_index(drop=True)
+    train_df = assignment_df[assignment_df["student_id"].isin(train_s)].reset_index(drop=True)
+    test_df = assignment_df[assignment_df["student_id"].isin(test_s)].reset_index(drop=True)
     return train_df, test_df
 
 

@@ -10,9 +10,6 @@ from api.classroom_import.domain.value_objects.import_report import (
 )
 from api.classroom_import.domain.services.submission_event import RUN_PROGRAM
 
-# Espelha split_students_into_train_and_test; abaixo de 3 RP, aluno some da contagem, não bloqueia.
-MIN_ATTEMPTS = 3
-
 # Limiares de aviso são heurísticas, não número científico fixo; mudar aqui só muda o alerta.
 SMALL_SAMPLE_THRESHOLD = 50  # [ASSUMED] amostra pequena abaixo disso (aviso brando)
 TINY_SAMPLE_THRESHOLD = 20  # [ASSUMED] amostra muito pequena abaixo disso (aviso reforçado)
@@ -31,11 +28,9 @@ def check_assignment_trainability(
     for assignment_id, group in canonical_df.groupby("progsnap_assignment_id", sort=True):
         reasons: list[str] = []
 
-        # Elegibilidade exige >=3 Run.Program; abaixo do piso, aluno não conta, mas não bloqueia.
+        # Espelha a partição do treino, que conta todo aluno com ao menos um Run.Program
         run = group[group["event_type"] == RUN_PROGRAM]
-        attempts = run.groupby("student_id").size()
-        eligible = attempts[attempts >= MIN_ATTEMPTS].index
-        n_students_eligible = int(len(eligible))
+        n_students_eligible = int(run["student_id"].nunique())
 
         n_problems = int(group["problem_id"].nunique())
         n_submissions = int(len(group))
@@ -73,11 +68,11 @@ def check_assignment_trainability(
                 )
             )
 
-        # Piso de amostra, poucos elegíveis, mais incerteza; aviso graduado, nunca bloqueio.
+        # Piso de amostra, poucos alunos, mais incerteza; aviso graduado, nunca bloqueio.
         if n_students_eligible < SMALL_SAMPLE_THRESHOLD:
             reforcado = n_students_eligible < TINY_SAMPLE_THRESHOLD
             msg = (
-                f"Apenas {n_students_eligible} aluno(s) elegível(is) (≥{MIN_ATTEMPTS} execuções): "
+                f"Apenas {n_students_eligible} aluno(s) com ao menos uma execução: "
                 + (
                     "amostra muito pequena — as estimativas de mastery terão alta incerteza."
                     if reforcado

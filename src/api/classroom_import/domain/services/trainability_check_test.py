@@ -75,7 +75,7 @@ def test_few_problems_warns_but_does_not_block():
 
 
 def test_small_sample_warns_but_does_not_block():
-    # Poucos alunos elegíveis (3), ambas as classes presentes, aviso small_sample sem bloqueio.
+    # Poucos alunos (3), ambas as classes presentes, aviso small_sample sem bloqueio.
     base = pd.Timestamp("2019-03-01T08:00:00Z")
     rows = []
     for i, (sid, score) in enumerate([("S1", 0.0), ("S2", 1.0), ("S3", 1.0)]):
@@ -108,8 +108,8 @@ def test_small_sample_warns_but_does_not_block():
     assert s.trainable is True  # aviso não derruba
 
 
-def test_n_students_eligible_counts_only_min_3_run_program():
-    # S1 com 3 RP (elegível), S2 com 2 RP (não elegível); espelha o split de treino/teste.
+def test_n_students_eligible_counts_every_student_with_a_program_run():
+    # S1 com 3 RP, S2 com 1 RP e S3 só com Compile.Error, a mesma lista da partição do treino
     base = pd.Timestamp("2019-03-01T08:00:00Z")
     rows = []
     for k in range(3):
@@ -126,29 +126,44 @@ def test_n_students_eligible_counts_only_min_3_run_program():
                 "is_correct": 0 if k == 0 else 1,
             }
         )
-    for k in range(2):  # S2 abaixo do piso de elegibilidade
-        rows.append(
-            {
-                "student_id": "S2",
-                "progsnap_assignment_id": 439,
-                "problem_id": 1 + k,
-                "submitted_at": base + pd.Timedelta(hours=1, minutes=k),
-                "event_type": "Run.Program",
-                "score": 1.0,
-                "code_snapshot_id": f"S2-{k}",
-                "code": "x",
-                "is_correct": 1,
-            }
-        )
+    rows.append(
+        {
+            "student_id": "S2",
+            "progsnap_assignment_id": 439,
+            "problem_id": 1,
+            "submitted_at": base + pd.Timedelta(hours=1),
+            "event_type": "Run.Program",
+            "score": 1.0,
+            "code_snapshot_id": "S2-0",
+            "code": "x",
+            "is_correct": 1,
+        }
+    )
+    rows.append(
+        {
+            "student_id": "S3",
+            "progsnap_assignment_id": 439,
+            "problem_id": 1,
+            "submitted_at": base + pd.Timedelta(hours=2),
+            "event_type": "Compile.Error",
+            "score": 0.0,
+            "code_snapshot_id": "S3-0",
+            "code": "x",
+            "is_correct": 0,
+        }
+    )
     df = pd.DataFrame(rows)
     df["submitted_at"] = pd.to_datetime(df["submitted_at"], utc=True)
     df["progsnap_assignment_id"] = df["progsnap_assignment_id"].astype("Int64")
     df["problem_id"] = df["problem_id"].astype("Int64")
 
-    summaries, _ = check_assignment_trainability(df)
+    summaries, items = check_assignment_trainability(df)
     s = summaries[0]
-    # Só S1 tem >=3 Run.Program; S2 é excluído da contagem de elegíveis (não bloqueia).
-    assert s.n_students_eligible == 1
+    # Uma execução já conta, e quem só tem Compile.Error fica fora, como na partição
+    assert s.n_students_eligible == 2
+    small_sample = _item(items, "small_sample")
+    assert small_sample.count == 2
+    assert "≥3" not in small_sample.message
 
 
 def test_gate_is_per_assignment_independent():
