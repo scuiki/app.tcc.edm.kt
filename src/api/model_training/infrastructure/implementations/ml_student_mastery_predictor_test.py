@@ -18,3 +18,24 @@ def test_current_mastery_covers_every_student_and_problem(
     assert set(matrix) == {(s, p) for s in students for p in problems}
     assert all(isinstance(s, str) and isinstance(p, int) for s, p in matrix)
     assert all(0.0 <= v <= 1.0 for v in matrix.values())
+
+
+def test_current_mastery_samples_the_paths_with_the_version_parameters(
+    trained_artifact, real_mastery_predictor, seed_cleaned_submissions, training_dataset_of,
+    monkeypatch,
+):
+    from ml.code_dkt import model_input
+
+    seen = set()
+    real_sample = model_input.sample_ast_paths
+
+    def recording_sample(paths, *, R, path_sampling_seed):
+        seen.add((R, path_sampling_seed))
+        return real_sample(paths, R=R, path_sampling_seed=path_sampling_seed)
+
+    monkeypatch.setattr(model_input, "sample_ast_paths", recording_sample)
+    seed_cleaned_submissions()
+    real_mastery_predictor.predict_current_mastery(
+        trained_artifact.trained_model, training_dataset_of(trained_artifact.assignment_id)
+    )
+    assert seen == {(trained_artifact.config["R"], trained_artifact.config["path_sampling_seed"])}

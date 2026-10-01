@@ -1,6 +1,6 @@
 # Entrada do Code-DKT, cada tentativa vira o one-hot do DKT + os índices dos AST paths dela.
 
-# Portado do TCC 1 (paths_to_tensor, build_code_input_tensor); numérica congelada.
+# Portado do TCC 1 (paths_to_tensor, build_code_input_tensor).
 
 from __future__ import annotations
 
@@ -8,20 +8,24 @@ import numpy as np
 import torch
 from torch import Tensor
 
+from ml.code_dkt.ast_paths import PADDING_INDEX, UNKNOWN_INDEX, sample_ast_paths
+
 
 def ast_paths_to_index_array(
     paths: list[tuple[str, str, str]],
     token_to_idx: dict[str, int],
     path_to_idx: dict[str, int],
-    R: int = 50,
+    R: int = 100,
+    path_sampling_seed: int = 42,
 ) -> np.ndarray:
-    # Os paths de um snapshot como um array (R, 3) de índices, com zero-padding.
+    # Os R paths sorteados de um snapshot como um array (R, 3) de índices, com o resto vazio.
 
-    arr = np.zeros((R, 3), dtype=np.int64)
-    for r, (start, path_str, end) in enumerate(paths[:R]):
-        arr[r, 0] = token_to_idx.get(start, 0)
-        arr[r, 1] = path_to_idx.get(path_str, 0)
-        arr[r, 2] = token_to_idx.get(end, 0)
+    arr = np.full((R, 3), PADDING_INDEX, dtype=np.int64)
+    sample = sample_ast_paths(paths, R=R, path_sampling_seed=path_sampling_seed)
+    for r, (start, path_str, end) in enumerate(sample):
+        arr[r, 0] = token_to_idx.get(start, UNKNOWN_INDEX)
+        arr[r, 1] = path_to_idx.get(path_str, UNKNOWN_INDEX)
+        arr[r, 2] = token_to_idx.get(end, UNKNOWN_INDEX)
     return arr
 
 
@@ -32,7 +36,8 @@ def build_model_input_tensors(
     path_to_idx: dict[str, int],
     problem_to_idx: dict[int, int],
     max_len: int = 50,
-    R: int = 50,
+    R: int = 100,
+    path_sampling_seed: int = 42,
 ) -> tuple[Tensor, Tensor, Tensor]:
     # X (one-hot do DKT + AST paths), Y_next (one-hot do próximo problema) e a máscara.
 
@@ -66,7 +71,9 @@ def build_model_input_tensors(
 
             # Features de código, lookup pré-computado -> (R, 3) -> flatten float32
             raw_paths = ast_paths_by_snapshot.get(snapshot_ids[t_rel], [])
-            code_arr = ast_paths_to_index_array(raw_paths, token_to_idx, path_to_idx, R)
+            code_arr = ast_paths_to_index_array(
+                raw_paths, token_to_idx, path_to_idx, R, path_sampling_seed
+            )
             X[i, t, 2 * M :] = torch.from_numpy(code_arr.flatten().astype(np.float32))
 
             mask[i, t] = True

@@ -10,6 +10,10 @@ from ml.code_dkt.ast_paths import extract_ast_paths_for_snapshots
 from api.shared.infrastructure.filesystem import data_layout
 from api.model_training.infrastructure.implementations.code_snapshot_id import CodeSnapshotId
 
+# Sobe quando o que o cache guarda muda, e o diretório de outra versão deixa de ser lido
+AST_PATH_CACHE_VERSION = 2
+
+
 def load_or_extract_ast_paths(
     classroom_id: int,
     assignment_id: int,
@@ -18,8 +22,8 @@ def load_or_extract_ast_paths(
     config: dict,
     n_workers: Optional[int] = None,
 ) -> dict[str, list[tuple[str, str, str]]]:
-    # Cache incremental por assignment; o filtro train-only vem depois e não vaza no vocab
-    cache_dir = data_layout.ast_path_cache_dir(classroom_id, assignment_id)
+    # Cache incremental por assignment com todos os paths; o filtro train-only vem depois
+    cache_dir = data_layout.ast_path_cache_dir(classroom_id, assignment_id, AST_PATH_CACHE_VERSION)
     cache_dir.mkdir(parents=True, exist_ok=True)
 
     ast_paths_by_snapshot: dict[str, list[tuple[str, str, str]]] = {}
@@ -38,8 +42,6 @@ def load_or_extract_ast_paths(
             code_by_snapshot,
             max_path_length=config["max_path_length"],
             max_path_width=config["max_path_width"],
-            R=config["R"],
-            seed=config["seed"],
             n_workers=n_workers,
         )
         for snapshot_id, paths in fresh.items():

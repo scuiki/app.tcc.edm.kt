@@ -18,8 +18,12 @@ from api.model_training.infrastructure.repositories.sqlite_trained_model_reposit
     SqliteTrainedModelRepository,
 )
 from api.model_training.infrastructure.implementations.trained_model_file_store import (
+    TRAINED_MODEL_FORMAT_VERSION,
     ModelVersionFiles,
     TrainedModelFileStore,
+)
+from api.shared.domain.errors.incompatible_trained_model_error import (
+    IncompatibleTrainedModelError,
 )
 
 
@@ -86,6 +90,7 @@ def test_save_writes_blob_and_sidecars(tmp_path, tiny_model, tiny_vocab, tiny_co
         assert meta[key] == tiny_config[key]
     assert meta["node_count"] == tiny_vocab["node_count"]
     assert meta["path_count"] == tiny_vocab["path_count"]
+    assert meta["format_version"] == TRAINED_MODEL_FORMAT_VERSION
     # input_dim/output_dim derivados do objeto vivo, no CodeDKTModel real input_dim != output_dim.
     assert meta["input_dim"] == tiny_model.input_dim
     assert meta["output_dim"] == tiny_model.fc.out_features == meta["n_problems"]
@@ -190,6 +195,25 @@ def test_reload_contract_no_size_mismatch(tmp_path):
     # o state_dict reconstruído bate com o original (contrato de reload completo, sem mismatch).
     for name, tensor in model.state_dict().items():
         assert torch.equal(loaded.state_dict()[name], tensor)
+
+
+@pytest.mark.parametrize("format_version", [None, TRAINED_MODEL_FORMAT_VERSION - 1])
+def test_an_artifact_of_another_format_is_refused_before_reading_it(
+    tmp_path, tiny_model, tiny_vocab, tiny_config, format_version
+):
+    store = ModelVersionFiles(tmp_path / "data")
+    vdir = Path(store.write(1, 1, tiny_model, tiny_vocab, tiny_config)["dir"])
+    meta = json.loads((vdir / "config.json").read_text())
+    if format_version is None:
+        del meta["format_version"]
+    else:
+        meta["format_version"] = format_version
+    (vdir / "config.json").write_text(json.dumps(meta))
+    # O vocab.pkl ilegível mostra que a recusa vem antes de abrir o vocabulário e os pesos
+    (vdir / "vocab.pkl").write_bytes(b"not a pickle")
+
+    with pytest.raises(IncompatibleTrainedModelError):
+        store.read(str(vdir))
 
 
 def test_persist_failure_does_not_block_next_version(

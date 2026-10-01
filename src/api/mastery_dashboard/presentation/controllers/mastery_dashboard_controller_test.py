@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
 from api.classrooms.infrastructure.repositories.sqlite_classroom_repository import (
     SqliteClassroomRepository,
 )
@@ -136,6 +139,42 @@ def test_with_a_published_model_the_mastery_comes_by_concept_and_by_problem(
     three = next(p for p in body["problems"] if p["problem_id"] == 3)
     assert sorted(k["kc_name"] for k in three["kcs"]) == ["Condicionais", "Laços"]
     assert sum(three["histogram"]) == 3
+
+
+def _strip_format_version(trained_artifact) -> None:
+    config = Path(trained_artifact.artifact_dir) / "config.json"
+    meta = json.loads(config.read_text())
+    del meta["format_version"]
+    config.write_text(json.dumps(meta))
+
+
+def test_a_model_of_an_old_format_is_409_with_a_clear_message(
+    api_client, trained_artifact, seed_cleaned_submissions
+):
+    client, _ = api_client
+    seed_cleaned_submissions()
+    _strip_format_version(trained_artifact)
+
+    resp = client.get(f"/mastery-dashboard/{trained_artifact.assignment_id}/mastery")
+
+    assert resp.status_code == 409
+    assert "formato" in resp.json()["detail"]
+
+
+def test_the_stored_mastery_of_an_old_model_keeps_serving(
+    api_client, trained_artifact, seed_cleaned_submissions
+):
+    # A matriz gravada não recarrega o modelo, então o painel de um modelo antigo continua
+    client, _ = api_client
+    seed_cleaned_submissions()
+    url = f"/mastery-dashboard/{trained_artifact.assignment_id}/mastery"
+    first = client.get(url)
+    _strip_format_version(trained_artifact)
+
+    again = client.get(url)
+
+    assert first.status_code == again.status_code == 200
+    assert again.json() == first.json()
 
 
 def test_students_come_with_what_they_did_and_their_weakest_concepts(

@@ -43,9 +43,9 @@ class MlCodeDktTrainer:
             dataset.events, progsnap_assignment_id=progsnap_assignment_id
         )
 
-        # Aquece o cache de paths (reaproveitado no próximo treino/inferência); parse rate sai daqui
+        # O treino e a inferência leem os mesmos paths do cache, com todos os de cada solução
         code_by_snapshot = code_by_snapshot_id(dataset.events)
-        load_or_extract_ast_paths(
+        ast_paths_by_snapshot = load_or_extract_ast_paths(
             dataset.classroom_id,
             dataset.assignment_id,
             list(code_by_snapshot.keys()),
@@ -63,9 +63,9 @@ class MlCodeDktTrainer:
             config=config,
             test_df=test_df,
             progsnap_assignment_id=progsnap_assignment_id,
+            ast_paths_by_snapshot=ast_paths_by_snapshot,
             device=device,
             on_epoch=on_epoch,
-            n_workers=None,
         )
         return TrainingOutcome(
             model=result["model"],

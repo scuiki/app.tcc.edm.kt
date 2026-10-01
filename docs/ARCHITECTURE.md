@@ -101,9 +101,9 @@ docker run --rm --security-opt label=disable -v "$PWD":/app -w /app edmkt-core:d
   no construtor as interfaces de repositório de que precisa, e `check(dto)` devolve a mensagem de
   recusa ou `None`. Os use cases de escrita estendem `WriteUseCase`, que roda todas as regras e
   acumula as recusas.
-- Os erros do domínio (`NotFound`, `BusinessRuleViolation`, `AnotherJobRunning`, em
-  `shared/domain/errors/`) não conhecem HTTP; `shared/presentation/http/error_handlers.py` os
-  traduz para 404 e 409.
+- Os erros do domínio (`NotFound`, `BusinessRuleViolation`, `AnotherJobRunning` e
+  `IncompatibleTrainedModelError`, em `shared/domain/errors/`) não conhecem HTTP;
+  `shared/presentation/http/error_handlers.py` os traduz para 404 e 409.
 
 ## Arquivos em disco
 

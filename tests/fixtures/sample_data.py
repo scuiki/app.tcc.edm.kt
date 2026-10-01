@@ -13,6 +13,11 @@ JAVA_OK_C = "public boolean h(int n) { if (n > 0) { return true; } return false;
 JAVA_BAD = "public int oops( { return ;;; }"
 # O javalang aceita, mas não há par de folhas, então não sai nenhum path
 JAVA_EMPTY_CLASS = "class C {}"
+# Tem 142 paths, mais que os 100 que entram no Code-DKT, e um modificador só
+JAVA_LONG = (
+    "public int f(int n) { int s = 0; for (int i = 0; i < n; i++) { if (i % 2 == 0) "
+    "{ s = s + i; } else { s = s - 1; } } while (s > 100) { s = s / 2; } return s; }"
+)
 
 
 def cleaned_row(student, problem, submitted_at, event, score, code, snapshot_id) -> dict:

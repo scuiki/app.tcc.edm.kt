@@ -16,9 +16,10 @@ def raw_upload_dir(classroom_id: int, upload_name: str) -> Path:
     return classroom_dir(classroom_id) / "raw" / upload_name
 
 
-def ast_path_cache_dir(classroom_id: int, assignment_id: int) -> Path:
+def ast_path_cache_dir(classroom_id: int, assignment_id: int, version: int) -> Path:
     # Por assignment, porque dois envios podem ter o mesmo CodeStateID com códigos diferentes
-    return classroom_dir(classroom_id) / "cache" / "paths" / str(int(assignment_id))
+    versioned = classroom_dir(classroom_id) / "cache" / f"paths-v{int(version)}"
+    return versioned / str(int(assignment_id))
 
 
 def llm_cache_dir(classroom_id: int, assignment_id: int) -> Path:

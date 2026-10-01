@@ -6,6 +6,9 @@ from fastapi.responses import JSONResponse
 
 from api.shared.domain.errors.another_job_running import AnotherJobRunning
 from api.shared.domain.errors.business_rule_violation import BusinessRuleViolation
+from api.shared.domain.errors.incompatible_trained_model_error import (
+    IncompatibleTrainedModelError,
+)
 from api.shared.domain.errors.not_found import NotFound
 
 
@@ -20,4 +23,8 @@ def install_error_handlers(app: FastAPI) -> None:
 
     @app.exception_handler(AnotherJobRunning)
     def _another_job_running(_request: Request, exc: AnotherJobRunning) -> JSONResponse:
+        return JSONResponse(status_code=409, content={"detail": str(exc)})
+
+    @app.exception_handler(IncompatibleTrainedModelError)
+    def _incompatible_model(_request: Request, exc: IncompatibleTrainedModelError) -> JSONResponse:
         return JSONResponse(status_code=409, content={"detail": str(exc)})

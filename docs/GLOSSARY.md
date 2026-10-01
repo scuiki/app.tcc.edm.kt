@@ -162,6 +162,7 @@ modelo, exceto o domínio médio dos exercícios treinados.
 | `path_sampling_seed` | A seed do sorteio dos R paths de cada solução, 42, separada da `seed` do treino para os paths não mudarem entre as execuções | `seed` |
 | `code_vector_layer` | A camada linear sem viés que leva a média ponderada dos paths ao vetor de código z, o W_0 de Shi et al. (2022) | — |
 | `INFERENCE_CHUNK_SIZE` | Quantos alunos entram de cada vez num forward da inferência e da avaliação, para a memória não estourar | — |
+| `batch_chunk_size` | Quantos alunos de um lote entram de cada vez no forward e no backward do treino, com o gradiente somado até completar o lote, para a memória da GPU não estourar | — |
 | `EVALUATION_SEEDS` | As seeds das dez execuções da avaliação, de 42 a 51 | — |
 | `evaluate_over_seeds()` | Treina e avalia um exercício uma vez por seed de `EVALUATION_SEEDS` (`ml/evaluation/seed_evaluation.py`) | multirun do TCC 1 |
 | `SeedEvaluation` | O resultado de `evaluate_over_seeds()`, com o AUC de cada seed, a média e o desvio | — |

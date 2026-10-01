@@ -6,7 +6,9 @@ from types import MappingProxyType
 
 # dropout=0.1 segue o protocolo congelado, NÃO o default 0.0 do notebook.
 _FROZEN = {
-    "R": 50,
+    "R": 100,
+    # Separada da seed do treino, para a amostra de paths de cada solução não mudar entre execuções
+    "path_sampling_seed": 42,
     "max_path_length": 8,
     "max_path_width": 2,
     "node_embed_dim": 100,
@@ -16,6 +18,8 @@ _FROZEN = {
     "lr": 5e-4,
     "epochs": 40,
     "batch_size": 128,
+    # O lote de 128 passa em pedaços de 64 alunos, porque com R=100 ele inteiro não cabe na GPU
+    "batch_chunk_size": 64,
     "grad_clip": 10,
     "max_len": 50,
     "seed": 42,

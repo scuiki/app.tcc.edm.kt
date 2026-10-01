@@ -18,7 +18,8 @@ import pandas as pd
 import pytest
 from sklearn.model_selection import train_test_split
 
-from ml.code_dkt.train_and_evaluate import train_and_evaluate
+from ml.code_dkt.ast_paths import extract_ast_paths_for_snapshots
+from ml.code_dkt.train_and_evaluate import code_by_snapshot_id, train_and_evaluate
 from ml.reproducibility.code_dkt_hyperparameters import CODE_DKT_HYPERPARAMETERS
 from ml.reproducibility.random_seed import seed_all_random_generators
 from ml.code_dkt.student_split import split_students_into_train_and_test
@@ -155,11 +156,20 @@ def test_regression_a439(csedm_main_table) -> None:
         csedm_main_table, progsnap_assignment_id=A439, test_size=0.2, random_state=1
     )
 
+    # Os paths saem uma vez aqui, todos os de cada solução, como o app os lê do cache
+    code_by_snapshot = code_by_snapshot_id(pd.concat([train_df, test_df], ignore_index=True))
+    ast_paths_by_snapshot = extract_ast_paths_for_snapshots(
+        sorted(code_by_snapshot), code_by_snapshot,
+        max_path_length=CODE_DKT_HYPERPARAMETERS["max_path_length"],
+        max_path_width=CODE_DKT_HYPERPARAMETERS["max_path_width"],
+    )
+
     # Não estrito na GPU, confia na banda de ±3pp em vez de pagar o custo do determinismo bit a bit.
     seed_all_random_generators(CODE_DKT_HYPERPARAMETERS["seed"], strict=False)
 
     result = train_and_evaluate(
-        train_df, CODE_DKT_HYPERPARAMETERS, test_df, progsnap_assignment_id=A439
+        train_df, CODE_DKT_HYPERPARAMETERS, test_df,
+        progsnap_assignment_id=A439, ast_paths_by_snapshot=ast_paths_by_snapshot,
     )
 
     first_auc = result["first_attempt_auc"]

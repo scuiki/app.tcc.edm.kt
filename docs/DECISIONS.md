@@ -62,6 +62,19 @@ Cada `TrainingEpochMetric` guarda a soma da época dividida pelos alunos que ent
 têm ao menos uma previsão válida, e a curva fica na mesma escala para qualquer turma. O treino não
 muda.
 
+**O lote de treino passa em pedaços de 64 alunos.** Com R=100, o bloco de atenção do Code-DKT cria
+tensores de 128 × 50 × 100 × (2M + 300) floats, 819 MB cada no A439, e o autograd guarda vários
+deles para o `backward`. O lote de 128 inteiro estourou a memória da RTX 4050, que tem 6 GB e também
+alimenta a tela do desktop. O `batch_chunk_size` passa o lote em pedaços de 64, soma o gradiente e
+dá um passo do Adam por lote, com pico de 3.187 MiB no `nvidia-smi`. A memória depende só das formas
+dos tensores, e não do conteúdo, então o pico é previsível e cresce pouco com o número de problemas.
+O tamanho do pedaço é fixo e fica gravado com o modelo, porque escolhê-lo pela memória livre faria o
+resultado depender do que mais estivesse aberto na máquina. Mudar só o alocador do PyTorch
+(`expandable_segments`) mantinha o lote inteiro com a numérica idêntica, mas o pico ficava em 5.345
+de 6.141 MiB. Recalcular as ativações no `backward` (checkpoint) quase não economiza aqui, porque a
+memória fica num bloco só, e reduzir o R ou o lote mudaria o método. A decisão está na linha 14 do
+`DEVELOPMENT.md`.
+
 **A comparação com o paper roda à parte e não falha pelos números.** O teste do marcador
 `literature` treina os cinco exercícios da CSEDM com as dez seeds e imprime a tabela ao lado das
 Tabelas 1 e 2 de Shi et al. (2022), sem asserção contra elas. As correções do app ao repositório,

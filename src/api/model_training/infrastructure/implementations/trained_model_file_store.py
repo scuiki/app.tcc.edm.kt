@@ -19,10 +19,21 @@ from api.model_training.infrastructure.repositories.sqlite_trained_model_reposit
     SqliteTrainedModelRepository,
 )
 from api.shared.application.services.clock import utc_now_iso
+from api.shared.domain.errors.incompatible_trained_model_error import (
+    IncompatibleTrainedModelError,
+)
 from api.shared.infrastructure.filesystem import data_layout
 from api.shared.infrastructure.filesystem.confined_path import ConfinedPath
 from api.shared.infrastructure.database.sqlite_connection import transaction
 from ml.code_dkt.model import CodeDKTModel
+
+# Sobe quando a rede, o vocabulário ou o que o config.json guarda mudam de um jeito incompatível
+TRAINED_MODEL_FORMAT_VERSION = 1
+
+_INCOMPATIBLE_FORMAT = (
+    "Este modelo foi gravado num formato anterior do Code-DKT e não pode ser carregado. "
+    "Treine o exercício de novo para gerar um modelo no formato atual."
+)
 
 
 # Os arquivos de cada versão sob `base_path` (o models/ de uma turma).
@@ -62,6 +73,7 @@ class ModelVersionFiles:
         # meta carrega tudo pro reload (config, input/output dim, node/path count).
         meta = {
             **dict(config),
+            "format_version": TRAINED_MODEL_FORMAT_VERSION,
             "input_dim": input_dim,
             "output_dim": output_dim,
             "n_problems": output_dim,
@@ -80,6 +92,9 @@ class ModelVersionFiles:
         # vocab.pkl usa pickle irrestrito; artifact_dir adulterado seria RCE, daí resolve-e-confere
         path = Path(ConfinedPath(vdir, root=self._base))
         meta = json.loads((path / "config.json").read_text())
+        # Antes do vocabulário, que de outro formato seria lido sem erro e daria índices errados
+        if meta.get("format_version") != TRAINED_MODEL_FORMAT_VERSION:
+            raise IncompatibleTrainedModelError(_INCOMPATIBLE_FORMAT)
         with open(path / "vocab.pkl", "rb") as f:
             vocab = pickle.load(f)
         # Args de construção saem do meta (determinístico); input_dim(2M) e output_dim(M) diferem.

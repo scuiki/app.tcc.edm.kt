@@ -7,7 +7,6 @@ from typing import Callable, Mapping
 import pandas as pd
 import torch
 
-from ml.code_dkt.ast_paths import extract_ast_paths_for_snapshots
 from ml.code_dkt.prediction import predict_code_dkt
 from ml.code_dkt.problem_index import build_problem_index
 from ml.code_dkt.student_sequences import build_student_sequences, truncate_student_sequences
@@ -38,11 +37,11 @@ def train_and_evaluate(
     test_df: pd.DataFrame | None = None,
     *,
     progsnap_assignment_id: int,
+    ast_paths_by_snapshot: Mapping[str, list],
     device: torch.device | None = None,
     on_epoch: Callable[[int, float], None] = lambda epoch, loss: None,
-    n_workers: int | None = 1,
 ) -> dict:
-    # Aceita 1 DataFrame (dividido aqui) ou treino/teste prontos; seed é de quem chama.
+    # Aceita 1 DataFrame (dividido aqui) ou treino/teste prontos; seed e paths vêm de quem chama.
     if test_df is None:
         train_df, test_df = split_students_into_train_and_test(
             df_or_train, progsnap_assignment_id=progsnap_assignment_id
@@ -51,25 +50,14 @@ def train_and_evaluate(
         train_df = df_or_train
 
     max_len = config.get("max_len", 50)
-    R = config.get("R", 50)
+    R = config.get("R", 100)
+    path_sampling_seed = config.get("path_sampling_seed", 42)
 
     # 1. sequências completas, is_first_attempt é marcado uma vez por partição
     train_sequences = build_student_sequences(train_df, progsnap_assignment_id)
     test_sequences = build_student_sequences(test_df, progsnap_assignment_id)
 
-    # 2. AST paths de todos os snapshots, treino e teste
-    code_by_snapshot = code_by_snapshot_id(pd.concat([train_df, test_df], ignore_index=True))
-    all_snapshot_ids = sorted(
-        set(code_snapshot_ids(train_sequences)) | set(code_snapshot_ids(test_sequences))
-    )
-    ast_paths_by_snapshot = extract_ast_paths_for_snapshots(
-        all_snapshot_ids, code_by_snapshot,
-        max_path_length=config.get("max_path_length", 8),
-        max_path_width=config.get("max_path_width", 2),
-        R=R, seed=config.get("seed", 42), n_workers=n_workers,
-    )
-
-    # 3. vocabulário só do treino, sem vazamento por construção
+    # 2. vocabulário só do treino, com todos os paths das soluções dele, sem vazamento
     token_to_idx, path_to_idx = build_train_only_vocabulary(
         ast_paths_by_snapshot, code_snapshot_ids(train_sequences)
     )
@@ -80,26 +68,26 @@ def train_and_evaluate(
         "path_count": len(path_to_idx),
     }
 
-    # 4. índice de problemas sobre TODAS as sequências (a saída do modelo cobre todo problema)
+    # 3. índice de problemas sobre TODAS as sequências (a saída do modelo cobre todo problema)
     problem_to_idx = build_problem_index(train_sequences + test_sequences)
 
-    # 5. truncamento, só fatia, is_first_attempt segue como foi marcado
+    # 4. truncamento, só fatia, is_first_attempt segue como foi marcado
     train_sequences = truncate_student_sequences(train_sequences, max_len=max_len)
     test_sequences = truncate_student_sequences(test_sequences, max_len=max_len)
 
-    # 6. treino + predição (device e on_epoch vêm de quem chama)
+    # 5. treino + predição (device e on_epoch vêm de quem chama)
     model = train_code_dkt(
         train_sequences, problem_to_idx, vocab, dict(config), ast_paths_by_snapshot,
         seed=config.get("seed", 42), device=device, on_epoch=on_epoch,
     )
     predictions = predict_code_dkt(
         model, test_sequences, problem_to_idx, vocab, ast_paths_by_snapshot,
-        max_len=max_len, R=R,
+        max_len=max_len, R=R, path_sampling_seed=path_sampling_seed,
     )
 
     n_train_events = sum(min(len(s["events"]), max_len) for s in train_sequences)
 
-    # 7. métricas separadas, a mesma compute_auc, só a flag muda
+    # 6. métricas separadas, a mesma compute_auc, só a flag muda
     return {
         "model": model,
         "config": config,

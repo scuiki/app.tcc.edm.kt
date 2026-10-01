@@ -26,25 +26,28 @@ class MlStudentMasteryPredictor:
     ) -> dict[tuple[str, int], float]:
         # O vetor do último passo de cada aluno; leitura confinada ao models/ da turma
         model, vocab, meta = self._model_store.load(trained_model, dataset.classroom_id)
+        # Os parâmetros vêm do meta da versão, completados pelos hiperparâmetros congelados
+        config = {**CODE_DKT_HYPERPARAMETERS, **meta}
 
         # int, não o value object (o ml/ filtra a coluna do DataFrame pelo int).
         sequences = build_student_sequences(dataset.events, dataset.progsnap_assignment_id.value)
-        # Parâmetros de extração vêm do meta da versão, completados pelos hiperparâmetros congelados
         ast_paths_by_snapshot = load_or_extract_ast_paths(
             dataset.classroom_id,
             dataset.assignment_id,
             sorted(set(code_snapshot_ids(sequences))),
             code_by_snapshot_id(dataset.events),
-            {**CODE_DKT_HYPERPARAMETERS, **meta},
+            config,
         )
+        # A mesma amostra de paths do treino, com o R e a seed do sorteio gravados na versão
         state = predict_current_state(
             model,
             sequences,
             build_problem_index(sequences),
             vocab,
             ast_paths_by_snapshot,
-            max_len=meta.get("max_len", 50),
-            R=meta.get("R", 50),
+            max_len=config["max_len"],
+            R=config["R"],
+            path_sampling_seed=config["path_sampling_seed"],
         )
         return {
             (row.student_id, int(row.problem_id)): float(row.predicted_correct_probability)

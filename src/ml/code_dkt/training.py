@@ -1,4 +1,4 @@
-# Treino do Code-DKT, Adam + gradient clipping + loss do DKT, hiperparâmetros congelados.
+# Treino do Code-DKT, Adam + gradient clipping + loss do DKT, com o lote em pedaços na GPU.
 
 # Portado do TCC 1 (src/models/code_dkt.py); device/on_epoch são injetáveis sem mudar os números.
 
@@ -35,9 +35,11 @@ def train_code_dkt(
     dropout = config.get("dropout", 0.0)
     lr = config.get("lr", 0.0005)
     batch_size = config.get("batch_size", 128)
+    batch_chunk_size = config.get("batch_chunk_size", 64)
     epochs = config.get("epochs", 40)
     max_len = config.get("max_len", 50)
-    R = config.get("R", 50)
+    R = config.get("R", 100)
+    path_sampling_seed = config.get("path_sampling_seed", 42)
 
     # device=None mantém o default original, cuda se houver, senão cpu.
     if device is None:
@@ -59,7 +61,7 @@ def train_code_dkt(
     X, Y_next, mask = build_model_input_tensors(
         train_sequences, ast_paths_by_snapshot,
         vocab["token_to_idx"], vocab["path_to_idx"],
-        problem_to_idx, max_len=max_len, R=R,
+        problem_to_idx, max_len=max_len, R=R, path_sampling_seed=path_sampling_seed,
     )
 
     # y_true é a correção do próximo passo, a_{t+1}
@@ -85,15 +87,25 @@ def train_code_dkt(
             batch_idx = indices[start_i : start_i + batch_size]
             bt = torch.tensor(batch_idx, dtype=torch.long, device=device)
 
-            y_pred = model(X[bt])
-            loss = dkt_loss(y_pred, y_true[bt], Y_next[bt], mask[bt])
+            # Os mesmos passos válidos da perda, para cada pedaço pesar pela fração dele no lote
+            valid = mask[bt] & (Y_next[bt].sum(dim=-1) > 0)
+            n_valid = int(valid.sum())
 
             optimizer.zero_grad()
-            loss.backward()
+            batch_loss = 0.0
+            for chunk_i in range(0, len(batch_idx), batch_chunk_size):
+                ct = bt[chunk_i : chunk_i + batch_chunk_size]
+                n_chunk = int(valid[chunk_i : chunk_i + batch_chunk_size].sum())
+                weight = n_chunk / n_valid if n_valid else 0.0
+                loss = dkt_loss(model(X[ct]), y_true[ct], Y_next[ct], mask[ct]) * weight
+                loss.backward()
+                batch_loss += loss.item()
+
+            # O corte e o passo valem para o lote inteiro, depois de somar os pedaços
             nn.utils.clip_grad_norm_(model.parameters(), max_norm=10.0)
             optimizer.step()
 
-            epoch_loss += loss.item()
+            epoch_loss += batch_loss
             n_batches += 1
 
         avg_loss = epoch_loss / n_batches if n_batches > 0 else 0.0

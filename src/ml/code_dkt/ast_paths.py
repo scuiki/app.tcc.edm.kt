@@ -13,6 +13,10 @@ from anytree import Node
 from anytree.search import findall_by_attr
 from anytree.walker import Walker
 
+# O 0 preenche as posições vazias e o 1 é o path que não apareceu no treino, como no repositório
+PADDING_INDEX = 0
+UNKNOWN_INDEX = 1
+
 
 # Extração de paths AST, adaptado de path_extractor.py (TCC 1, Shi et al. 2022).
 
@@ -62,9 +66,8 @@ def extract_ast_paths(
     code: str,
     max_path_length: int = 8,
     max_path_width: int = 2,
-    R: int = 50,
-    seed: int = 42,
 ) -> list[tuple[str, str, str]]:
+    # Todos os paths da solução, sem sorteio, para o vocabulário contar todos
 
     try:
         parsed = _parse_java(code)
@@ -120,22 +123,24 @@ def extract_ast_paths(
 
             paths.append((walk_path[0], "@".join(walk_path), walk_path[-1]))
 
-    if not paths:
-        return []
-
-    if len(paths) > R:
-        rng = random.Random(seed)
-        paths = rng.sample(paths, R)
-
     return paths
+
+
+def sample_ast_paths(
+    paths: list[tuple[str, str, str]], *, R: int, path_sampling_seed: int
+) -> list[tuple[str, str, str]]:
+    # Um gerador novo por solução, então a amostra não depende da ordem nem dos pedaços
+    if len(paths) <= R:
+        return paths
+    return random.Random(path_sampling_seed).sample(paths, R)
 
 
 # Extração em lote (paralela).
 
 def _worker_extract(args: tuple) -> tuple[str, list]:
     # Worker picklável do multiprocessing.Pool.
-    snapshot_id, code, max_path_length, max_path_width, R, seed = args
-    paths = extract_ast_paths(code, max_path_length, max_path_width, R, seed)
+    snapshot_id, code, max_path_length, max_path_width = args
+    paths = extract_ast_paths(code, max_path_length, max_path_width)
     return snapshot_id, paths
 
 
@@ -144,14 +149,12 @@ def extract_ast_paths_for_snapshots(
     code_by_snapshot: dict[str, str],
     max_path_length: int = 8,
     max_path_width: int = 2,
-    R: int = 50,
-    seed: int = 42,
     n_workers: Optional[int] = None,
 ) -> dict[str, list[tuple[str, str, str]]]:
     # Os AST paths de cada snapshot, extraídos em paralelo (multiprocessing.Pool).
 
     args_list = [
-        (snapshot_id, code_by_snapshot.get(snapshot_id, ""), max_path_length, max_path_width, R, seed)
+        (snapshot_id, code_by_snapshot.get(snapshot_id, ""), max_path_length, max_path_width)
         for snapshot_id in code_snapshot_ids
     ]
     cache: dict[str, list] = {}
@@ -176,6 +179,7 @@ def build_ast_path_vocabulary(
             tokens.add(end)
             path_strs.add(path_str)
 
-    token_to_idx = {tok: idx + 1 for idx, tok in enumerate(sorted(tokens))}
-    path_to_idx = {p: idx + 1 for idx, p in enumerate(sorted(path_strs))}
+    first = UNKNOWN_INDEX + 1
+    token_to_idx = {tok: first + idx for idx, tok in enumerate(sorted(tokens))}
+    path_to_idx = {p: first + idx for idx, p in enumerate(sorted(path_strs))}
     return token_to_idx, path_to_idx

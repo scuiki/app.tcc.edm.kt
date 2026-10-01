@@ -10,7 +10,7 @@ import pytest
 from sklearn.model_selection import train_test_split
 
 from ml.code_dkt import student_split
-from ml.code_dkt.ast_paths import extract_ast_paths
+from ml.code_dkt.ast_paths import UNKNOWN_INDEX, extract_ast_paths
 from ml.code_dkt.model_input import ast_paths_to_index_array
 
 ASSIGNMENT_ID = 439
@@ -213,7 +213,7 @@ def test_oov_positive(split_df):
     assert held_out_paths, "held-out snippet must yield >= 1 path"
 
     arr = ast_paths_to_index_array(held_out_paths, token_to_idx, path_to_idx, R=50)
-    # Coluna do path (idx 1) mapeia OOV para 0; pelo menos um path reservado é inédito.
+    # Coluna do path (idx 1) mapeia o inédito para o UNKNOWN_INDEX; pelo menos um path é inédito.
     n_paths = min(len(held_out_paths), 50)
-    oov_count = int(np.sum(arr[:n_paths, 1] == 0))
+    oov_count = int(np.sum(arr[:n_paths, 1] == UNKNOWN_INDEX))
     assert oov_count > 0

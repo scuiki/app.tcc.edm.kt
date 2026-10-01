@@ -233,7 +233,7 @@ A numeração continua a da seção 3.
 | 11 | Primeira tentativa | a primeira em cada problema (p. 56) | o começo de cada trecho seguido do mesmo problema, na janela | a primeira dentro da janela | a primeira na sequência inteira | a primeira na sequência inteira |
 | 12 | Previsão da primeira execução | a próxima tentativa, a partir do histórico (pp. 52–53) | também a primeira, a partir das posições vazias | não prevê | não prevê | não prevê |
 | 13 | Partição | 4:1 por aluno, em cada exercício (p. 54) | 4:1 no A439, `random_state=1` | 4:1 nos 410 do dataset, depois por exercício | 4:1 por exercício no treino, a do TCC 1 no teste de regressão | 4:1 por exercício, igual ao repositório |
-| 14 | Hidden e lote | hidden 200 do DKT; lote 100 do DKT ou 1024 do code2vec | 128 e 128 | 200 e 128 | 128 e 128 | 128 e 128 |
+| 14 | Hidden e lote | hidden 200 do DKT; lote 100 do DKT ou 1024 do code2vec | 128 e 128 | 200 e 128 | 128 e 128 | 128 e 128, com o lote em pedaços de 64 |
 | 15 | Corte de gradiente | o do DKT, sem limiar | nenhum | 10 | 10 | nenhum |
 | 16 | Agregação da perda | entropia cruzada, sem dizer como junta (p. 55); o DKT soma os erros de cada aluno | média de cada aluno, somada no lote | média de todas as previsões | média de todas as previsões | média de cada aluno, somada no lote |
 | 17 | Determinismo na GPU | não trata | cuDNN determinístico | cuDNN determinístico | desligado | cuDNN determinístico |
@@ -300,6 +300,17 @@ dropout na saída do LSTM (linha 7) e o corte de gradiente (linha 15). O paper d
 dropout nem o limiar do corte. Na grade do TCC 1, trocar o hidden de 128 por 200 mudou o
 first-attempt AUC da validação em menos de um ponto (notebook 06, célula 24), abaixo do desvio de
 1,34 ponto entre as seeds 42 a 51 no A439 (notebook 08, célula 16).
+
+Com o R=100 da linha 1, o lote de 128 não cabe nos 6 GB da GPU do app, uma RTX 4050 que também
+alimenta a tela. O passo de treino estourou a memória no `backward`. O app então passa cada lote de
+128 em pedaços de 64 alunos, o `batch_chunk_size`, soma o gradiente dos pedaços e só depois corta e
+dá o passo do Adam, um por lote, como antes (critério 5). O gradiente esperado é o mesmo do lote
+inteiro, porque o Code-DKT não tem camada que misture os alunos de um lote, como o BatchNorm, e cada
+pedaço pesa pela fração dele nos eventos da perda. A numérica muda, porque a soma em float depende da
+ordem e o dropout sorteia as máscaras a cada pedaço. A inferência e a avaliação também vão em pedaços
+de 64 alunos, o `INFERENCE_CHUNK_SIZE`, e nenhum forward passa do pico do treino. Outra saída mantinha
+o lote inteiro com a numérica idêntica, mudando só a configuração do alocador do PyTorch, mas deixava
+cerca de 800 MiB livres na GPU que o desktop também usa.
 
 **15. Corte de gradiente.** O paper não fala de corte. O DKT corta o gradiente acima de um limiar que
 não informa (Piech et al., 2015, subseção Optimization). O repositório não corta
@@ -413,9 +424,9 @@ para mostrar ao professor o domínio de cada aluno, e isso não está no paper.
 
 | # | Estado |
 |---|---|
-| 1 | Decidida em 30/09/2026, não implementada. O TCC 1 mediu 2,2 GB de VRAM com R=50, e o R=100 será medido na implementação |
+| 1 | Decidida em 30/09/2026, implementada em 01/10/2026. O TCC 1 mediu 2,2 GB de VRAM com R=50. Com R=100, o lote de 128 inteiro não coube na GPU. A alocação falhou com 5.289 de 6.141 MiB em uso no `nvidia-smi`, contando a tela, por fragmentação, e sem ela o lote ocupou 5.345 MiB. Em pedaços de 64 (linha 14), o treino do A439 teve pico de 3.187 MiB |
 | 2 | Decidida em 30/09/2026, implementada em 01/10/2026. Com o hash 0, o teste de regressão de antes do plano, na partição do TCC 1 com 410 alunos, uma seed, `strict=False` e na GPU, deu 0,7595 |
-| 3 | Decidida em 30/09/2026, não implementada |
+| 3 | Decidida em 30/09/2026, implementada em 01/10/2026 |
 | 4 | Decidida em 30/09/2026, sem mudança no código |
 | 5 | Decidida em 30/09/2026, sem mudança no código |
 | 6 | Decidida em 30/09/2026, não implementada |
@@ -426,14 +437,14 @@ para mostrar ao professor o domínio de cada aluno, e isso não está no paper.
 | 11 | Decidida em 01/10/2026, sem mudança no código |
 | 12 | Decidida em 01/10/2026, sem mudança no código |
 | 13 | Decidida em 01/10/2026, implementada em 01/10/2026. A importação preserva a ordem do arquivo, conferida por teste, e no A439 o app separa os mesmos 78 alunos de teste do procedimento do repositório |
-| 14 | Decidida em 01/10/2026, sem mudança no código |
+| 14 | Decidida em 01/10/2026, sem mudança no hidden nem no lote. O lote em pedaços de 64, decisão do app pelo critério 5, foi implementado em 01/10/2026 |
 | 15 | Decidida em 01/10/2026, não implementada |
 | 16 | Decidida em 01/10/2026, não implementada |
 | 17 | Decidida em 30/09/2026, não implementada |
 | 18 | Decidida em 30/09/2026, não implementada |
 | 19 | Decidida em 30/09/2026, não implementada |
 | 20 | Decidida em 01/10/2026, sem mudança no código |
-| 21 | Decidida em 01/10/2026, não implementada |
+| 21 | Decidida em 01/10/2026, implementada em 01/10/2026. O vocabulário do A439 tem 553 nós e 38.179 paths, e 4,1% dos paths do teste ficam desconhecidos, contra 6,0% no TCC 1 |
 
 ## KCGen-KT
 

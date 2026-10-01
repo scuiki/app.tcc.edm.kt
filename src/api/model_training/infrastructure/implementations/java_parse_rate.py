@@ -12,8 +12,6 @@ def _extract(code: str, config: dict) -> list[tuple[str, str, str]]:
         code,
         max_path_length=config["max_path_length"],
         max_path_width=config["max_path_width"],
-        R=config["R"],
-        seed=config["seed"],
     )
 
 

@@ -19,7 +19,7 @@ class CodeDKTModel(nn.Module):
         path_count: int,
         n_layers: int = 1,
         dropout: float = 0.0,
-        R: int = 50,
+        R: int = 100,
         node_embed_dim: int = 100,
         path_embed_dim: int = 100,
     ):
