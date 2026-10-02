@@ -1,6 +1,6 @@
 # Predição do Code-DKT, a probabilidade de acerto de cada próxima tentativa.
 
-# Portado do TCC 1 (src/models/code_dkt.py).
+# Adaptado do TCC 1 (src/models/code_dkt.py), com a inferência em pedaços de alunos.
 
 from __future__ import annotations
 

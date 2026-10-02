@@ -50,7 +50,7 @@ _JAVA_BODIES = [
     "public int g7(int n) { try { return 10 / n; } catch (Exception e) { return -1; } }",
 ]
 
-# Arquitetura congelada; só as épocas caem, para um smoke CPU rápido (nunca no real).
+# Os hiperparâmetros do app; só as épocas caem, para um smoke CPU rápido (nunca no real).
 _FAST_EPOCHS = 3
 
 
@@ -283,7 +283,7 @@ def test_parse_rate_is_persisted(tmp_db, data_root, fast_trainer):
 
 
 def test_compile_errors_never_reach_the_training_stream(tmp_db, data_root, fast_trainer):
-    # Compile.Error fica no limpo (estatísticas), mas nunca no treino (AUC caiu p/ 0,6959 no A439)
+    # Compile.Error fica no limpo (estatísticas), mas nunca no treino (derrubou o AUC no A439)
     conn = tmp_db
     assignment_id, job_id = _seed_approved(
         conn, data_root, df=_canonical_df_with_compile_errors()

@@ -5,45 +5,58 @@ fica o raciocínio, para ninguém "consertar" o que foi feito de propósito.
 
 ## Reprodutibilidade científica
 
-As entradas sobre o método do Code-DKT estão sendo revistas pelo `CODE_DKT_PLAN.md`, e, onde
-divergirem dele, vale o `DEVELOPMENT.md`.
+O método do Code-DKT, o que o app segue do paper e do repositório oficial e onde diverge, está no
+`DEVELOPMENT.md`. Aqui ficam as escolhas de engenharia em volta dele, com a linha do
+`DEVELOPMENT.md` que trata do método, quando há uma.
 
 **O treino usa só eventos `Run.Program`.** É o que Shi et al. (2022) e o TCC 1 fizeram. No A439
 real, os `Compile.Error` são 57,6% das linhas, e treinar com eles derrubou o first-attempt AUC para
-0,6959, fora da banda. O recorte é montado num lugar só (`load_training_dataset`), porque antes
-treino e inferência liam o dado cada um por si e os dois esqueceram o filtro. O `Compile.Error`
-continua no dado limpo, porque as estatísticas das execuções precisam dele.
+0,6959, numa medida de antes da revisão do Code-DKT. O recorte é montado num lugar só
+(`load_training_dataset`), porque antes treino e inferência liam o dado cada um por si e os dois
+esqueceram o filtro. O `Compile.Error` continua no dado limpo, porque as estatísticas das execuções
+precisam dele.
 
-**A banda de ±3pp do teste de regressão.** Ela absorve a variação de seed do TCC 1 (desvio de cerca
-de 1,34pp) e a diferença entre os hiperparâmetros congelados (protocolo de Shi et al.,
-`hidden_dim=128`) e o melhor da grade do TCC 1, que gerou a referência (`hidden_dim=200`).
+**A faixa do teste de regressão é de ±0,1 ponto.** O teste roda as dez seeds no A439 e confere que a
+média do first-attempt AUC fica a 0,1 ponto de 0,7278, o valor que o app mediu em 02/10/2026. As dez
+seeds se repetem bit a bit na mesma máquina, então qualquer mudança na média quer dizer que o
+código, as dependências ou o ambiente mudaram. O teste detecta essa mudança, e não serve de oráculo
+científico contra o TCC 1 nem contra o paper. Falha sem GPU, porque a faixa foi medida nela. A
+decisão está na linha 19 do `DEVELOPMENT.md`.
 
 **O dado do teste de regressão.** É o CSEDM real, variante CodeWorkout, Spring 2019, A439, só com
-`Run.Program`, que é o filtro do TCC 1. O rótulo é `Score == 1.0`. A partição treino/teste usa
-`random_state=1`, e não a seed 42 do treino, para reproduzir a partição de referência.
+`Run.Program`, que é o filtro do TCC 1. O rótulo é `Score == 1.0`. A partição treino/teste é a do
+repositório oficial, a mesma do treino real, com `random_state=1` e não a seed 42 do treino
+(linha 13 do `DEVELOPMENT.md`).
 
 **`is_first_attempt` é calculado antes do truncamento.** A flag sai da sequência completa do aluno
 e só depois a sequência é cortada em `max_len`. O port literal do TCC 1 recalculava dentro da
 janela truncada, marcava repetições como primeira tentativa e inflava o first-attempt AUC em
-13,6pp.
+13,6pp (linha 11 do `DEVELOPMENT.md`).
 
 **A atenção do Code-DKT faz softmax em `dim=2`.** Sobre os R paths, como o paper descreve. O
-repositório oficial usa `dim=1`. A divergência é consciente.
+repositório oficial usa `dim=1`. A divergência é consciente (linha 5 do `DEVELOPMENT.md`).
 
-**De onde vêm os hiperparâmetros.** `CODE_DKT_HYPERPARAMETERS` vem do notebook
-`06_code_dkt.ipynb` do TCC 1 (o `DEFAULT_CONFIG` da célula 3 e o `BEST_CONFIG` da grade, na célula
-24). Se o AUC do A439 sair da banda, é o primeiro lugar a olhar.
+**De onde vêm os hiperparâmetros.** Cada valor de `CODE_DKT_HYPERPARAMETERS` tem a fonte no
+`DEVELOPMENT.md` (o R na linha 1, o hidden e o lote na 14, as seeds na 18), e o que o paper e o
+repositório não definem é decisão do app. Se a média do A439 sair da faixa do teste de regressão, é
+o primeiro lugar a olhar.
 
 **A extração de AST paths depende do `PYTHONHASHSEED`.** O javalang devolve os modificadores Java
 num `set`, e a ordem de um `set` de texto muda com a semente de hash do processo. Snapshots com
-dois ou mais modificadores geram paths diferentes em processos diferentes. Isso explica o A439
-alternar entre 0,7595 e 0,7608. O app mantém o código do repositório e fixa o `PYTHONHASHSEED=0`
-nas imagens, decisão da linha 2 do `DEVELOPMENT.md`.
+dois ou mais modificadores geram paths diferentes em processos diferentes. Era isso que fazia o
+first-attempt AUC do A439 alternar de uma execução para outra. O app mantém o código do repositório
+e fixa o `PYTHONHASHSEED=0` no `Dockerfile` base, que a imagem do app herda, decisão da linha 2 do
+`DEVELOPMENT.md`. O guarda de `ast_paths_test.py` e o da fixture da CSEDM falham, sem pular, num
+processo com outro valor.
 
-**O cache de AST paths é compartilhado entre treino e inferência.** Ele guarda todos os snapshots,
-inclusive os de teste, e isso é seguro porque o vocabulário só com o treino é montado depois. Ele
-também garante que a inferência use os mesmos paths que o treino usou, o que re-extrair num
-processo novo não garantiria (ver o item anterior).
+**O cache de AST paths é compartilhado entre treino e inferência.** O `MlCodeDktTrainer` passa ao
+`train_and_evaluate` os paths lidos do cache, e a inferência lê o mesmo cache, então os dois partem
+dos mesmos paths de cada solução (antes o treino extraía por conta própria). O cache guarda todos os
+paths de cada solução e todos os snapshots, inclusive os de teste, e isso é seguro porque o
+vocabulário só com o treino e o sorteio dos R paths vêm depois, na montagem da entrada. A mesma
+ordem dos paths entre processos vem do `PYTHONHASHSEED` fixo (item anterior), e não do cache. A
+pasta leva a `AST_PATH_CACHE_VERSION` no nome, e o cache de antes, que guardava só a amostra, fica
+no disco, ignorado.
 
 **Na inferência, o vocabulário é o da versão treinada.** Ele é sempre recarregado do disco, nunca
 reconstruído, porque reconstruir incluiria snapshots da partição de teste.
@@ -60,7 +73,7 @@ domínio já gravada de um modelo antigo continua servindo o painel, porque não
 cada aluno, como o repositório do Code-DKT, e esse número cresce com o tamanho do lote e da turma.
 Cada `TrainingEpochMetric` guarda a soma da época dividida pelos alunos que entraram na perda, os que
 têm ao menos uma previsão válida, e a curva fica na mesma escala para qualquer turma. O treino não
-muda.
+muda (a agregação da perda é a da linha 16 do `DEVELOPMENT.md`).
 
 **O lote de treino passa em pedaços de 64 alunos.** Com R=100, o bloco de atenção do Code-DKT cria
 tensores de 128 × 50 × 100 × (2M + 300) floats, 819 MB cada no A439, e o autograd guarda vários
@@ -80,7 +93,7 @@ memória fica num bloco só, e reduzir o R ou o lote mudaria o método. A decis�
 Tabelas 1 e 2 de Shi et al. (2022), sem asserção contra elas. As correções do app ao repositório,
 como a ordem por tempo, podem afastar o número do paper de forma legítima, e um teste que exigisse o
 número do paper empurraria o código de volta para os defeitos. Ele fica fora da suíte padrão porque
-leva perto de uma hora na GPU, e falha só por erro de execução ou por AUC indefinido.
+leva cerca de 19 minutos na GPU, e falha só por erro de execução ou por AUC indefinido.
 
 ## Geração de KCs
 
@@ -166,12 +179,14 @@ antes de escrever, e a mensagem de erro não repete o caminho, que pode carregar
 O teto contra zip-bomb conta os bytes realmente descomprimidos, porque o tamanho declarado no zip
 é controlado por quem o mandou.
 
-**O dado limpo volta do banco com os mesmos tipos.** O treino ordena por `submitted_at` e o `ml/`
-compara ids, então um id que voltasse como texto ou um horário sem fuso mudaria a numérica sem
-erro. Por isso o teste do repositório compara com `assert_frame_equal` em dtype estrito.
+**O dado limpo volta do banco com os mesmos tipos e na mesma ordem.** O treino ordena por
+`submitted_at` e o `ml/` compara ids, então um id que voltasse como texto ou um horário sem fuso
+mudaria a numérica sem erro. A partição do treino lista os alunos na ordem das linhas, então a
+ordem do arquivo também tem de sobreviver à importação e ao banco. Por isso o teste do repositório
+compara com `assert_frame_equal` em dtype estrito, e o teste da importação confere a ordem.
 
 **O aviso de poucos alunos conta todo aluno com `Run.Program`.** O `trainability_check` espelha a
-partição do treino, que passa a não filtrar os alunos com menos de três execuções, porque um aluno não
+partição do treino, que não filtra os alunos com menos de três execuções, porque um aluno não
 sai da análise por ter feito pouco do exercício. O espelho é escrito à mão, porque o domínio da
 importação não pode importar o `ml/`.
 
@@ -271,8 +286,8 @@ diz "por execução".
 em dezenas de KB, e as colunas ordenáveis são calculadas, o que tornaria a ordenação no servidor
 cara à toa. A lista é leve; o detalhe do aluno é outra rota, chamada ao clicar.
 
-**O AUC não vai para a tela.** Fica no banco e no teste de regressão, que é o oráculo científico.
-Para o professor, o cartão do modelo diz versão, data e cobertura.
+**O AUC não vai para a tela.** Fica no banco e no teste de regressão, que detecta mudança de
+comportamento do código. Para o professor, o cartão do modelo diz versão, data e cobertura.
 
 ## Trava de job e infraestrutura
 

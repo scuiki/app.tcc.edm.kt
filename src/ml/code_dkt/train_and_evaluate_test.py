@@ -46,7 +46,7 @@ def _row(subject, problem, ts, score, code, snapshot_id):
 
 @pytest.fixture
 def progsnap_df() -> pd.DataFrame:
-    # DataFrame ProgSnap2 sintético, 8 alunos x 3 problemas, todos com >=3 Run.Program.
+    # DataFrame ProgSnap2 sintético, 8 alunos x 3 problemas, cada um com 5 Run.Program.
     base = pd.Timestamp("2019-03-01T08:00:00Z")
     rows = []
     for s in range(8):
@@ -76,7 +76,7 @@ def progsnap_paths(progsnap_df) -> dict[str, list]:
     return {sid: extract_ast_paths(code) for sid, code in code_by_snapshot_id(progsnap_df).items()}
 
 
-# Arquitetura congelada, só épocas reduzidas p/ smoke test em CPU (não em CODE_DKT_HYPERPARAMETERS).
+# Os hiperparâmetros do app, só com épocas reduzidas p/ smoke test em CPU (não nos reais).
 _FAST_CONFIG = {**CODE_DKT_HYPERPARAMETERS, "epochs": 3}
 
 

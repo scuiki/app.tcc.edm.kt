@@ -1,4 +1,4 @@
-# AST paths, caminhos entre folhas da árvore sintática Java, feature do Code-DKT, congelada.
+# AST paths, caminhos entre folhas da árvore sintática Java, feature do Code-DKT.
 
 
 from __future__ import annotations

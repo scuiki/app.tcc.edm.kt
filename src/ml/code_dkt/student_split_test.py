@@ -208,7 +208,7 @@ def test_oov_positive(split_df):
     train_snapshot_ids = set(train_df["code_snapshot_id"].astype(str))
     token_to_idx, path_to_idx = student_split.build_train_only_vocabulary(ast_paths_by_snapshot, train_snapshot_ids)
 
-    # Snippet reservado com estrutura ausente do treino (while) vira paths OOV.
+    # Snippet reservado com estrutura ausente do treino (try/catch) vira paths OOV.
     held_out_paths = extract_ast_paths(_JAVA_OK_C)
     assert held_out_paths, "held-out snippet must yield >= 1 path"
 

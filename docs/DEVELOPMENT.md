@@ -458,27 +458,27 @@ para mostrar ao professor o domínio de cada aluno, e isso não está no paper.
 
 | # | Estado |
 |---|---|
-| 1 | Decidida em 30/09/2026, implementada em 01/10/2026. O TCC 1 mediu 2,2 GB de VRAM com R=50. Com R=100, o lote de 128 inteiro não coube na GPU. A alocação falhou com 5.289 de 6.141 MiB em uso no `nvidia-smi`, contando a tela, por fragmentação, e sem ela o lote ocupou 5.345 MiB. Em pedaços de 64 (linha 14), o treino do A439 teve pico de 3.187 MiB |
-| 2 | Decidida em 30/09/2026, implementada em 01/10/2026. Com o hash 0, o teste de regressão de antes do plano, na partição do TCC 1 com 410 alunos, uma seed, `strict=False` e na GPU, deu 0,7595 |
-| 3 | Decidida em 30/09/2026, implementada em 01/10/2026 |
+| 1 | Decidida em 30/09/2026, implementada em 01/10/2026 no commit `fb90a7f`. O TCC 1 mediu 2,2 GB de VRAM com R=50. Com R=100, o lote de 128 inteiro não coube na GPU. A alocação falhou com 5.289 de 6.141 MiB em uso no `nvidia-smi`, contando a tela, por fragmentação, e sem ela o lote ocupou 5.345 MiB. Em pedaços de 64 (linha 14), o treino do A439 teve pico de 3.187 MiB |
+| 2 | Decidida em 30/09/2026, implementada em 01/10/2026 no commit `68b3cea`. Com o hash 0, o teste de regressão de antes do plano, na partição do TCC 1 com 410 alunos, uma seed, `strict=False` e na GPU, deu 0,7595 |
+| 3 | Decidida em 30/09/2026, implementada em 01/10/2026 no commit `fb90a7f` |
 | 4 | Decidida em 30/09/2026, sem mudança no código |
 | 5 | Decidida em 30/09/2026, sem mudança no código |
-| 6 | Decidida em 30/09/2026, implementada em 01/10/2026 |
-| 7 | Decidida em 30/09/2026, implementada em 01/10/2026 |
+| 6 | Decidida em 30/09/2026, implementada em 01/10/2026 no commit `277403c` |
+| 7 | Decidida em 30/09/2026, implementada em 01/10/2026 no commit `277403c` |
 | 8 | Decidida em 30/09/2026, sem mudança no código |
-| 9 | Decidida em 30/09/2026, implementada em 01/10/2026. No A439 entram os 386 alunos com `Run.Program` |
+| 9 | Decidida em 30/09/2026, implementada em 01/10/2026 no commit `4cf7131`. No A439 entram os 386 alunos com `Run.Program` |
 | 10 | Decidida em 30/09/2026, sem mudança no código |
 | 11 | Decidida em 01/10/2026, sem mudança no código |
 | 12 | Decidida em 01/10/2026, sem mudança no código |
-| 13 | Decidida em 01/10/2026, implementada em 01/10/2026. A importação preserva a ordem do arquivo, conferida por teste, e no A439 o app separa os mesmos 78 alunos de teste do procedimento do repositório |
-| 14 | Decidida em 01/10/2026, sem mudança no hidden nem no lote. O lote em pedaços de 64, decisão do app pelo critério 5, foi implementado em 01/10/2026 |
-| 15 | Decidida em 01/10/2026, implementada em 01/10/2026 |
-| 16 | Decidida em 01/10/2026, implementada em 01/10/2026 |
-| 17 | Decidida em 30/09/2026, implementada em 01/10/2026. Em 02/10/2026, as dez seeds do A439 deram os mesmos valores de primeira tentativa e geral, bit a bit, em quatro processos diferentes |
-| 18 | Decidida em 30/09/2026, implementada em 02/10/2026, no `evaluate_over_seeds`, que o teste de regressão e a comparação com o paper usam |
-| 19 | Decidida em 30/09/2026, implementada em 02/10/2026. A faixa é de ±0,1 ponto em torno de 0,7278, e a comparação com o paper está na justificativa 19 |
+| 13 | Decidida em 01/10/2026, implementada em 01/10/2026 no commit `4cf7131`. A importação preserva a ordem do arquivo, conferida por teste, e no A439 o app separa os mesmos 78 alunos de teste do procedimento do repositório |
+| 14 | Decidida em 01/10/2026, sem mudança no hidden nem no lote. O lote em pedaços de 64, decisão do app pelo critério 5, foi implementado em 01/10/2026 no commit `fb90a7f` |
+| 15 | Decidida em 01/10/2026, implementada em 01/10/2026 no commit `277403c` |
+| 16 | Decidida em 01/10/2026, implementada em 01/10/2026 no commit `277403c` |
+| 17 | Decidida em 30/09/2026, implementada em 01/10/2026 no commit `277403c`. Em 02/10/2026, no commit `c7dfa3a`, as dez seeds do A439 deram os mesmos valores de primeira tentativa e geral, bit a bit, em quatro processos diferentes |
+| 18 | Decidida em 30/09/2026, implementada em 02/10/2026 no commit `c7dfa3a`, no `evaluate_over_seeds`, que o teste de regressão e a comparação com o paper usam |
+| 19 | Decidida em 30/09/2026, implementada em 02/10/2026 no commit `c7dfa3a`. A faixa é de ±0,1 ponto em torno de 0,7278, e a comparação com o paper está na justificativa 19 |
 | 20 | Decidida em 01/10/2026, sem mudança no código |
-| 21 | Decidida em 01/10/2026, implementada em 01/10/2026. O vocabulário do A439 tem 553 nós e 38.179 paths, e 4,1% dos paths do teste ficam desconhecidos, contra 6,0% no TCC 1 |
+| 21 | Decidida em 01/10/2026, implementada em 01/10/2026 no commit `fb90a7f`. O vocabulário do A439 tem 553 nós e 38.179 paths, e 4,1% dos paths do teste ficam desconhecidos, contra 6,0% no TCC 1 |
 
 ## KCGen-KT
 

@@ -7,6 +7,8 @@
 # credential in env, no credential in image).
 FROM edmkt-core:dev
 
+# O PYTHONHASHSEED=0 vem da imagem base e não pode mudar, porque a ordem dos AST paths depende dele
+
 # Pre-bake the SBERT model so KC-gen never downloads at run time (offline reliability on nitro).
 # all-MiniLM-L6-v2 is the frozen KCGen-KT embedding model (science pin, mirrors TCC 1).
 RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('all-MiniLM-L6-v2')"

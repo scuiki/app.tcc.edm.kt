@@ -34,7 +34,7 @@ def build_train_only_vocabulary(
     ast_paths_by_snapshot: dict[str, list[tuple[str, str, str]]],
     train_snapshot_ids: Iterable[str],
 ) -> tuple[dict[str, int], dict[str, int]]:
-    # O vocabulário de AST paths vem só dos snapshots de treino (notebook 06, célula 14).
+    # O vocabulário de AST paths vem só dos snapshots de treino, com todos os paths de cada um.
     train_snapshot_ids = set(train_snapshot_ids)
     train_paths = {
         snapshot_id: ast_paths_by_snapshot[snapshot_id]

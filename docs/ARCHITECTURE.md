@@ -6,7 +6,7 @@ terceira, `web/`, é a SPA em React, com o próprio `package.json`, e tem a sua 
 
 - **`ml/`**: a ciência (Code-DKT, KCGen-KT, AUC). É uma biblioteca, como o
   torch: não conhece HTTP, banco nem disco da aplicação, e **nunca importa de `api/`**. É o que o
-  teste de regressão contra o TCC 1 exercita.
+  teste de regressão e a comparação com o paper exercitam.
 - **`api/`**: a aplicação. Organizada **por funcionalidade primeiro**, com as camadas de clean
   architecture dentro de cada uma.
 
@@ -113,10 +113,15 @@ Tudo o que uma turma tem fora do banco fica sob o id dela, que nunca muda, e só
 ```
 data/<classroom_id>/
   raw/<data-e-hora>_<nome-do-zip>/     o cru de cada envio
-  cache/paths/<assignment_id>/         os AST paths já extraídos
+  cache/paths-v<N>/<assignment_id>/    todos os AST paths de cada solução
   kc/<assignment_id>/                  as respostas do LLM da geração de KCs
   models/<assignment_id>/v<K>/         as versões de modelo treinadas
 ```
+
+A pasta do cache de AST paths leva no nome a versão do formato (`AST_PATH_CACHE_VERSION`, hoje 2).
+O cache guarda todos os paths de cada solução, e o sorteio dos R paths acontece depois, na montagem
+da entrada. Quando o que o cache guarda muda, a versão sobe e a pasta nova começa vazia. A pasta de
+antes (`cache/paths/<assignment_id>/`) fica no disco, ignorada e sem ser apagada.
 
 ## Remoção
 
@@ -175,13 +180,18 @@ start_training_use_case_test.py
   camada e o domínio. Quando precisa da infraestrutura real (SQLite, disco), quem a monta é uma
   fixture em `tests/fixtures/<funcionalidade>.py`, que fica fora de `api/` e é registrada no
   `conftest.py` da raiz. Assim o `import-linter` vale para o teste como vale para o código.
-- Em `tests/` ficam só o teste de regressão contra a execução de referência do TCC 1 (o sistema
+- Em `tests/` ficam só o teste de regressão do Code-DKT no A439 (o sistema
   inteiro, com GPU e o CSEDM real), a comparação com as Tabelas 1 e 2 de Shi et al. (2022), os
   dados de exemplo em `tests/data/` e as fixtures de `tests/fixtures/`. A comparação tem o marcador
   `literature`, fica fora da suíte padrão como o marcador `regression` e grava o AUC de cada seed em
   `docs/results/code_dkt_literature_comparison.json`. As duas leem a CSEDM real pela fixture de
   `tests/fixtures/csedm.py`.
-- Tudo roda no container, nunca no host.
+- A regressão roda as dez seeds e confere a média do first-attempt AUC numa faixa de ±0,1 ponto em
+  torno da medida do próprio app. Ela detecta que o código, as dependências ou o ambiente mudaram o
+  comportamento do Code-DKT, e não compara o app com o TCC 1 nem com o paper. Falha sem GPU, porque
+  a faixa foi medida nela.
+- Tudo roda no container, nunca no host. A imagem fixa o `PYTHONHASHSEED=0`, e o guarda de
+  `ast_paths_test.py` e o da fixture da CSEDM falham, sem pular, num processo com outro valor.
 
 ## Jobs em background
 

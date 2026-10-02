@@ -1,6 +1,6 @@
 # Treino do Code-DKT, Adam + a loss por aluno do repositório, com o lote em pedaços na GPU.
 
-# Portado do TCC 1 (src/models/code_dkt.py); device/on_epoch são injetáveis sem mudar os números.
+# Adaptado do TCC 1 (src/models/code_dkt.py), com device e on_epoch injetáveis por quem chama.
 
 from __future__ import annotations
 

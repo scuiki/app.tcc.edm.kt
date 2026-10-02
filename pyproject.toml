@@ -8,13 +8,15 @@ version = "0.1.0"
 description = "EDM·KT: ml/ (Code-DKT knowledge tracing over ProgSnap2) and api/ (the teacher-facing FastAPI app). TCC 2 deployment of TCC 1 research."
 requires-python = ">=3.10,<3.13"
 
-# Runtime deps inherited from the TCC 1 environment (commit 0e8807c).
-# Exact versions are frozen in requirements.lock — validated by the regression test as the
-# version oracle (CORE-03/RESEARCH A2): A439 first-attempt AUC = 0.7608, in band
-# [0.7027, 0.7627]. torch/numpy come from the pinned base image conda env (see Dockerfile,
-# pytorch/pytorch:2.7.1-cuda12.8-cudnn9-runtime); they are listed unversioned here because
-# the image — not PyPI — is the reproducibility anchor (torch==2.7.1+cu128 is not a plain
-# PyPI pin). The lower bounds below match the resolved lock; bump only with a green regression test.
+# Dependências de execução herdadas do ambiente do TCC 1 (commit 0e8807c).
+
+# As versões exatas ficam no requirements.lock, e o teste de regressão é quem as valida.
+
+# A média das dez seeds do A439 na primeira tentativa tem de ficar em ±0,1 ponto de 0,7278.
+
+# O torch e o numpy vêm do conda da imagem base e ficam sem versão aqui, porque a âncora é a imagem.
+
+# O torch==2.7.1+cu128 não é um pin comum do PyPI, e os pins abaixo só sobem com a regressão verde.
 dependencies = [
     "torch",            # base image conda env: torch==2.7.1+cu128 (sm_89, RTX 4050)
     "numpy",            # base image conda env: numpy==2.2.6
@@ -25,10 +27,10 @@ dependencies = [
     # SBERT (KCGen-KT Etapa 3): única dependência nova da Fase 5. Pin = versão do TCC 1
     # (notebook de pesquisa: s-transformers = 5.4.1), não a latest — fidelidade do silhouette/
     # embeddings com results/kc_clusters_A*.json (Open Q1, KC-01). Transporte/embeddings, NÃO
-    # toca a numérica de treino do Code-DKT (não afeta a banda ±3pp do teste de regressão).
+    # toca a numérica de treino do Code-DKT (não afeta a faixa de ±0,1 ponto da regressão).
     "sentence-transformers==5.4.1",
     # HTTP/I/O stack (waves 2-3): camada de transporte, NÃO toca a numérica de treino —
-    # a banda ±3pp segue ancorada na tag fixa da imagem torch, não nestes pins.
+    # a faixa de ±0,1 ponto segue ancorada na tag fixa da imagem torch, não nestes pins.
     "fastapi==0.138.0",
     "uvicorn[standard]==0.49.0",
     "python-multipart==0.0.32",
@@ -51,7 +53,7 @@ testpaths = ["src", "tests"]
 python_files = ["*_test.py", "test_*.py"]
 pythonpath = ["src", "."]  # "." para tests.fixtures (ver tests/fixtures/__init__.py)
 markers = [
-    "regression: AUC regression test against the TCC 1 reference run (A439, GPU + real CSEDM), needs EDMKT_CSEDM_PATH (deselect with -m 'not regression')",
+    "regression: dez seeds do Code-DKT no A439, com a média do first-attempt AUC em ±0,1 ponto de 0,7278, na GPU com o CSEDM real, precisa do EDMKT_CSEDM_PATH e roda com -m regression",
     "literature: comparação com as Tabelas 1 e 2 de Shi et al. (2022), cinco exercícios e dez seeds na GPU com o CSEDM real, roda com -m literature -s e grava docs/results/code_dkt_literature_comparison.json",
 ]
 # importlib: dois *_test.py com o mesmo nome em pastas diferentes não colidem.

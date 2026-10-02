@@ -165,9 +165,10 @@ modelo, exceto o domínio médio dos exercícios treinados.
 | `batch_chunk_size` | Quantos alunos de um lote entram de cada vez no forward e no backward do treino, com o gradiente somado até completar o lote, para a memória da GPU não estourar | — |
 | `EVALUATION_SEEDS` | As seeds das dez execuções da avaliação, de 42 a 51 | — |
 | `evaluate_over_seeds()` | Treina e avalia um exercício uma vez por seed de `EVALUATION_SEEDS` (`ml/evaluation/seed_evaluation.py`) | multirun do TCC 1 |
-| `SeedEvaluation` | O resultado de `evaluate_over_seeds()`, com o AUC de cada seed, a média e o desvio | — |
+| `SeedEvaluation` | O resultado de `evaluate_over_seeds()`, com o first-attempt AUC e o AUC geral de cada seed, e a média e o desvio amostral de cada um | — |
 | `TRAINED_MODEL_FORMAT_VERSION` | A versão do formato do artefato de um `TrainedModel`, gravada como `format_version` no `config.json` | — |
 | `IncompatibleTrainedModelError` | O erro de quando um artefato não tem a `format_version` atual. Vira 409 | — |
+| marcador `regression` | O teste que treina o A439 com as dez seeds e confere a média da primeira tentativa em ±0,1 ponto em torno de 0,7278, `tests/test_regression_a439.py`, fora da suíte padrão | — |
 | marcador `literature` | O teste que compara o app com as Tabelas 1 e 2 de Shi et al. (2022), `tests/test_literature_comparison.py`, fora da suíte padrão | — |
 | `java_parse_rate` | A fração dos snapshots que o javalang conseguiu parsear | `parse_rate` |
 | `ModelProvenance` | O commit do código e o hash do dado que geraram um modelo | `provenance` |

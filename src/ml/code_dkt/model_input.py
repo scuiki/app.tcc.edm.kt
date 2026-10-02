@@ -1,6 +1,6 @@
 # Entrada do Code-DKT, cada tentativa vira o one-hot do DKT + os índices dos AST paths dela.
 
-# Portado do TCC 1 (paths_to_tensor, build_code_input_tensor).
+# Adaptado do TCC 1 (paths_to_tensor, build_code_input_tensor), com o sorteio dos R paths aqui.
 
 from __future__ import annotations
 
@@ -69,7 +69,7 @@ def build_model_input_tensors(
             else:
                 X[i, t, m + M] = 1.0
 
-            # Features de código, lookup pré-computado -> (R, 3) -> flatten float32
+            # Features de código, os paths da solução sorteados -> (R, 3) -> flatten float32
             raw_paths = ast_paths_by_snapshot.get(snapshot_ids[t_rel], [])
             code_arr = ast_paths_to_index_array(
                 raw_paths, token_to_idx, path_to_idx, R, path_sampling_seed

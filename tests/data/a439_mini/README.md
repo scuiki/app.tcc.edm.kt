@@ -1,30 +1,30 @@
-# a439_mini — synthetic hermetic fixture
+# a439_mini, a fixture sintética
 
-This is a **synthetic** ProgSnap2-shaped subset built in code by the `a439_mini`
-pytest fixture (`tests/conftest.py`). It is **not** the real CSEDM dataset and must
-never be confused with it (D-11/D-12).
+O `a439_mini` é um recorte sintético montado em código pela fixture de mesmo nome, no `conftest.py`
+da raiz, com as colunas do dado limpo do `docs/GLOSSARY.md`. Ele não é a CSEDM real e não sai de
+nenhum arquivo dela.
 
-## What it is
+## O que ele tem
 
-A handful of fabricated students (`S1`, `S2`, `S_long`) attempting three problems
-(`1`, `2`, `3`) under `AssignmentID == 439`, with:
+Três alunos inventados (`S1`, `S2` e `S_long`) em três problemas (1, 2 e 3) do exercício 439. O
+recorte traz
 
-- `EventType` in `{Run.Program, Compile.Error}`
-- `Score` in `{0.0, 1.0}` (ground-truth `correct = Run.Program & Score == 1.0`)
-- monotonic `ServerTimestamp` per student
-- minimal compilable Java in `Code` (so `javalang` yields ≥ 1 AST path) plus one
-  deliberately malformed snippet (to characterize the parser's `try/except` guard)
-- at least one repeated problem (so `is_first_attempt` has both `True` and `False`)
-- one over-`max_len` student (`S_long`, 8 events) so truncation is exercised
+- eventos `Run.Program` e `Compile.Error`;
+- `score` de 0,0 ou 1,0, com o acerto (`is_correct`) só no `Run.Program` com `score` 1,0;
+- horários crescentes por aluno;
+- Java curto que o javalang lê, e um trecho quebrado de propósito, para a guarda do parser;
+- um problema repetido, para o `is_first_attempt` ter verdadeiro e falso;
+- um aluno com 8 eventos (`S_long`), para exercitar o truncamento.
 
-## What it is NOT
+## O que ele não é
 
-- It is **not** loaded from disk, pickled, or derived from the real CSEDM.
-- **No test asserts a specific AUC** against this fixture. Numerics are arbitrary on
-  synthetic data; the only real-data check is the **regression test against the TCC 1 reference run** (plan 06),
-  which is marked `regression`, reads the CSEDM via `EDMKT_CSEDM_PATH`, and asserts A439
-  first-attempt AUC ∈ [70.27, 76.27].
+- Não é lido do disco nem derivado da CSEDM real.
+- Nenhum teste afirma um AUC sobre ele, porque a numérica em dado sintético é arbitrária. A
+  checagem em dado real é o teste de regressão (`tests/test_regression_a439.py`, marcador
+  `regression`), que lê a CSEDM por `EDMKT_CSEDM_PATH`, treina o A439 com as dez seeds na GPU e
+  confere a média do first-attempt AUC em ±0,1 ponto em torno de 0,7278. A comparação com o paper é
+  o `tests/test_literature_comparison.py`, marcador `literature`.
 
-The characterization tests use this fixture only to pin **shapes and behavior**
-(path extraction, vocab/tensor mapping, sequence build/truncate, metric separation,
-training callback/device wiring) of the verbatim TCC 1 port before any correction.
+Os testes de `src/ml` e `src/api` usam a fixture só para travar formas e comportamento. No `ml/`, a
+montagem e o truncamento das sequências, os tensores de entrada e o treino curto em CPU. No `api/`,
+a limpeza, a treinabilidade e as estatísticas da importação.

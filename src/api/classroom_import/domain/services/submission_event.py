@@ -11,5 +11,5 @@ KEPT_EVENTS = frozenset({RUN_PROGRAM, COMPILE_ERROR})
 
 
 def keep_only_program_runs(cleaned: pd.DataFrame) -> pd.DataFrame:
-    # Fiel a Shi et al. 2022; incluir Compile.Error derrubou o first-attempt AUC, fora da banda.
+    # Fiel a Shi et al. 2022; incluir Compile.Error derrubou o first-attempt AUC no A439.
     return cleaned[cleaned["event_type"] == RUN_PROGRAM].copy().reset_index(drop=True)

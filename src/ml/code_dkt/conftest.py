@@ -29,7 +29,7 @@ def training_inputs(a439_mini):
         "path_count": len(path_to_idx),
     }
     problem_to_idx = build_problem_index(sequences)
-    # Arquitetura congelada; só a contagem de épocas foi reduzida para rodar rápido.
+    # Os hiperparâmetros do app, só com a contagem de épocas reduzida para rodar rápido.
     config = {"hidden_dim": 128, "lr": 5e-4, "batch_size": 128, "batch_chunk_size": 64,
               "epochs": 3, "max_len": 50, "R": 100, "path_sampling_seed": 42}
     return sequences, cache, vocab, problem_to_idx, config

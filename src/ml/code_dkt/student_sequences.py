@@ -1,4 +1,4 @@
-# Sequência de tentativas de cada aluno; portado do TCC 1 (src/data_loader.py), numérica congelada.
+# Sequência de tentativas de cada aluno, adaptada do TCC 1 (src/data_loader.py).
 
 import pandas as pd
 

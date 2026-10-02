@@ -13,5 +13,5 @@ COPY src/ml ./src/ml
 COPY tests ./tests
 RUN pip install --no-cache-dir -e ".[dev]"
 
-# Default: run the quick suite (regression test deselected; needs EDMKT_CSEDM_PATH).
+# Roda a suíte rápida, sem os testes regression e literature, que pedem a GPU e o EDMKT_CSEDM_PATH
 CMD ["python", "-m", "pytest", "-q"]

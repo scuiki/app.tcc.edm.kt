@@ -217,11 +217,11 @@ o único bloco com consequência científica e custo de cota, e a nova extraçã
   os nomes da seção 1 já estão lá.
 - **Comentários só com `#` ou `//`**, de uma linha, sem travessão nem dois-pontos, verificados por
   `src/api/code_comments_test.py`. O porquê longo vai para o `DECISIONS.md`.
-- **O Code-DKT segue as decisões do `DEVELOPMENT.md`.** Elas estão sendo implementadas pelo
-  `CODE_DKT_PLAN.md`, e o código pode divergir delas até o plano terminar. Uma mudança no método só
-  entra com uma decisão registrada no `DEVELOPMENT.md`. O teste de regressão detecta mudança de
-  comportamento do código, e a comparação com o paper é um resultado registrado, que não falha pelos
-  números.
+- **O Code-DKT segue as decisões do `DEVELOPMENT.md`.** O código as cumpre desde o fim do
+  `CODE_DKT_PLAN.md`. Uma mudança no método só entra com uma decisão registrada no `DEVELOPMENT.md`.
+  O teste de regressão detecta mudança de comportamento do código, com as dez seeds do A439 numa
+  faixa de ±0,1 ponto em torno de 0,7278. A comparação com o paper é o teste `literature`, que
+  registra o resultado e não falha pelos números.
 
 ## 9. Decisões de 30/09 e 01/10/2026
 
@@ -241,7 +241,7 @@ A discussão das perguntas da seção 7 fechou estes pontos.
 
 A ordem nova é esta.
 
-1. O Code-DKT, pelo `CODE_DKT_PLAN.md`, decidido e aprovado em 01/10/2026.
+1. O Code-DKT, pelo `CODE_DKT_PLAN.md`, decidido e aprovado em 01/10/2026, e já no código.
 2. O KCGen-KT, com a mesma revisão do paper (Duan et al., 2025, e a versão publicada no ACL 2026), a
    seguir. Ele substitui a correção do B1.
 3. A importação da turma nova, a extração dos conceitos e o treino, uma vez só, com os dois métodos

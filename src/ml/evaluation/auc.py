@@ -1,4 +1,4 @@
-# AUC-ROC das previsões (métrica primária é a da primeira tentativa), portado do TCC 1, congelada.
+# AUC-ROC das previsões (métrica primária é a da primeira tentativa), portado do TCC 1.
 
 
 import numpy as np

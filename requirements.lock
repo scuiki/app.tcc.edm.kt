@@ -1,10 +1,12 @@
-# requirements.lock — EDM·KT dependency pins validated by the regression test (CORE-03).
-#
-# The regression test is the version oracle (RESEARCH A2 / D-08): these are the EXACT versions
-# resolved inside the edmkt-core:dev image when tests/test_regression_a439.py::test_regression_a439
-# reproduced A439 first-attempt AUC = 0.7608 — inside the ±3pp band [0.7027, 0.7627] anchored
-# on the TCC 1 reference 73.2654%. Any version change that moves A439 out of band turns the
-# regression test red (T-01-08); re-pin here only after the band is green again.
+# Pins do EDM·KT validados pelo teste de regressão (tests/test_regression_a439.py).
+
+# São as versões exatas da imagem `edmkt-core:dev` quando as dez seeds do A439 deram a média 0,7278.
+
+# Essa média do first-attempt AUC tem de ficar na faixa de ±0,1 ponto, de 0,7268 a 0,7288.
+
+# O teste pega mudança no código ou nas versões, e não compara com o TCC 1 nem com o paper.
+
+# Versão que tire a média da faixa deixa o teste vermelho, e o pin só muda com ele verde de novo.
 #
 # REPRODUCIBILITY ANCHOR — the real freeze is the Docker image, not this file:
 #   torch and numpy ship from the conda env of the pinned base image
@@ -16,9 +18,10 @@
 # regression test green on the nitro RTX 4050 / CUDA 12.8 GPU):
 #   Python  3.11.13
 #   CUDA    12.8 (torch.version.cuda)
+#   PYTHONHASHSEED  0 (ENV do Dockerfile, e a ordem dos AST paths depende dele)
 
 # --- Provided by the pinned base image conda env (do NOT pip-install over the image) ---
-# torch==2.7.1+cu128      # base image; cu128 wheel, sm_89 (RTX 4050) — the numerics oracle
+# torch==2.7.1+cu128      # base image; cu128 wheel, sm_89 (RTX 4050), the numerics anchor
 # numpy==2.2.6            # base image conda build
 
 # --- Science / data deps (pip-installed in the image RUN layer; pinned exact) ---
@@ -27,6 +30,7 @@ javalang==0.13.0
 anytree==2.13.0
 scikit-learn==1.9.0
 scipy==1.17.1
+sentence-transformers==5.4.1  # SBERT do KCGen-KT, fora da numérica do Code-DKT
 
 # --- HTTP/I/O stack (camada de transporte; não toca a numérica do teste de regressão) ---
 fastapi==0.138.0
@@ -36,3 +40,4 @@ python-multipart==0.0.32
 # --- Test runner ---
 pytest==9.1.1
 httpx==0.28.1            # transport do TestClient (dev)
+import-linter==2.15      # verifica a regra de dependência (dev)

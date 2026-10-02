@@ -1,4 +1,4 @@
-# Hiperparâmetros do Code-DKT (Shi et al. 2022), congelados; do notebook 06_code_dkt.ipynb, TCC 1.
+# Hiperparâmetros do Code-DKT (Shi et al. 2022 e repositório oficial), fixos para toda turma.
 
 from __future__ import annotations
 

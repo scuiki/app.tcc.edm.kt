@@ -1,4 +1,4 @@
-# Único lugar que monta o recorte (só Run.Program); sem ele o first-attempt AUC caiu para 0,6959.
+# Único lugar que monta o recorte (só Run.Program); com o Compile.Error o first-attempt AUC cai.
 
 from __future__ import annotations
 
