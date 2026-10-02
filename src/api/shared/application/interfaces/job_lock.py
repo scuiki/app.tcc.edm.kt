@@ -15,6 +15,6 @@ class IAcquiredJobLock(Protocol):
 class IJobLock(Protocol):
     def acquire(self, operation: str, job_id: int | None) -> IAcquiredJobLock: ...
 
-    # Pré-check barato e não autoritativo, o gate real é o `acquire` dentro do próprio job.
+    # Pré-check barato e não autoritativo, a checagem que vale é o `acquire` dentro do próprio job.
     def is_another_job_running(self) -> bool:
         ...

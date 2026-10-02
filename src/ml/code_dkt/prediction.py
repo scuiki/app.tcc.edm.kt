@@ -1,6 +1,6 @@
 # Predição do Code-DKT, a probabilidade de acerto de cada próxima tentativa.
 
-# Adaptado do TCC 1 (src/models/code_dkt.py), com a inferência em pedaços de alunos.
+# Adaptado do TCC 1 (src/models/code_dkt.py), com a inferência em lotes de 64 alunos.
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ import torch
 from ml.code_dkt.model import CodeDKTModel
 from ml.code_dkt.model_input import build_model_input_tensors
 
-# Alunos por forward, o mesmo pedaço do treino, para nenhum forward passar do pico dele na GPU
+# Alunos por forward, o mesmo batch de 64 do treino, para nenhum forward passar do pico dele na GPU
 INFERENCE_CHUNK_SIZE = 64
 
 
@@ -25,7 +25,7 @@ def _predict_in_chunks(
     R: int,
     path_sampling_seed: int,
 ) -> np.ndarray:
-    # A saída (N, max_len, M) de todos os alunos, um pedaço de INFERENCE_CHUNK_SIZE por vez
+    # A saída (N, max_len, M) de todos os alunos, um lote de INFERENCE_CHUNK_SIZE alunos por vez
     device = next(model.parameters()).device
     model.eval()
     outputs = []

@@ -1,4 +1,4 @@
-# Etapa 2 do KCGen-KT, pede ao LLM os KCs de cada problema; prompts congelados, chave de cache pago.
+# Etapa 2 do KCGen-KT, pede ao LLM os KCs de cada problema; prompts congelados, chave do cache.
 
 from __future__ import annotations
 

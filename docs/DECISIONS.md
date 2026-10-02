@@ -6,57 +6,60 @@ fica o raciocínio, para ninguém "consertar" o que foi feito de propósito.
 ## Reprodutibilidade científica
 
 O método do Code-DKT, o que o app segue do paper e do repositório oficial e onde diverge, está no
-`DEVELOPMENT.md`. Aqui ficam as escolhas de engenharia em volta dele, com a linha do
-`DEVELOPMENT.md` que trata do método, quando há uma.
+`DEVELOPMENT.md`. Aqui ficam as escolhas de engenharia em volta dele, com o ponteiro para a decisão
+do `DEVELOPMENT.md` que trata do método (o número da linha e o assunto), quando há uma.
 
 **O treino usa só eventos `Run.Program`.** É o que Shi et al. (2022) e o TCC 1 fizeram. No A439
 real, os `Compile.Error` são 57,6% das linhas, e treinar com eles derrubou o first-attempt AUC para
-0,6959, numa medida de antes da revisão do Code-DKT. O recorte é montado num lugar só
-(`load_training_dataset`), porque antes treino e inferência liam o dado cada um por si e os dois
-esqueceram o filtro. O `Compile.Error` continua no dado limpo, porque as estatísticas das execuções
-precisam dele.
+0,6959, numa medida anterior às mudanças de fidelidade ao paper (etapas 1 a 6 do
+`CODE_DKT_PLAN.md`). O recorte é montado num lugar só (`load_training_dataset`), porque antes treino
+e inferência liam o dado cada um por si e os dois esqueceram o filtro. O `Compile.Error` continua no
+dado limpo, porque as estatísticas das execuções precisam dele.
 
-**A faixa do teste de regressão é de ±0,1 ponto.** O teste roda as dez seeds no A439 e confere que a
-média do first-attempt AUC fica a 0,1 ponto de 0,7278, o valor que o app mediu em 02/10/2026. As dez
-seeds se repetem bit a bit na mesma máquina, então qualquer mudança na média quer dizer que o
-código, as dependências ou o ambiente mudaram. O teste detecta essa mudança, e não serve de oráculo
-científico contra o TCC 1 nem contra o paper. Falha sem GPU, porque a faixa foi medida nela. A
-decisão está na linha 19 do `DEVELOPMENT.md`.
+**A tolerância do teste de regressão é de ±0,1 ponto (±0,001 de AUC).** O teste roda as dez seeds no
+A439 e confere que a média do first-attempt AUC fica a 0,1 ponto da média de referência, 0,7278, o
+valor que o app mediu em 02/10/2026. As dez seeds se repetem bit a bit na mesma máquina, então
+qualquer mudança na média quer dizer que o código, as dependências ou o ambiente mudaram. O teste
+detecta essa mudança, e não serve de valor de referência científico contra o TCC 1 nem contra o
+paper. Falha sem GPU, porque a média de referência foi medida nela. A decisão está na linha 19 do
+`DEVELOPMENT.md`, a regressão e a comparação com o paper.
 
 **O dado do teste de regressão.** É o CSEDM real, variante CodeWorkout, Spring 2019, A439, só com
 `Run.Program`, que é o filtro do TCC 1. O rótulo é `Score == 1.0`. A partição treino/teste é a do
 repositório oficial, a mesma do treino real, com `random_state=1` e não a seed 42 do treino
-(linha 13 do `DEVELOPMENT.md`).
+(a linha 13 do `DEVELOPMENT.md`, a partição).
 
 **`is_first_attempt` é calculado antes do truncamento.** A flag sai da sequência completa do aluno
 e só depois a sequência é cortada em `max_len`. O port literal do TCC 1 recalculava dentro da
 janela truncada, marcava repetições como primeira tentativa e inflava o first-attempt AUC em
-13,6pp (linha 11 do `DEVELOPMENT.md`).
+13,6pp (a linha 11 do `DEVELOPMENT.md`, a primeira tentativa).
 
 **A atenção do Code-DKT faz softmax em `dim=2`.** Sobre os R paths, como o paper descreve. O
-repositório oficial usa `dim=1`. A divergência é consciente (linha 5 do `DEVELOPMENT.md`).
+repositório oficial usa `dim=1`. A divergência é consciente (a linha 5 do `DEVELOPMENT.md`, o eixo
+do softmax).
 
 **De onde vêm os hiperparâmetros.** Cada valor de `CODE_DKT_HYPERPARAMETERS` tem a fonte no
-`DEVELOPMENT.md` (o R na linha 1, o hidden e o lote na 14, as seeds na 18), e o que o paper e o
-repositório não definem é decisão do app. Se a média do A439 sair da faixa do teste de regressão, é
-o primeiro lugar a olhar.
+`DEVELOPMENT.md` (o R na linha 1, a dimensão do estado oculto (hidden size) e o tamanho do lote
+(batch size) na linha 14, as seeds na linha 18), e o que o paper e o repositório não definem é
+decisão do app. Se a média do A439 sair da tolerância do teste de regressão, é o primeiro lugar a
+olhar.
 
 **A extração de AST paths depende do `PYTHONHASHSEED`.** O javalang devolve os modificadores Java
 num `set`, e a ordem de um `set` de texto muda com a semente de hash do processo. Snapshots com
 dois ou mais modificadores geram paths diferentes em processos diferentes. Era isso que fazia o
 first-attempt AUC do A439 alternar de uma execução para outra. O app mantém o código do repositório
 e fixa o `PYTHONHASHSEED=0` no `Dockerfile` base, que a imagem do app herda, decisão da linha 2 do
-`DEVELOPMENT.md`. O guarda de `ast_paths_test.py` e o da fixture da CSEDM falham, sem pular, num
-processo com outro valor.
+`DEVELOPMENT.md`, a ordem dos modificadores Java. A asserção de `ast_paths_test.py` e a da fixture
+da CSEDM falham, sem pular, num processo com outro valor.
 
 **O cache de AST paths é compartilhado entre treino e inferência.** O `MlCodeDktTrainer` passa ao
 `train_and_evaluate` os paths lidos do cache, e a inferência lê o mesmo cache, então os dois partem
 dos mesmos paths de cada solução (antes o treino extraía por conta própria). O cache guarda todos os
 paths de cada solução e todos os snapshots, inclusive os de teste, e isso é seguro porque o
-vocabulário só com o treino e o sorteio dos R paths vêm depois, na montagem da entrada. A mesma
-ordem dos paths entre processos vem do `PYTHONHASHSEED` fixo (item anterior), e não do cache. A
-pasta leva a `AST_PATH_CACHE_VERSION` no nome, e o cache de antes, que guardava só a amostra, fica
-no disco, ignorado.
+vocabulário só com o treino e a amostragem aleatória dos R paths vêm depois, na montagem da entrada.
+A mesma ordem dos paths entre processos vem do `PYTHONHASHSEED` fixo (item anterior), e não do
+cache. A pasta leva a `AST_PATH_CACHE_VERSION` no nome, e o cache da pasta `paths` sem versão, que
+guardava só a amostra, fica no disco, ignorado.
 
 **Na inferência, o vocabulário é o da versão treinada.** Ele é sempre recarregado do disco, nunca
 reconstruído, porque reconstruir incluiria snapshots da partição de teste.
@@ -64,10 +67,11 @@ reconstruído, porque reconstruir incluiria snapshots da partição de teste.
 **Um artefato de outro formato é recusado, e não lido.** O `config.json` de cada modelo guarda a
 `format_version`, e o artefato sem a versão atual é recusado com o `IncompatibleTrainedModelError`,
 uma resposta 409 com mensagem clara. As mudanças de fidelidade do Code-DKT (o W_0, o vocabulário
-com o desconhecido em 1, o cache com todos os paths) tornam os modelos antigos ilegíveis. O W_0 faria
-a leitura quebrar com um erro cru, e o vocabulário antigo seria lido sem erro nenhum, com o
-desconhecido caindo num token real. A recusa troca as duas falhas por uma mensagem. A matriz de
-domínio já gravada de um modelo antigo continua servindo o painel, porque não recarrega o modelo.
+com o token desconhecido (UNK) no índice 1, o cache com todos os paths) tornam os modelos antigos
+ilegíveis. O W_0 faria a leitura quebrar com um erro cru, e o vocabulário antigo seria lido sem erro
+nenhum, com o token desconhecido caindo num token real. A recusa troca as duas falhas por uma
+mensagem. A matriz de domínio já gravada de um modelo antigo continua servindo o painel, porque não
+recarrega o modelo.
 
 **A curva de perda mostra a perda média por aluno.** O treino soma, em cada lote, a perda média de
 cada aluno, como o repositório do Code-DKT, e esse número cresce com o tamanho do lote e da turma.
@@ -75,18 +79,19 @@ Cada `TrainingEpochMetric` guarda a soma da época dividida pelos alunos que ent
 têm ao menos uma previsão válida, e a curva fica na mesma escala para qualquer turma. O treino não
 muda (a agregação da perda é a da linha 16 do `DEVELOPMENT.md`).
 
-**O lote de treino passa em pedaços de 64 alunos.** Com R=100, o bloco de atenção do Code-DKT cria
-tensores de 128 × 50 × 100 × (2M + 300) floats, 819 MB cada no A439, e o autograd guarda vários
-deles para o `backward`. O lote de 128 inteiro estourou a memória da RTX 4050, que tem 6 GB e também
-alimenta a tela do desktop. O `batch_chunk_size` passa o lote em pedaços de 64, soma o gradiente e
-dá um passo do Adam por lote, com pico de 3.187 MiB no `nvidia-smi`. A memória depende só das formas
-dos tensores, e não do conteúdo, então o pico é previsível e cresce pouco com o número de problemas.
-O tamanho do pedaço é fixo e fica gravado com o modelo, porque escolhê-lo pela memória livre faria o
-resultado depender do que mais estivesse aberto na máquina. Mudar só o alocador do PyTorch
-(`expandable_segments`) mantinha o lote inteiro com a numérica idêntica, mas o pico ficava em 5.345
-de 6.141 MiB. Recalcular as ativações no `backward` (checkpoint) quase não economiza aqui, porque a
-memória fica num bloco só, e reduzir o R ou o lote mudaria o método. A decisão está na linha 14 do
-`DEVELOPMENT.md`.
+**O treino usa acumulação de gradiente em batches de 64 alunos.** Com R=100, o bloco de atenção do
+Code-DKT cria tensores de 128 × 50 × 100 × (2M + 300) floats, 819 MB cada no A439, e o autograd
+guarda vários deles para o `backward`. O lote de 128 inteiro estourou a memória da RTX 4050, que tem
+6 GB e também alimenta a tela do desktop. O `batch_chunk_size` aplica a acumulação de gradiente em
+batches de 64 e dá um passo do Adam por lote de 128, com pico de 3.187 MiB no `nvidia-smi`. A
+memória depende só das formas dos tensores, e não do conteúdo, então o pico é previsível e cresce
+pouco com o número de problemas. O tamanho do batch de acumulação é fixo e fica gravado com o
+modelo, porque escolhê-lo pela memória livre faria o resultado depender do que mais estivesse aberto
+na máquina. Mudar só o alocador do PyTorch (`expandable_segments`) mantinha o lote inteiro com o
+resultado numérico idêntico, mas o pico ficava em 5.345 de 6.141 MiB. Recalcular as ativações no
+`backward` (checkpoint) quase não economiza aqui, porque a memória fica num bloco só, e reduzir o R
+ou o lote mudaria o método. A decisão está na linha 14 do `DEVELOPMENT.md`, o tamanho do lote e a
+acumulação de gradiente.
 
 **A comparação com o paper roda à parte e não falha pelos números.** O teste do marcador
 `literature` treina os cinco exercícios da CSEDM com as dez seeds e imprime a tabela ao lado das
@@ -108,8 +113,8 @@ de nomeação. É o caminho real das turmas pequenas.
 **O LLM recebe o código Java cru.** Em Duan et al. (2025), Tabela 4, mandar a AST no lugar do
 código piora o AUC de 0,812 para 0,784.
 
-**Os prompts são protocolo congelado.** Eles fazem parte da chave do cache pago, e mudar uma vírgula
-invalida o cache.
+**Os prompts são protocolo congelado.** Eles fazem parte da chave do cache de respostas do LLM (cada
+chamada gasta cota da assinatura), e mudar uma vírgula invalida o cache.
 
 **A chave do cache do LLM.** Ela inclui o modelo, a versão do prompt, o prompt de sistema e o
 schema, e não só o conteúdo, porque editar o sistema ou o schema devolveria em silêncio uma
@@ -117,8 +122,9 @@ resposta antiga. As partes são separadas por um byte NUL, para `("a", "b")` e `
 colidirem. É identidade, não segredo.
 
 **O LLM é chamado pela CLI `claude`.** A autenticação é o OAuth da assinatura, que só a CLI resolve.
-O modelo é sempre passado por quem chama (o pin científico). A CLI roda fora do repositório
-(`EDMKT_KC_CWD`), para o CLAUDE.md do projeto não entrar no contexto e no custo de cada chamada.
+O modelo é sempre passado por quem chama, na versão fixada para a reprodutibilidade (hoje o Haiku
+4.5). A CLI roda fora do repositório (`EDMKT_KC_CWD`), para o CLAUDE.md do projeto não entrar no
+contexto e no custo de cada chamada.
 
 **Retry só para erro transitório.** Rede, 429, 5xx e timeout são refeitos com espera. Conteúdo vazio
 ou inválido sobe na hora, porque refazer não muda um conteúdo já gerado e gastaria cota.
@@ -126,11 +132,11 @@ ou inválido sobe na hora, porque refazer não muda um conteúdo já gerado e ga
 **As chamadas de um estágio rodam em paralelo, até 4 de cada vez.** As chamadas do `generate` (uma
 por problema) e as da nomeação (uma por grupo) não dependem umas das outras, e em sequência a
 extração de 10 problemas levava uns 8 minutos. O paralelismo fica só no gerador da `api/`: a
-amostragem das soluções continua em sequência e na ordem de antes, os prompts são os mesmos, e os
-resultados são juntados por problema e por grupo, então a ordem em que as chamadas terminam não
-muda nada do que o KCGen-KT vê. O limite de 4 é para não esbarrar no limite de uso da assinatura.
-O cache de respostas grava o arquivo inteiro a cada resposta e por isso tem uma trava, e o
-progresso do job é gravado pela thread que disparou as chamadas, então a conexão SQLite do worker
+amostragem das soluções continua em sequência e na ordem anterior ao paralelismo, os prompts são os
+mesmos, e os resultados são juntados por problema e por grupo, então a ordem em que as chamadas
+terminam não muda nada do que o KCGen-KT vê. O limite de 4 é para não esbarrar no limite de uso da
+assinatura. O cache de respostas grava o arquivo inteiro a cada resposta e por isso tem uma trava, e
+o progresso do job é gravado pela thread que disparou as chamadas, então a conexão SQLite do worker
 nunca é usada por duas threads ao mesmo tempo.
 
 **A CLI roda sem ferramenta nenhuma (`--tools ""`).** Medido no container, cada chamada custa uns 5
@@ -156,8 +162,8 @@ assignment para `kc_draft`, e uma falha desfaz os dois.
 
 **Só uma coisa bloqueia o treino.** É faltar uma das duas classes (acerto e erro) nos
 first-attempts, porque aí o AUC é indefinido. Poucos problemas ou poucos alunos só geram avisos.
-Os limiares de 50 e 20 alunos são heurísticas de cautela, marcadas `[ASSUMED]`, e a fonte delas
-segue em aberto.
+Os limiares de 50 e 20 alunos são heurísticas de cautela, anotadas no código como sem fonte, e
+a fonte delas segue em aberto.
 
 **O `Score` é convertido para número na leitura.** No ProgSnap2 real ele chega como `"1.0"`, vazio
 ou `"N/A"`. Sem a conversão, `Score == 1.0` é falso em toda linha, e a turma inteira vira
@@ -165,8 +171,8 @@ ou `"N/A"`. Sem a conversão, `Score == 1.0` é falso em toda linha, e a turma i
 
 **Os arquivos de uma turma ficam no id dela, não no nome.** Antes o diretório vinha do slug do nome,
 e isso tinha dois problemas. Renomear a turma mudava o slug, e o app deixava de achar o modelo
-publicado. E um segundo envio para a mesma turma misturava o cru e reaproveitava o cache de AST
-paths de outro dataset, porque a chave era só o `CodeStateID`. Agora o diretório é
+publicado. E um segundo envio para a mesma turma misturava os arquivos brutos e reaproveitava o
+cache de AST paths de outro dataset, porque a chave era só o `CodeStateID`. Agora o diretório é
 `data/<classroom_id>/`, cada envio tem a própria pasta em `raw/`, e o cache de AST paths e o do LLM
 ficam por assignment.
 
@@ -181,9 +187,10 @@ O teto contra zip-bomb conta os bytes realmente descomprimidos, porque o tamanho
 
 **O dado limpo volta do banco com os mesmos tipos e na mesma ordem.** O treino ordena por
 `submitted_at` e o `ml/` compara ids, então um id que voltasse como texto ou um horário sem fuso
-mudaria a numérica sem erro. A partição do treino lista os alunos na ordem das linhas, então a
-ordem do arquivo também tem de sobreviver à importação e ao banco. Por isso o teste do repositório
-compara com `assert_frame_equal` em dtype estrito, e o teste da importação confere a ordem.
+mudaria o resultado numérico sem erro. A partição do treino lista os alunos na ordem das linhas,
+então a ordem do arquivo também tem de sobreviver à importação e ao banco. Por isso o teste do
+repositório compara com `assert_frame_equal` em dtype estrito, e o teste da importação confere a
+ordem.
 
 **O aviso de poucos alunos conta todo aluno com `Run.Program`.** O `trainability_check` espelha a
 partição do treino, que não filtra os alunos com menos de três execuções, porque um aluno não
@@ -252,18 +259,19 @@ significa.
 **O domínio é lido do vetor do último passo do Code-DKT.** É o estado atual do aluno, com todas as
 tentativas, para todos os problemas do exercício, inclusive os que ele nunca tentou (Piech et al.
 2015 leem a saída do DKT assim). Antes o app pegava, por problema tentado, a previsão feita um
-passo antes da última tentativa. Não foi uma decisão, foi carona na saída da avaliação
-(`predict_code_dkt`, uma linha por tentativa, que o AUC precisa). As duas leituras agora são
-funções distintas, e a de avaliação não muda.
+passo antes da última tentativa. Não foi uma decisão, foi consequência de reaproveitar a saída da
+avaliação (`predict_code_dkt`, uma linha por tentativa, que o AUC precisa). As duas leituras agora
+são funções distintas, e a de avaliação não muda.
 
 **A matriz é gravada por aluno × problema; o conceito é derivado na leitura.** O modelo prevê por
-problema; o domínio por conceito é a média dos problemas que o exigem, pela Q-matrix. Gravar só o
-nativo mantém uma fonte de verdade e libera a tela de problemas por domínio previsto. A média por
-conceito custa dez números por aluno.
+problema; o domínio por conceito é a média dos problemas que o exigem, pela Q-matrix. Gravar só a
+matriz por problema (como o modelo prevê) mantém uma fonte de verdade e libera a tela de problemas
+por domínio previsto. A média por conceito custa dez números por aluno.
 
 **Os conceitos de um exercício treinado não mudam.** Sem re-treino, editar um KC depois do treino
 mudaria o domínio derivado de um modelo já publicado. Qualquer edição em `trained` é recusada, e
-com isso a Q-matrix viva é a que o modelo conheceu, sem snapshot nem nomes "incluindo removidos".
+com isso a Q-matrix dos vínculos ativos é a que o modelo conheceu, sem snapshot nem nomes "incluindo
+removidos".
 
 **A matriz de mastery é calculada uma vez por versão.** A versão publicada é resolvida uma vez por
 chamada, para não misturar versões se um treino publicar no meio. A inferência usa o mesmo recorte
@@ -278,9 +286,9 @@ aluno que tentou 68 vezes não puxar o número, sem outro tratamento de outlier.
 **As estatísticas das execuções leem o dado inteiro.** Ao contrário do treino, elas incluem os
 `Compile.Error`, porque os erros de compilação por execução dependem deles.
 
-**A taxa de erro de compilação é CE / Run.** E não CE / (CE + Run), que mistura os dois tipos de
-evento no denominador e varia com o ritmo de tentativas de cada aluno. Pode passar de 1, e a tela
-diz "por execução".
+**A taxa de erro de compilação é `Compile.Error` / `Run.Program`.** E não `Compile.Error` /
+(`Compile.Error` + `Run.Program`), que mistura os dois tipos de evento no denominador e varia com o
+ritmo de tentativas de cada aluno. Pode passar de 1, e a tela diz "por execução".
 
 **A lista de alunos vem inteira, sem paginação.** O teto é a turma (386 no CSEDM), a resposta fica
 em dezenas de KB, e as colunas ordenáveis são calculadas, o que tornaria a ordenação no servidor
@@ -302,8 +310,9 @@ passam por ele e o segundo perde no subprocess.
 **`release()` confere o dono.** O `UPDATE` tem `WHERE holder_pid = ?`, para um release tardio de
 quem já perdeu a trava não soltar a de outro job.
 
-**`AnotherJobRunning` não é regra de negócio.** É corrida, não defeito do pedido. Tratá-la como
-regra sugeriria que a exclusão mora no web e convidaria a apagar o acquire do subprocess.
+**`AnotherJobRunning` não é regra de negócio.** É uma condição de corrida (race condition), não
+defeito do pedido. Tratá-la como regra sugeriria que a exclusão mora no web e convidaria a apagar o
+acquire do subprocess.
 
 **`NotFound` é separado das regras.** Ele vira 404 e as regras viram 409, e ele não acumula com as
 regras, porque sem alvo não há sobre o que aplicá-las. As regras rodam todas e acumulam as recusas,
@@ -352,15 +361,15 @@ dataset, e eles já foram trocados um pelo outro.
 que um estado no `App` não daria. O react-router e o TanStack Router trariam loaders e rotas
 aninhadas que o app não usa. Se um dia precisar, trocar é mecânico.
 
-**CSS puro, sem Tailwind nem shadcn.** O guia de frontend do trabalho parte dessa stack, mas o que
-ele quer garantir (nenhuma cor no ponto de uso, variante com situação de uso) vale do mesmo jeito
-com tokens e uma prop `variant` que escolhe a classe. Trocar o jeito de escrever CSS no meio do
-caminho custaria mais do que rende.
+**CSS puro, sem Tailwind nem shadcn.** Um guia de frontend externo ao repositório (o do trabalho do
+autor) parte dessa stack, mas o que ele quer garantir (nenhuma cor no ponto de uso, variante com
+situação de uso) vale do mesmo jeito com tokens e uma prop `variant` que escolhe a classe. Trocar o
+jeito de escrever CSS no meio do caminho custaria mais do que rende.
 
 **O `<dialog>` nativo no lugar do Radix.** Ele já prende o foco, fecha no Esc e escurece o fundo.
 Abrir como modal exige chamar `showModal()`, e esse é o único effect das primitivas, porque
 sincroniza com uma API do DOM. O conteúdo só existe com o diálogo aberto, então o formulário nasce
-limpo a cada abertura, que é o efeito do override O-1 do guia sem o Radix.
+limpo a cada abertura, por remontagem, sem precisar do Radix.
 
 **Sem react-hook-form nem zod.** Os formulários das telas planejadas têm um campo cada, e o backend
 já valida (tamanho do nome e nome único, com o 409). O `useState` resolve.
@@ -373,9 +382,10 @@ funcionam. O `.npmrc` já relaxa os peers por causa do `openapi-typescript`.
 `no-restricted-imports` não distingue `../../components/ui` de `../../classrooms/components`. O
 `architecture.test.ts` resolve o caminho real, como o `architecture_test.py` faz no backend.
 
-**O `PageHeader` nasceu antes da terceira cópia.** A regra do guia é promover um padrão na terceira
-ocorrência, mas toda página do desenho abre com o mesmo cabeçalho, então ele nasce promovido, pelo
-mesmo motivo dos quatro estados de tela.
+**O `PageHeader` nasceu antes da terceira cópia.** A regra dos três é promover um padrão a
+componente compartilhado na terceira ocorrência, mas toda página do desenho abre com o mesmo
+cabeçalho, então ele nasce como componente compartilhado, pelo mesmo motivo dos quatro estados de
+toda tela (carregando, erro, vazio e conteúdo, descritos no `ARCHITECTURE.md`).
 
 **A importação recusa o pacote sem `CodeStates.csv` antes de processar.** O upload já diz o que
 veio no zip, e sem o código dos alunos não há como extrair conceitos nem treinar. Recusar ali poupa
@@ -417,20 +427,23 @@ navegador o fechar mesmo assim (o Chrome fecha no segundo Esc) e a aba pede conf
 sair. A tela mostra os três estágios que o job informa, com a contagem do estágio atual.
 
 **A barra de ação e o `OutcomeMessage` subiram para `components/`.** Uma funcionalidade não importa
-os componentes de outra, e a importação e os conceitos precisavam dos dois. Na versão 5 do design a barra de ação sai do app, e a migração remove o `PageActionBar`.
+os componentes de outra, e a importação e os conceitos precisavam dos dois. Na versão 5 do design
+(`DESIGN.md`), a barra de ação sai do app, e a migração para esse design (`IMPLEMENTATION_PLAN.md`)
+remove o `PageActionBar`.
 
 **Uma recarga que falha mantém o que já estava na tela.** O `QueryStates` só mostra o erro quando
-ainda não há dado; um soluço numa recarga em segundo plano não apaga uma lista que estava certa.
+ainda não há dado; uma falha transitória numa recarga em segundo plano não apaga uma lista que
+estava certa.
 
 **O contexto mora no endereço, e a navegação é um menu em árvore com breadcrumb.** Turma e
 exercício entram na rota (`/classrooms/:classroomId/assignments/:assignmentId/analysis`), então um
 F5 ou um link abrem no lugar certo e nenhuma tela precisa de seletor. Das opções desenhadas, o menu
 em árvore com o caminho no topo foi o que deixou claro onde o professor está sem ocupar a tela.
 
-**No menu, escolher uma linha só navega, e o sinal na ponta abre e fecha.** Quando o clique também
-abria, uma linha já aberta fechava ao ser escolhida, e a tela Turmas abria no menu a mesma lista que
-já mostra. A única abertura automática é a de uma tela de exercício, para a linha atual aparecer
-marcada. O que fica aberto é lembrado no navegador.
+**No menu, escolher uma linha só navega, e o botão de mais e menos na ponta abre e fecha.** Quando o
+clique também abria, uma linha já aberta fechava ao ser escolhida, e a tela Turmas abria no menu a
+mesma lista que já mostra. A única abertura automática é a de uma tela de exercício, para a linha
+atual aparecer marcada. O que fica aberto é lembrado no navegador.
 
 **As tabelas da Análise seguem o estilo das tabelas acadêmicas.** Um traço escuro sob os rótulos e
 no fim, nenhum vertical e nenhum traço acima dos rótulos, sem seguir a ABNT à risca. A legenda
@@ -439,14 +452,15 @@ centralizados sob os rótulos, que também são centralizados. À direita, a con
 dados, pesa pouco com números curtos e o "355 de 386" desalinha de qualquer jeito, e à esquerda o
 valor cola na coluna anterior. A tabela usa Arial, a fonte de dados do app.
 
-**O app passou a ser formal e cinza, e o azul ficou só com o modelo.** Na linguagem anterior o azul
-de ação estava no botão primário, no menu, nas abas e nos links, e um azul quase igual pintava o
-domínio previsto. O professor via a mesma cor no botão e no dado sem que um tivesse a ver com o
-outro. Com a interface em cinza, o azul passa a ser a única cor que diz alguma coisa, que um modelo
-produziu o dado, e o olho vai para ele sem legenda. Na versão 4 do design a regra passou a valer para
-os dois modelos do app, o Code-DKT e o modelo de linguagem, e o ícone diz qual. As referências foram o Carbon
-(componentes e gráficos), o padrão de gráfico do gov.br (título, subtítulo e fonte na figura) e o
-Distill (o tom acadêmico), comparadas em três rodadas registradas no `DESIGN.md`.
+**O app passou a ser formal e cinza, e o azul ficou só com o modelo.** Antes da versão 1 do
+`DESIGN.md`, o azul de ação estava no botão primário, no menu, nas abas e nos links, e um azul quase
+igual pintava o domínio previsto. O professor via a mesma cor no botão e no dado sem que um tivesse
+a ver com o outro. Com a interface em cinza, o azul passa a ser a única cor que diz alguma coisa,
+que um modelo produziu o dado, e o olho vai para ele sem legenda. Na versão 4 do design a regra
+passou a valer para os dois modelos do app, o Code-DKT e o modelo de linguagem, e o ícone diz qual.
+As referências foram o Carbon (componentes e gráficos), o padrão de gráfico do gov.br (título,
+subtítulo e fonte na figura) e o Distill (o tom acadêmico), comparadas em três iterações de design
+registradas no `DESIGN.md`.
 
 **A paleta tem três papéis, sem verde nem âmbar.** Cinza para a interface, azul para o modelo e
 vermelho para erro e exclusão. O verde e o âmbar existiam para as faixas de domínio, que saíram com
@@ -481,8 +495,8 @@ dois são trabalho de modelo, o modelo de linguagem na extração de conceitos e
 Até a versão 3 do design a extração ficava preta, porque o azul era só do Code-DKT. Com as estrelas
 distinguindo o modelo de linguagem pelo desenho, o azul passou a valer para os dois.
 
-**O capelo da barra superior é preto.** Ele é a marca do app e não fala do modelo, então não pode
-ser azul pela regra.
+**O ícone do capelo (chapéu de formatura) da barra superior é preto.** Ele é a marca do app e não
+fala do modelo, então não pode ser azul pela regra.
 
 **As dicas de hover são um componente, e não o `title` nativo.** O navegador espera perto de um
 segundo antes de mostrar o `title`, e isso não se configura. O `Tooltip` aparece no hover ou no
@@ -576,9 +590,10 @@ importados, conceitos extraídos, modelo treinado) contam o que aconteceu desde 
 
 **Os ícones têm um significado só.** Blocos são Conceitos, código são Problemas, o cérebro é o
 Code-DKT, no marcador de estimado e na etiqueta Treinado, e as estrelas são o modelo de linguagem.
-O cérebro com circuito foi comparado e perdeu, porque em 13px vira meio cérebro e meio rabisco. A lista, cogitada para Conceitos, ficaria
-parecida com a prancheta de Problemas. As etiquetas de situação levam o ícone da etapa, mas o menu
-mantém o ponto vazio, meio ou cheio, para a lista longa de exercícios ficar discreta.
+O cérebro com circuito foi comparado e descartado, porque em 13px perde a legibilidade. A lista,
+cogitada para Conceitos, ficaria parecida com o ícone de Problemas. As etiquetas de situação levam o
+ícone da etapa, mas o menu mantém o ponto vazio, meio ou cheio, para a lista longa de exercícios
+ficar discreta.
 
 **A tela Turmas não soma alunos.** Duas turmas podem ser recortes do mesmo dado, como a Turma teste,
 e a soma contaria o mesmo aluno duas vezes.
@@ -587,12 +602,12 @@ e a soma contaria o mesmo aluno duas vezes.
 permite servi-lo pela web. A Liberation Sans tem as mesmas medidas, então o layout não muda, só o
 desenho de alguns caracteres. Capturas feitas no nitro saem nela.
 
-**A tela Conceitos é uma matriz problema × conceito.** As duas vistas de antes, os conceitos de cada
-problema e a lista de conceitos, eram a mesma informação desenhada duas vezes, numa página longa de
-etiquetas com xis. A matriz é a Q-matrix da literatura, cabe numa tela com 15 conceitos e 10
-problemas e mostra nas margens a recorrência de cada conceito e quantos conceitos cada problema tem.
-No código ela continua sendo os vínculos problema × conceito. As descrições dos problemas ficam numa
-segunda aba, como as abas da Análise.
+**A tela Conceitos é uma matriz problema × conceito.** As duas vistas que a tela tinha, os conceitos
+de cada problema e a lista de conceitos, eram a mesma informação desenhada duas vezes, numa página
+longa de etiquetas com xis. A matriz é a Q-matrix da literatura, cabe numa tela com 15 conceitos e
+10 problemas e mostra nas margens a recorrência de cada conceito e quantos conceitos cada problema
+tem. No código ela continua sendo os vínculos problema × conceito. As descrições dos problemas ficam
+numa segunda aba, como as abas da Análise.
 
 **Mesclar conceitos saiu.** Com dois conceitos duplicados, o professor remove um e o outro fica, e
 isso é mais simples de entender do que um diálogo de mescla.
@@ -603,7 +618,7 @@ foram desenhadas e saíram, porque repetiam o nome do conceito com outras palavr
 que "influenciaram" o conceito ficou de fora, porque não há como medir influência num modelo acessado
 pela CLI. Pedir as linhas numa chamada separada daria uma explicação feita depois, e mudar o prompt
 da extração quebraria os prompts congelados do KCGen-KT. Para o diálogo existir, a extração passa a
-gravar quais soluções sorteou.
+gravar quais soluções amostrou.
 
 **A fonte mono volta, só em bloco de código.** O sistema tem duas fontes com papéis fixos, e o código
 é a exceção, porque a indentação e o alinhamento dependem da largura fixa. Fora do bloco de código,

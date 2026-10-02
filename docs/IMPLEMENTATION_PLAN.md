@@ -1,6 +1,6 @@
 # Plano de implementação do design v5
 
-Documento de passagem entre conversas. Ele junta o contexto da rodada de design, o que o código tem
+Documento para retomar o trabalho. Ele junta o contexto das iterações de design, o que o código tem
 hoje e a separação inicial do trabalho em blocos de backend e de frontend. O plano de cada bloco
 ainda vai ser discutido, e este arquivo é o ponto de partida dessa discussão, não o plano fechado.
 
@@ -30,8 +30,8 @@ A fonte da verdade são quatro arquivos, e este documento não repete o que eles
   `LearningCurve`, `SampledSolution`, `AssignmentOverview`, `ClassroomStudentSummary`, `DailyRuns`,
   `ActivityEvent`, `PackageRequirement`).
 
-As maquetes das rodadas (links em Versões, no fim do `DESIGN.md`) são só registro. Várias opções
-delas foram descartadas depois, então elas não servem de referência para implementar.
+As maquetes das iterações de design (links em Versões, no fim do `DESIGN.md`) são só registro.
+Várias opções delas foram descartadas depois, então elas não servem de referência para implementar.
 
 ## 2. O código hoje
 
@@ -73,18 +73,18 @@ Cada bloco diz o que falta, por que, quais telas dependem dele e o que ainda est
 
 **B1. Correção da amostragem do KCGen-KT e origem do conceito.**
 O `kcgen_kt_generator.py` filtra só as execuções corretas antes de chamar `select_sample_solutions`,
-e o sorteio, que conta as tentativas pelas execuções anteriores do aluno, passa a ver todo aluno
-acertando de primeira. O LLM recebe uma solução por problema em vez de até cinco diversas. O TCC 1
-(`load_correct_samples`, notebook `03b`) contava com todas as execuções, e atribuía isso ao Duan.
-A correção é passar ao sorteio as execuções do problema. Junto com ela, a extração passa a gravar as
-soluções sorteadas (`SampledSolution`, pelo `code_snapshot_id`), e uma rota nova devolve as
-soluções de cada problema para o diálogo da origem do conceito. Depende disso a tela Conceitos.
-Em aberto: a nova extração gasta cota da assinatura, porque o prompt muda. O Assignment 439 está
-treinado com os conceitos antigos e não tem descrição dos problemas, e extraí-lo de novo pede
-descongelar os conceitos e re-treinar. Falta também um teste que garanta cinco soluções quando há
-diversidade. Revisto em 30/09/2026 (seção 9), as faixas de tentativas não são do Duan, que agrupa os
-embeddings CodeBERT das soluções corretas e sorteia uma por grupo, e o prompt do app não é o do
-paper. O B1 passa a depender da etapa de fidelidade do KCGen-KT.
+e a amostragem das soluções, que conta as tentativas pelas execuções anteriores do aluno, passa a
+ver todo aluno acertando de primeira. O LLM recebe uma solução por problema em vez de até cinco
+diversas. O TCC 1 (`load_correct_samples`, notebook `03b`) contava com todas as execuções, e
+atribuía isso ao Duan. A correção é passar à amostragem as execuções do problema. Junto com ela, a
+extração passa a gravar as soluções amostradas (`SampledSolution`, pelo `code_snapshot_id`), e uma
+rota nova devolve as soluções de cada problema para o diálogo da origem do conceito. Depende disso a
+tela Conceitos. Em aberto: a nova extração gasta cota da assinatura, porque o prompt muda. O
+Assignment 439 está treinado com os conceitos antigos e não tem descrição dos problemas, e extraí-lo
+de novo pede descongelar os conceitos e re-treinar. Falta também um teste que garanta cinco soluções
+quando há diversidade. Revisto em 30/09/2026 (seção 9), as faixas de tentativas não são do Duan, que
+agrupa os embeddings CodeBERT das soluções corretas e amostra uma por grupo, e o prompt do app não é
+o do paper. O B1 passa a depender da etapa de fidelidade do KCGen-KT.
 
 **B2. Conceito editado pelo professor.**
 O marcador `GeneratedByLLM` some do nome do conceito quando o professor o renomeia, e um conceito
@@ -170,7 +170,8 @@ curva de perda do treino passa às cores e à fonte novas. Dependem de B3 e de B
 
 F1, F2 e F3 não dependem de backend e podem andar primeiro, em paralelo com o backend. Cada tela
 de F5 espera os blocos de backend da tabela acima, e F4 espera B3 e B6. B4 serve a duas telas. B1 é
-o único bloco com consequência científica e custo de cota, e a nova extração pede cuidado com o 439.
+o único bloco com consequência científica e custo de cota, e a nova extração pede cuidado com o
+A439.
 
 ## 6. Pendências conhecidas
 
@@ -193,12 +194,12 @@ o único bloco com consequência científica e custo de cota, e a nova extraçã
    O backend primeiro? Ou tela por tela, cada uma com o seu backend?
 2. **O tamanho de cada etapa.** Uma etapa por bloco, por tela, ou menores, e um commit por etapa ou
    por grupo?
-3. **A nova extração e o 439.** Extrair de novo todos os exercícios depois de B1? Re-treinar o 439
+3. **A nova extração e o A439.** Extrair de novo todos os exercícios depois de B1? Re-treinar o A439
    com os conceitos novos ou deixá-lo como está?
 4. **Execuções por dia.** Chart.js, como as outras curvas, ou SVG próprio, e quando a figura entra,
    já que é a peça mais cara?
 5. **A verificação.** Como cada etapa é conferida antes de seguir. Testes no container, capturas
-   pelo protocolo de depuração e a revisão do Leo tela por tela, como nas rodadas de design.
+   pelo protocolo de depuração e a revisão do Leo tela por tela, como nas iterações de design.
 6. **O que fica para depois.** Algum bloco pode ficar fora da primeira leva, como a atividade
    recente ou a figura de execuções por dia?
 
@@ -220,15 +221,16 @@ o único bloco com consequência científica e custo de cota, e a nova extraçã
 - **O Code-DKT segue as decisões do `DEVELOPMENT.md`.** O código as cumpre desde o fim do
   `CODE_DKT_PLAN.md`. Uma mudança no método só entra com uma decisão registrada no `DEVELOPMENT.md`.
   O teste de regressão detecta mudança de comportamento do código, com as dez seeds do A439 numa
-  faixa de ±0,1 ponto em torno de 0,7278. A comparação com o paper é o teste `literature`, que
-  registra o resultado e não falha pelos números.
+  tolerância de ±0,1 ponto em torno da média de referência, 0,7278. A comparação com o paper é o
+  teste `literature`, que registra o resultado e não falha pelos números.
 
 ## 9. Decisões de 30/09 e 01/10/2026
 
 A discussão das perguntas da seção 7 fechou estes pontos.
 
-- **A turma nova.** A CSEDM é importada numa turma nova, em vez de descongelar o 439. A turma
-  antiga fica até a nova estar pronta.
+- **A reimportação da CSEDM.** A CSEDM é importada de novo, numa turma separada da
+  CSEDM Spring 2019, em vez de descongelar os conceitos do A439. A turma CSEDM Spring 2019 fica até
+  a reimportação estar pronta.
 - **Uma tela por vez.** As telas saem uma a uma, cada uma com o seu backend, revisada pelo Leo antes
   da próxima.
 - **A figura de execuções por dia e o `ServerTimezone`** ficam para a segunda leva. O
@@ -236,15 +238,15 @@ A discussão das perguntas da seção 7 fechou estes pontos.
   dado do TCC.
 - **A fidelidade à literatura vem antes da base.** A conferência com os papers mostrou que o
   Code-DKT do app é fiel ao TCC 1, mas só no essencial ao Shi, e que o KCGen-KT do app não segue o
-  Duan no sorteio nem nos prompts. O Leo decidiu adequar os dois antes de mexer na base, revendo os
-  papers seção por seção. As decisões e o porquê ficam no `DEVELOPMENT.md`.
+  Duan na amostragem das soluções nem nos prompts. O Leo decidiu adequar os dois antes de mexer na
+  base, revendo os papers seção por seção. As decisões e o porquê ficam no `DEVELOPMENT.md`.
 
 A ordem nova é esta.
 
 1. O Code-DKT, pelo `CODE_DKT_PLAN.md`, decidido e aprovado em 01/10/2026, e já no código.
 2. O KCGen-KT, com a mesma revisão do paper (Duan et al., 2025, e a versão publicada no ACL 2026), a
    seguir. Ele substitui a correção do B1.
-3. A importação da turma nova, a extração dos conceitos e o treino, uma vez só, com os dois métodos
+3. A reimportação da CSEDM, a extração dos conceitos e o treino, uma vez só, com os dois métodos
    prontos.
 4. A base (F1, a migração dos componentes que já existem e F3) e depois as telas, uma por vez
    (Conceitos, Análise, Turma, Importar dados e Turmas), cada uma com o seu backend.

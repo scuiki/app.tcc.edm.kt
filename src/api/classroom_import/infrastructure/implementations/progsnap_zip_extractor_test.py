@@ -111,7 +111,7 @@ def test_extract_zip_streaming_accepts_member_within_limit(
 
 
 def test_upload_extraction_does_not_take_the_job_lock(tmp_db, tmp_path, monkeypatch):
-    # O upload só escreve o cru; não pega a trava de job para não prendê-la até a escolha da tabela.
+    # O upload só grava o arquivo enviado e não pega a trava de job até a escolha da tabela.
     import zipfile
 
     from api.shared.infrastructure import settings
@@ -125,6 +125,6 @@ def test_upload_extraction_does_not_take_the_job_lock(tmp_db, tmp_path, monkeypa
     detected = discover_mod.ProgSnapZipExtractor().extract(upload, 1, "envio")
 
     assert detected.main_tables
-    assert detected.raw_dir.exists()  # o cru fica preservado em raw/
+    assert detected.raw_dir.exists()  # o arquivo enviado fica preservado em raw/
     holder = tmp_db.execute("SELECT holder_pid FROM pipeline_lock WHERE id=1;").fetchone()[0]
     assert holder is None

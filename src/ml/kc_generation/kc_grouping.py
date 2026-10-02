@@ -1,4 +1,4 @@
-# Etapa 3 do KCGen-KT, agrupa nomes de KC parecidos com SBERT + HAC (ciência congelada, sem I/O).
+# Etapa 3 do KCGen-KT, agrupa nomes de KC parecidos com SBERT + HAC (idêntico ao TCC 1, sem I/O).
 
 from __future__ import annotations
 

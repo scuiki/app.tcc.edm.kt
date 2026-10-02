@@ -30,7 +30,7 @@ function assignment(id: number, progsnapId: number, status: AssignmentStatus): A
 const LOOPS = { kc_id: 1, kc_name: 'Laços' }
 const IFS = { kc_id: 2, kc_name: 'Condicionais' }
 
-// Dois problemas do 439, o 13 difícil e o 12 fácil, com os conceitos já aprovados
+// Dois problemas do exercício A439, o problema 13 (difícil) e o 12 (fácil), com conceitos aprovados
 function statistics(assignmentId: number, withConcepts: boolean): SubmissionStatistics {
   return {
     assignment_id: assignmentId,

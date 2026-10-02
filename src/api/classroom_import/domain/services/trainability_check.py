@@ -11,8 +11,8 @@ from api.classroom_import.domain.value_objects.import_report import (
 from api.classroom_import.domain.services.submission_event import RUN_PROGRAM
 
 # Limiares de aviso são heurísticas, não número científico fixo; mudar aqui só muda o alerta.
-SMALL_SAMPLE_THRESHOLD = 50  # [ASSUMED] amostra pequena abaixo disso (aviso brando)
-TINY_SAMPLE_THRESHOLD = 20  # [ASSUMED] amostra muito pequena abaixo disso (aviso reforçado)
+SMALL_SAMPLE_THRESHOLD = 50  # sem fonte, amostra pequena abaixo disso (aviso brando)
+TINY_SAMPLE_THRESHOLD = 20  # sem fonte, amostra muito pequena abaixo disso (aviso reforçado)
 
 # <2 problemas distintos no assignment, sinal de cobertura rasa de KC; aviso, não bloqueio.
 MIN_PROBLEMS = 2
@@ -41,7 +41,7 @@ def check_assignment_trainability(
         classes = set(first_attempts["is_correct"].unique())
         both_classes_present = {0, 1}.issubset(classes)
 
-        # trainable = both_classes_present, o único bloqueio duro; pisos abaixo só avisam.
+        # trainable = both_classes_present, o único bloqueio duro; os mínimos abaixo só avisam.
         trainable = both_classes_present
         if not both_classes_present:
             reasons.append(
@@ -50,7 +50,7 @@ def check_assignment_trainability(
                 "ser avaliado — o assignment fica só com as estatísticas pré-treino."
             )
 
-        # Piso de problemas (<2), cobertura rasa de KC; aviso graduado, jamais parede.
+        # Mínimo de problemas (<2), cobertura rasa de KC; aviso graduado, jamais bloqueio.
         if n_problems < MIN_PROBLEMS:
             msg = (
                 f"Apenas {n_problems} problema(s) distinto(s) neste assignment: a cobertura de "
@@ -68,7 +68,7 @@ def check_assignment_trainability(
                 )
             )
 
-        # Piso de amostra, poucos alunos, mais incerteza; aviso graduado, nunca bloqueio.
+        # Mínimo de amostra, poucos alunos, mais incerteza; aviso graduado, nunca bloqueio.
         if n_students_eligible < SMALL_SAMPLE_THRESHOLD:
             reforcado = n_students_eligible < TINY_SAMPLE_THRESHOLD
             msg = (

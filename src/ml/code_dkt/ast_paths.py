@@ -13,7 +13,7 @@ from anytree import Node
 from anytree.search import findall_by_attr
 from anytree.walker import Walker
 
-# O 0 preenche as posições vazias e o 1 é o path que não apareceu no treino, como no repositório
+# O 0 é o padding e o 1 o token desconhecido (UNK), que não apareceu no treino, como no repositório
 PADDING_INDEX = 0
 UNKNOWN_INDEX = 1
 
@@ -67,7 +67,7 @@ def extract_ast_paths(
     max_path_length: int = 8,
     max_path_width: int = 2,
 ) -> list[tuple[str, str, str]]:
-    # Todos os paths da solução, sem sorteio, para o vocabulário contar todos
+    # Todos os paths da solução, sem amostragem aleatória, para o vocabulário contar todos
 
     try:
         parsed = _parse_java(code)
@@ -129,7 +129,7 @@ def extract_ast_paths(
 def sample_ast_paths(
     paths: list[tuple[str, str, str]], *, R: int, path_sampling_seed: int
 ) -> list[tuple[str, str, str]]:
-    # Um gerador novo por solução, então a amostra não depende da ordem nem dos pedaços
+    # Um gerador novo por solução, então a amostra não depende da ordem nem do tamanho dos lotes
     if len(paths) <= R:
         return paths
     return random.Random(path_sampling_seed).sample(paths, R)

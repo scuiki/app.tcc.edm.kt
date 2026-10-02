@@ -1,4 +1,4 @@
--- kc.kc_index, o índice de cluster 0..N por assignment (o "kc_id científico" do TCC).
+-- kc.kc_index, o índice de cluster 0..N por assignment, o kc_id que o ml/ herdou do TCC 1.
 ALTER TABLE kc ADD COLUMN kc_index INTEGER;
 
 -- kc_job espelha training_job, com 'stage' textual no lugar do progresso por época.

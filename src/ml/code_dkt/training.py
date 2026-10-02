@@ -1,4 +1,4 @@
-# Treino do Code-DKT, Adam + a loss por aluno do repositório, com o lote em pedaços na GPU.
+# Treino do Code-DKT, Adam + a loss por aluno do repositório, com acumulação de gradiente na GPU.
 
 # Adaptado do TCC 1 (src/models/code_dkt.py), com device e on_epoch injetáveis por quem chama.
 
@@ -86,7 +86,7 @@ def train_code_dkt(
             batch_idx = indices[start_i : start_i + batch_size]
             bt = torch.tensor(batch_idx, dtype=torch.long, device=device)
 
-            # A perda soma a média de cada aluno, então a soma dos pedaços é a perda do lote inteiro
+            # A perda soma a média de cada aluno, então a soma dos batches de 64 é a do lote inteiro
             optimizer.zero_grad()
             for chunk_i in range(0, len(batch_idx), batch_chunk_size):
                 ct = bt[chunk_i : chunk_i + batch_chunk_size]
@@ -94,7 +94,7 @@ def train_code_dkt(
                 loss.backward()
                 epoch_loss += loss.item()
 
-            # Um passo do Adam por lote, depois de somar os pedaços, e sem corte de gradiente
+            # Um passo do Adam por lote, depois de acumular o gradiente, e sem corte de gradiente
             optimizer.step()
 
         loss_per_student = epoch_loss / n_students_in_loss if n_students_in_loss else 0.0

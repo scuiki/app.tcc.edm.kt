@@ -1,4 +1,4 @@
-# Testes herméticos do pré-voo de falhas duras do MainTable, por severidade, não por UI.
+# Testes herméticos da validação prévia de falhas fatais do MainTable, por severidade, não por UI.
 
 from __future__ import annotations
 
@@ -17,7 +17,7 @@ def _has_fatal(items) -> bool:
 
 
 def test_missing_required_column_is_fatal(tmp_path: Path) -> None:
-    # MainTable sem a coluna Score → falha dura específica desta ferramenta.
+    # MainTable sem a coluna Score → falha fatal específica desta ferramenta.
     main = tmp_path / "MainTable.csv"
     cols = "SubjectID,AssignmentID,ProblemID,CodeStateID,EventType,ServerTimestamp"
     main.write_text(f"{cols}\nS1,439,1,c1,Run.Program,2019-03-01T08:00:00Z\n", encoding="utf-8")

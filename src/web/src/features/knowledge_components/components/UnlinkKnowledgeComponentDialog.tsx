@@ -5,7 +5,7 @@ import { editErrorText } from '../knowledgeComponents'
 import { LeavesProblemEmpty } from './LeavesProblemEmpty'
 import './KnowledgeComponentDialogs.css'
 
-// Só abre nos dois casos que pedem atenção, e o resto o xis tira direto
+// Só abre nos dois casos que pedem atenção, e nos outros o botão de remover tira direto
 export type UnlinkTarget = {
   kc: KnowledgeComponent
   problemId: number

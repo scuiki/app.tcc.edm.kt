@@ -7,7 +7,7 @@ import './states.css'
 
 const DEFAULT_ERROR = 'Não foi possível carregar os dados. Verifique se a API está no ar.'
 
-// Nomeia o que está sendo feito, em vez de um giro sem legenda
+// Nomeia o que está sendo feito, em vez de um indicador de carregamento (spinner) sem legenda
 export function LoadingState({ label }: { label: string }) {
   return (
     <div role="status" aria-live="polite" className="state">

@@ -119,9 +119,10 @@ data/<classroom_id>/
 ```
 
 A pasta do cache de AST paths leva no nome a versão do formato (`AST_PATH_CACHE_VERSION`, hoje 2).
-O cache guarda todos os paths de cada solução, e o sorteio dos R paths acontece depois, na montagem
-da entrada. Quando o que o cache guarda muda, a versão sobe e a pasta nova começa vazia. A pasta de
-antes (`cache/paths/<assignment_id>/`) fica no disco, ignorada e sem ser apagada.
+O cache guarda todos os paths de cada solução, e a amostragem aleatória dos R paths acontece depois,
+na montagem da entrada. Quando o que o cache guarda muda, a versão sobe e a pasta nova começa vazia.
+A pasta da versão anterior (`cache/paths/<assignment_id>/`) fica no disco, ignorada e sem ser
+apagada.
 
 ## Remoção
 
@@ -186,10 +187,10 @@ start_training_use_case_test.py
   `literature`, fica fora da suíte padrão como o marcador `regression` e grava o AUC de cada seed em
   `docs/results/code_dkt_literature_comparison.json`. As duas leem a CSEDM real pela fixture de
   `tests/fixtures/csedm.py`.
-- A regressão roda as dez seeds e confere a média do first-attempt AUC numa faixa de ±0,1 ponto em
-  torno da medida do próprio app. Ela detecta que o código, as dependências ou o ambiente mudaram o
-  comportamento do Code-DKT, e não compara o app com o TCC 1 nem com o paper. Falha sem GPU, porque
-  a faixa foi medida nela.
+- A regressão roda as dez seeds e confere a média do first-attempt AUC com tolerância de ±0,1 ponto
+  em torno da média de referência, medida pelo próprio app. Ela detecta que o código, as
+  dependências ou o ambiente mudaram o comportamento do Code-DKT, e não compara o app com o TCC 1
+  nem com o paper. Falha sem GPU, porque a média de referência foi medida nela.
 - Tudo roda no container, nunca no host. A imagem fixa o `PYTHONHASHSEED=0`, e o guarda de
   `ast_paths_test.py` e o da fixture da CSEDM falham, sem pular, num processo com outro valor.
 
@@ -206,7 +207,7 @@ os processos: o estado do job vive em `training_job` / `kc_job`.
 camadas de componente e uma fronteira de conhecimento entre elas.
 
 ```
-app/          o casco: barra superior, menu em árvore, a tabela de rotas e o ErrorBoundary
+app/          o app shell: barra superior, menu em árvore, a tabela de rotas e o ErrorBoundary
 components/
   ui/         primitivas sem domínio (Button, Card, Dialog, Tabs, Tooltip, StageList, RatioBar…)
   states/     os quatro estados de toda tela (carregando, erro, vazio, conteúdo)

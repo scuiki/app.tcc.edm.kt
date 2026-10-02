@@ -7,7 +7,7 @@ import type { ClassroomImportReport } from '../api/classroomImport'
 import { checkTitle, readinessSentence, warningsOf } from '../importReport'
 import './ImportCards.css'
 
-// As quatro contagens na ordem do desenho, com a chave que o backend usa
+// As quatro contagens na ordem em que a tela as mostra, com a chave que o backend usa
 const SUMMARY_NUMBERS = [
   { key: 'n_students', label: 'alunos' },
   { key: 'n_problems', label: 'problemas' },

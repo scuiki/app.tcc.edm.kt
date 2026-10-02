@@ -88,7 +88,7 @@ def test_inference_and_evaluation_go_in_chunks_with_the_same_result(
 
 
 def test_training_evaluation_and_inference_sample_the_paths(cpu_device, monkeypatch):
-    # Uma solução com mais de R paths passa pelo sorteio nas três montagens, com a seed recebida
+    # Uma solução com mais de R paths passa pela amostragem nas três montagens, com a seed recebida
     rows = [
         cleaned_row("S1", 1, "2019-03-01T08:00:00Z", "Run.Program", 0.0, JAVA_LONG, "long"),
         cleaned_row("S1", 2, "2019-03-01T08:01:00Z", "Run.Program", 1.0, JAVA_OK_A, "short"),

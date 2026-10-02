@@ -1,4 +1,4 @@
-# Pré-voo de falhas duras; fatal devolve None sem gravar, sem mensagem com bytes do aluno.
+# Validação prévia de falhas fatais; fatal devolve None sem gravar, sem mensagem com bytes do aluno.
 
 from __future__ import annotations
 
@@ -53,7 +53,7 @@ def read_main_table(main_path: Path) -> tuple[pd.DataFrame | None, list[ImportCh
         )
 
     if any(c.severity == "fatal" for c in checks):
-        # Qualquer falha dura, nada a devolver; a importação aborta sem gravar.
+        # Qualquer falha fatal, nada a devolver; a importação aborta sem gravar.
         return None, checks
 
     # A mesma coerção de tipos do TCC 1; valor inválido vira NaN/NA em vez de explodir.

@@ -42,7 +42,7 @@ class ClassroomImportReport:
 
     @classmethod
     def nothing_imported(cls, checks: list[ImportCheck]) -> "ClassroomImportReport":
-        # O relatório de quando nada foi gravado (fatal no pré-voo ou outro job rodando).
+        # O relatório de quando nada foi gravado (fatal na validação prévia ou outro job rodando).
         return cls(
             checks=checks,
             dataset_summary={"n_students": 0, "n_assignments": 0, "n_problems": 0, "n_submissions": 0},

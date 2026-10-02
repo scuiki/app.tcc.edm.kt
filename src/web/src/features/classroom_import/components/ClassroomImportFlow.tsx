@@ -52,7 +52,7 @@ export function ClassroomImportFlow({ classrooms, onRestart }: ClassroomImportFl
     setChosenTable(null)
   }
 
-  // O cru do envio fica guardado sob a turma, então trocar de turma descarta o arquivo
+  // O arquivo enviado, ainda sem processar, fica ligado à turma, então trocar de turma o descarta
   function handleClassroomChange(id: number) {
     setClassroomId(id)
     discardFile()

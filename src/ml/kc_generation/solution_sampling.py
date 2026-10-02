@@ -1,4 +1,4 @@
-# Etapa 1 do KCGen-KT, escolhe até 5 soluções corretas e diversas por problema; ciência congelada.
+# Etapa 1 do KCGen-KT, escolhe até 5 soluções corretas e diversas por problema; idêntico ao TCC 1.
 
 from __future__ import annotations
 
@@ -45,7 +45,7 @@ def _first_correct_per_student(problem_df: pd.DataFrame) -> list[dict]:
 def select_sample_solutions(
     problem_df: pd.DataFrame, n: int = 5, rng: random.Random | None = None
 ) -> list[dict]:
-    # Até n soluções corretas, uma por faixa de tentativas (1..5); sorteio semeado, reproduzível.
+    # Até n soluções corretas, uma por faixa de tentativas (1..5); amostragem semeada, reproduzível.
     if rng is None:
         rng = random.Random(SEED)
 

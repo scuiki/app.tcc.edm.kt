@@ -52,7 +52,7 @@ export function KnowledgeComponentEditor({
       : undefined
   const close = () => setDialog(CLOSED)
 
-  // O xis tira direto, e só pede atenção quando o problema ficaria vazio ou o conceito sairia junto
+  // Remover tira direto, e só pede atenção se o problema ficar vazio ou o conceito sair junto
   function handleUnlink(kc: KnowledgeComponent, problemId: number) {
     const problem = problems.find((candidate) => candidate.problem_id === problemId)
     const usage = knowledgeComponents.find((candidate) => candidate.id === kc.id)

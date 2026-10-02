@@ -14,7 +14,7 @@ _CLUSTER_LABEL_SYSTEM = (
     "the common underlying concept."
 )
 
-# Schema da saída de um label por cluster (espelha o contrato da célula 15, kc_id/name/reasoning).
+# Schema da saída de um label por cluster (espelha a célula 15 do notebook 03b do TCC 1).
 KC_GROUP_NAME_SCHEMA: dict = {
     "type": "object",
     "properties": {
@@ -48,5 +48,6 @@ def name_kc_group(cluster_kcs: list[str], llm: LLMClient, cluster_id: int) -> di
     result = llm.generate(
         _CLUSTER_LABEL_SYSTEM, _build_label_prompt(cluster_kcs, cluster_id), KC_GROUP_NAME_SCHEMA
     )
-    result["kc_id"] = cluster_id  # fixa o id independente da saída do LLM (invariante da célula 15)
+    # Fixa o id independente da saída do LLM (invariante da célula 15 do notebook 03b do TCC 1)
+    result["kc_id"] = cluster_id
     return result

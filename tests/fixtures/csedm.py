@@ -30,7 +30,7 @@ def resolve_csedm_path() -> Path:
 def csedm_main_table() -> pd.DataFrame:
     # Todos os exercícios, e cada teste escolhe o seu pela partição, como o repositório oficial
 
-    # Fora do hash 0 os AST paths não saem na ordem do app e o AUC não se compara, falha sem pular
+    # Sem PYTHONHASHSEED=0 os AST paths saem em outra ordem e o AUC não se compara, falha sem pular
     assert sys.flags.hash_randomization == 0, (
         "PYTHONHASHSEED não é 0 neste processo, e os AST paths não saem na ordem que o app fixa"
     )
@@ -45,7 +45,7 @@ def csedm_main_table() -> pd.DataFrame:
     df = df[df["EventType"] == "Run.Program"].copy()
     df["correct"] = (df["Score"] == 1.0).astype(int)
 
-    # Junta o snapshot Java por evento (CodeStateID -> Code), pro seam ver código inline.
+    # Junta o snapshot Java por evento (CodeStateID -> Code), para o código vir na própria tabela.
     code_states = pd.read_csv(data_dir / "CodeStates" / "CodeStates.csv")
     code_map = dict(zip(code_states["CodeStateID"].astype(str), code_states["Code"].fillna("")))
     df["Code"] = df["CodeStateID"].astype(str).map(code_map).fillna("")

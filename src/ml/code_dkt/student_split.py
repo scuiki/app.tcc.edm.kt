@@ -17,7 +17,7 @@ def split_students_into_train_and_test(
     test_size: float = 0.2,
     random_state: int = 1,  # o random_state do repositório oficial, e não a seed 42 do treino
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
-    # Os alunos com Run.Program no exercício, na ordem das linhas e sem piso, como o repositório
+    # Os alunos com Run.Program no exercício, na ordem das linhas e sem mínimo, como o repositório
     assignment_df = df[df["progsnap_assignment_id"] == progsnap_assignment_id]
     runs = assignment_df[assignment_df["event_type"] == "Run.Program"]
     students = pd.unique(runs["student_id"])

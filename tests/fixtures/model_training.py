@@ -68,7 +68,7 @@ def tiny_model() -> torch.nn.Module:
 
 @pytest.fixture
 def tiny_vocab() -> dict:
-    # Os tokens reais começam no 2, e o 0 e o 1 ficam com o preenchimento e o desconhecido
+    # Os tokens reais começam no 2, e o 0 e o 1 ficam com o padding e o token desconhecido (UNK)
     return {
         "token_to_idx": {"if": 2, "return": 3},
         "path_to_idx": {"a->b": 2},
@@ -79,7 +79,7 @@ def tiny_vocab() -> dict:
 
 @pytest.fixture
 def tiny_config() -> dict:
-    # A seed do sorteio difere da congelada, para o teste ver que a inferência usa a da versão
+    # A seed da amostragem difere da padrão (42), para o teste ver que a inferência usa a da versão
     return {
         "hidden_dim": 8, "R": 4, "path_sampling_seed": 7,
         "node_embed_dim": 6, "path_embed_dim": 6,
@@ -88,7 +88,7 @@ def tiny_config() -> dict:
 
 @pytest.fixture
 def cache_config() -> dict:
-    # Os limites de extração de paths do repositório de Shi et al. 2022, sem sorteio
+    # Os limites de extração de paths do repositório de Shi et al. 2022, sem amostragem aleatória
     return {"max_path_length": 8, "max_path_width": 2}
 
 

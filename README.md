@@ -22,32 +22,34 @@ fixtures e os dados de exemplo.
 ## Reprodutibilidade científica
 
 O Code-DKT segue Shi et al. (2022) pelas decisões registradas em
-[`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md). A numérica é travada por um **teste de regressão**
-(`tests/test_regression_a439.py`) que retreina o Code-DKT no CSEDM real (Spring 2019,
-AssignmentID 439) com as dez seeds de 42 a 51 e exige que a **média do first-attempt AUC** caia na
-faixa **[0,7268, 0,7288]**, que é ±0,1 ponto em torno de **0,7278**. Fora da faixa o teste **falha
-alto**, e qualquer mudança de código, dependência, seed ou ordem de operações que mova a média fica
-vermelha.
+[`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md). O resultado numérico é travado por um **teste de
+regressão** (`tests/test_regression_a439.py`) que retreina o Code-DKT no CSEDM real (Spring 2019,
+AssignmentID 439) com as dez seeds de 42 a 51 e exige que a **média do first-attempt AUC** fique
+dentro da **tolerância** de **±0,001** (±0,1 ponto) em torno da **média de referência 0,7278**, ou
+seja, em **[0,7268, 0,7288]**. Fora da tolerância o teste **falha alto**, e qualquer mudança de
+código, dependência, seed ou ordem de operações que mova a média fica vermelha.
 
-O teste detecta mudança de comportamento do código. Ele **não é** um oráculo científico, nem contra
-o TCC 1 nem contra o paper. O 0,7278 é a média que o app mediu no A439 em 02/10/2026, e a faixa é
-estreita porque as dez seeds se repetem bit a bit em processos diferentes, o que deixa só o ruído de
-float do ambiente. Uma troca de driver, de GPU ou de dependência que deixe a faixa vermelha pede uma
-nova medida do centro, registrada em `docs/DEVELOPMENT.md`.
+O teste detecta mudança de comportamento do código. Ele **não serve** de valor de referência
+científico, nem contra o TCC 1 nem contra o paper. O 0,7278 é a média que o app mediu no A439 em
+02/10/2026, e a tolerância é estreita porque as dez seeds se repetem bit a bit em processos
+diferentes, o que deixa só o ruído de float do ambiente. Uma troca de driver, de GPU ou de
+dependência que tire a média da tolerância pede uma nova medição da média de referência, registrada
+em `docs/DEVELOPMENT.md`.
 
 Com as dez seeds, o A439 deu **72,78 ± 0,81** na primeira tentativa e **69,25 ± 0,86** no geral
 (média e desvio amostral, em porcentagem), e a seed 42 sozinha dá 0,7228. A comparação com o paper
 está mais abaixo.
 
 A repetição bit a bit depende do `PYTHONHASHSEED=0`, que a imagem fixa, da partição por exercício
-do repositório oficial (386 alunos no A439, 78 no teste), do sorteio de R=100 paths com a
-`path_sampling_seed` 42 e do cuDNN determinístico. O fixture do CSEDM falha, em vez de pular, quando
-o hash não é 0.
+do repositório oficial (386 alunos no A439, 78 no teste), da amostragem aleatória de R=100 paths
+com a `path_sampling_seed` 42 e do cuDNN determinístico. O fixture do CSEDM falha, em vez de pular,
+quando o `PYTHONHASHSEED` não é 0.
 
 ### Pré-requisito: `EDMKT_CSEDM_PATH`
 
 O teste de regressão lê o dataset CSEDM real a partir da variável de ambiente `EDMKT_CSEDM_PATH`,
-que aponta para o dataset provisionado em `datasets/CSEDM/` (gitignored — nunca versionado, D-12):
+que aponta para o dataset provisionado em `datasets/CSEDM/` (ignorado pelo git, grande demais para
+ser versionado):
 
 ```
 $EDMKT_CSEDM_PATH/
@@ -56,8 +58,8 @@ $EDMKT_CSEDM_PATH/
 └── LinkTables/Subject.csv      # SubjectID -> X-Grade
 ```
 
-Quando `EDMKT_CSEDM_PATH` não está setada, o teste de regressão **pula com motivo claro** — o suite
-rápido continua verde em máquinas sem o dataset (gate *fast-by-default*).
+Quando `EDMKT_CSEDM_PATH` não está setada, o teste de regressão **pula com motivo claro** — a suíte
+rápida continua verde em máquinas sem o dataset (a suíte padrão não depende dele).
 
 ## Rodando os testes (somente via Docker — host limpo)
 
@@ -92,10 +94,11 @@ docker run --rm --gpus all --security-opt label=disable \
   edmkt-core:dev python -m pytest tests/test_regression_a439.py -m regression -q -s
 ```
 
-São dez treinos de 40 épocas no A439, um por seed, e levam cerca de 4 minutos na RTX 4050. A faixa
-foi medida na GPU, então `torch.cuda.is_available()` tem de ser `True` na imagem, e sem GPU o teste
-falha. O comando roda também a conferência da partição do A439 contra o procedimento do repositório
-oficial (386 alunos, 78 no teste), que não treina. O `-s` mostra a média e o AUC de cada seed.
+São dez treinos de 40 épocas no A439, um por seed, e levam cerca de 4 minutos na RTX 4050. A média
+de referência foi medida na GPU, então `torch.cuda.is_available()` tem de ser `True` na imagem, e
+sem GPU o teste falha. O comando roda também a conferência da partição do A439 contra o
+procedimento do repositório oficial (386 alunos, 78 no teste), que não treina. O `-s` mostra a
+média e o AUC de cada seed.
 
 ### Comparação com o paper (sob demanda, com a api parada)
 
@@ -118,13 +121,14 @@ só a parte dele no arquivo.
 ## Dependências travadas
 
 `requirements.lock` fixa as versões exatas do ambiente em que o teste de regressão mediu o 0,7278,
-e uma troca de versão que mude a numérica deixa a faixa de ±0,1 ponto vermelha. A âncora real de
-reprodutibilidade é a **tag fixa da imagem Docker**
+e uma troca de versão que mude o resultado numérico tira a média da tolerância de ±0,1 ponto (teste
+vermelho). A âncora real de reprodutibilidade é a **tag fixa da imagem Docker**
 (`pytorch/pytorch:2.7.1-cuda12.8-cudnn9-runtime`, em `Dockerfile`), cujo ambiente conda fornece
 `torch==2.7.1+cu128` e `numpy==2.2.6`, que não se instalam como pin simples de PyPI. O `Dockerfile`
 também fixa `PYTHONHASHSEED=0`, porque a ordem dos modificadores Java nos AST paths sai de um set e
-depende do hash. A imagem do app (`deploy/Dockerfile.app`) deriva dela e herda a variável. Construa
-a partir dessa tag para reproduzir as numéricas.
+depende dessa semente. A imagem do app (`deploy/Dockerfile.app`) deriva dela e herda a variável.
+Construa a partir dessa tag para reproduzir os resultados numéricos.
 
-As versões da numérica na imagem atual são torch 2.7.1+cu128, numpy 2.2.6, pandas 2.3.3, javalang
-0.13.0, anytree 2.13.0, scikit-learn 1.9.0 e scipy 1.17.1. As demais estão no `requirements.lock`.
+As versões das bibliotecas que definem o resultado numérico na imagem atual são torch 2.7.1+cu128,
+numpy 2.2.6, pandas 2.3.3, javalang 0.13.0, anytree 2.13.0, scikit-learn 1.9.0 e scipy 1.17.1. As
+demais estão no `requirements.lock`.

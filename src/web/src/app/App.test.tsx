@@ -12,7 +12,7 @@ function goTo(hash: string) {
 }
 
 beforeEach(() => {
-  // Toda lista começa vazia, porque aqui só interessa o casco
+  // Toda lista começa vazia, porque aqui só interessa o app shell (barra superior, menu e rotas)
   vi.spyOn(globalThis, 'fetch').mockImplementation(async () =>
     jsonResponse({ assignments: [], classrooms: [] }),
   )

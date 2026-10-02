@@ -9,41 +9,43 @@ diz como e em que ordem elas entram no código.
 Entram as decisões que mudam o código, as linhas 1, 2, 3, 6, 7, 9, 13, 15, 16, 17, 18, 19 e 21 do
 `DEVELOPMENT.md`. As linhas 4, 5, 8, 10, 11, 12, 14 e 20 já estão no código e não mudam.
 
-Ficam de fora o KCGen-KT (Duan), que vem depois deste plano, a importação da turma nova e o
-retreino no app, que vêm depois do Duan, a remoção da turma antiga e o push. A turma nova é
-importada, extraída e treinada uma vez só, com os dois métodos prontos. Até lá, o A439 da turma
-antiga continua servindo o modelo v5 pela matriz de domínio já gravada.
+Ficam de fora o KCGen-KT (Duan), que vem depois deste plano, a reimportação da CSEDM e o retreino no
+app, que vêm depois do Duan, a remoção da turma CSEDM Spring 2019 e o push. A CSEDM é reimportada,
+extraída e treinada uma vez só, com os dois métodos prontos. Até lá, o A439 da turma
+CSEDM Spring 2019 continua servindo o modelo da versão 5 pela matriz de domínio já gravada.
 
 ## Decisões fechadas com o Leo
 
 - **A, vocabulário (linha 21).** Conta todos os paths das soluções de treino, como o repositório
-  (critério 3).
+  oficial do Code-DKT (critério 3).
 - **B, viés do W_0 (linha 6).** Sem viés, `nn.Linear(2M + 300, 2M + 300, bias=False)`, como a equação
   e o texto do paper (critério 1).
 - **C, artefatos antigos.** O `config.json` do artefato ganha a chave `format_version`, e o artefato
   sem a versão atual é recusado com o `IncompatibleTrainedModelError`, uma resposta 409 com mensagem
-  clara. A matriz de domínio já gravada do v5 continua servindo o painel.
+  clara. A matriz de domínio já gravada da versão 5 do modelo do A439 continua servindo o painel.
 - **D, perda na tela.** A curva de perda mostra a perda média por aluno, a soma da época dividida
   pelos alunos que entraram na perda, os que têm ao menos uma previsão válida. O treino não muda.
-- **E, faixa do teste de regressão.** A largura é decidida com o Leo depois de medir a repetição das
-  execuções na etapa 5.
+- **E, tolerância do teste de regressão.** A largura é decidida com o Leo depois de medir a
+  reprodutibilidade das execuções na etapa 5.
 - **F, comparação com o paper.** Um teste à parte, `tests/test_literature_comparison.py`, com o
   marcador `literature`, fora da suíte padrão. Ele só roda os cinco exercícios e imprime a tabela,
   com `-s`, sem nenhuma asserção contra os números do paper. Falha só por erro de execução ou por AUC
   indefinido.
 - **G, aviso da importação.** Conta todo aluno com `Run.Program`, como a partição.
-- **H, VRAM.** Só se o R=100 não couber na GPU com lote 128. Nesse caso, parar e decidir com o Leo o
-  acúmulo do gradiente em pedaços do lote, que dá o mesmo gradiente esperado com numérica diferente,
-  antes de medir o centro da faixa. Se for usado, entra na justificativa e no Estado da linha 14 do
-  `DEVELOPMENT.md` como decisão do app (critério 5), o porquê vai para o `DECISIONS.md` e o nome do
-  tamanho do pedaço entra no `GLOSSARY.md` antes do código.
+- **H, VRAM.** Só se o R=100 não couber na GPU com tamanho do lote (batch size) de 128. Nesse caso,
+  parar e decidir com o Leo a acumulação de gradiente em batches menores, que dá o mesmo gradiente
+  esperado com resultado numérico diferente, antes de medir a média de referência. Se for usado,
+  entra na justificativa e no Estado da linha 14 do `DEVELOPMENT.md` como decisão do app
+  (critério 5), o porquê vai para o `DECISIONS.md` e o nome do tamanho do batch da acumulação entra
+  no `GLOSSARY.md` antes do código.
 - **I, GPU.** A api fica parada durante as execuções longas na GPU, a medida de VRAM e a etapa 5, e
   nenhuma execução na GPU começa com treino ou extração rodando, porque o teste roda fora do
   `OneJobAtATimeLock`.
-- **Perda (linha 16).** Vem do repositório só a agregação, a média de cada aluno somada no lote. As
-  previsões continuam as do app, todas a partir do histórico, sem a previsão da primeira execução a
-  partir das posições vazias (linha 12). O aluno sem previsão válida fica fora, sem NaN, e a perda usa
-  só operações densas, sem `index_add_` nem `scatter_add_`, para não perder a repetição na GPU.
+- **Perda (linha 16).** Vem do repositório oficial só a agregação, a média de cada aluno somada no
+  lote. As previsões continuam as do app, todas a partir do histórico, sem a previsão da primeira
+  execução a partir do padding à esquerda (linha 12). O aluno sem previsão válida fica fora, sem
+  NaN, e a perda usa só operações densas, sem `index_add_` nem `scatter_add_`, para manter o
+  resultado reproduzível na GPU.
 
 ## Etapas
 
@@ -72,12 +74,12 @@ Cada etapa é um commit, com uma revisão independente do diff contra as decisõ
   tem de dar 0.
 - Um teste-guarda em `src/ml/code_dkt/ast_paths_test.py`, e a mesma checagem no carregador da CSEDM
   do teste de regressão, falhando alto em vez de pular.
-- Rodar o teste de regressão de hoje uma vez. Com a partição do TCC 1 (`min_attempts=3`, 410 alunos,
-  `random_state=1`), `strict=False`, na GPU e com o hash 0, ele deu 0,7595 em 24/09/2026, pela nota
-  de memória dessa data. O commit `d3cc9f8` só registra a alternância entre 0,7595 e 0,7608. Se der
-  0,7608, o ENV não chegou ao processo. Se der outro valor, comparar o `pip freeze` das duas imagens
-  com o `requirements.lock` antes de seguir. Registrar o valor na linha 2 do `DEVELOPMENT.md` e
-  capturar o `pip freeze` novo.
+- Rodar o teste de regressão anterior às mudanças deste plano uma vez. Com a partição do TCC 1
+  (`min_attempts=3`, 410 alunos, `random_state=1`), `strict=False`, na GPU e com `PYTHONHASHSEED=0`,
+  ele deu 0,7595 em 24/09/2026, segundo uma anotação dessa data fora do repositório. O commit
+  `d3cc9f8` só registra a alternância entre 0,7595 e 0,7608. Se der 0,7608, o ENV não chegou ao
+  processo. Se der outro valor, comparar o `pip freeze` das duas imagens com o `requirements.lock`
+  antes de seguir. Registrar o valor na linha 2 do `DEVELOPMENT.md` e capturar o `pip freeze` novo.
 
 ### 2. Dados (linhas 9 e 13)
 
@@ -86,8 +88,8 @@ Cada etapa é um commit, com uma revisão independente do diff contra as decisõ
   O caminho de um DataFrame só do `train_and_evaluate` passa a filtrar o exercício. Teste com um
   `Compile.Error` de outro aluno antes do primeiro `Run.Program`.
 - O teste de regressão divide por exercício e confere, sem treinar, que os alunos de teste do A439
-  são os mesmos do procedimento literal do `src/preprocessing.py` do repositório sobre o mesmo
-  `MainTable.csv`, com 386 alunos e 78 no teste.
+  são os mesmos do procedimento literal do `src/preprocessing.py` do repositório oficial sobre o
+  mesmo `MainTable.csv`, com 386 alunos e 78 no teste.
 - Um teste de ponta a ponta da ordem do arquivo até o banco, em
   `import_classroom_dataset_use_case_test.py`, com a fixture `import_classroom`.
 - O aviso da importação (G), no `trainability_check` e no teste dele.
@@ -95,33 +97,34 @@ Cada etapa é um commit, com uma revisão independente do diff contra as decisõ
 
 ### 3. Paths, vocabulário e formato (linhas 1, 3 e 21, e C)
 
-- Primeiro, medir a VRAM com R=100, lote 128 e o vocabulário de A, num passo de treino e no forward
-  da avaliação, pelo `nvidia-smi`, com o monitor ligado e a api parada. Se não couber, parar e decidir
-  o H. Registrar o número no Estado da linha 1.
+- Primeiro, medir a VRAM com R=100, tamanho do lote (batch size) de 128 e o vocabulário de A, num
+  passo de treino e no forward da avaliação, pelo `nvidia-smi`, com o monitor externo ligado na GPU
+  e a api parada. Se não couber, parar e decidir o H. Registrar o número no Estado da linha 1.
 - O cache guarda todos os paths de cada solução, num diretório com a `AST_PATH_CACHE_VERSION`, em
   `data_layout.ast_path_cache_dir`. O cache antigo, de dono root em `/srv`, fica ignorado, sem apagar
   nada. O `java_parse_rate` e o `ast_path_cache` deixam de passar R e seed ao extrator.
-- O sorteio vira uma função só, `sample_ast_paths()`, com
+- A amostragem aleatória dos paths vira uma função só, `sample_ast_paths()`, com
   `random.Random(path_sampling_seed).sample(paths, 100)` por solução, só quando a solução tem mais
   de 100 paths. Treino, avaliação e inferência usam essa função. Um teste confere que a mesma
-  solução dá a mesma amostra em qualquer ordem e em qualquer divisão em pedaços, e que a amostra é a
-  mesma que o `extract_ast_paths` de hoje sortearia com R=100.
+  solução dá a mesma amostra em qualquer ordem e em qualquer divisão em lotes, e que a amostra é a
+  mesma que o `extract_ast_paths` anterior a esta etapa amostraria com R=100.
 - O vocabulário conta todos os paths do treino (A), com `PADDING_INDEX` igual a 0, `UNKNOWN_INDEX`
   igual a 1 e os tokens reais a partir de 2.
 - O `train_and_evaluate` recebe os paths já extraídos. O `MlCodeDktTrainer` passa o que leu do
   cache, e a regressão e o `evaluate_over_seeds` extraem uma vez no `ml/`.
 - A marca de formato no `config.json` e a recusa (C), com o erro em `shared/domain/errors` e o
   mapeamento em `error_handlers.py`, e a lista dos erros do domínio no `ARCHITECTURE.md`.
-- A inferência (`predict_current_state`) e a avaliação (`predict_code_dkt`) em pedaços de
-  `INFERENCE_CHUNK_SIZE` alunos, para a memória não estourar com R=100.
+- A inferência (`predict_current_state`) e a avaliação (`predict_code_dkt`) em lotes de 64 alunos
+  (`INFERENCE_CHUNK_SIZE`), para a memória não estourar com R=100.
 - Fixtures e testes que mudam. São o `cache_config`, o `tiny_vocab` (tokens reais a partir de 2, sem
-  as sentinelas no dicionário), o `training_inputs`, o `ast_path_cache_test`, o `java_parse_rate_test`,
-  o `model_input_test`, o `student_split_test`, o `train_and_evaluate_test` e o `ast_paths_test`.
-  Testes novos para o cache antigo ignorado e para o artefato sem a marca recusado.
+  os tokens de padding e desconhecido (UNK) no dicionário), o `training_inputs`, o
+  `ast_path_cache_test`, o `java_parse_rate_test`, o `model_input_test`, o `student_split_test`, o
+  `train_and_evaluate_test` e o `ast_paths_test`. Testes novos para o cache antigo ignorado e para o
+  artefato sem a marca recusado.
 - Um teste de que a montagem da entrada usa o `sample_ast_paths()`, e não os 100 primeiros, no treino,
   na avaliação e na inferência.
 - Regressão de uma seed, com o AUC na mensagem do commit, e contagens de sanidade (386 alunos, 78 no
-  teste, paths por solução até 100, fração de desconhecidos no teste).
+  teste, paths por solução até 100, fração de tokens desconhecidos (UNK) no teste).
 
 ### 4. Rede e treino (linhas 6, 7, 15, 16 e 17)
 
@@ -137,7 +140,7 @@ Cada etapa é um commit, com uma revisão independente do diff contra as decisõ
   execução nunca vira alvo, um aluno de uma execução não dá NaN, e a agregação é a média de cada
   aluno somada no lote.
 - O cuDNN determinístico também na GPU, com o `random_seed_test` conferindo isso no modo não estrito.
-  O comentário de `ml_code_dkt_trainer.py` sobre a banda de ±3pp é reescrito junto.
+  O comentário de `ml_code_dkt_trainer.py` sobre a tolerância de ±3pp é reescrito junto.
 - A perda mostrada na tela (D), no `TrainingEpochMetric` e no `run_training_use_case`.
 - Regressão de uma seed no fim, com o AUC na mensagem do commit.
 
@@ -151,13 +154,14 @@ Cada etapa é um commit, com uma revisão independente do diff contra as decisõ
   `'not regression and not literature'`, com o `--import-mode=importlib` mantido. A exceção entra no
   `ARCHITECTURE.md`, no `pyproject.toml` e no README no mesmo commit, com o comando usando `-s`.
 - Rodar as dez seeds do A439 duas vezes, com a api parada, e comparar seed a seed. O resultado vai
-  para a linha 17. Se não repetir, voltar ao Leo antes de ligar qualquer coisa além do cuDNN.
-- Decidir a largura da faixa (E) com o Leo a partir dessa medida, registrar na justificativa 19 e
-  gravar o centro no teste de regressão, que passa a rodar as dez seeds.
+  para a linha 17. Se as duas execuções não derem o mesmo AUC em cada seed, voltar ao Leo antes de
+  ativar qualquer outro mecanismo de determinismo além do cuDNN determinístico.
+- Decidir a tolerância (E) com o Leo a partir dessa medida, registrar na justificativa 19 e gravar a
+  média de referência no teste de regressão, que passa a rodar as dez seeds.
 - A comparação dos cinco exercícios (F), com a média e o desvio registrados na justificativa 19
   contra as Tabelas 1 e 2. O mapeamento fica registrado lá também. O A1 é o 439, pela Tabela 3 do
-  paper e pelo repositório, e o A2 a A5 são o 487, o 492, o 494 e o 502, inferidos da ordem crescente
-  dos ids no TCC 1.
+  paper e pelo repositório oficial, e o A2 a A5 são o 487, o 492, o 494 e o 502, inferidos da ordem
+  crescente dos ids no TCC 1.
 - Os AUC de uma seed das etapas 1 a 4 entram no registro, para mostrar o efeito de cada grupo de
   decisões.
 
@@ -166,22 +170,22 @@ Cada etapa é um commit, com uma revisão independente do diff contra as decisõ
 - README (números, comando e o multi-seed que vira teste), `ARCHITECTURE.md` (verificação, layout do
   cache com versão, exceção de `tests/`) e `DECISIONS.md` (as entradas de fidelidade passam a apontar
   para o `DEVELOPMENT.md`, a afirmação de que treino e inferência leem o mesmo cache é corrigida e a
-  linha que chama o teste de regressão de oráculo científico muda).
+  linha que chama o teste de regressão de valor de referência científico muda).
 - `GLOSSARY.md` (conferência final), `pyproject.toml` (a descrição do marcador `regression` e os
-  comentários com o 0,7608 e a banda), `requirements.lock` (cabeçalho e lock recapturado) e
+  comentários com o 0,7608 e a tolerância), `requirements.lock` (cabeçalho e lock recapturado) e
   `tests/data/a439_mini/README.md`.
-- Os comentários de `src/ml/code_dkt` e `src/ml/reproducibility` onde a numérica mudou, sem citar
-  docs e sem mexer em `src/ml/kc_generation`.
-- O `CLAUDE.md` com os valores finais, o Estado do `DEVELOPMENT.md` com o commit de cada linha, o
-  estado deste plano e as memórias desatualizadas.
+- Os comentários de `src/ml/code_dkt` e `src/ml/reproducibility` onde o resultado numérico mudou,
+  sem citar docs e sem mexer em `src/ml/kc_generation`.
+- O `CLAUDE.md` com os valores finais, o Estado do `DEVELOPMENT.md` com o commit de cada linha e o
+  estado deste plano.
 
 ## Verificação
 
 - Os testes rodam no container, o pytest na `edmkt-core:dev` e o Vitest no `web` se a tela mudar,
   junto com o `code_comments_test`, o `architecture_test` e o import-linter. O import-linter tem um
   contrato já quebrado, anterior a este trabalho.
-- O teste vem antes do código em cada mudança de comportamento, e os testes que fixam a numérica
-  antiga são reescritos na etapa que os quebra.
+- O teste vem antes do código em cada mudança de comportamento, e os testes que fixam o resultado
+  numérico antigo são reescritos na etapa que os quebra.
 - Medidas de uma seed nas etapas 1 a 4, a medida de VRAM na 3, e as dez seeds duas vezes mais a
   comparação na 5. Cada treino leva cerca de 1 minuto, as dez seeds duas vezes de 20 a 40 minutos e
   a comparação dos cinco exercícios perto de 1 hora.
@@ -193,7 +197,7 @@ Cada etapa é um commit, com uma revisão independente do diff contra as decisõ
 | 0 | Concluída |
 | 1 | Concluída |
 | 2 | Concluída |
-| 3 | Concluída, com o lote em pedaços de 64 do H |
+| 3 | Concluída, com a acumulação de gradiente em batches de 64 do H |
 | 4 | Concluída |
-| 5 | Concluída, com a faixa de ±0,1 ponto da decisão E |
+| 5 | Concluída, com a tolerância de ±0,1 ponto da decisão E |
 | 6 | Concluída |

@@ -38,7 +38,7 @@ class MlStudentMasteryPredictor:
             code_by_snapshot_id(dataset.events),
             config,
         )
-        # A mesma amostra de paths do treino, com o R e a seed do sorteio gravados na versão
+        # A mesma amostra de paths do treino, com o R e a seed da amostragem gravados na versão
         state = predict_current_state(
             model,
             sequences,

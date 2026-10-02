@@ -156,7 +156,7 @@ def test_operation_order_uses_train_only_vocab(progsnap_df, progsnap_paths, cpu_
     token_to_idx = vocab["token_to_idx"]
     path_to_idx = vocab["path_to_idx"]
 
-    # Corpo Java reservado com try/catch inédito no treino; vocab união resolveria, só-treino não.
+    # Java reservado com try/catch inédito no treino; só o vocabulário com o teste o resolveria.
     held_out = "public int z(int n) { try { return 100 / n; } catch (ArithmeticException e) { return 0; } }"
     paths = extract_ast_paths(held_out)
     assert paths, "held-out snippet must yield >= 1 AST path"

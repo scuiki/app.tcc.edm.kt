@@ -12,7 +12,7 @@ interface ApprovalBarProps {
   assignmentCount: number
 }
 
-// A aprovação é o portão humano do processo e vale por exercício, sem o treino começar sem ela
+// A aprovação é a validação do professor (human-in-the-loop), vale por exercício e libera o treino
 export function ApprovalBar({
   assignmentId,
   status,

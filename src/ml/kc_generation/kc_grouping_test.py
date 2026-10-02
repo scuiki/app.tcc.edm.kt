@@ -1,4 +1,4 @@
-# choose_kc_group_count e o agrupamento de KCs; candidatos 10/12/15 são ciência congelada.
+# choose_kc_group_count e o agrupamento de KCs; os candidatos 10/12/15 são os do TCC 1, sem alterar.
 
 from __future__ import annotations
 

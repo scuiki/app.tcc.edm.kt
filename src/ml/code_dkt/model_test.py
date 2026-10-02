@@ -36,7 +36,7 @@ def test_w0_is_square_and_without_bias():
 
 
 def test_w0_is_created_after_the_attention_and_before_the_lstm():
-    # A posição define a ordem do sorteio dos pesos na inicialização das camadas seguintes
+    # A posição define a ordem dos números aleatórios que inicializam os pesos das camadas seguintes
     names = [name for name, _ in _model().named_children()]
     assert names.index("attention_layer") < names.index("code_vector_layer") < names.index("rnn")
 

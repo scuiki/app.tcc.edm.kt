@@ -10,7 +10,7 @@ import torch
 
 
 def seed_all_random_generators(seed: int = 42, strict: bool = False) -> None:
-    # Semeia random, numpy, torch e cuda; strict=True força numérica bit a bit (só testes de CPU).
+    # Semeia random, numpy, torch e cuda; strict=True força o resultado numérico bit a bit (só CPU).
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)

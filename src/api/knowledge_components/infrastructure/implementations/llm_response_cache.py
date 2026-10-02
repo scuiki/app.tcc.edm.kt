@@ -59,7 +59,7 @@ def cache_get(base_path, *, problem_id: str, key: str) -> dict | None:
     record = store.get(str(problem_id))
     if record is None:
         return None
-    # input_hash divergente é identidade antiga, trata como miss pra não devolver ciência velha.
+    # input_hash divergente é de outro modelo ou prompt, vira miss e não devolve resposta velha.
     if record.get("input_hash") not in (None, key):
         return None
     return record

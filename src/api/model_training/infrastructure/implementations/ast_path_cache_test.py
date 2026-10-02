@@ -62,7 +62,7 @@ def test_each_assignment_has_its_own_cache_so_equal_ids_do_not_leak(
 
 
 def test_the_cache_keeps_every_path_of_a_solution(data_root, cache_config):
-    # O sorteio dos R acontece na montagem da entrada, e o vocabulário conta todos
+    # A amostragem aleatória dos R acontece na montagem da entrada, e o vocabulário conta todos
     ast_path_cache.load_or_extract_ast_paths(1, 1, ["long"], {"long": JAVA_LONG}, cache_config)
     # A segunda chamada lê o que foi gravado no disco, e não a lista que o extrator devolveu
     reread = ast_path_cache.load_or_extract_ast_paths(
@@ -72,7 +72,7 @@ def test_the_cache_keeps_every_path_of_a_solution(data_root, cache_config):
 
 
 def test_the_unversioned_cache_is_ignored_and_kept(data_root, java_snippets, cache_config):
-    # O cache de antes guardava só os R sorteados, e fica no disco sem ser lido nem apagado
+    # O cache sem versão guardava só os R paths amostrados, e fica no disco sem ser lido nem apagado
     old_dir = data_root / "1" / "cache" / "paths" / "1"
     old_dir.mkdir(parents=True)
     old_file = old_dir / "c1.pkl"
@@ -86,7 +86,7 @@ def test_the_unversioned_cache_is_ignored_and_kept(data_root, java_snippets, cac
     assert pickle.loads(old_file.read_bytes()) == [("stale", "stale@path", "stale")]
 
 
-# --- classificação em 3 vias ------------------------------------------------
+# --- vocabulário só do treino e paths do held-out fora dele (OOV) -----------
 
 
 def test_global_cache_does_not_leak_into_train_vocab(java_snippets, data_root, cache_config):

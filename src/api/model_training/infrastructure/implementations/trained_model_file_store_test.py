@@ -196,7 +196,7 @@ def test_reload_contract_no_size_mismatch(tmp_path):
         assert torch.equal(loaded.state_dict()[name], tensor)
 
 
-# O 1 é o formato de antes do W_0, cujos pesos a rede de agora não carrega
+# O format_version 1 é o formato anterior ao W_0, cujos pesos a rede atual não carrega
 @pytest.mark.parametrize("format_version", [None, 1])
 def test_an_artifact_of_another_format_is_refused_before_reading_it(
     tmp_path, tiny_model, tiny_vocab, tiny_config, format_version

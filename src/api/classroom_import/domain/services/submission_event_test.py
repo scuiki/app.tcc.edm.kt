@@ -30,7 +30,8 @@ def test_run_program_only_does_not_mutate_the_caller_frame():
     df = _mixed_stream()
     submission_event.keep_only_program_runs(df)
 
-    assert len(df) == 4  # o canônico segue intacto para a EDA, que PRECISA dos Compile.Error
+    # O dado limpo completo segue intacto para as estatísticas, que PRECISAM dos Compile.Error
+    assert len(df) == 4
 
 
 def test_run_program_only_reindexes():

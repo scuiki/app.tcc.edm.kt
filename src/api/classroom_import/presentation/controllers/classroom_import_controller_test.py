@@ -135,7 +135,7 @@ def test_a_second_send_to_the_same_classroom_creates_new_assignments(api_client)
         )
         assert response.status_code == 200
 
-    # O assignment repetido vira um novo, e cada envio guardou o próprio cru
+    # O assignment repetido vira um novo, e cada envio guardou o próprio arquivo enviado
     assert conn.execute("SELECT COUNT(*) FROM assignment;").fetchone()[0] == 2
     raw = settings.DATA_ROOT / str(classroom_id) / "raw"
     assert len(list(raw.iterdir())) == 2

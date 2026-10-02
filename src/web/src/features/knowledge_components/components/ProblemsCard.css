@@ -43,7 +43,7 @@
   color: var(--color-danger-text);
 }
 
-/* A etiqueta do conceito, com o xis que tira o conceito só daquele problema */
+/* A etiqueta do conceito, com o botão de remover que tira o conceito só daquele problema */
 .kc-chip {
   height: 28px;
   padding: 0 4px 0 10px;

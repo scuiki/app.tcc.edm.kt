@@ -6,7 +6,7 @@
 
 # Sem EDMKT_CSEDM_PATH o fixture pula com motivo claro; o CSEDM nunca é copiado pro repo.
 
-# As dez seeds se repetem bit a bit nesta máquina, então a faixa estreita pega qualquer mudança.
+# As dez seeds se repetem bit a bit nesta máquina, então a tolerância estreita pega toda mudança.
 
 from __future__ import annotations
 
@@ -34,33 +34,33 @@ BAND_HI = round(REGRESSION_CENTER + TOLERANCE, 4)  # 0.7288
 
 
 def assert_in_band(first_auc: float, lo: float = BAND_LO, hi: float = BAND_HI) -> None:
-    # Levanta AssertionError alto e claro, nomeando o valor observado e a faixa esperada.
+    # Levanta AssertionError alto e claro, nomeando o valor observado e a tolerância esperada.
     if not (lo <= first_auc <= hi):
         raise AssertionError(
-            f"A média do first-attempt AUC, {first_auc:.4f}, saiu da faixa de regressão "
+            f"A média do first-attempt AUC, {first_auc:.4f}, saiu da tolerância de regressão "
             f"[{lo:.4f}, {hi:.4f}] em torno de {REGRESSION_CENTER:.4f}. O código, as dependências "
             "ou o ambiente mudaram o comportamento do Code-DKT no A439."
         )
 
 
 def test_band_fails_loud() -> None:
-    # A guarda da faixa levanta erro fora dela e passa dentro; teste puro, sem dataset.
+    # A guarda da tolerância levanta erro fora dela e passa dentro; teste puro, sem dataset.
     assert_in_band(REGRESSION_CENTER)
     assert_in_band(BAND_LO)  # limite inferior incluso
     assert_in_band(BAND_HI)  # limite superior incluso
 
     for bad in (0.7266, 0.7290, 0.7595):
-        with pytest.raises(AssertionError, match=r"saiu da faixa de regressão"):
+        with pytest.raises(AssertionError, match=r"saiu da tolerância de regressão"):
             assert_in_band(bad)
 
 
 def test_band_derives_from_the_measured_center() -> None:
-    # A faixa é REGRESSION_CENTER ± TOLERANCE, os dois limites documentados, não números mágicos.
+    # A tolerância é ±TOLERANCE em torno da média de referência, sem números mágicos nos limites.
     assert (BAND_LO, BAND_HI) == (0.7268, 0.7288)
 
 
 def test_regression_skipped_without_path(monkeypatch) -> None:
-    # Sem EDMKT_CSEDM_PATH o fixture pula com motivo claro, prova o gate fast-by-default.
+    # Sem EDMKT_CSEDM_PATH o fixture pula com motivo claro, e a suíte padrão segue rápida.
     monkeypatch.delenv("EDMKT_CSEDM_PATH", raising=False)
     with pytest.raises(pytest.skip.Exception):
         resolve_csedm_path()
@@ -87,11 +87,13 @@ def test_a439_split_matches_the_official_repository(csedm_main_table) -> None:
 
 @pytest.mark.regression
 def test_regression_a439(csedm_main_table) -> None:
-    # Retreina o A439 com as dez seeds, e a média da primeira tentativa precisa cair na faixa
+    # Retreina o A439 com as dez seeds, e a média da primeira tentativa precisa ficar na tolerância
 
-    # A faixa foi medida na GPU, e na CPU a numérica é outra, então falha em vez de comparar
+    # A média de referência é da GPU, e na CPU o resultado numérico é outro, então falha
     if not torch.cuda.is_available():
-        pytest.fail("O teste de regressão precisa da GPU, onde a faixa de ±0,1 ponto foi medida.")
+        pytest.fail(
+            "O teste de regressão precisa da GPU, onde a média de referência foi medida."
+        )
     evaluation = evaluate_over_seeds(
         csedm_main_table, CODE_DKT_HYPERPARAMETERS, progsnap_assignment_id=A439,
         device=torch.device("cuda"),
@@ -100,6 +102,6 @@ def test_regression_a439(csedm_main_table) -> None:
     by_seed = ", ".join(f"{s}={a:.4f}" for s, a in evaluation.first_attempt_auc_by_seed.items())
     print(
         f"\n[regression] A439 first-attempt AUC, média {evaluation.first_attempt_auc_mean:.4f} "
-        f"(faixa [{BAND_LO:.4f}, {BAND_HI:.4f}]) por seed {by_seed}"
+        f"(dentro da tolerância, de {BAND_LO:.4f} a {BAND_HI:.4f}) por seed {by_seed}"
     )
     assert_in_band(evaluation.first_attempt_auc_mean)

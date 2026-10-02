@@ -47,7 +47,7 @@ class StartKnowledgeComponentGenerationUseCase(WriteUseCase):
         ]
 
     def _run(self, dto: StartKnowledgeComponentGenerationDTO) -> StartedJobDTO:
-        # Fica fora das regras de propósito, é corrida e não defeito do pedido, raise direto.
+        # Fora das regras de propósito, é condição de corrida e não defeito do pedido, raise direto.
         if self._job_lock.is_another_job_running():
             raise AnotherJobRunning("já existe um job em andamento; aguarde a conclusão")
         job_id = self._jobs.add(

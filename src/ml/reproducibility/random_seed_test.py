@@ -33,14 +33,14 @@ def test_seeds_all_four_rngs():
     a_py, a_np, a_torch = _draw_all_rngs()
     seed_all_random_generators(123)
     b_py, b_np, b_torch = _draw_all_rngs()
-    # mesma seed -> mesmos sorteios em todos os RNGs
+    # mesma seed -> mesmos números aleatórios em todos os RNGs
     assert a_py == b_py
     assert a_np == b_np
     assert a_torch == b_torch
 
     seed_all_random_generators(456)
     c_py, c_np, c_torch = _draw_all_rngs()
-    # seed diferente -> sorteios diferentes em todos os RNGs
+    # seed diferente -> números aleatórios diferentes em todos os RNGs
     assert c_py != a_py
     assert c_np != a_np
     assert c_torch != a_torch

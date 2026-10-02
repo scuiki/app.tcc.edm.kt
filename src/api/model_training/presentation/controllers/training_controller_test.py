@@ -89,7 +89,7 @@ def test_dispatch_rejects_statistics_only_409(api_client, monkeypatch):
 
 
 def test_dispatch_blocked_before_approval_then_ok_after(api_client, monkeypatch):
-    # o gate humano, kc_draft (não-aprovado) é 409; aprovar destrava o /training.
+    # sem a aprovação do professor, kc_draft (não-aprovado) é 409; aprovar destrava o /training.
     client, conn = api_client
     aid = _seed_assignment(conn, status="kc_draft")
     _FakePopen.calls = []

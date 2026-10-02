@@ -28,7 +28,7 @@ def classify_parse(code: str, config: dict) -> str:
 
 
 def compute_java_parse_rate(codes: list[str], config: dict) -> float:
-    # Taxa honesta = (com_paths + parsed_sem_paths) / total-com-código; `no_code` sai do denominador
+    # Taxa de parse = (com_paths+parsed_sem_paths) / total-com-código; `no_code` sai do denominador
     classes = [classify_parse(c, config) for c in codes]
     with_code = [c for c in classes if c != "no_code"]
     if not with_code:

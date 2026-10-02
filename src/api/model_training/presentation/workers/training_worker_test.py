@@ -102,7 +102,7 @@ def _failing_trainer(error: Exception) -> MlCodeDktTrainer:
 
 
 def _canonical_df_with_compile_errors() -> pd.DataFrame:
-    # Stream realista, Run.Program parseável + Compile.Error com Java quebrado (57,6% no A439 real).
+    # Dado realista, Run.Program parseável + Compile.Error com Java quebrado (57,6% no A439 real).
     df = _canonical_df()
     base = pd.Timestamp("2019-03-01T08:00:00Z")
     broken = []
@@ -252,7 +252,7 @@ def test_cuda_oom_fails_gracefully(tmp_db, data_root):
     assert lock_holder_pid(conn) is None
 
 
-# --- caso 6, taxa de parse 3-vias recordada/recuperável ---
+# --- caso 6, taxa de parse gravada e recuperável ---
 
 
 def test_parse_rate_is_recorded(tmp_db, data_root, fast_trainer):
@@ -279,7 +279,7 @@ def test_parse_rate_is_persisted(tmp_db, data_root, fast_trainer):
     assert job.java_parse_rate == pytest.approx(1.0)
 
 
-# --- caso 7, o stream de treino é só Run.Program (fidelidade a Shi et al. 2022) ---
+# --- caso 7, o dado de treino é só Run.Program (fidelidade a Shi et al. 2022) ---
 
 
 def test_compile_errors_never_reach_the_training_stream(tmp_db, data_root, fast_trainer):

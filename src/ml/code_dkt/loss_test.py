@@ -35,7 +35,7 @@ def test_the_first_run_is_never_a_target():
     ) / 2
     torch.testing.assert_close(dkt_loss(y_pred, y_true, next_q, mask), expected)
 
-    # O repositório preveria a primeira execução a partir da posição vazia antes dela, e aqui não
+    # O repositório preveria a 1ª execução a partir do padding à esquerda antes dela, e aqui não
     repo_q, repo_true, repo_pred = next_q.clone(), y_true.clone(), y_pred.clone()
     repo_q[0, 2, 0], repo_true[0, 2], repo_pred[0, 2, 0] = 1.0, 1.0, 0.01
     torch.testing.assert_close(dkt_loss(repo_pred, repo_true, repo_q, mask), expected)

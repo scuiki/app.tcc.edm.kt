@@ -1,4 +1,4 @@
-# O único bloqueio duro é a ausência de ambas as classes; pisos de problemas/amostra só avisam.
+# O único bloqueio duro é a ausência de ambas as classes; mínimos de problemas e amostra só avisam.
 
 from __future__ import annotations
 
@@ -33,7 +33,7 @@ def test_single_class_blocks_hard_with_reason(ingest_single_class_df):
     assert len(summaries) == 1
     s = summaries[0]
     assert s.both_classes_present is False
-    # Único bloqueio científico, AUC indefinido, vira EDA-only.
+    # Único bloqueio científico, AUC indefinido, vira statistics_only.
     assert s.trainable is False
     # A reason precisa nomear a causa (classe ausente ou AUC indefinido), nunca silencioso.
     assert any("classe" in r.lower() or "auc" in r.lower() for r in s.reasons)
@@ -69,7 +69,7 @@ def test_few_problems_warns_but_does_not_block():
     fp = _item(items, "few_problems")
     assert fp is not None
     assert fp.severity == "viability"
-    # O piso de problemas é aviso, não parede; classe presente, então trainable permanece.
+    # O mínimo de problemas é aviso, não bloqueio; classe presente, então `trainable` permanece.
     assert s.both_classes_present is True
     assert s.trainable is True
 
@@ -167,7 +167,7 @@ def test_n_students_eligible_counts_every_student_with_a_program_run():
 
 
 def test_gate_is_per_assignment_independent():
-    # A439 com ambas as classes (trainable) e A492 com uma classe só (EDA-only) na mesma turma.
+    # A439 com ambas as classes (`trainable`) e A492 com uma só (statistics_only) na mesma turma.
     base = pd.Timestamp("2019-03-01T08:00:00Z")
     rows = []
     # A439, S1 erra e S2 acerta nos first-attempts, então ambas as classes.

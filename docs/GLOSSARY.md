@@ -110,6 +110,7 @@ prevê" (só com modelo publicado). Sem níveis, faixas, recomendações ou cort
 | completar (`completed`) | Ter ao menos uma execução correta no problema | "fechar" |
 | dado estimado (`GeneratedByML`) | O marcador de cérebro antes do rótulo de toda coluna que vem do Code-DKT | `EstimatedMark`, badge "previsto" |
 | gerado pelo modelo de linguagem (`GeneratedByLLM`) | O marcador de estrelas no que o LLM escreveu, o nome do conceito e a descrição do problema. Some do nome quando o professor o renomeia | — |
+| linha de fatos | A linha de números abaixo do título de uma tela, com os itens separados por vírgula. Na Análise traz alunos, problemas, conceitos, execuções e a versão do modelo com a data do treino, no lugar da descrição fixa | — |
 | recorrência (`recurrence`) | Em quantos problemas do exercício um conceito aparece. Com um só, o valor do conceito é o desse problema, evidência fraca | cobertura |
 | `compute_problem_statistics()` / `compute_knowledge_component_statistics()` / `compute_student_activity()` | Calculam as três contagens acima do dado limpo, sem modelo (`services/submission_statistics_calculation.py`) | `compute_pre_training_statistics()` |
 | `first_attempt_auc` | A métrica primária: AUC só sobre as primeiras tentativas. Fica no banco e no teste de regressão; não vai para a tela | `first_auc` |
@@ -131,8 +132,8 @@ modelo, exceto o domínio médio dos exercícios treinados.
 
 | Nome no código | O que é | Nome antigo |
 |---|---|---|
-| `SampledSolution` | Uma das até cinco soluções corretas que o KCGen-KT sorteou para um problema, a primeira de um aluno, uma por faixa de tentativas até acertar. Gravada na extração, pelo `code_snapshot_id` | — |
-| origem do conceito | O diálogo com as soluções sorteadas de cada problema em que o conceito aparece | — |
+| `SampledSolution` | Uma das até cinco soluções corretas que o KCGen-KT amostrou para um problema, a primeira de um aluno, uma por faixa de tentativas até acertar. Gravada na extração, pelo `code_snapshot_id` | — |
+| origem do conceito | O diálogo com as soluções amostradas de cada problema em que o conceito aparece | — |
 
 ## Importação
 
@@ -154,21 +155,23 @@ modelo, exceto o domínio médio dos exercícios treinados.
 | `TrainingOutcome` | O que um treino devolve: o modelo, o vocabulário, os hiperparâmetros, o first-attempt AUC e o `java_parse_rate` | — |
 | `DetectedUpload` | O que o upload encontrou no `.zip`: o diretório cru e as tabelas | — |
 | `AstPath` | Um caminho na árvore sintática do Java; é a feature de entrada do Code-DKT (termo do artigo) | paths |
-| `AstPathCache` | Todos os paths de cada solução, já extraídos e salvos em disco por snapshot, num diretório com a `AST_PATH_CACHE_VERSION`. O sorteio dos R acontece depois, na montagem da entrada | `features_cache` |
+| `AstPathCache` | Todos os paths de cada solução, já extraídos e salvos em disco por snapshot, num diretório com a `AST_PATH_CACHE_VERSION`. A amostragem aleatória dos R paths acontece depois, na montagem da entrada | `features_cache` |
 | `AST_PATH_CACHE_VERSION` | A versão do método de extração no diretório do `AstPathCache`. Um cache de outra versão é ignorado | — |
-| `PADDING_INDEX` | O índice 0 dos vocabulários de nós e de paths, que preenche as posições vazias, as de uma solução com menos de R paths e as antes da primeira execução de quem tem menos de 50 | — |
-| `UNKNOWN_INDEX` | O índice 1 dos vocabulários, de um nó ou path que não apareceu no treino. Os tokens reais começam no 2 | índice 0 do OOV |
-| `sample_ast_paths()` | O sorteio dos R paths de uma solução com a `path_sampling_seed`, só quando ela tem mais de R paths, usado no treino, na avaliação e na inferência | — |
-| `path_sampling_seed` | A seed do sorteio dos R paths de cada solução, 42, separada da `seed` do treino para os paths não mudarem entre as execuções | `seed` |
+| vocabulário (`vocab`) | O mapa dos nós e dos paths do treino em índices (`token_to_idx` e `path_to_idx`), como no code2vec (Alon et al., 2019). Sai só dos alunos de treino e conta todos os paths das soluções deles | — |
+| padding (`PADDING_INDEX`) | O índice 0 dos vocabulários de nós e de paths, que completa uma solução com menos de R paths e faz o padding à esquerda da sequência de quem tem menos de 50 execuções | — |
+| token desconhecido (UNK, `UNKNOWN_INDEX`) | O índice 1 dos vocabulários, de um nó ou path que não apareceu no treino. Os tokens reais começam no 2 | índice 0 do OOV |
+| `sample_ast_paths()` | A amostragem aleatória dos R paths de uma solução com a `path_sampling_seed`, só quando ela tem mais de R paths, usada no treino, na avaliação e na inferência | — |
+| `path_sampling_seed` | A seed da amostragem aleatória dos R paths de cada solução, 42, separada da `seed` do treino para os paths não mudarem de um treino para outro | `seed` |
 | `code_vector_layer` | A camada linear sem viés que leva a média ponderada dos paths ao vetor de código z, o W_0 de Shi et al. (2022) | — |
 | `INFERENCE_CHUNK_SIZE` | Quantos alunos entram de cada vez num forward da inferência e da avaliação, para a memória não estourar | — |
-| `batch_chunk_size` | Quantos alunos de um lote entram de cada vez no forward e no backward do treino, com o gradiente somado até completar o lote, para a memória da GPU não estourar | — |
-| `EVALUATION_SEEDS` | As seeds das dez execuções da avaliação, de 42 a 51 | — |
+| acumulação de gradiente (*gradient accumulation*, `batch_chunk_size`) | No treino, o forward e o backward vão em batches de 64 alunos, com o gradiente somado até completar o tamanho do lote (*batch size*), para a memória da GPU não estourar | — |
+| `EVALUATION_SEEDS` | As seeds dos dez treinos da avaliação, de 42 a 51 | — |
 | `evaluate_over_seeds()` | Treina e avalia um exercício uma vez por seed de `EVALUATION_SEEDS` (`ml/evaluation/seed_evaluation.py`) | multirun do TCC 1 |
 | `SeedEvaluation` | O resultado de `evaluate_over_seeds()`, com o first-attempt AUC e o AUC geral de cada seed, e a média e o desvio amostral de cada um | — |
 | `TRAINED_MODEL_FORMAT_VERSION` | A versão do formato do artefato de um `TrainedModel`, gravada como `format_version` no `config.json` | — |
 | `IncompatibleTrainedModelError` | O erro de quando um artefato não tem a `format_version` atual. Vira 409 | — |
 | marcador `regression` | O teste que treina o A439 com as dez seeds e confere a média da primeira tentativa em ±0,1 ponto em torno de 0,7278, `tests/test_regression_a439.py`, fora da suíte padrão | — |
+| tolerância do teste de regressão (`TOLERANCE`) | O quanto a média do first-attempt AUC das dez seeds pode se afastar da média de referência, ±0,001 (±0,1 ponto). A média de referência (`REGRESSION_CENTER`) é 0,7278, a que o app mediu no A439 em 02/10/2026, e fora da tolerância o teste de regressão falha | — |
 | marcador `literature` | O teste que compara o app com as Tabelas 1 e 2 de Shi et al. (2022), `tests/test_literature_comparison.py`, fora da suíte padrão | — |
 | `java_parse_rate` | A fração dos snapshots que o javalang conseguiu parsear | `parse_rate` |
 | `ModelProvenance` | O commit do código e o hash do dado que geraram um modelo | `provenance` |

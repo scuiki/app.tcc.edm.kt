@@ -19,11 +19,11 @@ recorte traz
 ## O que ele não é
 
 - Não é lido do disco nem derivado da CSEDM real.
-- Nenhum teste afirma um AUC sobre ele, porque a numérica em dado sintético é arbitrária. A
-  checagem em dado real é o teste de regressão (`tests/test_regression_a439.py`, marcador
-  `regression`), que lê a CSEDM por `EDMKT_CSEDM_PATH`, treina o A439 com as dez seeds na GPU e
-  confere a média do first-attempt AUC em ±0,1 ponto em torno de 0,7278. A comparação com o paper é
-  o `tests/test_literature_comparison.py`, marcador `literature`.
+- Nenhum teste afirma um AUC sobre ele, porque o resultado numérico em dado sintético é
+  arbitrário. A checagem em dado real é o teste de regressão (`tests/test_regression_a439.py`,
+  marcador `regression`), que lê a CSEDM por `EDMKT_CSEDM_PATH`, treina o A439 com as dez seeds na
+  GPU e confere a média do first-attempt AUC em ±0,1 ponto em torno de 0,7278. A comparação com o
+  paper é o `tests/test_literature_comparison.py`, marcador `literature`.
 
 Os testes de `src/ml` e `src/api` usam a fixture só para travar formas e comportamento. No `ml/`, a
 montagem e o truncamento das sequências, os tensores de entrada e o treino curto em CPU. No `api/`,

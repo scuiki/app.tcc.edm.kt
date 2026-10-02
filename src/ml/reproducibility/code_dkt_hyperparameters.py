@@ -16,7 +16,7 @@ _FROZEN = {
     "lr": 5e-4,
     "epochs": 40,
     "batch_size": 128,
-    # O lote de 128 passa em pedaços de 64 alunos, porque com R=100 ele inteiro não cabe na GPU
+    # O lote de 128 usa acumulação de gradiente em batches de 64, porque com R=100 não cabe na GPU
     "batch_chunk_size": 64,
     "max_len": 50,
     "seed": 42,

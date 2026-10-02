@@ -143,7 +143,7 @@ def test_every_student_with_a_program_run_in_the_assignment_enters_the_split():
         _row(f"S{i}", 1, base + pd.Timedelta(minutes=i), 0.0, _JAVA_OK_A, f"S{i}_c0")
         for i in range(5)
     ]
-    # Uma execução só já basta, sem piso de tentativas
+    # Uma execução só já basta, sem número mínimo de tentativas
     rows.append(_row("ONE", 2, base + pd.Timedelta(hours=1), 1.0, _JAVA_OK_A, "one_c0"))
     # Só Compile.Error no exercício, como no repositório, fica fora
     rows.append(_row("CE", 1, base, 0.0, _JAVA_OK_A, "ce_c0", event="Compile.Error"))

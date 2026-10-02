@@ -1,4 +1,4 @@
-/* A linguagem visual da prancha Fundamentos, e cada token com a sua situação de uso */
+/* A linguagem visual do design system, e cada token com a sua situação de uso */
 
 :root {
   /* O único azul, no botão primário, no ícone da ferramenta, no anel de foco e nos links */
@@ -60,7 +60,7 @@
   box-sizing: border-box;
 }
 
-/* A janela nunca rola; a casca do app ocupa a altura toda e só o conteúdo rola */
+/* A janela nunca rola; o app shell ocupa a altura toda e só o conteúdo rola */
 body {
   margin: 0;
   height: 100vh;
@@ -90,7 +90,7 @@ a {
   }
 }
 
-/* O giro dos indicadores de carregamento, desligado para quem pede menos movimento */
+/* A rotação dos indicadores de carregamento, desligada para quem pede menos movimento */
 @keyframes spin {
   to {
     transform: rotate(360deg);

@@ -17,7 +17,7 @@ def dkt_loss(
     # Passos válidos, tem dado real e existe próximo problema, então a 1ª execução nunca é alvo
     valid = mask & (next_q.sum(dim=-1) > 0)
 
-    # Só operações densas, sem índice nem soma espalhada, que perderiam a repetição na GPU
+    # Só operações densas, sem indexação nem scatter-add, que perderiam o determinismo na GPU
     safe_pred = torch.where(valid, pred_for_next, torch.full_like(pred_for_next, 0.5))
     step_loss = F.binary_cross_entropy(safe_pred, y_true.float(), reduction="none")
     step_loss = torch.where(valid, step_loss, torch.zeros_like(step_loss))

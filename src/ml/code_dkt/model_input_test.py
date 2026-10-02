@@ -1,4 +1,4 @@
-# Caracterização da tensorização da entrada do Code-DKT, com o sorteio dos R paths de cada solução.
+# Caracterização da tensorização da entrada do Code-DKT, com a amostragem dos R paths por solução.
 
 from __future__ import annotations
 
@@ -60,7 +60,7 @@ def test_build_code_input_tensor_has_documented_last_dim(a439_mini):
 
 
 def test_a_student_gets_the_same_input_alone_or_with_others():
-    # A inferência e a avaliação vão em pedaços de alunos, e a entrada de cada um não muda
+    # A inferência e a avaliação vão em lotes de 64 alunos, e a entrada de cada um não muda
     rows = [
         cleaned_row("S1", 1, "2019-03-01T08:00:00Z", "Run.Program", 0.0, JAVA_OK_A, "a"),
         cleaned_row("S2", 1, "2019-03-01T09:00:00Z", "Run.Program", 0.0, JAVA_LONG, "b"),

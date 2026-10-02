@@ -1,4 +1,4 @@
-# Um id inexistente cai na mesma mensagem de status errado (409), por design herdado.
+# Um id inexistente cai na mesma mensagem de status errado (409), como no fluxo de treino e de KCs.
 
 from __future__ import annotations
 

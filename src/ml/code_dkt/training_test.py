@@ -35,7 +35,7 @@ def test_train_default_on_epoch_is_silent(training_inputs, cpu_device, capsys):
 def test_the_batch_in_chunks_gives_the_gradient_of_the_whole_batch(
     training_inputs, cpu_device, monkeypatch
 ):
-    # Sem dropout, o lote em pedaços de 1 aluno dá o gradiente do lote inteiro
+    # Sem dropout, a acumulação de gradiente em batches de 1 aluno dá o gradiente do lote inteiro
     sequences, cache, vocab, problem_to_idx, config = training_inputs
     monkeypatch.setattr(torch.nn.functional, "dropout", lambda x, *args, **kwargs: x)
     recorded = []

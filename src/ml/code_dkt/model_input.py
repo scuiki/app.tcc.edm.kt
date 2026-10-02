@@ -1,6 +1,6 @@
 # Entrada do Code-DKT, cada tentativa vira o one-hot do DKT + os índices dos AST paths dela.
 
-# Adaptado do TCC 1 (paths_to_tensor, build_code_input_tensor), com o sorteio dos R paths aqui.
+# Adaptado do TCC 1 (paths_to_tensor, build_code_input_tensor), com a amostragem dos R paths aqui.
 
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ def ast_paths_to_index_array(
     R: int = 100,
     path_sampling_seed: int = 42,
 ) -> np.ndarray:
-    # Os R paths sorteados de um snapshot como um array (R, 3) de índices, com o resto vazio.
+    # Os R paths amostrados de um snapshot como um array (R, 3) de índices, com o resto em padding.
 
     arr = np.full((R, 3), PADDING_INDEX, dtype=np.int64)
     sample = sample_ast_paths(paths, R=R, path_sampling_seed=path_sampling_seed)
@@ -69,7 +69,7 @@ def build_model_input_tensors(
             else:
                 X[i, t, m + M] = 1.0
 
-            # Features de código, os paths da solução sorteados -> (R, 3) -> flatten float32
+            # Features de código, os paths da solução amostrados -> (R, 3) -> flatten float32
             raw_paths = ast_paths_by_snapshot.get(snapshot_ids[t_rel], [])
             code_arr = ast_paths_to_index_array(
                 raw_paths, token_to_idx, path_to_idx, R, path_sampling_seed

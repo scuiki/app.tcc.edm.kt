@@ -19,7 +19,7 @@ def _neutral_cwd() -> str:
 
 
 def _parse_json_from_text(text: str) -> dict:
-    # Fallback só quando structured_output vem ausente, extrai o JSON da cerca markdown ou o cru.
+    # Sem structured_output, extrai o JSON do bloco de código markdown ou do texto inteiro.
     if not text:
         raise EmptyContentError("envelope sem structured_output e result vazio")
     fence = "```json"
@@ -43,7 +43,7 @@ def call_claude(
     model: str,
     timeout_s: int = 120,
 ) -> dict:
-    # `model` vem de quem chama, o pin científico é dele, este transporte não escolhe modelo.
+    # `model` vem de quem chama, a versão fixada é decisão dele, este transporte não escolhe modelo.
     argv = [
         "claude",
         "-p",

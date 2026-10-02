@@ -9,9 +9,9 @@ que abre direto no navegador.
 
 **Estado.** Este documento é a especificação. O `tokens.css` e os componentes ainda seguem a
 linguagem anterior (azul de ação, Open Sans com Arial nas tabelas, raio de 2px), e as cinco telas
-ainda têm a organização antiga. A rodada das páginas terminou com as cinco organizadas, e a migração
-vem depois. Até lá, os valores estão na página de referência, e os nomes de token abaixo são os
-planejados.
+ainda têm a organização antiga. O desenho das páginas terminou com as cinco organizadas, e a
+migração vem depois. Até lá, os valores estão na página de referência, e os nomes de token abaixo
+são os planejados.
 
 ## Princípios
 
@@ -176,8 +176,8 @@ para a recusa, que não grava nada.
 **Lista de estágios.** Em `--color-model`, tanto na extração de conceitos, feita pelo modelo de
 linguagem, quanto no treino do Code-DKT, porque os dois são trabalho de modelo.
 
-**Carregamento e vazio.** O giro de carregamento é `--color-text`. O estado vazio tem o ícone num
-quadrado `--color-hover`, um título e uma frase de apoio.
+**Carregamento e vazio.** O indicador de carregamento (spinner) é `--color-text`. O estado vazio
+tem o ícone num quadrado `--color-hover`, um título e uma frase de apoio.
 
 **Mensagem de resultado.** O erro tem ícone `--color-danger` e título `--color-danger-text`. O
 sucesso é neutro, com o ícone em `--color-text`.
@@ -270,8 +270,8 @@ lista longa ficar discreta.
 - Uma figura só entra quando mostra um dado que a tabela não tem. Redesenhar os números da tabela
   em outra forma não é motivo para uma figura.
 - A figura inteira usa `--font-data`, para entrar na monografia como está.
-- Cada figura tem título, subtítulo com a unidade e a fonte do dado (por exemplo, "Fonte: Code-DKT
-  versão 5").
+- Cada figura tem título, subtítulo com a unidade e a fonte do dado (por exemplo, "Fonte: Code-DKT"
+  seguida da versão do modelo).
 - As barras são quadradas e o eixo delas começa em zero. A linha não precisa começar em zero.
 - Observado e previsto nunca dividem a mesma régua.
 - Dois eixos só quando a segunda série é contexto da primeira. Ela fica atrás e apagada, cada eixo
@@ -308,7 +308,8 @@ o fundo escurecido. As tabelas rolam de lado dentro do cartão.
 2. **Cabeçalho.** O nome do exercício, a etiqueta Treinado ao lado e a linha de fatos abaixo, com
    alunos, problemas, conceitos, execuções e a versão do modelo com a data do treino. A linha de
    fatos substitui a descrição fixa.
-3. **Cartão de situação**, só antes do treino, como hoje.
+3. **Cartão de situação**, só antes do treino, com os três estados que o `AssignmentStateCards`
+   implementa (sem conceitos aprovados, pronto para treinar e exercício que não treina).
 4. **Cartão da análise**, com as abas Conceitos, Problemas e Alunos, nessa ordem. A aba Conceitos
    tem a vista "Tabela | Curva de aprendizagem" à direita das abas. O rodapé explica o marcador de
    estimado.
@@ -390,13 +391,13 @@ fazer.
 | 4 | 30/09/2026 | Conceitos. Matriz problema × conceito com abas, origem do conceito com as soluções em abas de código, marcador `GeneratedByLLM` com as estrelas, dica com ?, vírgula na linha de fatos, estágios da extração em azul e a fonte mono só em bloco de código |
 | 3 | 29/09/2026 | Turmas e Turma. Tabela de exercícios com próximo passo, alunos da turma com busca e paginação de 10, execuções por dia, atividade recente com treinos e extrações, e os ícones de Conceitos, Problemas e Treinado nas etiquetas de situação |
 | 2 | 29/09/2026 | A organização da Análise. Linha de fatos, abas com Conceitos primeiro, curva de aprendizagem com dois eixos, cabeçalho de tabela com 32px e rótulo truncado, histograma da tabela sem eixo, menu que recolhe em tela estreita |
-| 1 | 29/09/2026 | A linguagem formal. Interface em cinza, azul só no modelo, raio 0, Public Sans na interface e Arial nos dados, componentes no estilo Carbon |
+| 1 | 29/09/2026 | A primeira versão do design formal. Interface em cinza, azul só no modelo, raio 0, Public Sans na interface e Arial nos dados, componentes no estilo Carbon |
 
 A cada versão, a página de referência é renomeada (`git mv`) para o número novo, e o git guarda as
-anteriores. As rodadas que levaram à versão 1 estão nos artifacts
-[rodada 1](https://claude.ai/artifact/KqNSGX5HSt9MZi7yHQf1nP),
-[rodada 2](https://claude.ai/artifact/LQwhxenEuDJ21oNZLAk7TK) e
-[rodada 3](https://claude.ai/artifact/CQZsNUAHJXBUWXW9sZdW1R). A da versão 2 está em
+anteriores. As iterações de design que levaram à versão 1 estão nos artifacts
+[iteração de design 1](https://claude.ai/artifact/KqNSGX5HSt9MZi7yHQf1nP),
+[iteração de design 2](https://claude.ai/artifact/LQwhxenEuDJ21oNZLAk7TK) e
+[iteração de design 3](https://claude.ai/artifact/CQZsNUAHJXBUWXW9sZdW1R). A da versão 2 está em
 [organização da Análise](https://claude.ai/artifact/VZeKyWCQVGZDrcsmDyqYUX), e a da versão 3 em
 [Turmas e Turma](https://claude.ai/artifact/2AsBMzpMUcaQQPEcfwdU8q), e a da versão 4 em
 [Conceitos](https://claude.ai/artifact/TskaC5xtKnyTjKiq3FwtGo), e a da versão 5 em

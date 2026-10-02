@@ -85,7 +85,7 @@ def _canonical_df() -> pd.DataFrame:
 
 
 def _seed_kc_ready(conn, data_root) -> tuple[int, int]:
-    # Turma + assignment trainable + dado limpo + kc_job pending. Devolve (aid, job).
+    # Turma + assignment ready_for_kc_generation + dado limpo + kc_job pending. Devolve (aid, job).
     created = "2026-06-21T00:00:00Z"
     classroom_id = SqliteClassroomRepository(conn).add(
         Classroom(id=None, name="Turma X", created_at=created)
@@ -148,7 +148,7 @@ def test_content_hard_fail_marks_failed_nothing_persisted(tmp_db, data_root):
 
 
 def test_small_dataset_skips_clustering_no_crash(tmp_db, data_root):
-    # Poucos nomes pulam SBERT/silhouette (cada nome vira seu cluster), evita o ValueError de antes.
+    # Poucos nomes pulam SBERT/silhouette (cada nome vira seu cluster), evita o ValueError.
     conn = tmp_db
     assignment_id, job_id = _seed_kc_ready(conn, data_root)
 
@@ -169,7 +169,7 @@ def test_small_dataset_skips_clustering_no_crash(tmp_db, data_root):
 
 
 def test_mark_done_failure_is_atomic_with_persist(tmp_db, data_root, monkeypatch):
-    # mark_done dentro da mesma txn do flip, se falhar os dois dão rollback (evita inconsistência).
+    # mark_done na mesma transação do status, se falhar os dois dão rollback (evita inconsistência).
     conn = tmp_db
     assignment_id, job_id = _seed_kc_ready(conn, data_root)
     llm = _llm_ok()
@@ -183,7 +183,7 @@ def test_mark_done_failure_is_atomic_with_persist(tmp_db, data_root, monkeypatch
 
     asg = SqliteAssignmentRepository(conn).get(assignment_id)
     job = _jobs(conn).get(job_id)
-    # Sem inconsistência, ou tudo persiste com job done, ou nada (rollback pra trainable+failed).
+    # Sem inconsistência, ou tudo persiste com job done, ou nada (ready_for_kc_generation + failed).
     assert not (asg.status == "kc_draft" and job.status == "failed")
     assert asg.status == "ready_for_kc_generation"
     assert conn.execute("SELECT COUNT(*) FROM kc;").fetchone()[0] == 0

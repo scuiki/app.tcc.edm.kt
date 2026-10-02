@@ -1,4 +1,4 @@
-# Caracterização da extração de AST paths, do sorteio dos R paths e do vocabulário.
+# Caracterização da extração de AST paths, da amostragem aleatória dos R paths e do vocabulário.
 
 from __future__ import annotations
 
@@ -18,12 +18,12 @@ from tests.fixtures.sample_data import JAVA_LONG, JAVA_OK_A, JAVA_OK_B, JAVA_OK_
 _JAVA_OK = "public int f(int x) { return x + 1; }"
 _JAVA_BAD = "public int oops( { return ;;; }"
 
-# O sorteio de 100 que o extract_ast_paths de antes fazia no JAVA_LONG, com a seed 42
+# A amostragem aleatória de 100 paths do JAVA_LONG que o extract_ast_paths fazia por dentro, seed 42
 _R100_DRAW_SHA256 = "b367533d88ab5323bd193618df5938fcf1293f3cf0e646a0c3ae6031cc083f50"
 
 
 def test_process_runs_with_hash_seed_zero():
-    # A ordem dos modificadores Java sai de um set e depende do hash, que o app fixa em 0
+    # A ordem dos modificadores Java sai de um set e depende do PYTHONHASHSEED, que o app fixa em 0
     assert sys.flags.hash_randomization == 0, (
         "PYTHONHASHSEED não é 0 neste processo, e os AST paths não saem na ordem que o app fixa"
     )
@@ -43,7 +43,7 @@ def test_extract_paths_returns_empty_for_malformed_java():
 
 
 def test_extract_returns_every_path_of_the_solution():
-    # O extrator não sorteia, o vocabulário conta todos e o sorteio fica para a montagem da entrada
+    # O extrator não amostra, o vocabulário conta todos e a amostragem fica na montagem da entrada
     assert len(extract_ast_paths(JAVA_LONG)) == 142
 
 

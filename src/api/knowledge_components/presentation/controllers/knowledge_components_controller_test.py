@@ -225,7 +225,7 @@ def test_merge_self_merge_rejected(api_client):
     assert SqliteKnowledgeComponentRepository(conn).get(kc_id) is not None  # não se autodeletou
 
 
-# --- gate de aprovação ---
+# --- aprovação dos KCs pelo professor ---
 
 
 def test_approve_sets_kc_approved(api_client):
@@ -292,7 +292,7 @@ def test_editing_after_training_is_refused(api_client):
     assert SqliteAssignmentRepository(conn).get(aid).status == "trained"
 
 
-# Tirar um KC de um problema só, o xis do chip, e o caminho de volta
+# Tirar um KC de um problema só, no botão remover do chip, e o caminho de volta
 
 
 def _active_links(conn, kc_id) -> list[int]:

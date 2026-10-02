@@ -1,4 +1,4 @@
-# Etapa 5 do KCGen-KT, a Q-matrix binária problema x KC. Portado do TCC 1, numérica congelada.
+# Etapa 5 do KCGen-KT, a Q-matrix binária problema x KC. Portado do TCC 1, mesmo resultado numérico.
 
 from __future__ import annotations
 

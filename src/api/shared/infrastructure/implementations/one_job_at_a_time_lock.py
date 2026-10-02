@@ -21,7 +21,7 @@ def is_process_alive(pid: int) -> bool:
     return True
 
 
-# Pré-check barato e não autoritativo, o gate real é o acquire do subprocess como 1º ato.
+# Pré-check barato e não autoritativo, a checagem que vale é o acquire do subprocess como 1º ato.
 def is_another_job_running(conn: sqlite3.Connection) -> bool:
     row = conn.execute("SELECT holder_pid FROM pipeline_lock WHERE id=1;").fetchone()
     return row is not None and row["holder_pid"] is not None and is_process_alive(row["holder_pid"])

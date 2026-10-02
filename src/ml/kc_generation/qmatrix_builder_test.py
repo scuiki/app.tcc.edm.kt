@@ -12,7 +12,7 @@ def _load(kc_reference_dir, name):
 
 
 def test_build_qmatrix_reproduces_reference(kc_reference_dir):
-    # Reproduz qmatrix_A439.csv célula-a-célula, replay determinístico a partir do cru cacheado.
+    # Reproduz qmatrix_A439.csv célula-a-célula, replay determinístico da saída bruta do LLM.
     import pandas as pd
 
     kc_raw = _load(kc_reference_dir, "kc_raw_A439.json")

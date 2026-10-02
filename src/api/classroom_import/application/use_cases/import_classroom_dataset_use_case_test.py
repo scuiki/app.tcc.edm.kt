@@ -11,7 +11,7 @@ import pytest
 from api.classroom_import.domain.services.submission_cleaning import CLEANED_COLUMNS
 from tests.fixtures.job_lock import lock_holder_pid
 
-# MainTable com duas classes nos first-attempts, assignment trainable; CodeStateID casa um a um.
+# MainTable com duas classes nos first-attempts (ready_for_kc_generation); CodeStateID casa um a um.
 _MAIN_TABLE = (
     "SubjectID,AssignmentID,ProblemID,CodeStateID,EventType,Score,ServerTimestamp\n"
     "S1,439,1,c1,Run.Program,0.0,2019-03-01T08:00:00Z\n"
@@ -92,7 +92,7 @@ def test_happy_persists_classroom_assignment_and_submissions(import_classroom, t
     assert n_assign == 1  # um único AssignmentID (439) no fixture
     assert n_sub == 4  # 4 eventos Run.Program, todos com snapshot (sem órfão)
 
-    # Assignment ganhou status do gate, ambas as classes presentes, então trainable.
+    # Assignment ganhou o status ready_for_kc_generation, com ambas as classes presentes.
     status = conn.execute("SELECT status FROM assignment;").fetchone()["status"]
     assert status == "ready_for_kc_generation"
     problems = conn.execute("SELECT problem_id FROM problem ORDER BY problem_id;").fetchall()
@@ -137,7 +137,7 @@ def test_each_assignment_reads_back_in_file_order(
 
 
 def test_raw_csv_preserved_after_ingest(import_classroom, tmp_db, data_root):
-    # o cru continua em raw/ pós-ingest (reprodutibilidade / re-ingest).
+    # o arquivo enviado continua em raw/ depois da importação (reprodutibilidade e reimportação).
     conn = tmp_db
     raw, main = _make_raw(data_root)
     import_classroom(raw, "Turma X", main)
