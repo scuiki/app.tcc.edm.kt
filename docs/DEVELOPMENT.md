@@ -342,8 +342,8 @@ repositório (critério 3). Com o `PYTHONHASHSEED` fixo (linha 2) e as seeds fix
 execuções deve se repetir. Ligar só o cuDNN determinístico não garante resultado bit a bit na GPU, e
 o modo estrito do app liga também `use_deterministic_algorithms` e `CUBLAS_WORKSPACE_CONFIG`
 (`random_seed.py:20-23`). Mesmo assim, no TCC 1, com a mesma GPU e só o cuDNN determinístico, a seed
-42 deu o mesmo AUC em processos diferentes nos cinco exercícios (notebook 08, célula 21). A repetição
-fica a confirmar na implementação.
+42 deu o mesmo AUC em processos diferentes nos cinco exercícios (notebook 08, célula 21). No app, as
+dez seeds do A439 se repetiram bit a bit em processos diferentes, medida de 02/10/2026 no Estado.
 
 **18. Execuções.** O paper treina e testa dez vezes e reporta a média, "to account for model
 variation (e.g. due to random initialization)" (p. 55 (PDF 6)). O repositório fixa a seed 0 uma vez
@@ -369,6 +369,39 @@ media 0,7608, a 0,19 ponto do teto da faixa. Ele passa a ter dois papéis separa
 As correções decididas, como a ordem por tempo, podem afastar o número do app do número do paper de
 forma legítima, e um teste que exigisse o número do paper empurraria o código de volta para os
 defeitos do repositório.
+
+A faixa do teste de regressão é de ±0,1 ponto em torno de 0,7278, a média das dez seeds da primeira
+tentativa no A439 medida em 02/10/2026, decisão do Leo do mesmo dia (critério 5). As dez seeds se
+repetem bit a bit nesta máquina (linha 17), então qualquer mudança na média quer dizer que o código,
+as dependências ou o ambiente mudaram. Uma faixa de dois erros padrão da média (±0,5 ponto) deixaria
+passar uma mudança de comportamento menor que meio ponto. Uma troca de driver, de GPU ou de
+dependência que deixe a faixa vermelha pede uma nova medida do centro, registrada aqui.
+
+A comparação com o paper, medida em 02/10/2026 com as dez seeds em cada exercício, em porcentagem e
+com o desvio amostral. O A1 é o 439, pela Tabela 3 do paper e pelo repositório, e o A2 a A5 são o
+487, o 492, o 494 e o 502, inferidos da ordem crescente dos ids no TCC 1, porque o paper não diz.
+O AUC de cada seed está em `docs/results/code_dkt_literature_comparison.json`.
+
+| Exercício | App, primeira tentativa | App, geral | Paper, geral (Tabela 1) |
+|---|---|---|---|
+| A1 (439) | 72,78 ± 0,81 | 69,25 ± 0,86 | 74,31 |
+| A2 (487) | 77,97 ± 0,70 | 75,17 ± 0,76 | 76,56 |
+| A3 (492) | 86,09 ± 0,59 | 77,82 ± 0,37 | 80,40 |
+| A4 (494) | 78,48 ± 1,06 | 73,27 ± 0,74 | 72,75 |
+| A5 (502) | 83,86 ± 0,67 | 77,28 ± 0,52 | 79,14 |
+
+No AUC geral, o app fica abaixo da Tabela 1 em quatro exercícios, de 1,39 a 5,06 pontos, e 0,52
+acima no A4. No A1, a Tabela 2 dá 75,74 ± 0,69 na primeira tentativa, 2,96 pontos acima do app, e
+74,31 ± 0,90 no geral (p. 55 (PDF 6)). O paper só reporta a primeira tentativa e o desvio no A1, e
+não diz se o desvio é amostral. O efeito de cada decisão em que o app difere do repositório não foi
+medido separado.
+
+O AUC da primeira tentativa no A439 com a seed 42, a cada grupo de decisões, foi de 0,7595 com o
+hash fixo e a partição do TCC 1 (linha 2), 0,7221 com a partição do repositório (linhas 9 e 13),
+0,7271 com os paths, o vocabulário e o desconhecido (linhas 1, 3 e 21, com o lote em pedaços da
+linha 14) e 0,7228 com a rede e o treino (linhas 6, 7, 15, 16 e 17). A troca da partição mudou o
+conjunto de teste, e uma seed só não separa o efeito de cada grupo do ruído entre seeds, de 0,81
+ponto no A439.
 
 **20. Preenchimento.** O paper não trata de como os lotes são montados e diz só que o estado do RNN
 começa no vetor zero (p. 53 (PDF 4)). O repositório, o TCC 1 e o app põem as posições vazias antes
@@ -441,9 +474,9 @@ para mostrar ao professor o domínio de cada aluno, e isso não está no paper.
 | 14 | Decidida em 01/10/2026, sem mudança no hidden nem no lote. O lote em pedaços de 64, decisão do app pelo critério 5, foi implementado em 01/10/2026 |
 | 15 | Decidida em 01/10/2026, implementada em 01/10/2026 |
 | 16 | Decidida em 01/10/2026, implementada em 01/10/2026 |
-| 17 | Decidida em 30/09/2026, implementada em 01/10/2026. Duas execuções da regressão do A439 com a seed 42, em processos diferentes, deram o mesmo first-attempt AUC na 4ª casa, e a repetição das dez seeds ainda vai ser medida |
-| 18 | Decidida em 30/09/2026, não implementada |
-| 19 | Decidida em 30/09/2026, não implementada |
+| 17 | Decidida em 30/09/2026, implementada em 01/10/2026. Em 02/10/2026, as dez seeds do A439 deram os mesmos valores de primeira tentativa e geral, bit a bit, em quatro processos diferentes |
+| 18 | Decidida em 30/09/2026, implementada em 02/10/2026, no `evaluate_over_seeds`, que o teste de regressão e a comparação com o paper usam |
+| 19 | Decidida em 30/09/2026, implementada em 02/10/2026. A faixa é de ±0,1 ponto em torno de 0,7278, e a comparação com o paper está na justificativa 19 |
 | 20 | Decidida em 01/10/2026, sem mudança no código |
 | 21 | Decidida em 01/10/2026, implementada em 01/10/2026. O vocabulário do A439 tem 553 nós e 38.179 paths, e 4,1% dos paths do teste ficam desconhecidos, contra 6,0% no TCC 1 |
 

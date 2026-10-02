@@ -176,8 +176,11 @@ start_training_use_case_test.py
   fixture em `tests/fixtures/<funcionalidade>.py`, que fica fora de `api/` e é registrada no
   `conftest.py` da raiz. Assim o `import-linter` vale para o teste como vale para o código.
 - Em `tests/` ficam só o teste de regressão contra a execução de referência do TCC 1 (o sistema
-  inteiro, com GPU e o CSEDM real), os dados de exemplo em `tests/data/` e as fixtures de
-  `tests/fixtures/`.
+  inteiro, com GPU e o CSEDM real), a comparação com as Tabelas 1 e 2 de Shi et al. (2022), os
+  dados de exemplo em `tests/data/` e as fixtures de `tests/fixtures/`. A comparação tem o marcador
+  `literature`, fica fora da suíte padrão como o marcador `regression` e grava o AUC de cada seed em
+  `docs/results/code_dkt_literature_comparison.json`. As duas leem a CSEDM real pela fixture de
+  `tests/fixtures/csedm.py`.
 - Tudo roda no container, nunca no host.
 
 ## Jobs em background

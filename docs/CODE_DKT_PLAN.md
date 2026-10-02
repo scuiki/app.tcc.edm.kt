@@ -195,4 +195,5 @@ Cada etapa é um commit, com uma revisão independente do diff contra as decisõ
 | 2 | Concluída |
 | 3 | Concluída, com o lote em pedaços de 64 do H |
 | 4 | Concluída |
-| 5 e 6 | A fazer |
+| 5 | Concluída, com a faixa de ±0,1 ponto da decisão E |
+| 6 | A fazer |

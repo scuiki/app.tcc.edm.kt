@@ -15,7 +15,8 @@ O código vive em `src/`, em três partes:
 
 Os nomes estão em [`docs/GLOSSARY.md`](docs/GLOSSARY.md) e as camadas e a regra de dependência
 em [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md). Cada teste fica ao lado do arquivo que testa
-(`<arquivo>_test.py`); `tests/` guarda só o teste de regressão e os dados de exemplo.
+(`<arquivo>_test.py`); `tests/` guarda só o teste de regressão, a comparação com o paper, as
+fixtures e os dados de exemplo.
 
 ## Reprodutibilidade científica
 
@@ -66,7 +67,8 @@ docker run --rm --security-opt label=disable -v "$PWD":/app -w /app edmkt-core:d
   sh -c "pip install -q import-linter==2.15 && PYTHONPATH=/app/src lint-imports"
 ```
 
-O `addopts = -m 'not regression'` (em `pyproject.toml`) desmarca o teste de regressão por padrão.
+O `addopts = -m 'not regression and not literature'` (em `pyproject.toml`) desmarca o teste de
+regressão e a comparação com o paper por padrão.
 
 ### Suite completo com o teste de regressão (GPU + dataset)
 
@@ -78,15 +80,26 @@ docker run --rm --gpus all --security-opt label=disable \
   edmkt-core:dev python -m pytest tests/test_regression_a439.py -m regression -q -s
 ```
 
-O treino são 40 épocas sobre o A439 — leva alguns minutos na GPU (RTX 4050; a dGPU acorda sob
-demanda). `torch.cuda.is_available()` deve ser `True` na imagem; caso contrário o run cai para
-CPU (mais lento, ainda dentro da banda por D-10).
+São dez treinos de 40 épocas no A439, um por seed, e levam cerca de 4 minutos na RTX 4050. A faixa
+foi medida na GPU, então `torch.cuda.is_available()` tem de ser `True` na imagem, e sem GPU o teste
+falha.
 
-### Checagem pesada sob demanda (não roda por padrão — D-07)
+### Comparação com o paper (sob demanda, com a api parada)
 
-A verificação mais robusta (multi-seed 42–51 × os 5 assignments) é executada **manualmente**
-antes de marcos, não no gate de cada commit. O teste de regressão aqui é o portão de treino único
-*fast-by-default*; a banda de ±3pp é o critério de aceite.
+```bash
+docker run --rm --gpus all --security-opt label=disable \
+  --user "$(id -u):$(id -g)" -e HOME=/tmp \
+  -v "$PWD":/app -w /app \
+  -v "$PWD/datasets/CSEDM":/data/CSEDM:ro \
+  -e EDMKT_CSEDM_PATH=/data/CSEDM \
+  edmkt-core:dev python -m pytest tests/test_literature_comparison.py -m literature -q -s
+```
+
+Treina os cinco exercícios da CSEDM com as dez seeds de 42 a 51 e imprime a média e o desvio ao
+lado das Tabelas 1 e 2 de Shi et al. (2022), sem asserção contra elas. O AUC de cada seed fica em
+`docs/results/code_dkt_literature_comparison.json`, que é versionado, e o `--user` faz o arquivo
+sair com o seu usuário, e não com o root do container. Rodar um exercício só (`-k 439`) atualiza
+só a parte dele no arquivo.
 
 ## Dependências travadas
 

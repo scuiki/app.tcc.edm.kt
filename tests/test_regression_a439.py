@@ -1,137 +1,75 @@
-# Teste de regressão contra a execução de referência do TCC 1, A439 first-attempt AUC em ±3pp.
+# Teste de regressão do Code-DKT no A439, a média de dez seeds da primeira tentativa em ±0,1 pp.
 
-# Protege o PROCEDIMENTO (arquitetura, hiperparâmetros, ordem, seed, deps), não pesos treinados.
+# Protege o PROCEDIMENTO (arquitetura, hiperparâmetros, ordem, seeds, deps), não pesos treinados.
 
 # Marcado @pytest.mark.regression, fora do addopts padrão; roda quando ml ou as deps mudam.
 
 # Sem EDMKT_CSEDM_PATH o fixture pula com motivo claro; o CSEDM nunca é copiado pro repo.
 
-# O check multi-seed mais pesado fica fora daqui por design, este é o gate de 1 treino no nitro.
+# As dez seeds se repetem bit a bit nesta máquina, então a faixa estreita pega qualquer mudança.
 
 from __future__ import annotations
 
-import os
-import sys
-from pathlib import Path
-
 import pandas as pd
 import pytest
+import torch
 from sklearn.model_selection import train_test_split
 
-from ml.code_dkt.ast_paths import extract_ast_paths_for_snapshots
-from ml.code_dkt.train_and_evaluate import code_by_snapshot_id, train_and_evaluate
-from ml.reproducibility.code_dkt_hyperparameters import CODE_DKT_HYPERPARAMETERS
-from ml.reproducibility.random_seed import seed_all_random_generators
 from ml.code_dkt.student_split import split_students_into_train_and_test
+from ml.evaluation.seed_evaluation import evaluate_over_seeds
+from ml.reproducibility.code_dkt_hyperparameters import CODE_DKT_HYPERPARAMETERS
+from tests.fixtures.csedm import resolve_csedm_path
 
-
-def _resolve_csedm_path() -> Path:
-    # Resolve EDMKT_CSEDM_PATH ou pula o teste; o CSEDM real nunca é copiado pro repo, só apontado.
-    raw = os.environ.get("EDMKT_CSEDM_PATH")
-    if not raw:
-        pytest.skip(
-            "EDMKT_CSEDM_PATH unset — regression test skipped (D-07 fast-by-default). "
-            "Set it to the provisioned CSEDM dir (with MainTable.csv + CodeStates/) to run."
-        )
-    data_dir = Path(raw)
-    if not (data_dir / "MainTable.csv").exists():
-        pytest.skip(f"EDMKT_CSEDM_PATH={data_dir} has no MainTable.csv — regression test skipped.")
-    return data_dir
-
-# Declarações Java mínimas e compiláveis; parse_member_declaration aceita, gera >=1 AST path.
-_JAVA_OK_A = "public int f(int x) { return x + 1; }"
-_JAVA_OK_B = "public int g(int a, int b) { int s = a + b; return s; }"
-_JAVA_OK_C = "public boolean h(int n) { if (n > 0) { return true; } return false; }"
-# Java deliberadamente malformado, exercita a guarda try/except contra DoS (devolve []).
-_JAVA_BAD = "public int oops( { return ;;; }"
-# Faz parse mas não tem par de folhas; extract_ast_paths devolve [] sem levantar exceção.
-_JAVA_EMPTY_CLASS = "class C {}"
-
-
-@pytest.fixture
-def csedm_main_table() -> pd.DataFrame:
-    # CSEDM Spring 2019 real, moldado pro seam público train_and_evaluate.
-
-    # Só eventos Run.Program (filtro que o Code-DKT do TCC 1 treinou), correto é Score == 1.0.
-
-    # A partição fica com cada teste, por exercício como no repositório oficial.
-
-    # Fora do hash 0 os AST paths não saem na ordem do app e o AUC não se compara, falha sem pular
-    assert sys.flags.hash_randomization == 0, (
-        "PYTHONHASHSEED não é 0 neste processo, e os AST paths não saem na ordem que o app fixa"
-    )
-    data_dir = _resolve_csedm_path()
-
-    df = pd.read_csv(data_dir / "MainTable.csv")
-    df["ServerTimestamp"] = pd.to_datetime(df["ServerTimestamp"], utc=True, errors="coerce")
-    df["AssignmentID"] = pd.to_numeric(df["AssignmentID"], errors="coerce").astype("Int64")
-    df["ProblemID"] = pd.to_numeric(df["ProblemID"], errors="coerce").astype("Int64")
-
-    # Só Run.Program + label binário (o filtro exato que o TCC 1 usou pra treinar o Code-DKT).
-    df = df[df["EventType"] == "Run.Program"].copy()
-    df["correct"] = (df["Score"] == 1.0).astype(int)
-
-    # Junta o snapshot Java por evento (CodeStateID -> Code), pro seam ver código inline.
-    code_states = pd.read_csv(data_dir / "CodeStates" / "CodeStates.csv")
-    code_map = dict(zip(code_states["CodeStateID"].astype(str), code_states["Code"].fillna("")))
-    df["Code"] = df["CodeStateID"].astype(str).map(code_map).fillna("")
-
-    # Mesma tradução que o import aplica (ingestion/clean); daqui em diante, nomes do glossário.
-    from api.classroom_import.domain.services.submission_cleaning import PROGSNAP_TO_CLEANED_COLUMNS
-
-    df = df.rename(columns={**PROGSNAP_TO_CLEANED_COLUMNS, "correct": "is_correct"})
-    return df.reset_index(drop=True)
 
 # O exercício do teste de regressão, o mesmo do repositório oficial.
 A439 = 439
 
-# Execução de referência do TCC 1, Code-DKT A439 first-attempt AUC (comparison_summary.json).
-REFERENCE_AUC = 0.732654
-# Tolerância de 3pp absorve a variância de seed (~1,34pp no TCC 1) e o gap hidden_dim 128 vs 200.
-TOLERANCE_PP = 0.03
+# A média das dez seeds da primeira tentativa que o app mediu no A439, em 02/10/2026
+REGRESSION_CENTER = 0.7278
+# Meio ponto de cada lado seria ruído entre seeds; aqui sobra só o ruído de float do ambiente
+TOLERANCE = 0.001
 
-BAND_LO = round(REFERENCE_AUC - TOLERANCE_PP, 4)  # 0.7027
-BAND_HI = round(REFERENCE_AUC + TOLERANCE_PP, 4)  # 0.7627
+BAND_LO = round(REGRESSION_CENTER - TOLERANCE, 4)  # 0.7268
+BAND_HI = round(REGRESSION_CENTER + TOLERANCE, 4)  # 0.7288
 
 
 def assert_in_band(first_auc: float, lo: float = BAND_LO, hi: float = BAND_HI) -> None:
-    # Levanta AssertionError alto e claro, nomeando o valor observado e a banda esperada.
+    # Levanta AssertionError alto e claro, nomeando o valor observado e a faixa esperada.
     if not (lo <= first_auc <= hi):
         raise AssertionError(
-            f"first-attempt AUC {first_auc:.4f} is OUTSIDE the regression band "
-            f"[{lo:.4f}, {hi:.4f}] (reference run {REFERENCE_AUC:.4%} ±3pp). "
-            f"A dependency, seed, or operation-order change moved A439 out of band."
+            f"A média do first-attempt AUC, {first_auc:.4f}, saiu da faixa de regressão "
+            f"[{lo:.4f}, {hi:.4f}] em torno de {REGRESSION_CENTER:.4f}. O código, as dependências "
+            "ou o ambiente mudaram o comportamento do Code-DKT no A439."
         )
 
 
 def test_band_fails_loud() -> None:
-    # A guarda da banda levanta erro fora do range e passa dentro; teste puro, sem dataset.
-    assert_in_band(0.7300)  # dentro da banda, não levanta
+    # A guarda da faixa levanta erro fora dela e passa dentro; teste puro, sem dataset.
+    assert_in_band(REGRESSION_CENTER)
     assert_in_band(BAND_LO)  # limite inferior incluso
     assert_in_band(BAND_HI)  # limite superior incluso
 
-    for bad in (0.50, 0.90):
-        with pytest.raises(AssertionError, match=r"OUTSIDE the regression band"):
+    for bad in (0.7266, 0.7290, 0.7595):
+        with pytest.raises(AssertionError, match=r"saiu da faixa de regressão"):
             assert_in_band(bad)
 
 
-def test_band_derives_from_reference() -> None:
-    # A banda é REFERENCE_AUC ± TOLERANCE_PP, os dois limites documentados, não números mágicos.
-    assert BAND_LO == 0.7027
-    assert BAND_HI == 0.7627
+def test_band_derives_from_the_measured_center() -> None:
+    # A faixa é REGRESSION_CENTER ± TOLERANCE, os dois limites documentados, não números mágicos.
+    assert (BAND_LO, BAND_HI) == (0.7268, 0.7288)
 
 
 def test_regression_skipped_without_path(monkeypatch) -> None:
     # Sem EDMKT_CSEDM_PATH o fixture pula com motivo claro, prova o gate fast-by-default.
     monkeypatch.delenv("EDMKT_CSEDM_PATH", raising=False)
     with pytest.raises(pytest.skip.Exception):
-        _resolve_csedm_path()
+        resolve_csedm_path()
 
 
 @pytest.mark.regression
 def test_a439_split_matches_the_official_repository(csedm_main_table) -> None:
     # O procedimento literal do src/preprocessing.py do repositório, sem treinar
-    main_df = pd.read_csv(_resolve_csedm_path() / "MainTable.csv")
+    main_df = pd.read_csv(resolve_csedm_path() / "MainTable.csv")
     main_df = main_df[main_df["EventType"] == "Run.Program"]
     main_df = main_df[main_df["AssignmentID"] == 439]
     students = pd.unique(main_df["SubjectID"])
@@ -149,30 +87,19 @@ def test_a439_split_matches_the_official_repository(csedm_main_table) -> None:
 
 @pytest.mark.regression
 def test_regression_a439(csedm_main_table) -> None:
-    # Retreina A439 no CSEDM real; first-attempt AUC precisa cair em [0.7027, 0.7627].
+    # Retreina o A439 com as dez seeds, e a média da primeira tentativa precisa cair na faixa
 
-    # Divide os alunos do A439 como o repositório oficial (random_state=1, sem piso) e treina.
-    train_df, test_df = split_students_into_train_and_test(
-        csedm_main_table, progsnap_assignment_id=A439, test_size=0.2, random_state=1
+    # A faixa foi medida na GPU, e na CPU a numérica é outra, então falha em vez de comparar
+    if not torch.cuda.is_available():
+        pytest.fail("O teste de regressão precisa da GPU, onde a faixa de ±0,1 ponto foi medida.")
+    evaluation = evaluate_over_seeds(
+        csedm_main_table, CODE_DKT_HYPERPARAMETERS, progsnap_assignment_id=A439,
+        device=torch.device("cuda"),
     )
 
-    # Os paths saem uma vez aqui, todos os de cada solução, como o app os lê do cache
-    code_by_snapshot = code_by_snapshot_id(pd.concat([train_df, test_df], ignore_index=True))
-    ast_paths_by_snapshot = extract_ast_paths_for_snapshots(
-        sorted(code_by_snapshot), code_by_snapshot,
-        max_path_length=CODE_DKT_HYPERPARAMETERS["max_path_length"],
-        max_path_width=CODE_DKT_HYPERPARAMETERS["max_path_width"],
+    by_seed = ", ".join(f"{s}={a:.4f}" for s, a in evaluation.first_attempt_auc_by_seed.items())
+    print(
+        f"\n[regression] A439 first-attempt AUC, média {evaluation.first_attempt_auc_mean:.4f} "
+        f"(faixa [{BAND_LO:.4f}, {BAND_HI:.4f}]) por seed {by_seed}"
     )
-
-    # Não estrito na GPU, com o cuDNN determinístico, como o treino do app
-    seed_all_random_generators(CODE_DKT_HYPERPARAMETERS["seed"], strict=False)
-
-    result = train_and_evaluate(
-        train_df, CODE_DKT_HYPERPARAMETERS, test_df,
-        progsnap_assignment_id=A439, ast_paths_by_snapshot=ast_paths_by_snapshot,
-    )
-
-    first_auc = result["first_attempt_auc"]
-    print(f"\n[regression] A439 first-attempt AUC = {first_auc:.4f} "
-          f"(band [{BAND_LO:.4f}, {BAND_HI:.4f}], reference run {REFERENCE_AUC:.4%})")
-    assert_in_band(first_auc)
+    assert_in_band(evaluation.first_attempt_auc_mean)

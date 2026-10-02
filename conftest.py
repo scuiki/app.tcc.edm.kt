@@ -18,6 +18,7 @@ from tests.fixtures.sample_data import (
 
 pytest_plugins = [
     "tests.fixtures.classroom_import",
+    "tests.fixtures.csedm",
     "tests.fixtures.knowledge_components",
     "tests.fixtures.model_training",
     "tests.fixtures.mastery_dashboard",
