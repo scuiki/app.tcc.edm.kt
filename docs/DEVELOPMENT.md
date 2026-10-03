@@ -842,7 +842,80 @@ os problemas em ordem numérica, e os nomes de cada problema na ordem da respost
 
 #### A nomeação e a Q-matrix
 
-A discutir.
+O terceiro passo dá um nome a cada grupo, "We use a chain-of-thought prompt that guides the model to
+first reason whether any KC in the cluster can represent the entire group. If such a KC exists, it is
+selected as the cluster label; otherwise, the model is instructed to synthesize a concise description
+that captures the shared meaning of KCs in the cluster" (p. 33407 (PDF 3)). Estes pontos são iguais
+no repositório e no app, e também no paper quando ele trata deles.
+
+- O pedido de nomeação recebe só os nomes dos KCs do grupo, sem enunciado, sem código e sem as
+  justificativas (Tabela 10, p. 33422 (PDF 18); `KC_gen.py:341`; `group_naming.py:29-44` do app).
+- A Q-matrix sai de trocar cada KC de um problema pelo nome do seu grupo, "by mapping each initially
+  generated KC for each problem to its corresponding summarized cluster label" (p. 33407 (PDF 3)), e
+  dois KCs do mesmo problema no mesmo grupo viram uma marca só (`KC_gen.py:530`;
+  `qmatrix_builder.py:19-21` do app).
+
+| # | Item | Paper | Repositório | TCC 1 | App antes | App depois | Origem |
+|---|---|---|---|---|---|---|---|
+| 22 | Texto do prompt de nomeação | Tabela 10 (p. 33422) | as palavras da Tabela 10 com três mudanças no terceiro passo e uma mensagem do usuário mais longa | próprio | igual ao TCC 1, salvo as chaves do modelo de JSON | o da Tabela 10 | Duan (paper) |
+| 23 | Campos da resposta | a justificativa, o `representative kc` e o `summary name`, um dos dois nulo | os mesmos, com sublinhado nas chaves | `kc_id`, `name` e `reasoning` | igual ao TCC 1 | os da Tabela 10 | Duan (paper) |
+| 24 | Grupo de um KC só | rotula cada grupo com o LLM, sem tratar o de um KC só (p. 33407) | sem chamada ao LLM, com o nome do KC | chama o LLM | chama o LLM nos grupos do HAC | igual ao repositório | Duan (repositório) |
+| 25 | Caixa do nome em inglês | não trata | minúsculas | a que o modelo escreve | a que o modelo escreve | minúsculas | Duan (repositório) |
+| 26 | Grupos com o mesmo nome | não trata | viram um KC só | ficam separados | ficam separados | viram um conceito só | Duan (repositório) |
+
+**22. Texto do prompt de nomeação.** O paper mostra o prompt da nomeação na Tabela 10 (Apêndice G.1,
+p. 33422 (PDF 18)). Ao contrário da geração (linha 13), o repositório não tem as mesmas palavras. No
+terceiro passo, a tabela pede "a concise and meaningful summary name that captures the broader theme
+or category shared by the KCs", e o repositório pede "a brief and meaningful summary name that
+captures the broader theme shared by the KCs. The summary name must not contain the word “and”"
+(`KC_gen.py:352`). A mensagem do usuário da tabela traz a lista e "Now follow the instructions in
+system message and perform the task", e a do repositório repete os três passos (`KC_gen.py:341`). O
+`KC_gen.py` tem um commit só (`ac017bc`, de 08/10/2025), e o ACL, de 2026, continua mostrando o texto
+da tabela. Pelo critério 1, o app usa as palavras da Tabela 10. A lista vai no formato que o próprio
+texto de sistema anuncia, ["KC 1 name", "KC 2 name", ..., "KC k name"], como o repositório faz com
+`json.dumps` (critério 2). O TCC 1 reescreveu o prompt (notebook 03b, célula 15), com outro papel para
+o modelo, a definição de KC com 3 a 8 palavras e o nome antes da justificativa, e o app o copiou
+(`group_naming.py:8-44` do app), com chaves simples no modelo de JSON no lugar das duplas que o TCC 1
+mandava, e com um comentário que o atribui à Tabela 9 de Duan et al. (2025)
+(`group_naming.py:7` do app). A Tabela 9 da v3 é a 10 do ACL, e o texto é do TCC 1. Sem a proibição
+do "and", o caso de KCs distintos demais fica com a regra do próprio paper, que manda criar um
+nome-resumo do tema comum. Nos rótulos do TCC 1, 21 de 72 têm a palavra "and" em minúsculas
+(`results/kc_descriptions_A*.json` do TCC 1).
+
+**23. Campos da resposta.** A Tabela 10 pede a justificativa em uma frase, o `representative kc`,
+quando um KC da lista representa o grupo, e o `summary name`, quando nenhum representa, com o outro
+nulo (p. 33422 (PDF 18)). O repositório usa as mesmas chaves com sublinhado e fica com o
+representante ou, se ele for nulo, com o resumo (`KC_gen.py:357-358` e `376`). O TCC 1 e o app pedem
+`kc_id`, `name` e `reasoning`, com o nome antes da justificativa (notebook 03b, célula 15;
+`group_naming.py:18-26` do app), e não registram se o nome foi escolhido da lista ou criado. O app
+passa a pedir os campos da Tabela 10, com as chaves dela, e a ficar com o representante ou, se ele
+for nulo, com o resumo, como o repositório (critérios 1 e 2). A resposta é validada e repetida como na
+linha 17, e se ainda falhar a extração para com erro (critério 3). O repositório devolve um nome
+vazio (`KC_gen.py:382`), os KCs do grupo não entram no mapa dos nomes (`KC_gen.py:397-401`), e a
+montagem do mapeamento dos problemas para com `KeyError` ao procurá-los (`KC_gen.py:530`).
+
+**24. Grupo de um KC só.** O paper rotula cada grupo com o LLM, "we label each KC cluster by
+prompting GPT-4o to generate a single, informative name that represents the cluster" (p. 33407
+(PDF 3)), sem tratar à parte o grupo de um KC só. Pela regra do próprio paper, quando um KC
+representa o grupo ele vira o nome do grupo, e um KC sozinho representa o grupo. O repositório só
+chama o LLM para grupos com mais de um KC, e o grupo de um KC só fica com o nome dele
+(`KC_gen.py:392-395`). O TCC 1 chama o LLM para todo grupo (notebook 03b, célula 15), e o app também
+nos grupos que saem do HAC (`kcgen_kt_generator.py:147-154` do app). No caminho de menos de 10 nomes,
+que sai com a linha 20, cada nome do app vira um grupo sem chamada. O app segue o repositório
+(critério 2), que dá o nome que a regra do paper daria, com menos chamadas.
+
+**25. Caixa do nome em inglês.** O paper não trata. Os exemplos dele aparecem com maiúscula na Tabela
+1 (p. 33406 (PDF 2)) e em minúsculas na entrada da Tabela 10. O repositório passa todo nome de grupo
+para minúsculas (`KC_gen.py:378` e `395`), e o app guardava a caixa que o modelo escrevia. Pelo
+critério 2, o app segue o repositório. O nome em inglês é o registro do método, e o professor lê a
+tradução em português, com a caixa normal.
+
+**26. Grupos com o mesmo nome.** O paper não trata. No repositório, o KC é o próprio texto do nome,
+então dois grupos que recebem o mesmo nome viram um KC só no mapeamento dos problemas
+(`KC_gen.py:401` e `530`). O TCC 1 e o app guardam um conceito por grupo, mesmo com o nome repetido
+(`kcgen_kt_generator.py:158` do app). Pelo critério 2, o app segue o repositório, e a comparação dos
+nomes é feita depois da passagem para minúsculas (linha 25). Na Q-matrix, as colunas dos dois grupos
+viram uma.
 
 ### O que o app acrescenta ao KCGen-KT
 
@@ -872,7 +945,7 @@ A discutir.
 
 | # | Estado |
 |---|---|
-| 1 a 21 | Decididas em 03/10/2026, a implementar |
+| 1 a 26 | Decididas em 03/10/2026, a implementar |
 
 ## Referências
 
