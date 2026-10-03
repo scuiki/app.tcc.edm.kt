@@ -880,7 +880,9 @@ mandava, e com um comentário que o atribui à Tabela 9 de Duan et al. (2025)
 (`group_naming.py:7` do app). A Tabela 9 da v3 é a 10 do ACL, e o texto é do TCC 1. Sem a proibição
 do "and", o caso de KCs distintos demais fica com a regra do próprio paper, que manda criar um
 nome-resumo do tema comum. Nos rótulos do TCC 1, 21 de 72 têm a palavra "and" em minúsculas
-(`results/kc_descriptions_A*.json` do TCC 1).
+(`results/kc_descriptions_A*.json` do TCC 1). Os KCs gerados que o paper publica também têm, como
+"If and else if statement" na Tabela 1 (p. 33406 (PDF 2)) e "Array indexing and assignment" na
+Tabela 7 (p. 33419 (PDF 15)).
 
 **23. Campos da resposta.** A Tabela 10 pede a justificativa em uma frase, o `representative kc`,
 quando um KC da lista representa o grupo, e o `summary name`, quando nenhum representa, com o outro
@@ -917,6 +919,71 @@ então dois grupos que recebem o mesmo nome viram um KC só no mapeamento dos pr
 nomes é feita depois da passagem para minúsculas (linha 25). Na Q-matrix, as colunas dos dois grupos
 viram uma.
 
+### Seções 3 a 5 do paper, a avaliação
+
+O paper avalia os KCs gerados pelo desempenho do seu modelo de KT (§3 e §4.1), pelas curvas de
+aprendizagem (§4.2) e com dois anotadores (§5). O app não tem o modelo de KT do paper, e a extração
+é conferida por testes e por uma comparação com o que o paper publica.
+
+| # | Item | Paper | Repositório | TCC 1 | App antes | App depois | Origem |
+|---|---|---|---|---|---|---|---|
+| 27 | Regressão das partes sem LLM | não tem | não tem | não tem | testes do agrupamento e da Q-matrix com os artefatos do TCC 1 para o A439 | testes com a mesma entrada e a mesma saída no sorteio, no agrupamento, na Q-matrix e na ordem, com artefatos da extração nova | app, critério 5 |
+| 28 | Regressão da extração inteira | não tem | não tem | o cache por exercício | o cache por chamada ao LLM, guardado por exercício, sem teste da extração inteira | um teste que repete a extração de referência pelo cache gravado, sem gastar cota | app, critério 5 |
+| 29 | Comparação com o paper | os KCs gerados de dois problemas e a avaliação de dois anotadores com a rubrica do Apêndice F | um `problem_kc.json` de março de 2025, que não bate com a Tabela 1 | não tem | não tem | os KCs dos mesmos dois problemas lado a lado e a anotação do A439 com a mesma rubrica | app, critério 5 |
+
+**27. Regressão das partes sem LLM.** O paper e o repositório não têm testes. O app tinha testes do
+agrupamento e da Q-matrix com os artefatos do TCC 1 para o A439 (`kc_grouping_test.py`,
+`qmatrix_builder_test.py` e `tests/fixtures/ml.py:17-20` do app), que deixam de valer com as decisões
+1 a 26. Com a mesma entrada, o sorteio das soluções, o agrupamento dos nomes, a Q-matrix e a ordem
+dos problemas têm que dar a mesma saída, e os artefatos de referência saem da extração nova. Esses
+testes pegam uma mudança de comportamento sem chamar o LLM, como a de uma versão nova das bibliotecas
+do CodeBERT e do SBERT, no papel que o teste de regressão tem no Code-DKT (critério 5).
+
+**28. Regressão da extração inteira.** O app não tem como fixar a temperatura (linha 10), então a
+extração inteira só se repete pelo cache das respostas do LLM. As respostas da extração de
+referência da CSEDM, feita nos cinco exercícios e com os enunciados, ficam gravadas como dado de
+teste. Um teste repete a
+extração lendo o cache, sem gastar cota, e confere os nomes e a Q-matrix. A chave do cache inclui o
+texto dos prompts (`llm_response_cache.py:23-40` do app), então mudar um prompt faz o teste falhar
+por falta de resposta gravada (critério 5).
+
+**29. Comparação com o paper.** O paper não publica a lista completa de KCs gerados, então não há um
+valor de referência como o first-attempt AUC do Code-DKT. O repositório traz um `problem_kc.json`,
+de março de 2025 e anterior ao `KC_gen.py`, com os KCs dos 50 problemas, mas ele não bate com o
+paper. No love6, ele tem 7 KCs e 5 rótulos, e nenhum é igual aos nomes da Tabela 1. O paper publica
+os KCs gerados de dois problemas, o love6 (A439, problema 233, Tabela 1, p. 33406 (PDF 2)) e o has77
+(A494, problema 67, Tabela 7, p. 33419 (PDF 15)). O exemplo de prompt da Tabela 11 (p. 33423
+(PDF 19)) traz ainda quatro KCs do sortaSum (A439, problema 1), sem dizer se são os gerados. O paper
+também publica a avaliação de dois anotadores nos 50 problemas da CodeWorkout (§5, p. 33413
+(PDF 9)), com a rubrica do Apêndice F (p. 33418 (PDF 14)). Nela, 98,6% dos
+KCs gerados foram julgados interpretáveis, contra 94,6% das tags humanas, a precisão dos vínculos
+entre problema e KC foi de 93,2%, contra 92,5%, e os KCs gerados cobriram tanto quanto as tags
+humanas ou mais em 96% dos problemas. A comparação do app é um relatório, e não um teste que passa ou
+falha, gravado em `docs/results` como o do Code-DKT. Ele põe os KCs do love6 e do has77 ao lado dos
+do paper e traz a anotação do A439, feita pelo autor do TCC com a mesma rubrica, contra as 18 tags
+humanas da planilha oficial. O problema 13 do A439 entra marcado, porque os KCs humanos dele estão no
+prompt (linha 15). Com um anotador só, não há a medida de concordância que o paper reporta
+(critério 5).
+
+#### Fora do escopo
+
+- **O modelo de KT do paper.** O KCGen-KT do paper é um modelo de KT que usa o Llama 3 e estima a
+  maestria de cada KC (§2.2, pp. 33407 a 33409 (PDF 3 a 5)), com 8B de parâmetros (§3, p. 33410
+  (PDF 6)). O app usa o Code-DKT, e os
+  conceitos não entram no treino. A principal evidência do paper a favor dos KCs gerados foi medida
+  com esse modelo, um AUC de 0,816 na CodeWorkout, contra 0,797 com as tags humanas e 0,766 do
+  Code-DKT (Tabela 2, p. 33410 (PDF 6)), e não vale para o app. O domínio por conceito do app é a
+  média do domínio dos problemas que exigem o conceito, e não a maestria do paper (O que o app
+  acrescenta ao Code-DKT).
+- **A rotulagem de erro por KC e as curvas de aprendizagem.** O paper pede ao GPT-4o um rótulo de erro
+  por KC nas submissões incorretas (Tabela 11) para traçar as curvas (§4.2). A curva do paper conta
+  como oportunidade cada problema em que o aluno pratica o KC, "the problem that represents their
+  t-th attempt at the KC" (p. 33412 (PDF 8)), sobre as primeiras submissões (§3, p. 33409 (PDF 5)).
+  A curva do app é do painel, conta cada execução como oportunidade (`DECISIONS.md:531-535` do app)
+  e é revista quando o painel for implementado.
+- **O FalconCode e os vários níveis de abstração.** O app só lê Java e usa um nível de abstração por
+  exercício, sem a ontologia entre níveis da Figura 4.
+
 ### O que o app acrescenta ao KCGen-KT
 
 - **A revisão pelo professor.** O ACL recomenda que especialistas revisem os KCs gerados antes do uso
@@ -935,17 +1002,26 @@ viram uma.
   que o prompt do Duan pede para cada KC, "a one-sentence reasoning explaining why this KC is
   necessary based on the provided solutions" (Tabela 9, p. 33421 (PDF 17)), também passa a ser
   guardada e mostrada. Decidido em 03/10/2026, a implementar.
-- **Os nomes em português.** O método roda em inglês, como no paper, com os prompts do Duan e o SBERT
-  `all-MiniLM-L6-v2`, que é um modelo de inglês. Depois da nomeação, uma chamada ao mesmo modelo
-  traduz para o português todos os nomes finais do exercício de uma vez, para que o mesmo termo saia
-  igual em todos os conceitos. O app guarda o nome em inglês, que é o resultado do método, e o nome
-  em português, que a tela mostra e o professor pode renomear. Decidido em 03/10/2026, a implementar.
+- **Os nomes em português.** O método roda em inglês, como no paper, com os prompts do Duan e, no
+  agrupamento, o SBERT `all-MiniLM-L6-v2` do repositório, que é um modelo de inglês. Depois da
+  nomeação, uma chamada ao mesmo modelo traduz para o português todos os nomes finais do exercício de
+  uma vez, para que o mesmo termo saia igual em todos os conceitos, e na mesma chamada as
+  justificativas de cada KC que a origem do conceito mostra. O app guarda o nome em inglês, que é o
+  resultado do método, e o nome em português, que a tela mostra e o professor pode renomear.
+  Decidido em 03/10/2026, a implementar.
+- **Os problemas sem conceito.** Um problema sem nenhuma execução correta não tem solução para o LLM
+  ler e fica sem conceito. O paper não trata, e o repositório e o TCC 1 o deixam de fora sem aviso. O
+  app também, porque a lista de problemas sai das execuções corretas (`kcgen_kt_generator.py:75-77` do
+  app) e a conferência só olha os problemas gerados (`knowledge_component_generator.py:24-32` do app).
+  Durante a disciplina, é o caso do problema que ninguém acertou ainda. A extração passa a gerar os
+  conceitos dos outros problemas e a listar para o professor os que ficaram sem conceito, com o
+  motivo. Decidido em 03/10/2026, a implementar.
 
 ### Estado
 
 | # | Estado |
 |---|---|
-| 1 a 26 | Decididas em 03/10/2026, a implementar |
+| 1 a 29 | Decididas em 03/10/2026, a implementar |
 
 ## Referências
 
