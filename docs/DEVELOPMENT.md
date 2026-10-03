@@ -502,6 +502,15 @@ para mostrar ao professor o domínio de cada aluno, e isso não está no paper.
   commit. O repositório não roda sozinho. Faltam os vetores das soluções, que o `KC_gen.py` lê
   prontos da pasta `code_embedding/`, e o dado, `data/dataset_time.pkl`, que vem de um Google Drive.
   O trecho que calculava os vetores está comentado (`KC_gen.py:431-457`).
+- **Planilha oficial da CSEDM.** Os enunciados e as 18 tags de conceito dos 50 problemas da
+  CodeWorkout não vêm no ProgSnap2. Estão numa
+  [planilha](https://docs.google.com/spreadsheets/d/1-APxPAVP3PylM0fskzDNgpalj1DTuMqDLkgBC5QxJdg/edit#gid=0)
+  que os organizadores do Second CSEDM Data Challenge ligam na página do dataset, "The prompts for
+  each problem can be found in this spreadsheet". O link saiu da cópia da página no Wayback Machine,
+  de 31/03/2024. A mesma página diz que as tags "are just one researcher's judgement and should not
+  be taken as ground truth". O `data/prompt_concept.csv` do repositório tem o mesmo conteúdo da
+  planilha, casado por `AssignmentID` e `ProblemID` e conferido em 03/10/2026, com uma coluna a mais,
+  `Test Case Status`, e as linhas em outra ordem.
 - **App.** As linhas do app citadas, marcadas como "do app", são do commit `855d69d`, de antes da
   implementação.
 - **TCC 1.** [scuiki/tcc.edm.kt](https://github.com/scuiki/tcc.edm.kt), commit `0e8807c`, com o
@@ -664,9 +673,11 @@ essa (critério 5).
 | 10 | Temperatura | não trata | 0 | a padrão | a padrão | a padrão | app, critério 4 |
 | 11 | Descrição do problema na resposta | não tem | não tem | o LLM deduz uma descrição do problema pelo código e a devolve | igual ao TCC 1, mostrada na lista de problemas e prevista na origem do conceito | não tem | Duan (paper) |
 | 12 | Texto do prompt | Tabela 9 (p. 33421) | o mesmo texto de sistema da Tabela 9 | próprio | igual ao TCC 1 | o do Duan, mudado só onde o dado da turma obriga | Duan (paper) |
-
-Os outros pontos do prompt, como qual dos dois textos serve de base, a falta do enunciado, os
-exemplos, a ordem dos campos e o formato das soluções, estão a discutir.
+| 13 | Texto-base | Tabela 9, um exemplo de prompt com 1 exemplo in-context e 1 solução | o mesmo texto de sistema, abertura e fecho, com outros rótulos, JSON válido e a forma para n soluções e 2 exemplos | não usa | não usa | o do repositório | Duan (repositório) |
+| 14 | Enunciado do problema | entra no prompt | entra, vindo da planilha oficial | não entra | não entra | entra quando o exercício tem enunciado, e sem ele só as duas linhas do enunciado saem | Duan (paper), e app, critério 4, sem enunciado |
+| 15 | Exemplos in-context | "a few", feitos das tags humanas do dataset, e 1 na Tabela 9 | 2 fixos, o dos sinais de mais (A492, problema 32) e o da multa por velocidade (A439, problema 13) | 2 próprios, com código | iguais aos do TCC 1 | iguais aos do repositório | Duan (repositório) |
+| 16 | Ordem dos campos e limites da resposta | a justificativa antes do nome e em exatamente 1 frase, sem limite de KCs nem de palavras do nome | igual ao paper | o nome antes da justificativa, 3 a 7 KCs e 3 a 8 palavras | igual ao TCC 1 | igual ao repositório | Duan (repositório) |
+| 17 | Validação da resposta | não trata | modo JSON da OpenAI, guarda só o nome | confere as chaves da resposta e o nome e a justificativa de cada KC, sem nova tentativa | schema da CLI, nova tentativa só em erro transitório | valida a estrutura e tenta de novo se vier inválida | app, critério 5 |
 
 **9. LLM.** O paper usa o GPT-4o, "an advanced proprietary LLM with strong reasoning and programming
 abilities" (p. 33406 (PDF 2)), na geração e na nomeação dos grupos, e o repositório também
@@ -702,6 +713,57 @@ copiou (`candidate_generation.py:35-158` do app). O notebook e o app atribuem es
 Tabela 8 da v3, que tem um exemplo só, de outro problema e sem código. Pelo critério 1, o app copia o
 prompt do Duan e o muda só onde o dado da turma obriga (critério 4).
 
+**13. Texto-base.** O §2.1 diz "See Appendix G for the exact prompt used for all steps in our KC
+generation pipeline" (p. 33407 (PDF 3)), mas a legenda da Tabela 9 diz "Example prompt for KC
+generation with one in-context example and one student solution" (p. 33421 (PDF 17)). A tabela
+mostra um caso com um exemplo e uma solução, e o modelo de JSON dela não tem as chaves de cada KC. O
+`KC_gen.py:100-170` tem as mesmas palavras no texto de sistema, na abertura e no fecho da mensagem do
+usuário. Os rótulos são outros. A tabela usa "Example 1:", "Problem:", "Expected Output: KC 1: ..." e
+"First sample solution is:", e o repositório usa `# Example 1:`, `## Problem:`, `## Expected KCs:`
+com os KCs num JSON, `# Problem:` e `## Sample solution 1:` (`KC_gen.py:103` e `110-119`), com o JSON
+válido e a forma para n soluções e dois exemplos. O app segue o repositório também nos rótulos,
+porque a tabela é uma ilustração com uma solução e o repositório é o texto que os autores executaram,
+e essa leitura do critério 2 fica registrada. O app copia o texto do repositório e só troca
+`{language}` por Java e `{len(code_ls)}` pelo número de soluções.
+
+**14. Enunciado do problema.** O paper põe o enunciado no prompt (Tabela 9, p. 33421 (PDF 17)) e diz
+que a CodeWorkout traz "problem textual statements and human-written KC tags" (p. 33409 (PDF 5)). Os
+enunciados não vêm no ProgSnap2, mas na planilha oficial do desafio (Fontes). O TCC 1 dizia que a
+CSEDM não traz enunciados (notebook 03b, célula 7) e pedia ao LLM uma descrição deduzida do código
+(linha 11). O app passa a aceitar exercícios com e sem enunciado. A importação acha sozinha o
+arquivo de enunciados entre os arquivos enviados. A `MainTable.csv` e o `CodeStates.csv` ela já acha
+pelo nome, e o arquivo de enunciados ela acha pelo cabeçalho da planilha oficial (`AssignmentID`,
+`ProblemID` e `Requirement`), porque o nome dele não é padrão. Com enunciado, o prompt é o do
+repositório sem mudança (critério 1). Sem enunciado, só as duas linhas do enunciado do problema
+saem, `# Problem:` e o texto, e o resto fica igual, inclusive os exemplos com os enunciados deles
+(critério 4). A CSEDM de referência é extraída com os enunciados da planilha.
+
+**15. Exemplos in-context.** O paper diz que os exemplos vêm das tags humanas de cada dataset,
+"prompting GPT-4o to convert human-written topic tags, such as “If-else”, from each dataset into
+more fine-granular natural language descriptions" (p. 33407 (PDF 3)), e a Tabela 9 mostra um, o
+problema dos sinais de mais. O repositório usa dois fixos, esse e o da multa por velocidade
+(`KC_gen.py:250-260`), com o enunciado e as tags da planilha oficial, convertidas para linguagem
+natural por uma lista fixa (`KC_gen.py:544-547`) e não por uma chamada ao LLM. As tags são o
+julgamento de um pesquisador, como diz a página do dataset, mas são escritas por humano, como o ACL
+exige, "requiring at least one human-written example to produce low-level KCs" (p. 33414 (PDF 10)).
+Os exemplos do TCC 1, sumArray e letterGrade, não vêm do paper nem do repositório e saem. O app usa
+os dois do repositório, iguais, em toda turma (critério 2). Na CSEDM, o problema 13 do A439 e o 32 do
+A492 são extraídos com os próprios KCs humanos no prompt, porque o repositório não os pula
+(`KC_gen.py:264`), e isso pesa na comparação com o paper.
+
+**16. Ordem dos campos e limites da resposta.** Vem da cópia do texto (linha 13), sem decisão nova. A
+resposta traz a justificativa de cada KC antes do nome, como o paper descreve, "We instruct the model
+to first explain the relevance of each KC, and then generate a clear textual description" (p. 33407
+(PDF 3)), e o app pedia o contrário. Saem os limites do TCC 1, de 3 a 7 KCs por problema e de 3 a 8
+palavras por nome (`candidate_generation.py:132-133` do app), porque no paper o nível de abstração é
+controlado pelo agrupamento. Entram a definição de KC e a instrução de usar os exemplos como
+referência de detalhe, que o prompt do TCC 1 não tinha.
+
+**17. Validação da resposta.** O paper não trata. O repositório lê a resposta no modo JSON da OpenAI,
+guarda só o nome de cada KC e, se um nome contém "KC", para no depurador (`KC_gen.py:155-162`). O app
+valida a estrutura do JSON, com um nome e uma justificativa por KC, tenta de novo se ela vier
+inválida e guarda a justificativa (critério 5).
+
 #### O agrupamento e o nível de abstração
 
 A discutir.
@@ -728,12 +790,17 @@ A discutir.
   que o prompt do Duan pede para cada KC, "a one-sentence reasoning explaining why this KC is
   necessary based on the provided solutions" (Tabela 9, p. 33421 (PDF 17)), também passa a ser
   guardada e mostrada. Decidido em 03/10/2026, a implementar.
+- **Os nomes em português.** O método roda em inglês, como no paper, com os prompts do Duan e o SBERT
+  `all-MiniLM-L6-v2`, que é um modelo de inglês. Depois da nomeação, uma chamada ao mesmo modelo
+  traduz para o português todos os nomes finais do exercício de uma vez, para que o mesmo termo saia
+  igual em todos os conceitos. O app guarda o nome em inglês, que é o resultado do método, e o nome
+  em português, que a tela mostra e o professor pode renomear. Decidido em 03/10/2026, a implementar.
 
 ### Estado
 
 | # | Estado |
 |---|---|
-| 1 a 12 | Decididas em 03/10/2026, a implementar |
+| 1 a 17 | Decididas em 03/10/2026, a implementar |
 
 ## Referências
 
