@@ -488,15 +488,252 @@ para mostrar ao professor o domínio de cada aluno, e isso não está no paper.
 
 ## KCGen-KT
 
-A discutir, depois do Code-DKT.
-
 ### Fontes
 
-- **Paper.** Duan et al. (2025), na versão 2502.18632v3 do arXiv, que o TCC 1 usou. O artigo saiu
-  depois nos Findings of ACL 2026 (Duan et al., 2026), com o título "Automated Knowledge Component
-  Generation and Interpretable Knowledge Tracing in Coding Problems".
-- **Repositório oficial.** [umass-ml4ed/kcgen-kt](https://github.com/umass-ml4ed/kcgen-kt).
-- **TCC 1.** O notebook `notebooks/03b_kc_generation.ipynb`.
+- **Paper.** Duan et al. (2026), nos Findings of ACL 2026, pp. 33405 a 33423. As páginas citadas
+  são as dos anais, com a do PDF entre parênteses. A página do PDF é a dos anais menos 33404. O TCC 1
+  usou a versão 2502.18632v3 do arXiv (Duan et al., 2025), que tem o mesmo método e os mesmos
+  prompts da geração de KCs. O ACL renumera as tabelas (a Tabela 5 da v3 é a 6 do ACL, e as Tabelas
+  7 a 10 da v3 são as 8 a 11), acrescenta as seções Limitations e Ethical Considerations e diz no
+  Apêndice C que o HAC usa o scipy. A v3 só é citada quando o assunto é o TCC 1 ou a diferença entre
+  as duas versões.
+- **Repositório oficial.** [umass-ml4ed/kcgen-kt](https://github.com/umass-ml4ed/kcgen-kt), commit
+  `f75da27`. A geração de KCs está em `KC_gen.py`, e os arquivos e as linhas citados são desse
+  commit. O repositório não roda sozinho. Faltam os vetores das soluções, que o `KC_gen.py` lê
+  prontos da pasta `code_embedding/`, e o dado, `data/dataset_time.pkl`, que vem de um Google Drive.
+  O trecho que calculava os vetores está comentado (`KC_gen.py:431-457`).
+- **App.** As linhas do app citadas, marcadas como "do app", são do commit `855d69d`, de antes da
+  implementação.
+- **TCC 1.** [scuiki/tcc.edm.kt](https://github.com/scuiki/tcc.edm.kt), commit `0e8807c`, com o
+  notebook `notebooks/03b_kc_generation.ipynb`, de onde o código do app foi portado, e a nota
+  `docs/refs/duan2025_automatedkc.md` sobre o paper. As células são contadas pela posição no
+  arquivo, a partir do 0 e incluindo as de texto.
+- **O nome.** No paper, KCGen-KT nomeia o método de KT (§2.2) e às vezes o conjunto, como na legenda
+  da Tabela 1 (p. 33406 (PDF 2)) e na conclusão (p. 33413 (PDF 9)). O pipeline de geração de KCs
+  (§2.1) não tem nome próprio. O repositório também se chama `kcgen-kt`. No app, KCGen-KT designa só
+  a geração de KCs, e quem usa os KCs é o Code-DKT.
+
+### Critério
+
+Quando as fontes discordam, a decisão segue esta ordem. É o critério do Code-DKT sem o item das
+equações, que a geração de KCs não tem, e com dois acréscimos, o código comentado e a divergência
+obrigada.
+
+1. O que o paper especifica vale o paper, mesmo onde o repositório faz diferente.
+2. O que o paper não especifica vale o repositório oficial. O código comentado do repositório não
+   roda, e não se sabe se é o que gerou os resultados do paper. Ele vale como indício, e a decisão
+   fica registrada como do app, com o apoio dele.
+3. Onde o repositório tem um defeito, como sortear sem semente, vale a prática estabelecida, e a
+   correção fica registrada.
+4. Onde o método dos autores, no paper ou no repositório, pede algo que o dado de uma turma ou o
+   ambiente do app não oferece, vale a adaptação mais próxima, sem etapa nova, registrada como
+   divergência obrigada. São os casos do enunciado do problema, das tags de KC escritas por humanos,
+   do desempenho do modelo de KT para escolher o número de grupos, do GPT-4o e da temperatura 0 do
+   repositório.
+5. O que nenhum dos dois define é decisão do app, registrada aqui.
+
+A coluna Origem das tabelas diz de onde vem cada escolha do app. "Duan (paper)" e "Duan
+(repositório)" são o método dos autores. "App" é adequação do app, com o critério que a justifica.
+
+### Seção 2.1 do paper, a geração de KCs
+
+O §2.1 gera os KCs de um problema em três passos, "1) generating KCs associated with each problem
+and their descriptions separately through few-shot prompting, 2) clustering KCs across all
+problems, and 3) summarizing each cluster to obtain a finalized description of each KC" (p. 33406
+(PDF 2)). A Q-matrix sai de trocar cada KC de um problema pelo nome do seu grupo (p. 33407 (PDF 3)).
+Antes do primeiro passo, o pipeline escolhe as soluções corretas que o LLM vai ler.
+
+#### O que ficou igual
+
+Estes pontos são iguais no paper, no repositório e no app, e não pediram decisão.
+
+- Só soluções corretas entram, com Score igual a 1,0. O paper diz "we include correct student
+  submissions as examples" (p. 33407 (PDF 3)), e na ablação incluir soluções incorretas derruba o AUC
+  de 0,812 para 0,773 (Tabela 4, p. 33411 (PDF 7)). O repositório filtra `Score_x == 1.0`
+  (`KC_gen.py:570`) e roda com `n_incor=0` (`KC_gen.py:646`), e o app filtra `is_correct == 1`
+  (`kcgen_kt_generator.py:75` do app).
+- O código vai ao LLM como texto. O repositório monta o prompt com o texto das soluções
+  (`KC_gen.py:103`), embora o README fale em AST, e o app faz o mesmo
+  (`candidate_generation.py:141-143` do app). Na ablação, trocar o código pela AST derruba o AUC de
+  0,812 para 0,784 (Tabela 4, p. 33411 (PDF 7)).
+- O LLM é chamado uma vez por problema, com as soluções daquele problema (p. 33407 (PDF 3);
+  `KC_gen.py:264`). O app herda a limitação que o paper reconhece, a de às vezes perder KCs comuns a
+  vários problemas por gerar cada um em separado (p. 33413 (PDF 9)).
+- A geração usa os dados de todos os alunos, sem separar treino e teste. O paper fala em "all
+  correct student submissions" (p. 33407 (PDF 3)), e o repositório lê o dado inteiro
+  (`KC_gen.py:644`). O TCC 1 usava só o treino (notebook 03b, célula 4). Os KCs não entram no treino
+  do Code-DKT, então o first-attempt AUC do app não é afetado.
+
+#### A amostragem das soluções
+
+| # | Item | Paper | Repositório | TCC 1 | App antes | App depois | Origem |
+|---|---|---|---|---|---|---|---|
+| 1 | Como escolhe as soluções | agrupa os vetores das soluções corretas e sorteia uma por grupo (p. 33407) | igual ao paper, no `main()` | uma por faixa de tentativas até acertar | as faixas do TCC 1, com uma solução por problema na prática | igual ao paper | Duan (paper) |
+| 2 | Modelo dos vetores das soluções | CodeBERT (p. 33407) | `graphcodebert-base`, só no código comentado | não tem | não tem | `microsoft/codebert-base` | Duan (paper) |
+| 3 | Vetor de cada solução | não trata | média dos vetores da última camada pela máscara de atenção, norma L2 e corte em 512 tokens, em código comentado | não tem | não tem | igual ao código comentado | app, critério 2 |
+| 4 | Algoritmo do agrupamento | "a clustering algorithm" (p. 33407) | HAC, distância cosseno, ligação média | não tem | não tem | igual ao repositório | Duan (repositório) |
+| 5 | Quantas soluções por problema | 5 no experimento principal (p. 33410) | 5 | 5 | 5 declaradas, 1 na prática | 5 | Duan (paper) |
+| 6 | De onde se sorteia | todas as submissões corretas (p. 33407) | todas as corretas, com repetições do mesmo aluno | a primeira correta de cada aluno | a primeira correta de cada aluno | todas as execuções corretas do problema | Duan (paper) |
+| 7 | Sorteio dentro do grupo | uma por grupo, sem semente | `random.sample` sem semente | um `Random(42)` para todos os problemas | um `Random(42)` por problema | um `Random(42)` por problema | app, critério 3 |
+| 8 | Menos de 5 soluções distintas | não trata | não trata | uma por faixa não vazia, até 5 | uma, porque todas caem na primeira faixa | tantos grupos quanto o menor entre 5 e o número de soluções distintas | app, critério 5 |
+
+**1. Como escolhe as soluções.** O paper diz "we apply a clustering algorithm to the CodeBERT (Feng
+et al., 2020) embeddings of all correct student submissions and sample one per cluster, with the
+number of clusters controlling the diversity of examples" (p. 33407 (PDF 3)), porque um problema
+pode ser resolvido de vários jeitos válidos, cada um com os seus KCs. O `main()` do repositório usa
+esse caminho (`random_draw=False`, `KC_gen.py:646`). O padrão da função é um sorteio simples com
+`random_state=42` (`KC_gen.py:489`), que o repositório usa quando o número de soluções é 1
+(`KC_gen.py:574-575`). O TCC 1 dividia as soluções corretas pelo número de tentativas até acertar
+(1, 2 a 3, 4 a 6, 7 a 10 e mais de 10) e sorteava uma por faixa (notebook 03b, célula 4). O app
+(`solution_sampling.py:13` do app) e o notebook (células 0 e 4) atribuem as faixas ao Duan, embora a
+célula 3 do notebook as chame de heurística do próprio TCC 1. Elas não estão no paper nem no
+repositório. O número de tentativas mede o esforço do aluno, e o paper quer cobrir estratégias de
+solução diferentes. O exemplo do Apêndice B do ACL, o problema bobThere (A492, problema 128), tem
+duas soluções corretas, uma com laço e outra com expressão regular, "Although both code submissions
+are correct, they rely on different valid strategies leveraging different KCs" (p. 33417 (PDF 13)).
+Na variante CodeWorkout da CSEDM, 5 das 359 execuções corretas desse problema, de dois alunos, usam
+expressão regular (`matches` em quatro e `replaceAll` em uma), e nenhum dos seis KCs que o TCC 1
+gerou para ele trata disso (`results/kc_raw_A492.json`
+do TCC 1). Além disso, o app contava as tentativas só sobre as execuções corretas
+(`kcgen_kt_generator.py:75` e `86` do app), então todo aluno caía na primeira faixa e o LLM lia uma
+solução por problema, a configuração de menor AUC da Tabela 6 (0,804, contra 0,815 com cinco,
+p. 33418 (PDF 14)). O método do paper não conta tentativas, e o problema some com ele. Pelo critério
+1, o app segue o paper.
+
+**2. Modelo dos vetores das soluções.** O paper cita o CodeBERT (Feng et al., 2020) (p. 33407
+(PDF 3)). O repositório passa o nome `microsoft/graphcodebert-base` para a função de agrupamento
+(`KC_gen.py:502`), mas ela só usa o nome no trecho comentado e lê os vetores de arquivos `.npy` que
+não estão no repositório (`KC_gen.py:459-461`). O GraphCodeBERT (Guo et al., 2021) é um modelo
+posterior da mesma família, treinado também com o fluxo de dados entre as variáveis. Não há como
+saber qual dos dois gerou os arquivos. Pelo critério 1, o app usa o CodeBERT, no checkpoint
+`microsoft/codebert-base`.
+
+**3. Vetor de cada solução.** O CodeBERT devolve um vetor por token, e o paper não diz como juntar os
+vetores de uma solução num só. O trecho comentado do repositório (`KC_gen.py:431-457`) corta o código
+no limite do tokenizador, de 512 tokens, tira a média dos vetores da última camada pesada pela
+máscara de atenção, que ignora o padding, e normaliza o resultado para norma 1. A alternativa com o
+vetor do primeiro token também está comentada (`KC_gen.py:444-445`). Pelo critério 2, o app faz como
+o trecho comentado, e a escolha fica registrada como do app. Uma solução maior que 512 tokens tem o
+fim cortado.
+
+**4. Algoritmo do agrupamento.** O paper diz só "a clustering algorithm" (p. 33407 (PDF 3)). O
+repositório usa o `AgglomerativeClustering` do scikit-learn com distância cosseno e ligação média,
+com tantos grupos quanto as soluções a sortear (`KC_gen.py:463-467`). Pelo critério 2, o app segue o
+repositório. É o mesmo tipo de agrupamento que o paper usa para os KCs no segundo passo (p. 33407
+(PDF 3)), aqui sobre os vetores das soluções.
+
+**5. Quantas soluções por problema.** O experimento principal usa "5 student submissions per
+problem" (p. 33410 (PDF 6)), e o repositório roda com `n_correct=5` (`KC_gen.py:646`). A Tabela 6
+(p. 33418 (PDF 14)) testa 1, 2, 5, 7 e 10 soluções, com AUC de 0,804, 0,812, 0,815, 0,812 e 0,816, e o
+texto conclui que "the performance increases and saturates after more than five submissions". Essa
+ablação foi feita no nível de abstração mais fino. O TCC 1 cita uma Tabela 5 com 1, 3, 5, 7 e 10
+soluções e AUC de 0,798, 0,807, 0,812, 0,811 e 0,810, e chama o 5 de ponto ótimo (notebook 03b,
+células 3 e 4, e `docs/refs/duan2025_automatedkc.md` do TCC 1). Esses valores não estão em nenhuma
+das duas versões do paper, e o 5 é o valor da configuração principal, não um ótimo medido.
+
+**6. De onde se sorteia.** O paper sorteia entre "all correct student submissions" (p. 33407
+(PDF 3)). O repositório filtra as corretas do dado inteiro, sem tirar as repetições do mesmo aluno no
+mesmo problema (`KC_gen.py:570`), e só reduz o dado à primeira submissão na carga do modelo de KT
+(`data_loader.py:95-96`). A restrição à primeira correta de cada aluno, no TCC 1
+(`load_correct_samples`, notebook 03b, célula 4) e no app (`solution_sampling.py:25-26` do app),
+servia para contar as tentativas das faixas e perde a razão de ser com o método do paper. A frase "we
+analyze students' first submissions to each problem" (p. 33409 (PDF 5)) trata do dado do modelo de
+KT, e não da geração de KCs. Pelo critério 1, entram todas as execuções corretas do problema. Um
+aluno que mandou a mesma solução correta mais de uma vez aparece mais de uma vez, como no
+repositório.
+
+**7. Sorteio dentro do grupo.** O paper diz "sample one per cluster" (p. 33407 (PDF 3)), sem
+semente. O repositório usa `random.sample` do módulo `random` sem semente (`KC_gen.py:480`), e o
+sorteio muda a cada execução, um defeito de reprodutibilidade (critério 3). O app mantém o que já
+faz, um `Random(42)` novo para cada problema (`solution_sampling.py:50` do app), e o sorteio de um
+problema não depende dos outros nem da ordem em que são processados. O TCC 1 usava um `Random(42)`
+só para todos os problemas (notebook 03b, célula 4), e o sorteio de um problema dependia dos
+anteriores. A semente 42 é a do resto do app.
+
+**8. Menos de 5 soluções distintas.** O agrupamento precisa de pelo menos tantas soluções quanto
+grupos e, com códigos idênticos, pode pôr cópias da mesma solução em grupos diferentes e mandar a
+mesma solução duas vezes ao LLM. O paper e o repositório não tratam do caso. O app usa tantos grupos
+quanto o menor entre 5 e o número de soluções de texto distinto. Com uma solução correta só, o LLM lê
+essa (critério 5).
+
+#### O prompt de geração
+
+| # | Item | Paper | Repositório | TCC 1 | App antes | App depois | Origem |
+|---|---|---|---|---|---|---|---|
+| 9 | LLM | GPT-4o (p. 33406) | `gpt-4o` | `claude-haiku-4-5-20251001` | `claude-haiku-4-5-20251001` | `claude-sonnet-5-5`, na geração e na nomeação | app, critério 4 |
+| 10 | Temperatura | não trata | 0 | a padrão | a padrão | a padrão | app, critério 4 |
+| 11 | Descrição do problema na resposta | não tem | não tem | o LLM deduz uma descrição do problema pelo código e a devolve | igual ao TCC 1, mostrada na lista de problemas e prevista na origem do conceito | não tem | Duan (paper) |
+| 12 | Texto do prompt | Tabela 9 (p. 33421) | o mesmo texto de sistema da Tabela 9 | próprio | igual ao TCC 1 | o do Duan, mudado só onde o dado da turma obriga | Duan (paper) |
+
+Os outros pontos do prompt, como qual dos dois textos serve de base, a falta do enunciado, os
+exemplos, a ordem dos campos e o formato das soluções, estão a discutir.
+
+**9. LLM.** O paper usa o GPT-4o, "an advanced proprietary LLM with strong reasoning and programming
+abilities" (p. 33406 (PDF 2)), na geração e na nomeação dos grupos, e o repositório também
+(`KC_gen.py:100` e `646`). O app chama o Claude pela CLI `claude`, na assinatura, e não chama a API
+da OpenAI, então o GPT-4o não é possível (critério 4). A adaptação mais próxima é um modelo forte da
+família, o Claude Sonnet 5.5 (`claude-sonnet-5-5`), e não o Claude Haiku 4.5 do TCC 1, escolhido
+"por razões de custo" (`docs/METODOLOGIA_FERRAMENTAS.md:401` do TCC 1). O Sonnet 5.5 não tem versão
+datada como a do Haiku 4.5, então a extração grava o ID do modelo e a data. Nenhuma das duas versões
+do paper compara LLMs na geração de KCs, então os números do paper valem para o GPT-4o, e a
+equivalência com qualquer outro modelo não foi testada. A mesma linha da metodologia do TCC 1 diz
+que o paper documenta robustez à troca de LLM, o que não está no paper.
+
+**10. Temperatura.** O repositório usa temperatura 0 (`KC_gen.py:646`). O Sonnet 5.5 recusa
+temperatura diferente da padrão, e a CLI não tem opção para ela, então o app usa a padrão
+(critério 4). Temperatura 0 também não garantia respostas idênticas. O que torna a extração
+repetível no app é o cache das respostas do LLM, com chave no modelo, na versão do prompt, no texto
+de sistema, no schema e no prompt (`llm_response_cache.py:23-40` do app). Uma extração nova com o
+cache vazio pode dar outros KCs.
+
+**11. Descrição do problema na resposta.** No paper, o enunciado do problema é entrada do prompt
+(Tabela 9, p. 33421 (PDF 17)), e o LLM devolve só os KCs. O TCC 1, sem enunciado, pedia ao LLM uma
+descrição de uma a duas frases deduzida das soluções e a recebia na resposta (notebook 03b, célula
+8). O app a grava e a mostra na lista de problemas da tela Conceitos, e o desenho da origem do
+conceito, ainda não implementado, também a prevê (`docs/DESIGN.md:208-210`). É uma etapa que o paper
+não tem, e a adaptação do critério 4 não cria etapa nova. A descrição sai da resposta, da tela e do
+desenho.
+
+**12. Texto do prompt.** O paper mostra o prompt da geração na Tabela 9 (Apêndice G.1, p. 33421
+(PDF 17)), e o repositório executa o mesmo texto de sistema (`KC_gen.py:100-170`). O TCC 1 escreveu
+um prompt próprio (notebook 03b, célula 8), com outro papel para o modelo, limites de 3 a 7 KCs por
+problema e de 3 a 8 palavras por nome, sem a definição de KC e com exemplos próprios, e o app o
+copiou (`candidate_generation.py:35-158` do app). O notebook e o app atribuem esses exemplos à
+Tabela 8 da v3, que tem um exemplo só, de outro problema e sem código. Pelo critério 1, o app copia o
+prompt do Duan e o muda só onde o dado da turma obriga (critério 4).
+
+#### O agrupamento e o nível de abstração
+
+A discutir.
+
+#### A nomeação e a Q-matrix
+
+A discutir.
+
+### O que o app acrescenta ao KCGen-KT
+
+- **A revisão pelo professor.** O ACL recomenda que especialistas revisem os KCs gerados antes do uso
+  real, "we recommend that automatically generated KCs be reviewed by domain experts before
+  deployment in real educational settings" (p. 33414 (PDF 10)), sem dizer como. No app, o exercício
+  fica em rascunho até o professor aprovar os conceitos, e só a aprovação libera o treino
+  (`approve_knowledge_components_use_case.py:49` e `start_training_use_case.py:41` do app). A v3 não
+  tem essa recomendação.
+- **Onde cada conceito aparece nas soluções.** Depois da extração, uma segunda chamada ao mesmo
+  modelo recebe, para cada problema, as soluções que o LLM leu e os conceitos finais do problema. Ela
+  devolve, para cada conceito, a solução e o trecho de código copiado dela. O app confere se o trecho
+  existe na solução, guarda as linhas e descarta o trecho que não existe. A chamada é separada para
+  que o prompt do Duan fique intacto, e ela aponta os conceitos finais, que são os que o professor vê,
+  e não os KCs de antes do agrupamento. O trecho é a justificativa que o modelo escreve, e não a causa
+  da extração, e a tela o mostra como o lugar onde o conceito aparece. A justificativa de uma frase
+  que o prompt do Duan pede para cada KC, "a one-sentence reasoning explaining why this KC is
+  necessary based on the provided solutions" (Tabela 9, p. 33421 (PDF 17)), também passa a ser
+  guardada e mostrada. Decidido em 03/10/2026, a implementar.
+
+### Estado
+
+| # | Estado |
+|---|---|
+| 1 a 12 | Decididas em 03/10/2026, a implementar |
 
 ## Referências
 
@@ -509,6 +746,12 @@ Coding Problems. arXiv:2502.18632v3, 2025.
 DUAN, Z. et al. Automated Knowledge Component Generation and Interpretable Knowledge Tracing in
 Coding Problems. In: Findings of the Association for Computational Linguistics: ACL 2026. 2026.
 p. 33405–33423. Disponível em: https://aclanthology.org/2026.findings-acl.1670/.
+
+FENG, Z. et al. CodeBERT: A Pre-Trained Model for Programming and Natural Languages. In: Findings
+of the Association for Computational Linguistics: EMNLP 2020. 2020. p. 1536–1547.
+
+GUO, D. et al. GraphCodeBERT: Pre-training Code Representations with Data Flow. In: International
+Conference on Learning Representations (ICLR 2021). 2021.
 
 PIECH, C. et al. Deep Knowledge Tracing. In: Advances in Neural Information Processing Systems 28
 (NIPS 2015). 2015.
