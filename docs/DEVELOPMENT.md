@@ -766,7 +766,79 @@ inválida e guarda a justificativa (critério 5).
 
 #### O agrupamento e o nível de abstração
 
-A discutir.
+O segundo passo transforma o nome de cada KC num vetor com o Sentence-BERT e junta os parecidos com
+HAC, "By adjusting the number of clusters, we can flexibly merge semantically similar KCs into
+broader categories, effectively controlling the abstraction level of our KC descriptions" (p. 33407
+(PDF 3)). Estes pontos são iguais no repositório e no app, e também no paper quando ele trata deles.
+
+- O vetor de cada KC sai do SBERT `all-MiniLM-L6-v2` sobre o nome do KC, sem pedir normalização no
+  código, e a distância cosseno não depende da norma (`KC_gen.py:324-325` e `600`;
+  `kcgen_kt_generator.py:29` e `140` do app). O paper fala em "the
+  Sentence-BERT (Reimers and Gurevych, 2019) embedding of the textual description of each KC"
+  (p. 33407 (PDF 3)), sem dizer o modelo, e o repositório guarda só o nome. A versão da biblioteca é
+  a 3.2.1 no repositório (`environment.yml:99`) e a 5.4.1 no app (`pyproject.toml:31`), com o mesmo
+  modelo.
+- O HAC é o do scipy, com distância cosseno, ligação média e corte em k grupos (`KC_gen.py:327-330`;
+  `kc_grouping.py:16-19` do app). O paper diz "using cosine similarity as the distance function"
+  (p. 33407 (PDF 3)) e, no Apêndice C, "we use scipy library to perform the hierarchical
+  agglomerative clustering" (p. 33418 (PDF 14)), sem dizer a ligação.
+- Nomes iguais entram uma vez só, pela comparação exata do texto (`KC_gen.py:596`;
+  `kcgen_kt_generator.py:97-98` do app).
+
+| # | Item | Paper | Repositório | TCC 1 | App antes | App depois | Origem |
+|---|---|---|---|---|---|---|---|
+| 18 | Escopo do agrupamento | todos os problemas do dataset juntos (p. 33406) | os 50 problemas da CodeWorkout juntos | cada exercício separado | cada exercício separado | cada exercício separado | app, critério 4 |
+| 19 | Número de grupos | cinco níveis testados, e o médio escolhido pelo desempenho do modelo de KT, 50 grupos para 103 nomes na CodeWorkout (pp. 33410 e 33411) | 75 no `main()` | o maior silhouette entre 10, 12 e 15 | igual ao TCC 1 | a proporção do nível escolhido na CodeWorkout, 50 para 103, sobre os nomes do exercício | app, critério 4 |
+| 20 | Poucos nomes | não trata | não trata | pula os candidatos que não ficam abaixo do número de nomes | com menos de 10 nomes cada um vira um grupo, e com exatamente 10 a extração falha | a mesma proporção, com pelo menos 1 grupo | app, critério 5 |
+| 21 | Ordem de entrada dos nomes | não trata | a de um conjunto do Python, que muda a cada execução | a dos problemas em ordem numérica | a dos problemas em ordem de texto | a dos problemas em ordem numérica | app, critérios 3 e 5 |
+
+**18. Escopo do agrupamento.** O paper agrupa os KCs "across all problems" e faz todos os passos
+"independently for each dataset to maintain domain consistency" (p. 33406 (PDF 2)), e o repositório
+junta os nomes dos 50 problemas da CodeWorkout num só conjunto (`KC_gen.py:596-600`). Os 50 problemas
+são os dos cinco exercícios da CSEDM, então no paper os KCs parecidos dos cinco exercícios caem no
+mesmo grupo e levam um nome só. O TCC 1 agrupava cada exercício à parte (notebook 03b, célula 12), e
+o app também. O paper agrupa um dataset fechado, e a CodeWorkout é a de Spring 2019 (p. 33414
+(PDF 10)). No app, o dado da turma chega durante a disciplina, a extração, a
+aprovação e o treino são por exercício, e os conceitos de um exercício treinado não mudam
+(`knowledge_component_edit.py:32-36` do app). Agrupar a turma inteira refaria os grupos a cada
+exercício novo e mudaria os conceitos dos exercícios já aprovados e treinados. Pelo critério 4, o
+app agrupa por exercício. O custo é o mesmo conceito aparecer com nomes diferentes em exercícios
+diferentes, e ligar os conceitos entre exercícios fica para depois.
+
+**19. Número de grupos.** O paper testa cinco níveis por dataset, 100, 75, 50, 20 e 10 grupos para
+os 103 nomes da CodeWorkout e 150, 120, 90, 60 e 20 para os 161 da FalconCode (p. 33411 (PDF 7)), e
+fica com o de melhor desempenho do modelo de KT, "50 KCs after clustering for CodeWorkout and 60 KCs
+after clustering for FalconCode" (p. 33410 (PDF 6)). Na Tabela 3 (p. 33410 (PDF 6)), os níveis altos
+são os piores, com AUC de 0,804 e 0,794 para 20 e 10 grupos na CodeWorkout, contra 0,816 para 50. O
+paper não usa silhouette, e o repositório roda com 75 (`KC_gen.py:646`). O app não tem como escolher
+pelo desempenho do modelo de KT, porque os conceitos não entram no Code-DKT. O TCC 1 escolhia pelo
+maior silhouette entre 10, 12 e 15 (notebook 03b, célula 12), uma grade que não vem do paper. O
+maior dos três venceu em quatro dos cinco exercícios, e a escolha deu 12 a 15 grupos para 52 a 59
+nomes (`results/kc_clusters_A*.json` do TCC 1), entre 0,20 e 0,29 grupo por nome, perto do nível alto
+da CodeWorkout (20 para 103, 0,19). Pelo critério 4, o app reproduz o nível que o paper escolheu na
+CodeWorkout, que é Java como o app, com k igual a 50/103 dos nomes únicos do exercício, arredondado
+para o inteiro mais próximo. O paper mediu essa proporção sobre os 50 problemas juntos, em que nomes
+iguais de problemas diferentes se fundem antes do agrupamento. Por exercício, com 10 problemas, deve
+sobrar mais nome por problema e sair mais conceito por exercício do que no paper, e o número de
+conceitos por exercício é conferido depois da extração nova. A escolha do nível pelo professor, que o
+paper apoia ao dizer que a abstração serve a "different pedagogical or analytical goals depending on
+the downstream application" (p. 33407 (PDF 3)), fica para depois.
+
+**20. Poucos nomes.** O app tinha um caminho à parte para menos de 10 nomes, em que cada nome vira um
+grupo (`kcgen_kt_generator.py:101` do app). Com exatamente 10 nomes, nenhum candidato ficava abaixo
+do total e a escolha do k falhava (`kc_grouping.py:27-31` do app). Com a proporção, o k sai do número
+de nomes, com pelo menos um grupo, e os dois casos somem. Um nome só vira um grupo sem passar pelo
+HAC, que precisa de pelo menos dois (critério 5).
+
+**21. Ordem de entrada dos nomes.** A ordem em que os nomes entram no agrupamento não muda os grupos,
+salvo empates nas distâncias, mas muda a numeração deles e o texto dos pedidos de nomeação, que faz
+parte da chave do cache. O repositório tira os nomes de um conjunto do Python (`KC_gen.py:596-597`),
+e a ordem muda a cada execução, um defeito de reprodutibilidade (critério 3). O TCC 1 percorria os
+problemas em ordem numérica (notebook 03b, célula 12). O app os ordena como texto, com "10" antes de
+"2", e o comentário do código e o `DECISIONS.md` dizem que isso é fiel ao TCC 1
+(`kcgen_kt_generator.py:76-77` e `DECISIONS.md:105-107` do app), o que não é. O app passa a percorrer
+os problemas em ordem numérica, e os nomes de cada problema na ordem da resposta do modelo
+(critério 5).
 
 #### A nomeação e a Q-matrix
 
@@ -800,7 +872,7 @@ A discutir.
 
 | # | Estado |
 |---|---|
-| 1 a 17 | Decididas em 03/10/2026, a implementar |
+| 1 a 21 | Decididas em 03/10/2026, a implementar |
 
 ## Referências
 
