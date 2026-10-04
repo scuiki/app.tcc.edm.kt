@@ -27,13 +27,14 @@ Regras gerais:
 | `ClassroomStatus` (`awaiting_data` / `in_progress` / `trained`) | A situação da turma na tela: sem problemas importados, com dados e sem modelo, com ao menos um modelo publicado. Calculado, nunca gravado | — |
 | `Assignment` | O "exercício" da UI, uma lista de problemas (ex.: A439). Unidade de treino: um modelo por assignment | — |
 | `progsnap_assignment_id` | O ID do assignment **no dataset** (439). Distinto de `Assignment.id`, o ID do banco | derivado do nome por regex |
-| `Problem` / `problem_id` | Um "problema" na UI, um item dentro do assignment, com a `description` que o LLM deduz das soluções na geração de KCs. A chave é (`assignment_id`, `problem_id`), porque o `ProblemID` do dataset só é único dentro do assignment | `ProblemID` |
+| `Problem` / `problem_id` | Um "problema" na UI, um item dentro do assignment, com o enunciado (`statement`), opcional, quando o pacote traz o arquivo de enunciados. A `description` que o LLM deduzia das soluções deixa de ser gravada e sai com a tela Conceitos. A chave é (`assignment_id`, `problem_id`), porque o `ProblemID` do dataset só é único dentro do assignment | `ProblemID` |
 | `Student` / `student_id` | O aluno | `SubjectID` |
 | `CodeSnapshot` / `code_snapshot_id` | O código Java que o aluno enviou numa tentativa | `CodeStateID` |
 | `Submission` | Uma tentativa: aluno + problema + snapshot + nota | — |
 | `is_correct` | A tentativa acertou (`score == 1.0`). É o rótulo que o modelo aprende | `correct` |
 | `SubmissionEvent` | Se o código rodou (`Run.Program`) ou nem compilou (`Compile.Error`). Os **valores** seguem os do ProgSnap2 | `EventType` |
-| `KnowledgeComponent` | Um conceito de programação que um problema exige (ex.: "laço com acumulador") | `KC` |
+| `KnowledgeComponent` | Um conceito de programação que um problema exige (ex.: "laço com acumulador"). O `name` é o nome em português, que a tela mostra e o professor renomeia, e o `generated_name` é o nome que a extração gerou, em inglês e em minúsculas, vazio no conceito que o professor cria | `KC` |
+| `CandidateKnowledgeComponent` | Um KC que o LLM listou para um problema na extração, com o nome e a justificativa (`reasoning`) em inglês, a justificativa em português (`translated_reasoning`) e o conceito em que caiu. Tabela `candidate_kc` | `kc_raw` (TCC 1) |
 | `ProblemKnowledgeComponent` | O vínculo "o problema P exige o KC K". O conjunto dos vínculos de um assignment é o que a literatura chama de Q-matrix. Tabela `problem_kc` | `QMatrixBinding`, tabela `qmatrix` |
 | `TrainedModel` | Uma versão treinada do Code-DKT: arquivos em disco + métricas no banco | `ModelArtifact` |
 | `published_model_id` | A versão de modelo que o dashboard usa | `current_version_id` |
@@ -83,9 +84,12 @@ Todo `Protocol` da `api/` começa com `I` e fica numa pasta `interfaces/` (ver
 Os jobs (`TrainingJob`, `KnowledgeComponentGenerationJob`) têm os estados `pending`,
 `running`, `done` e `failed`.
 
-O `KnowledgeComponentGenerationJob` informa também o progresso dentro do estágio atual, em
-`progress_done` e `progress_total`: quantos itens já terminaram, de quantos (problemas no `generate`,
-grupos na nomeação do `cluster`). Os dois ficam vazios quando o estágio não tem itens para contar.
+Os estágios do `KnowledgeComponentGenerationJob` são `generate`, `cluster`, `qmatrix`, `evidence` e
+`translate`, nessa ordem. Ele informa também o progresso dentro do estágio atual, em
+`progress_done` e `progress_total`, quantos itens já terminaram, de quantos (problemas no `generate`
+e no `evidence`, grupos na nomeação do `cluster`). Os dois ficam vazios quando o estágio não tem
+itens para contar. O job guarda também o modelo de linguagem (`model_id`) e a versão do prompt
+(`prompt_version`) da extração.
 
 ## Dashboard
 
@@ -109,7 +113,7 @@ prevê" (só com modelo publicado). Sem níveis, faixas, recomendações ou cort
 | oportunidade (`opportunity`) | Cada execução de um aluno num problema que exige o conceito, contada em ordem por aluno e conceito. A 1ª oportunidade é a primeira execução dele num desses problemas | — |
 | completar (`completed`) | Ter ao menos uma execução correta no problema | "fechar" |
 | dado estimado (`GeneratedByML`) | O marcador de cérebro antes do rótulo de toda coluna que vem do Code-DKT | `EstimatedMark`, badge "previsto" |
-| gerado pelo modelo de linguagem (`GeneratedByLLM`) | O marcador de estrelas no que o LLM escreveu, o nome do conceito e a descrição do problema. Some do nome quando o professor o renomeia | — |
+| gerado pelo modelo de linguagem (`GeneratedByLLM`) | O marcador de estrelas no que o LLM escreveu, como o nome do conceito. Some do nome quando o professor o renomeia | — |
 | linha de fatos | A linha de números abaixo do título de uma tela, com os itens separados por vírgula. Na Análise traz alunos, problemas, conceitos, execuções e a versão do modelo com a data do treino, no lugar da descrição fixa | — |
 | recorrência (`recurrence`) | Em quantos problemas do exercício um conceito aparece. Com um só, o valor do conceito é o desse problema, evidência fraca | cobertura |
 | `compute_problem_statistics()` / `compute_knowledge_component_statistics()` / `compute_student_activity()` | Calculam as três contagens acima do dado limpo, sem modelo (`services/submission_statistics_calculation.py`) | `compute_pre_training_statistics()` |
@@ -132,8 +136,10 @@ modelo, exceto o domínio médio dos exercícios treinados.
 
 | Nome no código | O que é | Nome antigo |
 |---|---|---|
-| `SampledSolution` | Uma das até cinco soluções corretas que o KCGen-KT amostrou para um problema, a primeira de um aluno, uma por faixa de tentativas até acertar. Gravada na extração, pelo `code_snapshot_id` | — |
-| origem do conceito | O diálogo com as soluções amostradas de cada problema em que o conceito aparece | — |
+| `SampledSolution` | Uma das até cinco soluções corretas que a extração escolheu para o LLM ler num problema, uma por grupo dos vetores do CodeBERT. Gravada na extração, com a execução escolhida (`submission_id`), que traz o aluno, o horário e o código, e a posição no prompt. Tabela `sampled_solution` | — |
+| `KnowledgeComponentEvidence` | Um trecho de uma solução amostrada em que o conceito aparece, com a primeira e a última linha. O LLM o aponta depois do agrupamento, na mesma extração, e o app confere que ele existe na solução. É a justificativa que o modelo escreve, e não a causa da extração. Tabela `kc_evidence` | — |
+| origem do conceito | O diálogo com as soluções amostradas de cada problema em que o conceito aparece, com os trechos | — |
+| problema sem conceito | Um problema que a extração deixou sem conceito por não ter nenhuma execução correta. A extração segue com os outros, e a tela Conceitos o lista com o motivo | — |
 
 ## Importação
 
@@ -141,6 +147,7 @@ modelo, exceto o domínio médio dos exercícios treinados.
 |---|---|---|
 | `n_students_eligible` | Quantos alunos de um exercício têm ao menos uma execução `Run.Program`, os que entram na partição | — |
 | `PackageRequirement` | Um requisito do pacote ProgSnap2 (tabela de eventos, código dos alunos, formato ProgSnap2 v6, até 512 MB), conferido depois do envio, atendido ou não | "O que veio no pacote" |
+| arquivo de enunciados (`read_problem_statements()`) | O CSV opcional do pacote com o enunciado de cada problema, achado pelas colunas `AssignmentID`, `ProblemID` e `Requirement`, as da planilha oficial da CSEDM. Um pacote sem ele importa sem enunciados | — |
 
 ## Pipeline de dados
 
@@ -170,7 +177,7 @@ modelo, exceto o domínio médio dos exercícios treinados.
 | `SeedEvaluation` | O resultado de `evaluate_over_seeds()`, com o first-attempt AUC e o AUC geral de cada seed, e a média e o desvio amostral de cada um | — |
 | `TRAINED_MODEL_FORMAT_VERSION` | A versão do formato do artefato de um `TrainedModel`, gravada como `format_version` no `config.json` | — |
 | `IncompatibleTrainedModelError` | O erro de quando um artefato não tem a `format_version` atual. Vira 409 | — |
-| marcador `regression` | O teste que treina o A439 com as dez seeds e confere a média da primeira tentativa em ±0,1 ponto em torno de 0,7278, `tests/test_regression_a439.py`, fora da suíte padrão | — |
+| marcador `regression` | O teste que treina o A439 com as dez seeds e confere a média da primeira tentativa em ±0,1 ponto em torno de 0,7278, `tests/test_regression_a439.py`, fora da suíte padrão. O mesmo marcador separa os testes do KCGen-KT que carregam os modelos de vetores ou a extração de referência da CSEDM | — |
 | tolerância do teste de regressão (`TOLERANCE`) | O quanto a média do first-attempt AUC das dez seeds pode se afastar da média de referência, ±0,001 (±0,1 ponto). A média de referência (`REGRESSION_CENTER`) é 0,7278, a que o app mediu no A439 em 02/10/2026, e fora da tolerância o teste de regressão falha | — |
 | marcador `literature` | O teste que compara o app com as Tabelas 1 e 2 de Shi et al. (2022), `tests/test_literature_comparison.py`, fora da suíte padrão | — |
 | `java_parse_rate` | A fração dos snapshots que o javalang conseguiu parsear | `parse_rate` |
@@ -198,13 +205,18 @@ modelo, exceto o domínio médio dos exercícios treinados.
 
 | Etapa | Nome no código | O que faz | Nome antigo |
 |---|---|---|---|
-| 1 | `select_sample_solutions()` | Escolhe até 5 soluções corretas e diversas por problema | `diversity_sample` |
-| 2 | `generate_candidate_kcs()` | Pede ao LLM os KCs que cada problema exige | `generate_kcs_for_problem` |
-| 3 | `choose_kc_group_count()` + `group_similar_kcs()` | Escolhe quantos grupos (silhouette) e agrupa os nomes de KC parecidos (SBERT + clustering hierárquico) | `select_best_n_clusters`, `_cluster_with_n` |
-| 4 | `name_kc_group()` | Pede ao LLM um nome para cada grupo | `label_cluster` |
+| 1 | `embed_solutions()` + `select_sample_solutions()` | Calcula os vetores do CodeBERT das execuções corretas de cada problema, na GPU, e escolhe até 5 soluções, uma por grupo | `diversity_sample` |
+| 2 | `generate_candidate_kcs()` | Pede ao LLM os KCs que cada problema exige, com o prompt de Duan et al. (2026), com ou sem o enunciado | `generate_kcs_for_problem` |
+| 3 | `embed_kc_names()` + `kc_group_count()` + `group_similar_kcs()` | Calcula os vetores do SBERT dos nomes de KC, o número de grupos pela proporção do nível médio do paper (`MEDIUM_ABSTRACTION_RATIO`, 50/103) e agrupa os nomes de KC parecidos (SBERT + clustering hierárquico) | `choose_kc_group_count` (silhouette), `select_best_n_clusters`, `_cluster_with_n` |
+| 4 | `name_kc_group()` | Pede ao LLM o nome de cada grupo com mais de um KC, pela Tabela 10 do paper. O grupo de um KC só fica com o nome dele, e os grupos de mesmo nome viram um conceito só | `label_cluster` |
 | 5 | `build_qmatrix()` | Monta a Q-matrix problema × KC | `build_qmatrix` |
-| — | `LLMResponseCache` | As respostas do LLM guardadas por hash, para não pagar duas vezes | `kc_cache` |
+| 6 | `locate_kc_evidence()` | Pede ao LLM, por problema, onde cada conceito aparece nas soluções amostradas | — |
+| 7 | `translate_kc_texts()` | Pede ao LLM o português dos nomes e das justificativas do exercício, numa chamada só | — |
+| — | `CachedLLMClient` | O LLM com o cache das respostas, guardadas por hash, para não pagar duas vezes. Uma resposta só entra no cache depois de validada | `LLMResponseCache`, `kc_cache` |
 | — | `LLMClient` | A interface do LLM que o `ml/` declara e a `api/` implementa | `ports.LLMClient` |
+| — | `InvalidLLMResponseError` | Uma resposta do LLM vazia, que não é JSON ou fora do formato pedido. É pedida até 3 vezes ao todo, como o erro transitório | `EmptyContentError` |
+| — | `KC_GENERATION_MODEL_ID` / `PROMPT_VERSION` | O modelo de linguagem da extração, `claude-sonnet-5-5`, e a versão dos prompts, os dois na chave do cache e gravados no job | — |
+| — | `SBERT_MODEL` / `CODEBERT_MODEL` | Os modelos de vetores, `all-MiniLM-L6-v2` para os nomes de KC e `microsoft/codebert-base` para as soluções, baixados na imagem com a revisão fixada | — |
 
 ## Rotas HTTP
 

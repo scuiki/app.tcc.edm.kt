@@ -685,10 +685,10 @@ abilities" (p. 33406 (PDF 2)), na geração e na nomeação dos grupos, e o repo
 da OpenAI, então o GPT-4o não é possível (critério 4). A adaptação mais próxima é um modelo forte da
 família, o Claude Sonnet 5.5 (`claude-sonnet-5-5`), e não o Claude Haiku 4.5 do TCC 1, escolhido
 "por razões de custo" (`docs/METODOLOGIA_FERRAMENTAS.md:401` do TCC 1). O Sonnet 5.5 não tem versão
-datada como a do Haiku 4.5, então a extração grava o ID do modelo e a data. Nenhuma das duas versões
-do paper compara LLMs na geração de KCs, então os números do paper valem para o GPT-4o, e a
-equivalência com qualquer outro modelo não foi testada. A mesma linha da metodologia do TCC 1 diz
-que o paper documenta robustez à troca de LLM, o que não está no paper.
+datada como a do Haiku 4.5, então a extração grava o ID do modelo e a versão do prompt, e a data já
+fica no job. Nenhuma das duas versões do paper compara LLMs na geração de KCs, então os números do
+paper valem para o GPT-4o, e a equivalência com qualquer outro modelo não foi testada. A mesma linha
+da metodologia do TCC 1 diz que o paper documenta robustez à troca de LLM, o que não está no paper.
 
 **10. Temperatura.** O repositório usa temperatura 0 (`KC_gen.py:646`). O Sonnet 5.5 recusa
 temperatura diferente da padrão, e a CLI não tem opção para ela, então o app usa a padrão
@@ -992,16 +992,16 @@ prompt (linha 15). Com um anotador só, não há a medida de concordância que o
   fica em rascunho até o professor aprovar os conceitos, e só a aprovação libera o treino
   (`approve_knowledge_components_use_case.py:49` e `start_training_use_case.py:41` do app). A v3 não
   tem essa recomendação.
-- **Onde cada conceito aparece nas soluções.** Depois da extração, uma segunda chamada ao mesmo
-  modelo recebe, para cada problema, as soluções que o LLM leu e os conceitos finais do problema. Ela
-  devolve, para cada conceito, a solução e o trecho de código copiado dela. O app confere se o trecho
-  existe na solução, guarda as linhas e descarta o trecho que não existe. A chamada é separada para
-  que o prompt do Duan fique intacto, e ela aponta os conceitos finais, que são os que o professor vê,
-  e não os KCs de antes do agrupamento. O trecho é a justificativa que o modelo escreve, e não a causa
-  da extração, e a tela o mostra como o lugar onde o conceito aparece. A justificativa de uma frase
-  que o prompt do Duan pede para cada KC, "a one-sentence reasoning explaining why this KC is
-  necessary based on the provided solutions" (Tabela 9, p. 33421 (PDF 17)), também passa a ser
-  guardada e mostrada. Decidido em 03/10/2026, a implementar.
+- **Onde cada conceito aparece nas soluções.** Depois do agrupamento, na mesma extração, uma segunda
+  chamada ao mesmo modelo recebe, para cada problema, as soluções que o LLM leu e os conceitos
+  finais do problema. Ela devolve, para cada conceito, a solução e o trecho de código copiado dela.
+  O app confere se o trecho existe na solução, guarda as linhas e descarta o trecho que não existe.
+  A chamada é separada para que o prompt do Duan fique intacto, e ela aponta os conceitos finais,
+  que são os que o professor vê, e não os KCs de antes do agrupamento. O trecho é a justificativa
+  que o modelo escreve, e não a causa da extração, e a tela o mostra como o lugar onde o conceito
+  aparece. A justificativa de uma frase que o prompt do Duan pede para cada KC, "a one-sentence
+  reasoning explaining why this KC is necessary based on the provided solutions" (Tabela 9, p. 33421
+  (PDF 17)), também passa a ser guardada e mostrada. Decidido em 03/10/2026, a implementar.
 - **Os nomes em português.** O método roda em inglês, como no paper, com os prompts do Duan e, no
   agrupamento, o SBERT `all-MiniLM-L6-v2` do repositório, que é um modelo de inglês. Depois da
   nomeação, uma chamada ao mesmo modelo traduz para o português todos os nomes finais do exercício de
@@ -1021,7 +1021,7 @@ prompt (linha 15). Com um anotador só, não há a medida de concordância que o
 
 | # | Estado |
 |---|---|
-| 1 a 29 | Decididas em 03/10/2026, a implementar |
+| 1 a 29 | Decididas em 03/10/2026, a implementar pelo `KCGEN_KT_PLAN.md`, aprovado em 04/10/2026 |
 
 ## Referências
 

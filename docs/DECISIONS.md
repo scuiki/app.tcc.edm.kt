@@ -102,42 +102,73 @@ leva cerca de 19 minutos na GPU, e falha só por erro de execução ou por AUC i
 
 ## Geração de KCs
 
-**Os problemas são ordenados como texto.** "10" vem antes de "2", como no TCC 1. Essa ordem define
-a ordem dos nomes de KC que entram no SBERT e no clustering, e portanto os grupos. Ordenar como
-número mudaria os KCs.
+**O KCGen-KT segue Duan et al. (2026).** O método, as fontes e o porquê de cada escolha estão na
+seção KCGen-KT do `DEVELOPMENT.md`, que está sendo levada ao código pelo `KCGEN_KT_PLAN.md`. As
+entradas abaixo guardam as decisões de engenharia em volta do método e descrevem o que o plano leva
+ao código, e o código pode divergir delas até o plano terminar.
 
-**Poucos nomes de KC pulam o clustering.** Com menos nomes únicos que o menor número de grupos
-candidato, o silhouette não se aplica, e cada nome vira o próprio grupo, sem SBERT e sem a chamada
-de nomeação. É o caminho real das turmas pequenas.
+**Os problemas entram em ordem numérica.** A ordem em que os nomes de KC entram no agrupamento não
+muda os grupos, salvo empates nas distâncias, mas muda a numeração deles e o texto dos pedidos de
+nomeação, que faz parte da chave do cache. A ordem de texto, com "10" antes de "2", era dada como
+fiel ao TCC 1, que na verdade ordena por número (a ordem de entrada dos nomes, na linha 21 do
+KCGen-KT no `DEVELOPMENT.md`).
 
-**O LLM recebe o código Java cru.** Em Duan et al. (2025), Tabela 4, mandar a AST no lugar do
+**O número de grupos sai da proporção do paper.** São 50/103 dos nomes únicos do exercício, com pelo
+menos um grupo, o nível que o paper escolheu na CodeWorkout (o número de grupos e os poucos nomes,
+nas linhas 19 e 20 do KCGen-KT no `DEVELOPMENT.md`). Um nome só vira um grupo sem passar pelo HAC,
+que precisa de dois. O silhouette entre 10, 12 e 15 do TCC 1 sai, e com ele o caminho especial das
+turmas pequenas e a falha com exatamente 10 nomes.
+
+**O CodeBERT usa a GPU.** A extração e o treino nunca rodam juntos, porque o `OneJobAtATimeLock`
+serializa os dois, então o CodeBERT não disputa a GPU com o treino. Ele a usa sempre que ela existe,
+para a extração sair rápido, mesmo que os vetores variem um pouco de uma execução para outra. É a
+escolha do Leo em 04/10/2026, que pôs a rapidez para o professor na frente da repetição exata dos
+vetores.
+
+**Os modelos de vetores vêm na imagem base, com a revisão fixada.** O CodeBERT e o SBERT são
+baixados no build da `edmkt-core:dev`, que o app herda, e o app roda com o Hugging Face offline. Os
+testes e o app usam os mesmos arquivos, e uma revisão nova publicada no Hugging Face não muda os
+vetores em silêncio. O `transformers` e o `tokenizers` têm versão fixada pelo mesmo motivo.
+
+**O LLM recebe o código Java cru.** Em Duan et al. (2026), Tabela 4, mandar a AST no lugar do
 código piora o AUC de 0,812 para 0,784.
 
-**Os prompts são protocolo congelado.** Eles fazem parte da chave do cache de respostas do LLM (cada
-chamada gasta cota da assinatura), e mudar uma vírgula invalida o cache.
+**Os prompts do Duan são copiados, e não escritos.** O de geração é o texto do `KC_gen.py` do
+repositório oficial, e o de nomeação é o da Tabela 10 do paper, mudados só onde o dado obriga (os
+textos dos prompts, nas linhas 12, 13 e 22 do KCGen-KT no `DEVELOPMENT.md`). Eles fazem parte da
+chave do cache de respostas do LLM, e cada chamada gasta cota da assinatura, então qualquer mudança
+sobe o `PROMPT_VERSION`. Os prompts dos trechos e da tradução são do app, revisados pelo Leo antes
+de qualquer chamada real.
 
 **A chave do cache do LLM.** Ela inclui o modelo, a versão do prompt, o prompt de sistema e o
 schema, e não só o conteúdo, porque editar o sistema ou o schema devolveria em silêncio uma
 resposta antiga. As partes são separadas por um byte NUL, para `("a", "b")` e `("ab", "")` não
-colidirem. É identidade, não segredo.
+colidirem. É identidade, não segredo. Uma resposta só entra no cache depois de validada, então uma
+resposta fora do formato nunca é devolvida de novo.
 
 **O LLM é chamado pela CLI `claude`.** A autenticação é o OAuth da assinatura, que só a CLI resolve.
-O modelo é sempre passado por quem chama, na versão fixada para a reprodutibilidade (hoje o Haiku
-4.5). A CLI roda fora do repositório (`EDMKT_KC_CWD`), para o CLAUDE.md do projeto não entrar no
-contexto e no custo de cada chamada.
+O modelo é sempre passado por quem chama, o Claude Sonnet 5.5 (`claude-sonnet-5-5`), um modelo
+forte, a adaptação mais próxima do GPT-4o do paper (o LLM, na linha 9 do KCGen-KT no
+`DEVELOPMENT.md`). Ele não tem versão datada, então o job
+grava o modelo e a versão do prompt de cada extração. Os prompts do Duan pedem o JSON no próprio
+texto, então a chamada vai sem schema, e a resposta é lida do texto e validada pelo app. A CLI roda
+fora do repositório (`EDMKT_KC_CWD`), para o CLAUDE.md do projeto não entrar no contexto e no custo
+de cada chamada.
 
-**Retry só para erro transitório.** Rede, 429, 5xx e timeout são refeitos com espera. Conteúdo vazio
-ou inválido sobe na hora, porque refazer não muda um conteúdo já gerado e gastaria cota.
+**Retry para erro transitório e para resposta inválida.** Rede, 429, 5xx e timeout são refeitos com
+espera, e uma resposta vazia, que não é JSON ou que está fora do formato pedido também, até 3 vezes
+ao todo. A temperatura não é fixável no modelo nem na CLI, então uma chamada nova pode vir certa.
+Depois da terceira, a extração para com erro.
 
-**As chamadas de um estágio rodam em paralelo, até 4 de cada vez.** As chamadas do `generate` (uma
-por problema) e as da nomeação (uma por grupo) não dependem umas das outras, e em sequência a
-extração de 10 problemas levava uns 8 minutos. O paralelismo fica só no gerador da `api/`: a
-amostragem das soluções continua em sequência e na ordem anterior ao paralelismo, os prompts são os
-mesmos, e os resultados são juntados por problema e por grupo, então a ordem em que as chamadas
-terminam não muda nada do que o KCGen-KT vê. O limite de 4 é para não esbarrar no limite de uso da
-assinatura. O cache de respostas grava o arquivo inteiro a cada resposta e por isso tem uma trava, e
-o progresso do job é gravado pela thread que disparou as chamadas, então a conexão SQLite do worker
-nunca é usada por duas threads ao mesmo tempo.
+**As chamadas de um estágio rodam em paralelo, até 4 de cada vez.** As chamadas do `generate` e do
+`evidence` (uma por problema) e as da nomeação (uma por grupo) não dependem umas das outras, e em
+sequência a extração de 10 problemas levava uns 8 minutos. O paralelismo fica só no gerador da
+`api/`, e a amostragem das soluções continua em sequência e na ordem anterior ao paralelismo, os
+prompts são os mesmos, e os resultados são juntados por problema e por grupo, então a ordem em que
+as chamadas terminam não muda nada do que o KCGen-KT vê. O limite de 4 é para não esbarrar no limite
+de uso da assinatura. O cache de respostas grava o arquivo inteiro a cada resposta e por isso tem
+uma trava, e o progresso do job é gravado pela thread que disparou as chamadas, então a conexão
+SQLite do worker nunca é usada por duas threads ao mesmo tempo.
 
 **A CLI roda sem ferramenta nenhuma (`--tools ""`).** Medido no container, cada chamada custa uns 5
 segundos fixos para a CLI subir, e nenhuma flag reduz isso. Sem ferramentas, somem do contexto as
@@ -148,15 +179,35 @@ não mudam o tempo hoje, mas impedem que um servidor MCP do host suba a cada cha
 se acumulem em disco. O cache não inclui as flags na chave, porque elas não mudam o prompt.
 
 **O job informa quantos itens do estágio já terminaram.** `progress_done` e `progress_total`
-mostram o "7 de 10" do diálogo, em problemas no `generate` e em grupos na nomeação. Um estágio novo
-começa sem progresso, para a tela nunca mostrar a contagem do anterior.
+mostram o "7 de 10" do diálogo, em problemas no `generate` e no `evidence` e em grupos na nomeação.
+Um estágio novo começa sem progresso, para a tela nunca mostrar a contagem do anterior. Os estágios
+são cinco, `generate`, `cluster`, `qmatrix`, `evidence` e `translate`, e a tela tem um texto para
+cada um, porque um estágio que ela não conhece deixa o diálogo parado no primeiro até o fim.
 
-**A Q-matrix não inventa vínculos.** `build_qmatrix`, no `ml/`, bate célula a célula com o
-`qmatrix_A439.csv` do TCC 1. Um problema sem KC fica com a linha zerada, e quem recusa isso é a
-validação da geração. Na aplicação, cada célula 1 vira um `ProblemKnowledgeComponent`.
+**A Q-matrix não inventa vínculos.** `build_qmatrix`, no `ml/`, bate célula a célula com a Q-matrix
+da extração de referência da CSEDM, no teste das partes sem LLM do KCGen-KT. Um problema sem KC fica
+com a linha zerada, e quem recusa isso é a validação da geração. Na aplicação, cada célula 1 vira um
+`ProblemKnowledgeComponent`.
 
 **A geração termina numa transação só.** O `mark_done()` do job roda junto com a mudança do
-assignment para `kc_draft`, e uma falha desfaz os dois.
+assignment para `kc_draft` e com a gravação dos conceitos, das soluções amostradas, dos KCs
+candidatos e dos trechos, e uma falha desfaz tudo.
+
+**O conceito guarda o nome gerado e o nome mostrado.** O nome gerado, em inglês e em minúsculas, é o
+resultado do método e fica como registro. O nome mostrado, em português, sai de uma tradução depois
+da extração, e é o que o professor lê e renomeia. Renomear muda só o nome mostrado.
+
+**A extração grava as soluções amostradas, os KCs candidatos e os trechos.** A solução amostrada
+aponta para a execução escolhida, que já tem o aluno, o horário e o código, e para o problema, que
+leva ao exercício e à turma, então nada disso é repetido. O KC candidato guarda a justificativa de
+cada KC, em inglês e em português, e o conceito em que caiu. O trecho aponta para a solução
+amostrada. É o que a origem do conceito mostra e o que os testes de regressão da extração usam.
+
+**O enunciado é opcional e vem de um arquivo do pacote.** O ProgSnap2 não traz enunciado, e o da
+CSEDM está numa planilha oficial à parte. O upload aceita um arquivo só, então o arquivo de
+enunciados vai dentro do zip, e a importação o acha pelo cabeçalho da planilha oficial
+(`AssignmentID`, `ProblemID` e `Requirement`), porque o nome dele não é padrão. Sem ele, a
+importação e a extração rodam como antes, e o prompt sai sem as duas linhas do enunciado.
 
 ## Importação
 
@@ -218,10 +269,11 @@ fica só no `ml/` e nas etapas do KCGen-KT.
 aceito em silêncio. Com ela, viraria um erro do banco (500). A regra recusa o pedido antes, com a
 lista dos problemas que não existem.
 
-**A descrição de cada problema vem do LLM.** O CSEDM não traz enunciado, e na geração de KCs o LLM
-deduz uma descrição a partir das soluções corretas. Ela é gravada junto com os KCs. Os problemas do
-A439 estão sem descrição, porque os KCs dele foram gerados antes da tabela existir, e o cache do LLM
-não guarda o `problem_id` de cada resposta. Só uma nova geração, que gasta cota, preenche.
+**A descrição deduzida pelo LLM deixa de ser gravada.** Ela era uma etapa do TCC 1 que o paper não
+tem, e o enunciado, quando o pacote o traz, toma o lugar dela (a descrição e o enunciado, nas linhas
+11 e 14 do KCGen-KT no `DEVELOPMENT.md`).
+A coluna `description` e as rotas que a devolvem continuam até a tela Conceitos, que as troca pelo
+enunciado. As descrições já gravadas das turmas antigas ficam como estão.
 
 ## Remoção
 
@@ -424,7 +476,7 @@ o conceito, e sem restaurar.
 **O diálogo de extração não fecha enquanto o job roda.** Como reencontrar uma extração em andamento
 ficou fora do escopo, fechar perderia o acompanhamento. O Esc é bloqueado, o `Dialog` reabre se o
 navegador o fechar mesmo assim (o Chrome fecha no segundo Esc) e a aba pede confirmação antes de
-sair. A tela mostra os três estágios que o job informa, com a contagem do estágio atual.
+sair. A tela mostra os estágios que o job informa, com a contagem do estágio atual.
 
 **A barra de ação e o `OutcomeMessage` subiram para `components/`.** Uma funcionalidade não importa
 os componentes de outra, e a importação e os conceitos precisavam dos dois. Na versão 5 do design
@@ -606,19 +658,21 @@ desenho de alguns caracteres. Capturas feitas no nitro saem nela.
 de cada problema e a lista de conceitos, eram a mesma informação desenhada duas vezes, numa página
 longa de etiquetas com xis. A matriz é a Q-matrix da literatura, cabe numa tela com 15 conceitos e
 10 problemas e mostra nas margens a recorrência de cada conceito e quantos conceitos cada problema
-tem. No código ela continua sendo os vínculos problema × conceito. As descrições dos problemas ficam
-numa segunda aba, como as abas da Análise.
+tem. No código ela continua sendo os vínculos problema × conceito. A lista de problemas, com o
+enunciado quando o pacote o traz, fica numa segunda aba, como as abas da Análise.
 
 **Mesclar conceitos saiu.** Com dois conceitos duplicados, o professor remove um e o outro fica, e
 isso é mais simples de entender do que um diálogo de mescla.
 
-**A origem do conceito mostra só as soluções que o modelo de linguagem leu.** O professor precisa
-ver de onde o conceito veio para validá-lo, e a evidência é o código. As frases candidatas do modelo
-foram desenhadas e saíram, porque repetiam o nome do conceito com outras palavras. Destacar as linhas
-que "influenciaram" o conceito ficou de fora, porque não há como medir influência num modelo acessado
-pela CLI. Pedir as linhas numa chamada separada daria uma explicação feita depois, e mudar o prompt
-da extração quebraria os prompts congelados do KCGen-KT. Para o diálogo existir, a extração passa a
-gravar quais soluções amostrou.
+**A origem do conceito mostra as soluções que o modelo de linguagem leu e onde o conceito aparece
+nelas.** O professor precisa ver de onde o conceito veio para validá-lo, e a evidência é o código.
+Não há como medir a influência de cada linha num modelo acessado pela CLI, então os trechos vêm de
+uma chamada separada, depois do agrupamento e na mesma extração, com o prompt do Duan intacto, e a
+tela os mostra como o lugar onde o conceito aparece, e não como a causa dele (O que o app acrescenta
+ao KCGen-KT, no `DEVELOPMENT.md`). As frases candidatas do modelo, as justificativas de cada KC,
+foram desenhadas antes e saíram, porque repetiam o nome do conceito com outras palavras. Elas passam
+a ser guardadas e traduzidas, e a tela Conceitos decide como mostrá-las, tendo em conta que o
+desenho anterior as achou repetitivas.
 
 **A fonte mono volta, só em bloco de código.** O sistema tem duas fontes com papéis fixos, e o código
 é a exceção, porque a indentação e o alinhamento dependem da largura fixa. Fora do bloco de código,
@@ -631,11 +685,10 @@ problema em vermelho, e o professor não tinha como saber qual dos dois estava v
 vertical foi testado e pesou demais. A vírgula lê como frase.
 
 **O que o modelo de linguagem escreveu leva as estrelas, e não o texto em azul.** O nome do conceito
-e a descrição do problema vêm do modelo, porque o ProgSnap2 não traz enunciado. Pintar o texto de
-azul encheria as telas, porque o nome do conceito aparece em toda parte, e cansaria a leitura em
-tabela densa. O marcador no fim do texto diz a origem sem esses custos. Quando o professor renomeia
-um conceito, o nome passa a ser dele e o marcador some, o que pede o app registrar se o nome foi
-editado.
+vem do modelo. Pintar o texto de azul encheria as telas, porque o nome do conceito aparece em toda
+parte, e cansaria a leitura em tabela densa. O marcador no fim do texto diz a origem sem esses
+custos. Quando o professor renomeia um conceito, o nome passa a ser dele e o marcador some, o que
+pede o app registrar se o nome foi editado.
 
 **Aprovar conceitos fica na faixa das abas.** A barra fixa no rodapé era o único lugar do app com uma
 ação presa à janela. Ao lado de Novo conceito, na aba da matriz, o Aprovar fica junto do que ele

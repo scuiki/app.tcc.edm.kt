@@ -77,14 +77,17 @@ e a amostragem das soluções, que conta as tentativas pelas execuções anterio
 ver todo aluno acertando de primeira. O LLM recebe uma solução por problema em vez de até cinco
 diversas. O TCC 1 (`load_correct_samples`, notebook `03b`) contava com todas as execuções, e
 atribuía isso ao Duan. A correção é passar à amostragem as execuções do problema. Junto com ela, a
-extração passa a gravar as soluções amostradas (`SampledSolution`, pelo `code_snapshot_id`), e uma
-rota nova devolve as soluções de cada problema para o diálogo da origem do conceito. Depende disso a
-tela Conceitos. Em aberto: a nova extração gasta cota da assinatura, porque o prompt muda. O
-Assignment 439 está treinado com os conceitos antigos e não tem descrição dos problemas, e extraí-lo
-de novo pede descongelar os conceitos e re-treinar. Falta também um teste que garanta cinco soluções
-quando há diversidade. Revisto em 30/09/2026 (seção 9), as faixas de tentativas não são do Duan, que
-agrupa os embeddings CodeBERT das soluções corretas e amostra uma por grupo, e o prompt do app não é
-o do paper. O B1 passa a depender da etapa de fidelidade do KCGen-KT.
+extração passa a gravar as soluções amostradas (`SampledSolution`, pela execução escolhida,
+`submission_id`), e uma rota nova devolve as soluções de cada problema para o diálogo da origem do
+conceito. Depende disso a tela Conceitos. Em aberto: a nova extração gasta cota da assinatura,
+porque o prompt muda. O Assignment 439 está treinado com os conceitos antigos e não tem descrição
+dos problemas, e extraí-lo de novo pede descongelar os conceitos e re-treinar. Falta também um teste
+que garanta cinco soluções quando há diversidade. Revisto em 30/09/2026 (seção 9), as faixas de
+tentativas não são do Duan, que agrupa os embeddings CodeBERT das soluções corretas e amostra uma
+por grupo, e o prompt do app não é o do paper. O B1 passa a depender da etapa de fidelidade do
+KCGen-KT. Em 04/10/2026, o B1 foi substituído pelo `KCGEN_KT_PLAN.md`, que leva ao código as
+decisões do KCGen-KT do `DEVELOPMENT.md`, inclusive as soluções amostradas gravadas na extração. A
+rota e o diálogo da origem do conceito ficam com a tela Conceitos.
 
 **B2. Conceito editado pelo professor.**
 O marcador `GeneratedByLLM` some do nome do conceito quando o professor o renomeia, e um conceito
@@ -175,9 +178,9 @@ A439.
 
 ## 6. Pendências conhecidas
 
-- **A amostragem do KCGen-KT** (B1), que manda uma solução por problema ao LLM em vez de cinco.
-- **O Assignment 439 sem descrição dos problemas.** Os conceitos dele foram gerados antes da tabela
-  de descrições existir. A tela precisa do estado "sem descrição" até uma nova extração.
+- **A amostragem do KCGen-KT** (B1), que manda uma solução por problema ao LLM em vez de cinco,
+  corrigida pelo `KCGEN_KT_PLAN.md`. A descrição deduzida pelo LLM deixa de ser gravada, e a tela
+  Conceitos troca a descrição pelo enunciado, que é opcional.
 - **O contrato do import-linter quebrado.** Conferido em 30/09/2026, o teste
   `sqlite_kc_generation_job_repository_test` importa as infraestruturas de `assignments` e de
   `classrooms`, o que o contrato de `knowledge_components` não permite. O comando que funciona é o
@@ -213,11 +216,15 @@ A439.
   Verificação do `ARCHITECTURE.md`.
 - **Conferir sem escrever.** A tela real é conferida pelo Chrome sem janela, com o protocolo de
   depuração, sem clicar em nada que grave. Extração e treino gastam cota ou congelam conceitos, e só
-  rodam com o Leo.
+  rodam com o Leo, salvo as chamadas do `KCGEN_KT_PLAN.md`, que o Leo autorizou (item abaixo).
 - **O glossário antes do código.** Um nome novo entra no `GLOSSARY.md` antes de entrar no código, e
   os nomes da seção 1 já estão lá.
 - **Comentários só com `#` ou `//`**, de uma linha, sem travessão nem dois-pontos, verificados por
   `src/api/code_comments_test.py`. O porquê longo vai para o `DECISIONS.md`.
+- **O KCGen-KT segue as decisões do `DEVELOPMENT.md`**, que estão sendo levadas ao código pelo
+  `KCGEN_KT_PLAN.md`, aprovado em 04/10/2026, e o código pode divergir delas até o plano terminar.
+  A extração de referência dele gasta cota, e o Leo autorizou, em 04/10/2026, que as chamadas desse
+  plano rodem sem ele.
 - **O Code-DKT segue as decisões do `DEVELOPMENT.md`.** O código as cumpre desde o fim do
   `CODE_DKT_PLAN.md`. Uma mudança no método só entra com uma decisão registrada no `DEVELOPMENT.md`.
   O teste de regressão detecta mudança de comportamento do código, com as dez seeds do A439 numa
@@ -244,9 +251,10 @@ A discussão das perguntas da seção 7 fechou estes pontos.
 A ordem nova é esta.
 
 1. O Code-DKT, pelo `CODE_DKT_PLAN.md`, decidido e aprovado em 01/10/2026, e já no código.
-2. O KCGen-KT, com a mesma revisão do paper (Duan et al., 2025, e a versão publicada no ACL 2026), a
-   seguir. Ele substitui a correção do B1.
-3. A reimportação da CSEDM, a extração dos conceitos e o treino, uma vez só, com os dois métodos
-   prontos.
+2. O KCGen-KT, revisto contra o paper (Duan et al., 2025, e a versão publicada no ACL 2026) em 02
+   e 03/10/2026, e levado ao código pelo `KCGEN_KT_PLAN.md`, aprovado em 04/10/2026. Ele substitui
+   a correção do B1.
+3. A reimportação da CSEDM e a extração dos conceitos, na etapa 7 do `KCGEN_KT_PLAN.md`, e o
+   treino, uma vez só, com os dois métodos prontos.
 4. A base (F1, a migração dos componentes que já existem e F3) e depois as telas, uma por vez
    (Conceitos, Análise, Turma, Importar dados e Turmas), cada uma com o seu backend.
