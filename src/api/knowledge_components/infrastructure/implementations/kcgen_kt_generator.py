@@ -6,6 +6,7 @@ from functools import partial
 from pathlib import Path
 from typing import Callable, Hashable, TypeVar
 
+import numpy as np
 import pandas as pd
 
 from api.knowledge_components.domain.interfaces.knowledge_component_generator import (
@@ -16,7 +17,7 @@ from api.knowledge_components.infrastructure.implementations.llm_response_cache 
 )
 from api.shared.infrastructure.filesystem import data_layout
 from ml.kc_generation.candidate_generation import generate_candidate_kcs
-from ml.kc_generation.embedding_models import SBERT_MODEL, SBERT_REVISION
+from ml.kc_generation.embedding_models import SBERT_MODEL, SBERT_REVISION, embed_solutions
 from ml.kc_generation.group_naming import name_kc_group
 from ml.kc_generation.kc_grouping import (
     CANDIDATE_GROUP_COUNTS,
@@ -57,12 +58,15 @@ def run_in_parallel(
 
 
 class KcGenKtGenerator:
-    def __init__(self, llm: LLMClient) -> None:
+    def __init__(
+        self, llm: LLMClient, embed: Callable[[list[str]], np.ndarray] | None = None
+    ) -> None:
         self._llm = llm  # o cliente real (ou um falso nos testes); o cache é montado por job
+        self._embed = embed or embed_solutions  # o CodeBERT, ou vetores falsos nos testes
 
     def generate(
         self,
-        cleaned_submissions: pd.DataFrame,
+        correct_runs: pd.DataFrame,
         classroom_id: int,
         assignment_id: int,
         on_stage: Callable[[str], None],
@@ -70,19 +74,19 @@ class KcGenKtGenerator:
     ) -> GeneratedKnowledgeComponents:
         cache_dir = data_layout.llm_cache_dir(classroom_id, assignment_id)
 
-        # O KCGen-KT vê só código correto, mostrar código errado ao LLM ensinaria o KC errado.
-        correct = cleaned_submissions[cleaned_submissions["is_correct"] == 1]
         # Ordenado como texto de propósito ("10" antes de "2"), fiel ao TCC 1, não "corrigir".
-        problem_ids = sorted(str(p) for p in correct["problem_id"].dropna().unique())
+        problem_ids = sorted(str(p) for p in correct_runs["problem_id"].dropna().unique())
 
         # Etapas 1-2 por problema, amostra diversa e KCs candidatos pelo LLM, sem KC é erro duro.
         on_stage("generate")
         generate_llm = CachedLLMClient(self._llm, cache_dir, stage="generate")
         # A amostragem roda antes e em ordem, só as chamadas ao LLM vão para o paralelo
         generate_tasks = {}
+        samples_by_problem: dict[str, list[dict]] = {}
         for problem_id in problem_ids:
-            solutions = correct[correct["problem_id"].astype(str) == problem_id]
-            samples = select_sample_solutions(solutions, n=5)
+            runs = correct_runs[correct_runs["problem_id"].astype(str) == problem_id]
+            samples = select_sample_solutions(runs, self._embed)
+            samples_by_problem[problem_id] = samples
             generate_tasks[problem_id] = partial(
                 generate_candidate_kcs, int(problem_id), [s["code"] for s in samples], generate_llm
             )
@@ -124,6 +128,10 @@ class KcGenKtGenerator:
                 int(p): candidate_kcs_by_problem[p]["problem_description"]
                 for p in problem_ids
                 if candidate_kcs_by_problem[p].get("problem_description")
+            },
+            sampled_solutions={
+                int(p): [int(s["submission_id"]) for s in samples_by_problem[p]]
+                for p in problem_ids
             },
         )
 

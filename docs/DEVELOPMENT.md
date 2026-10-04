@@ -623,7 +623,10 @@ no limite do tokenizador, de 512 tokens, tira a média dos vetores da última ca
 máscara de atenção, que ignora o padding, e normaliza o resultado para norma 1. A alternativa com o
 vetor do primeiro token também está comentada (`KC_gen.py:444-445`). Pelo critério 2, o app faz como
 o trecho comentado, e a escolha fica registrada como do app. Uma solução maior que 512 tokens tem o
-fim cortado.
+fim cortado. O trecho passa todas as soluções do problema num lote só, no processador
+(`KC_gen.py:436`), e o app as passa em lotes de 32, na GPU. Os dois mudam o arredondamento das
+contas, e os vetores variam pouco com isso. Em 04/10/2026, em quatro problemas do A439 (1, 13, 233 e
+236), a transcrição do trecho e o app deram vetores que diferem em até 1,3e-5, e os mesmos grupos.
 
 **4. Algoritmo do agrupamento.** O paper diz só "a clustering algorithm" (p. 33407 (PDF 3)). O
 repositório usa o `AgglomerativeClustering` do scikit-learn com distância cosseno e ligação média,

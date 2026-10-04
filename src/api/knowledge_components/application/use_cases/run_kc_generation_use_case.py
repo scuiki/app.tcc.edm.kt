@@ -18,6 +18,10 @@ from api.knowledge_components.domain.interfaces.knowledge_component_repository i
 from api.knowledge_components.domain.entities.problem_knowledge_component_entity import (
     ProblemKnowledgeComponent,
 )
+from api.knowledge_components.domain.entities.sampled_solution_entity import SampledSolution
+from api.knowledge_components.domain.interfaces.sampled_solution_repository import (
+    ISampledSolutionRepository,
+)
 from api.knowledge_components.domain.interfaces.problem_knowledge_component_repository import (
     IProblemKnowledgeComponentRepository,
 )
@@ -36,6 +40,7 @@ class RunKnowledgeComponentGenerationUseCase:
         problem_kcs: IProblemKnowledgeComponentRepository,
         jobs: IKnowledgeComponentGenerationJobRepository,
         unit_of_work: IUnitOfWork,
+        sampled_solutions: ISampledSolutionRepository,
     ) -> None:
         self._assignments = assignments
         self._problems = problems
@@ -45,6 +50,7 @@ class RunKnowledgeComponentGenerationUseCase:
         self._problem_kcs = problem_kcs
         self._jobs = jobs
         self._unit_of_work = unit_of_work
+        self._sampled_solutions = sampled_solutions
 
     def execute(self, assignment_id: int, job_id: int) -> dict:
         assignment = self._assignments.get(assignment_id)
@@ -53,7 +59,7 @@ class RunKnowledgeComponentGenerationUseCase:
 
         self._jobs.mark_running(job_id, started_at=utc_now_iso())
         generated = self._generator.generate(
-            self._submissions.list_by_assignment(assignment_id),
+            self._submissions.list_correct_runs(assignment_id),
             assignment.classroom_id,
             assignment_id,
             on_stage=lambda stage: self._jobs.update_stage(job_id, stage, utc_now_iso()),
@@ -87,6 +93,13 @@ class RunKnowledgeComponentGenerationUseCase:
                         )
                     )
             self._problems.set_descriptions(assignment_id, generated.problem_descriptions)
+            self._sampled_solutions.add_many(
+                [
+                    SampledSolution(assignment_id, problem_id, position, submission_id)
+                    for problem_id, submission_ids in generated.sampled_solutions.items()
+                    for position, submission_id in enumerate(submission_ids, start=1)
+                ]
+            )
             # Status do assignment e job na mesma transação, evita kc_draft com job marcado failed.
             self._assignments.set_status(assignment_id, AssignmentStatus.KC_DRAFT)
             self._jobs.mark_done(job_id, updated_at=utc_now_iso())

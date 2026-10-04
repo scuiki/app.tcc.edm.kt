@@ -1,64 +1,43 @@
-# Etapa 1 do KCGen-KT, escolhe até 5 soluções corretas e diversas por problema; idêntico ao TCC 1.
+# Etapa 1 do KCGen-KT, escolhe até 5 soluções corretas de um problema, uma por grupo do CodeBERT.
 
 from __future__ import annotations
 
 import random
+from typing import Callable
 
+import numpy as np
 import pandas as pd
+from sklearn.cluster import AgglomerativeClustering
 
 SEED = 42
 
-
-def _attempt_bucket(total_attempts: int) -> int:
-    # A faixa (1 a 5) do número de tentativas até acertar (Duan et al., 2025).
-    if total_attempts <= 1:
-        return 1
-    if total_attempts <= 3:
-        return 2
-    if total_attempts <= 6:
-        return 3
-    if total_attempts <= 10:
-        return 4
-    return 5
-
-
-def _first_correct_per_student(problem_df: pd.DataFrame) -> list[dict]:
-    # 1ª submissão correta de cada aluno; sem nenhuma submissão correta, o aluno fica de fora.
-    events = problem_df.sort_values("submitted_at", kind="stable")
-    samples: list[dict] = []
-    for _student_id, student_events in events.groupby("student_id", sort=False):
-        student_events = student_events.sort_values("submitted_at", kind="stable")
-        correct_mask = student_events["is_correct"] == 1
-        if not correct_mask.any():
-            continue
-        first_correct_pos = int(correct_mask.values.argmax())  # tentativas antes da 1ª correta
-        first_correct = student_events.iloc[first_correct_pos]
-        samples.append({
-            "student_id": str(_student_id),
-            "code_snapshot_id": str(first_correct["code_snapshot_id"]),
-            "total_attempts": first_correct_pos + 1,
-            "code": str(first_correct["code"]),
-        })
-    return samples
+# As 5 soluções por problema do experimento principal do paper
+SOLUTIONS_PER_PROBLEM = 5
 
 
 def select_sample_solutions(
-    problem_df: pd.DataFrame, n: int = 5, rng: random.Random | None = None
+    correct_runs: pd.DataFrame,
+    embed: Callable[[list[str]], np.ndarray],
+    n: int = SOLUTIONS_PER_PROBLEM,
 ) -> list[dict]:
-    # Até n soluções corretas, uma por faixa de tentativas (1..5); amostragem semeada, reproduzível.
-    if rng is None:
-        rng = random.Random(SEED)
-
-    correct_events = _first_correct_per_student(problem_df)
-
-    buckets: dict[int, list[dict]] = {1: [], 2: [], 3: [], 4: [], 5: []}
-    for event in correct_events:
-        buckets[_attempt_bucket(int(event["total_attempts"]))].append(event)
-
-    sampled: list[dict] = []
-    for b in (1, 2, 3, 4, 5):
-        if len(sampled) >= n:
-            break
-        if buckets[b]:
-            sampled.append(rng.choice(buckets[b]))
-    return sampled
+    # As execuções corretas do problema, em ordem de tempo, viram até n grupos, e sai uma de cada
+    ordered = correct_runs.sort_values(["submitted_at", "submission_id"])
+    runs = ordered.to_dict("records")
+    distinct_codes = list(dict.fromkeys(str(run["code"]) for run in runs))
+    n_groups = min(n, len(distinct_codes))
+    if n_groups == 0:
+        return []
+    # Um gerador novo por problema, para a amostra de um problema não depender dos outros
+    rng = random.Random(SEED)
+    if n_groups == 1:
+        return [rng.choice(runs)]
+    # Cada código distinto passa uma vez pelo CodeBERT, então cópias iguais ficam no mesmo grupo
+    vector_of = dict(zip(distinct_codes, embed(distinct_codes)))
+    vectors = np.stack([vector_of[str(run["code"])] for run in runs])
+    labels = AgglomerativeClustering(
+        n_clusters=n_groups, metric="cosine", linkage="average"
+    ).fit_predict(vectors)
+    return [
+        rng.choice([run for run, label in zip(runs, labels) if label == group])
+        for group in sorted(set(labels))
+    ]

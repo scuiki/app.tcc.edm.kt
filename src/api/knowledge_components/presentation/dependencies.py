@@ -62,6 +62,9 @@ from api.knowledge_components.infrastructure.repositories.sqlite_kc_generation_j
 from api.knowledge_components.infrastructure.repositories.sqlite_knowledge_component_repository import (
     SqliteKnowledgeComponentRepository,
 )
+from api.knowledge_components.infrastructure.repositories.sqlite_sampled_solution_repository import (
+    SqliteSampledSolutionRepository,
+)
 from api.knowledge_components.infrastructure.repositories.sqlite_problem_knowledge_component_repository import (
     SqliteProblemKnowledgeComponentRepository,
 )
@@ -180,16 +183,19 @@ def approve_knowledge_components_use_case(
 
 
 def build_run_kc_generation_use_case(
-    conn: sqlite3.Connection, llm=None
+    conn: sqlite3.Connection, llm=None, embed=None
 ) -> RunKnowledgeComponentGenerationUseCase:
-    # `llm` troca o cliente real do `claude`, os testes passam um falso.
+    # `llm` troca o cliente real do `claude` e `embed` o CodeBERT, os testes passam falsos.
     return RunKnowledgeComponentGenerationUseCase(
         assignments=SqliteAssignmentRepository(conn),
         problems=SqliteProblemRepository(conn),
         submissions=SqliteSubmissionRepository(conn),
-        generator=KcGenKtGenerator(llm or ClaudeCliLLMClient(model=KC_GENERATION_MODEL_ID)),
+        generator=KcGenKtGenerator(
+            llm or ClaudeCliLLMClient(model=KC_GENERATION_MODEL_ID), embed=embed
+        ),
         knowledge_components=SqliteKnowledgeComponentRepository(conn),
         problem_kcs=SqliteProblemKnowledgeComponentRepository(conn),
         jobs=SqliteKnowledgeComponentGenerationJobRepository(conn),
         unit_of_work=SqliteUnitOfWork(conn),
+        sampled_solutions=SqliteSampledSolutionRepository(conn),
     )

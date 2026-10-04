@@ -22,11 +22,15 @@ from api.knowledge_components.domain.entities.kc_generation_job_entity import (
 from api.knowledge_components.infrastructure.repositories.sqlite_kc_generation_job_repository import (
     SqliteKnowledgeComponentGenerationJobRepository,
 )
+from api.knowledge_components.infrastructure.repositories.sqlite_sampled_solution_repository import (
+    SqliteSampledSolutionRepository,
+)
 from api.knowledge_components.presentation.workers import kc_generation_worker
 from api.knowledge_components.presentation.workers.kc_generation_worker import run_kc_generation
 from api.shared.domain.value_objects.job_status import JobStatus
 from api.shared.infrastructure import settings
 from tests.fixtures.job_lock import lock_holder_pid
+from tests.fixtures.knowledge_components import fake_embed
 from tests.fixtures.problems import add_problems
 
 
@@ -120,7 +124,7 @@ def test_lock_busy_marks_failed_and_does_not_persist(tmp_db, data_root):
         (os.getpid(),),
     )
 
-    run_kc_generation(conn, assignment_id, job_id, llm=_llm_ok())
+    run_kc_generation(conn, assignment_id, job_id, llm=_llm_ok(), embed=fake_embed)
 
     job = _jobs(conn).get(job_id)
     assert job.status == "failed"
@@ -135,7 +139,7 @@ def test_content_hard_fail_marks_failed_nothing_persisted(tmp_db, data_root):
 
     llm = _FakeLLM(lambda: {"kcs": []})
 
-    run_kc_generation(conn, assignment_id, job_id, llm=llm)
+    run_kc_generation(conn, assignment_id, job_id, llm=llm, embed=fake_embed)
 
     job = _jobs(conn).get(job_id)
     assert job.status == "failed"
@@ -157,7 +161,7 @@ def test_small_dataset_skips_clustering_no_crash(tmp_db, data_root):
 
     llm = _FakeLLM(lambda: {"kcs": [{"name": next(names), "reasoning": "x"}]})
 
-    run_kc_generation(conn, assignment_id, job_id, llm=llm)
+    run_kc_generation(conn, assignment_id, job_id, llm=llm, embed=fake_embed)
 
     job = _jobs(conn).get(job_id)
     assert job.status == "done"  # não falhou (sem crash de clustering)
@@ -179,7 +183,7 @@ def test_mark_done_failure_is_atomic_with_persist(tmp_db, data_root, monkeypatch
 
     monkeypatch.setattr(SqliteKnowledgeComponentGenerationJobRepository, "mark_done", _boom)
 
-    run_kc_generation(conn, assignment_id, job_id, llm=llm)
+    run_kc_generation(conn, assignment_id, job_id, llm=llm, embed=fake_embed)
 
     asg = SqliteAssignmentRepository(conn).get(assignment_id)
     job = _jobs(conn).get(job_id)
@@ -187,7 +191,26 @@ def test_mark_done_failure_is_atomic_with_persist(tmp_db, data_root, monkeypatch
     assert not (asg.status == "kc_draft" and job.status == "failed")
     assert asg.status == "ready_for_kc_generation"
     assert conn.execute("SELECT COUNT(*) FROM kc;").fetchone()[0] == 0
+    assert conn.execute("SELECT COUNT(*) FROM sampled_solution;").fetchone()[0] == 0
     assert lock_holder_pid(conn) is None
+
+
+def test_a_failure_saving_the_sampled_solutions_saves_nothing(tmp_db, data_root, monkeypatch):
+    # As soluções amostradas entram na mesma transação dos KCs, e uma falha nelas desfaz tudo
+    conn = tmp_db
+    assignment_id, job_id = _seed_kc_ready(conn, data_root)
+
+    def _boom(self, *_a, **_k):
+        raise RuntimeError("disco cheio")
+
+    monkeypatch.setattr(SqliteSampledSolutionRepository, "add_many", _boom)
+
+    run_kc_generation(conn, assignment_id, job_id, llm=_llm_ok(), embed=fake_embed)
+
+    assert _jobs(conn).get(job_id).status == "failed"
+    assert SqliteAssignmentRepository(conn).get(assignment_id).status == "ready_for_kc_generation"
+    assert conn.execute("SELECT COUNT(*) FROM kc;").fetchone()[0] == 0
+    assert conn.execute("SELECT COUNT(*) FROM problem_kc;").fetchone()[0] == 0
 
 
 def test_success_transitions_job_and_acquires_lock(tmp_db, data_root):
@@ -196,7 +219,7 @@ def test_success_transitions_job_and_acquires_lock(tmp_db, data_root):
     assignment_id, job_id = _seed_kc_ready(conn, data_root)
     llm = _llm_ok()
 
-    run_kc_generation(conn, assignment_id, job_id, llm=llm)
+    run_kc_generation(conn, assignment_id, job_id, llm=llm, embed=fake_embed)
 
     job = _jobs(conn).get(job_id)
     assert job.status == "done"
@@ -216,7 +239,7 @@ def test_the_description_the_llm_deduces_is_saved_on_each_problem(tmp_db, data_r
     }
     llm = _FakeLLM(lambda: answer)
 
-    run_kc_generation(conn, assignment_id, job_id, llm=llm)
+    run_kc_generation(conn, assignment_id, job_id, llm=llm, embed=fake_embed)
 
     descriptions = conn.execute(
         "SELECT DISTINCT description FROM problem WHERE assignment_id = ?;", (assignment_id,)
@@ -251,3 +274,22 @@ def test_main_resolves_paths_from_env_and_runs_pipeline(tmp_path, monkeypatch):
     assert calls == [(7, 3)]
     assert settings.DB_PATH == str(db_path)
     assert settings.DATA_ROOT == tmp_path / "data"
+
+
+def test_the_runs_the_llm_read_are_saved_for_each_problem(tmp_db, data_root):
+    conn = tmp_db
+    assignment_id, job_id = _seed_kc_ready(conn, data_root)
+
+    run_kc_generation(conn, assignment_id, job_id, llm=_llm_ok(), embed=fake_embed)
+
+    rows = conn.execute(
+        "SELECT ss.problem_id, ss.position, s.problem_id AS run_problem, s.is_correct "
+        "FROM sampled_solution ss JOIN submission s ON s.id = ss.submission_id "
+        "WHERE ss.assignment_id = ? ORDER BY ss.problem_id, ss.position;",
+        (assignment_id,),
+    ).fetchall()
+    # Três alunos com códigos distintos em cada problema, então três soluções por problema
+    assert [(r["problem_id"], r["position"]) for r in rows] == [
+        (problem, position) for problem in (1, 2, 3) for position in (1, 2, 3)
+    ]
+    assert all(r["run_problem"] == r["problem_id"] and r["is_correct"] == 1 for r in rows)

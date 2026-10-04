@@ -11,6 +11,16 @@ from api.classroom_import.domain.services.submission_cleaning import CLEANED_COL
 # Colunas gravadas na ordem do INSERT; progsnap_assignment_id vem do assignment via JOIN.
 _STORED_COLUMNS = [c for c in CLEANED_COLUMNS if c != "progsnap_assignment_id"]
 
+# O que a extração de KCs lê das execuções corretas, com o id que a solução amostrada guarda
+CORRECT_RUN_COLUMNS = [
+    "submission_id",
+    "student_id",
+    "problem_id",
+    "code_snapshot_id",
+    "code",
+    "submitted_at",
+]
+
 
 def _sql_value(value):
     # O valor do pandas no tipo que o sqlite3 aceita; NaN/NA viram NULL, horário vira ISO 8601.
@@ -65,3 +75,14 @@ class SqliteSubmissionRepository:
                 "is_correct": "int64",
             }
         ).assign(submitted_at=pd.to_datetime(df["submitted_at"], utc=True))
+
+    def list_correct_runs(self, assignment_id: int) -> pd.DataFrame:
+        rows = self._conn.execute(
+            "SELECT id, student_id, problem_id, code_snapshot_id, code, submitted_at "
+            "FROM submission WHERE assignment_id = ? AND is_correct = 1 ORDER BY id;",
+            (assignment_id,),
+        ).fetchall()
+        df = pd.DataFrame([tuple(r) for r in rows], columns=CORRECT_RUN_COLUMNS)
+        return df.astype({"submission_id": "int64", "problem_id": "Int64"}).assign(
+            submitted_at=pd.to_datetime(df["submitted_at"], utc=True)
+        )

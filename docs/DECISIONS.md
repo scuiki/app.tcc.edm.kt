@@ -203,7 +203,9 @@ da extração, e é o que o professor lê e renomeia. Renomear muda só o nome m
 aponta para a execução escolhida, que já tem o aluno, o horário e o código, e para o problema, que
 leva ao exercício e à turma, então nada disso é repetido. O KC candidato guarda a justificativa de
 cada KC, em inglês e em português, e o conceito em que caiu. O trecho aponta para a solução
-amostrada. É o que a origem do conceito mostra e o que os testes de regressão da extração usam.
+amostrada. É o que a origem do conceito mostra e o que os testes de regressão da extração usam. A
+extração lê só as execuções corretas, por uma consulta própria (`list_correct_runs()`) que traz o id
+de cada execução, e o contrato de colunas do dado limpo, que o treino usa, fica como está.
 
 **O enunciado é opcional e vem de um arquivo do pacote.** O ProgSnap2 não traz enunciado, e o da
 CSEDM está numa planilha oficial à parte. O upload aceita um arquivo só, então o arquivo de

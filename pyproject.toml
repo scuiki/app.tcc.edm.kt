@@ -55,7 +55,7 @@ testpaths = ["src", "tests"]
 python_files = ["*_test.py", "test_*.py"]
 pythonpath = ["src", "."]  # "." para tests.fixtures (ver tests/fixtures/__init__.py)
 markers = [
-    "regression: dez seeds do Code-DKT no A439, com a média do first-attempt AUC em ±0,1 ponto de 0,7278, na GPU com o CSEDM real, precisa do EDMKT_CSEDM_PATH e roda com -m regression",
+    "regression: dez seeds do Code-DKT no A439, com a média do first-attempt AUC em ±0,1 ponto de 0,7278, na GPU com o CSEDM real, precisa do EDMKT_CSEDM_PATH e roda com -m regression; marca também os testes do KCGen-KT que carregam os modelos de vetores ou a extração de referência",
     "literature: comparação com as Tabelas 1 e 2 de Shi et al. (2022), cinco exercícios e dez seeds na GPU com o CSEDM real, roda com -m literature -s e grava docs/results/code_dkt_literature_comparison.json",
 ]
 # importlib: dois *_test.py com o mesmo nome em pastas diferentes não colidem.

@@ -14,6 +14,7 @@ from api.knowledge_components.infrastructure.implementations.kcgen_kt_generator 
     KcGenKtGenerator,
     run_in_parallel,
 )
+from tests.fixtures.knowledge_components import fake_embed
 
 
 class _ConcurrencyProbe:
@@ -84,18 +85,18 @@ class _EchoLLM:
         return {"kcs": [{"name": f"kc do problema {problem_id}", "reasoning": "eco"}]}
 
 
-def _submissions(problem_ids: list[int]) -> pd.DataFrame:
+def _correct_runs(problem_ids: list[int], runs_per_problem: int = 3) -> pd.DataFrame:
     rows = [
         {
+            "submission_id": problem_id * 10 + i,
             "student_id": f"S{i}",
             "problem_id": problem_id,
             "code_snapshot_id": f"c{problem_id}_{i}",
             "code": f"public int p{problem_id}() {{ return {i}; }}",
-            "is_correct": 1,
             "submitted_at": pd.Timestamp("2026-01-01T00:00:00Z") + pd.Timedelta(minutes=i),
         }
         for problem_id in problem_ids
-        for i in range(3)
+        for i in range(runs_per_problem)
     ]
     return pd.DataFrame(rows)
 
@@ -106,8 +107,8 @@ def test_generation_reports_the_progress_of_each_problem(data_root, monkeypatch)
     # Nomes de KC demais passariam pelo SBERT, e aqui só interessa o estágio generate
     monkeypatch.setattr(kcgen_kt_generator, "CANDIDATE_GROUP_COUNTS", [99])
 
-    generated = KcGenKtGenerator(_EchoLLM()).generate(
-        _submissions([1, 2, 3]),
+    generated = KcGenKtGenerator(_EchoLLM(), embed=fake_embed).generate(
+        _correct_runs([1, 2, 3]),
         classroom_id=1,
         assignment_id=1,
         on_stage=stages.append,
@@ -120,3 +121,50 @@ def test_generation_reports_the_progress_of_each_problem(data_root, monkeypatch)
     # Cada problema fica com o próprio conceito, mesmo o que terminou por último
     for problem_id, groups in generated.groups_by_problem.items():
         assert [generated.group_names[g] for g in groups] == [f"kc do problema {problem_id}"]
+    # As três soluções distintas de cada problema vão para o LLM e ficam registradas
+    assert {p: sorted(ids) for p, ids in generated.sampled_solutions.items()} == {
+        p: [p * 10, p * 10 + 1, p * 10 + 2] for p in (1, 2, 3)
+    }
+
+
+class _RecordingLLM:
+    # Guarda os prompts, para conferir a ordem das soluções que o LLM leu
+    def __init__(self) -> None:
+        self.prompts: list[str] = []
+
+    def generate(self, system: str, prompt: str, schema: dict) -> dict:
+        self.prompts.append(prompt)
+        return {"kcs": [{"name": "kc", "reasoning": "eco"}]}
+
+
+def test_the_sampled_solutions_keep_the_order_of_the_prompt(data_root):
+    # A posição gravada de cada solução é a ordem em que ela aparece no prompt
+    runs = _correct_runs([1], runs_per_problem=8)
+    llm = _RecordingLLM()
+
+    generated = KcGenKtGenerator(llm, embed=fake_embed).generate(
+        runs, 1, 1, on_stage=lambda stage: None, on_progress=lambda done, total: None
+    )
+
+    code_of = dict(zip(runs["submission_id"], runs["code"]))
+    [prompt] = llm.prompts
+    positions = [prompt.index(code_of[i]) for i in generated.sampled_solutions[1]]
+    assert len(positions) == 5
+    assert positions == sorted(positions)
+
+
+def test_without_fake_vectors_the_generator_uses_the_codebert(data_root, monkeypatch):
+    # O app não passa `embed`, então o padrão do gerador é o que a extração real usa
+    calls: list[list[str]] = []
+
+    def codebert(codes: list[str]):
+        calls.append(codes)
+        return fake_embed(codes)
+
+    monkeypatch.setattr(kcgen_kt_generator, "embed_solutions", codebert)
+
+    KcGenKtGenerator(_RecordingLLM()).generate(
+        _correct_runs([1]), 1, 1, on_stage=lambda stage: None, on_progress=lambda done, total: None
+    )
+
+    assert len(calls) == 1

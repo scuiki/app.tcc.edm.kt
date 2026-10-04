@@ -477,3 +477,11 @@ def test_migration_0017_adds_the_statement_to_the_problem(tmp_path):
     assert _user_version(conn) == 17
     assert "statement" in _column_names(conn, "problem")
     assert conn.execute("SELECT statement FROM problem;").fetchone()[0] is None
+
+
+def test_migration_0018_creates_the_sampled_solutions(tmp_path):
+    conn = connect(str(tmp_path / "app.db"))
+    run_migrations(conn)
+    assert _user_version(conn) >= 18
+    columns = _column_names(conn, "sampled_solution")
+    assert {"assignment_id", "problem_id", "position", "submission_id"} <= columns

@@ -2,7 +2,13 @@
 
 from __future__ import annotations
 
+import numpy as np
 import pytest
+
+
+def fake_embed(codes: list[str]) -> np.ndarray:
+    # Vetores falsos no lugar do CodeBERT, um por código, sem carregar o modelo
+    return np.array([[len(code), sum(map(ord, code)) % 97 + 1, 1.0] for code in codes])
 
 
 @pytest.fixture

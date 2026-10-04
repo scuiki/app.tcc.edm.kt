@@ -19,3 +19,7 @@ class ISubmissionRepository(Protocol):
     def list_by_assignment(self, assignment_id: int) -> pd.DataFrame:
         # As tentativas do assignment na ordem gravada, ou um DataFrame vazio se não houver.
         ...
+
+    def list_correct_runs(self, assignment_id: int) -> pd.DataFrame:
+        # As execuções corretas, com `submission_id`, `student_id`, `problem_id`, o código e a hora.
+        ...

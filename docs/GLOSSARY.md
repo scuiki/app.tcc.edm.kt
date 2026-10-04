@@ -50,7 +50,7 @@ Todo `Protocol` da `api/` começa com `I` e fica numa pasta `interfaces/` (ver
 
 | Interface | Quem implementa | O que é | Nome antigo |
 |---|---|---|---|
-| `I<Entidade>Repository` (`IAssignmentRepository`, `IClassroomRepository`, `IProblemRepository`, `ISubmissionRepository`, `IKnowledgeComponentRepository`, `IKnowledgeComponentGenerationJobRepository`, `IProblemKnowledgeComponentRepository`, `ITrainingJobRepository`, `ITrainedModelRepository`, `ITrainingEpochMetricRepository`, `IStudentMasteryRepository`) | `Sqlite<Entidade>Repository` | Ler e gravar uma entidade | sem o `I` |
+| `I<Entidade>Repository` (`IAssignmentRepository`, `IClassroomRepository`, `IProblemRepository`, `ISubmissionRepository`, `IKnowledgeComponentRepository`, `IKnowledgeComponentGenerationJobRepository`, `IProblemKnowledgeComponentRepository`, `ISampledSolutionRepository`, `ITrainingJobRepository`, `ITrainedModelRepository`, `ITrainingEpochMetricRepository`, `IStudentMasteryRepository`) | `Sqlite<Entidade>Repository` | Ler e gravar uma entidade | sem o `I` |
 | `IProgSnapUploadExtractor` | `ProgSnapZipExtractor` | Extrair o `.zip` enviado e achar as tabelas | `ProgSnapUploadExtractor` |
 | `IProgSnapTableReader` | `ProgSnapCsvReader` | Ler as tabelas ProgSnap2 do CSV | `ProgSnapTableReader` |
 | `IKnowledgeComponentGenerator` | `KcGenKtGenerator` | Gerar os KCs de um assignment | `KnowledgeComponentGenerator` |
@@ -157,6 +157,7 @@ modelo, exceto o domínio médio dos exercícios treinados.
 | `ClassroomImportReport` / `ImportCheck` | O relatório da importação e cada item dele (fatal, aviso ou de treinabilidade) | `IngestReport` / `ReportItem` |
 | `check_assignment_trainability()` | Decide, por assignment, entre `ready_for_kc_generation` e `statistics_only` | `viability` |
 | tabela `submission` | O dado limpo de onde tudo lê (`ISubmissionRepository.list_by_assignment()`), com o código Java | Parquet por assignment (`cleaned_submissions.parquet`) |
+| `list_correct_runs()` | As execuções corretas de um exercício, com o `submission_id` de cada uma, que a extração de KCs lê para escolher as soluções | — |
 | `TrainingDataset` | O recorte que treino e inferência consomem: só eventos `Run.Program` | `ModelingFrame` |
 | `load_training_dataset()` | Monta o `TrainingDataset` de um assignment (`services/training_dataset_loading.py`) | `load_modeling_frame` |
 | `TrainingOutcome` | O que um treino devolve: o modelo, o vocabulário, os hiperparâmetros, o first-attempt AUC e o `java_parse_rate` | — |
@@ -218,6 +219,7 @@ modelo, exceto o domínio médio dos exercícios treinados.
 | — | `KC_GENERATION_MODEL_ID` / `PROMPT_VERSION` | O modelo de linguagem da extração, `claude-sonnet-5-5`, e a versão dos prompts, os dois na chave do cache e gravados no job | — |
 | — | `SBERT_MODEL` / `CODEBERT_MODEL` | Os modelos de vetores, `all-MiniLM-L6-v2` para os nomes de KC e `microsoft/codebert-base` para as soluções, em `ml/kc_generation/embedding_models.py`, com a revisão do Hugging Face fixada em `SBERT_REVISION` e `CODEBERT_REVISION` | — |
 | — | `download_embedding_models()` | Põe os dois modelos de vetores no cache do Hugging Face, chamada só no build da imagem base | — |
+| — | `SOLUTIONS_PER_PROBLEM` / `SOLUTION_EMBEDDING_BATCH_SIZE` | As 5 soluções por problema do experimento principal do paper, e as 32 soluções que entram de cada vez no CodeBERT, fixas porque os vetores mudam um pouco com o tamanho do lote | — |
 
 ## Rotas HTTP
 
