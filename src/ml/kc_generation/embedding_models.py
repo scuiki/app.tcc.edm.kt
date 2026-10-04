@@ -44,6 +44,19 @@ def _codebert():
     return tokenizer, model.to(device).eval(), device
 
 
+@lru_cache(maxsize=1)
+def _sbert():
+    # Carrega o SBERT uma vez por processo, na GPU quando ela existe
+    from sentence_transformers import SentenceTransformer
+
+    return SentenceTransformer(SBERT_MODEL, revision=SBERT_REVISION)
+
+
+def embed_kc_names(names: list[str]) -> np.ndarray:
+    # O vetor do SBERT de cada nome de KC, sem normalizar, como o repositório do Duan
+    return _sbert().encode(names, convert_to_numpy=True)
+
+
 def embed_solutions(codes: list[str]) -> np.ndarray:
     # A média da última camada pela máscara de atenção, com norma 1, como o repositório do Duan
     import torch

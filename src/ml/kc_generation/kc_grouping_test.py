@@ -1,48 +1,42 @@
-# choose_kc_group_count e o agrupamento de KCs; os candidatos 10/12/15 são os do TCC 1, sem alterar.
+# O número de grupos pela proporção do paper e o agrupamento dos nomes de KC.
 
 from __future__ import annotations
-
-import json
 
 import numpy as np
 import pytest
 
-from ml.kc_generation.embedding_models import SBERT_MODEL, SBERT_REVISION
-from ml.kc_generation.kc_grouping import choose_kc_group_count
+from ml.kc_generation.kc_grouping import group_similar_kcs, kc_group_count
 
 
-def test_fewer_unique_than_smallest_candidate_raises_clear_error():
-    # 5 embeddings, candidatos {10,12,15} todos >= n_unique; nenhum viável, ValueError é claro.
-    rng = np.random.default_rng(42)
-    embeddings = rng.random((5, 8)).astype(np.float32)
-    with pytest.raises(ValueError, match="n_kc_names"):
-        choose_kc_group_count(embeddings, candidates=(10, 12, 15))
+@pytest.mark.parametrize(
+    ("n_names", "n_groups"), [(1, 1), (2, 1), (10, 5), (52, 25), (103, 50)]
+)
+def test_the_group_count_is_the_proportion_of_the_paper(n_names, n_groups):
+    # 103 nomes dão os 50 grupos do nível médio da CodeWorkout, e nunca sai menos de um grupo
+    assert kc_group_count(n_names) == n_groups
 
 
-def test_enough_unique_still_selects():
-    # >= menor candidato, o selector roda normalmente e devolve um n viável + scores.
-    rng = np.random.default_rng(7)
-    embeddings = rng.random((20, 8)).astype(np.float32)
-    best_n, scores = choose_kc_group_count(embeddings, candidates=(10, 12, 15))
-    assert best_n in (10, 12, 15)
-    assert scores  # avaliou ao menos um candidato
+def test_a_single_name_is_its_own_group_without_the_hac():
+    assert group_similar_kcs(np.array([[1.0, 0.0]]), 1).tolist() == [0]
 
 
-def _load(kc_reference_dir, name):
-    return json.loads((kc_reference_dir / name).read_text())
+def test_the_names_are_grouped_by_the_cosine_distance():
+    # Dois pares de vetores em direções quase iguais, e a norma não muda o grupo
+    embeddings = np.array([[1.0, 0.0], [10.0, 0.5], [0.0, 1.0], [0.4, 8.0]])
+    labels = group_similar_kcs(embeddings, 2)
+    assert labels[0] == labels[1] and labels[2] == labels[3] and labels[0] != labels[2]
 
 
-def test_selected_n_clusters_matches_reference(kc_reference_dir):
-    # Silhouette converge no n_clusters do TCC (15 p/ A439); tolerante a variações de SBERT.
-    pytest.importorskip("sentence_transformers")
-    from sentence_transformers import SentenceTransformer
+def test_the_hac_uses_the_average_linkage_on_the_cosine_distance():
+    # Com estes ângulos e normas, a ligação média, a completa, a simples e a euclidiana divergem
+    angles = np.deg2rad([30, 45, 12, 60, 20])
+    norms = np.array([1, 5, 5, 1, 2])
+    embeddings = norms[:, None] * np.column_stack([np.cos(angles), np.sin(angles)])
+    labels = group_similar_kcs(embeddings, 2)
+    groups = {frozenset(np.flatnonzero(labels == g).tolist()) for g in set(labels.tolist())}
+    assert groups == {frozenset({0, 2, 4}), frozenset({1, 3})}
 
-    kc_clusters = _load(kc_reference_dir, "kc_clusters_A439.json")
-    expected_n = kc_clusters["n_clusters_selected"]
 
-    kc_names = list(kc_clusters["kc_to_cluster"].keys())
-    model = SentenceTransformer(SBERT_MODEL, revision=SBERT_REVISION)
-    embeddings = model.encode(kc_names)
-
-    best_n, _scores = choose_kc_group_count(embeddings, candidates=(10, 12, 15))
-    assert best_n == expected_n
+def test_the_group_labels_start_at_zero():
+    embeddings = np.array([[1.0, 0.0], [10.0, 0.5], [0.0, 1.0], [0.4, 8.0]])
+    assert sorted(set(group_similar_kcs(embeddings, 2).tolist())) == [0, 1]

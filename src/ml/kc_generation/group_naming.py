@@ -1,53 +1,54 @@
-# Etapa 4 do KCGen-KT, pede ao LLM um nome por grupo de KCs; prompt congelado, é chave do cache.
+# Etapa 4 do KCGen-KT, pede ao LLM o nome de cada grupo de KCs com o prompt da Tabela 10 do paper.
 
 from __future__ import annotations
 
-from ml.kc_generation.llm_client import LLMClient
+import json
 
-# Prompt adaptado de Duan et al. (2025), Tabela 9, etapa de rotulagem de clusters.
-_CLUSTER_LABEL_SYSTEM = (
-    "You are an expert CS educator labeling clusters of Knowledge Components (KCs) "
-    "for an introductory Java programming course. "
-    "A KC is a specific, teachable concept (3-8 words). "
-    "Your task: given a cluster of semantically similar KCs, decide whether one KC "
-    "already represents the group well, or synthesize a concise new label that captures "
-    "the common underlying concept."
-)
+from ml.kc_generation.llm_client import InvalidLLMResponseError, LLMClient
 
-# Schema da saída de um label por cluster (espelha a célula 15 do notebook 03b do TCC 1).
-KC_GROUP_NAME_SCHEMA: dict = {
-    "type": "object",
-    "properties": {
-        "kc_id": {"type": "integer"},
-        "name": {"type": "string"},
-        "reasoning": {"type": "string"},
-    },
-    "required": ["name", "reasoning"],
+# As palavras da Tabela 10 de Duan et al. (2026) na disposição de linhas do repositório
+_SYSTEM = """You are an experienced computer science teacher and education expert. You will be provided with a list of knowledge components (KCs) that may vary in wording but sometimes refer to the same or related underlying concepts or skills.
+
+The KCs will be given in the format: ["KC 1 name", "KC 2 name", ..., "KC k name"]
+
+Your task is to:
+1. Carefully examine all the KCs in the list to ensure none are overlooked.
+2. Reason explicitly whether the KCs collectively refer to the same underlying concept or skill, or if they are related but represent distinct or complementary aspects of a broader theme.
+3. Based on your reasoning:
+    - If the KCs refer to the same concept or skill, select one KC from the list that best represents the group — choose the one that is most clearly worded, generalizable, and inclusive of the others.
+    - If the KCs are related but too distinct to be represented by a single KC, create a concise and meaningful summary name that captures the broader theme or category shared by the KCs.
+
+Return your output strictly in the following JSON format:
+{
+  "reasoning": "...",        // Exactly one sentence explaining your reasoning
+  "representative kc": "..." , // Selected KC if applicable, otherwise null
+  "summary name": "..." ,       // Summary name if representative KC not chosen, otherwise null
 }
+"""
 
 
-def _build_label_prompt(cluster_kcs: list[str], cluster_id: int) -> str:
-    kc_list = "\n".join(f"- {kc}" for kc in cluster_kcs)
+def _user_prompt(kc_names: list[str]) -> str:
+    # A lista vai no formato que o texto de sistema anuncia, como o repositório faz com json.dumps
     return (
-        "You are labeling a cluster of related Knowledge Components for a programming course.\n\n"
-        "The following KCs were grouped together based on semantic similarity:\n"
-        f"{kc_list}\n\n"
-        "Decide: does one of these KCs already represent the entire cluster well, "
-        "or should you synthesize a new label that captures the common underlying concept?\n\n"
-        f"Respond ONLY with a valid JSON object (cluster_id = {cluster_id}):\n"
-        "{\n"
-        f'  "kc_id": {cluster_id},\n'
-        '  "name": "Final KC label (3-8 words)",\n'
-        '  "reasoning": "Why this label represents the cluster (1 sentence)"\n'
-        "}"
+        "The knowledge components list is: "
+        + json.dumps(kc_names)
+        + "\n\nNow follow the instructions in system message and perform the task."
     )
 
 
-def name_kc_group(cluster_kcs: list[str], llm: LLMClient, cluster_id: int) -> dict:
-    # Rotula um cluster de KCs via a porta do LLM injetada (Duan et al. 2025, Tabela 9).
-    result = llm.generate(
-        _CLUSTER_LABEL_SYSTEM, _build_label_prompt(cluster_kcs, cluster_id), KC_GROUP_NAME_SCHEMA
-    )
-    # Fixa o id independente da saída do LLM (invariante da célula 15 do notebook 03b do TCC 1)
-    result["kc_id"] = cluster_id
-    return result
+def parse_group_name(response: dict) -> str:
+    # O representante ou, quando ele é nulo, o resumo, em minúsculas como o repositório
+    reasoning = response.get("reasoning") if isinstance(response, dict) else None
+    if not isinstance(reasoning, str) or not reasoning.strip():
+        raise InvalidLLMResponseError("a resposta não trouxe a justificativa")
+    representative = response.get("representative kc")
+    name = representative if representative is not None else response.get("summary name")
+    if not isinstance(name, str) or not name.strip():
+        raise InvalidLLMResponseError("a resposta não trouxe nem o representante nem o resumo")
+    return name.lower()
+
+
+def name_kc_group(kc_names: list[str], llm: LLMClient) -> str:
+    # Só grupos com mais de um KC chegam aqui, o de um KC só fica com o nome dele
+    response = llm.generate(_SYSTEM, _user_prompt(kc_names), validate=parse_group_name)
+    return parse_group_name(response)

@@ -27,7 +27,7 @@ class _RecordingLLM:
 
 
 def _reference(prompt_reference_dir, name: str) -> str:
-    return (prompt_reference_dir / name).read_text()
+    return (prompt_reference_dir / name).read_text(encoding="utf-8")
 
 
 def _input(prompt_reference_dir) -> dict:

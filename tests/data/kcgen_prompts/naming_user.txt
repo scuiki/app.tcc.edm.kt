@@ -1,0 +1,3 @@
+The knowledge components list is: ["for loop iteration", "while loop", "array iteration"]
+
+Now follow the instructions in system message and perform the task.

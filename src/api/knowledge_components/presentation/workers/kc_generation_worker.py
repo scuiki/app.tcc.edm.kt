@@ -15,10 +15,17 @@ from api.shared.infrastructure.implementations.background_jobs import run_under_
 
 
 def run_kc_generation(
-    conn: sqlite3.Connection, assignment_id: int, job_id: int, llm=None, embed=None
+    conn: sqlite3.Connection,
+    assignment_id: int,
+    job_id: int,
+    llm=None,
+    embed=None,
+    embed_names=None,
 ) -> dict | None:
     # Roda a geração sob a trava, devolve o resumo no sucesso ou None na falha.
-    use_case = build_run_kc_generation_use_case(conn, llm=llm, embed=embed)
+    use_case = build_run_kc_generation_use_case(
+        conn, llm=llm, embed=embed, embed_names=embed_names
+    )
     return run_under_lock(
         conn,
         "kc_generation",

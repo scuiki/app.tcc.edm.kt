@@ -1,6 +1,8 @@
 # As revisões fixadas dos modelos de vetores e o download deles no build da imagem base.
 
 import re
+import sys
+import types
 from pathlib import Path
 
 import numpy as np
@@ -15,6 +17,30 @@ def test_the_revisions_are_full_commit_hashes():
     # Um nome de branch como "main" mudaria os vetores quando o Hugging Face publicasse outra versão
     for revision in (embedding_models.CODEBERT_REVISION, embedding_models.SBERT_REVISION):
         assert re.fullmatch(r"[0-9a-f]{40}", revision)
+
+
+def test_the_sbert_loads_once_at_the_pinned_revision_and_is_not_normalized(monkeypatch):
+    loads, encodes = [], []
+
+    class FakeSentenceTransformer:
+        def __init__(self, name, revision=None):
+            loads.append((name, revision))
+
+        def encode(self, names, convert_to_numpy=True):
+            encodes.append((list(names), convert_to_numpy))
+            return np.zeros((len(names), 3))
+
+    fake_module = types.SimpleNamespace(SentenceTransformer=FakeSentenceTransformer)
+    monkeypatch.setitem(sys.modules, "sentence_transformers", fake_module)
+    embedding_models._sbert.cache_clear()
+    try:
+        embedding_models.embed_kc_names(["a", "b"])
+        embedding_models.embed_kc_names(["c"])
+    finally:
+        embedding_models._sbert.cache_clear()
+    # O modelo do repositório do Duan na revisão fixada, carregado uma vez por processo
+    assert loads == [("sentence-transformers/all-MiniLM-L6-v2", embedding_models.SBERT_REVISION)]
+    assert encodes == [(["a", "b"], True), (["c"], True)]
 
 
 def test_the_base_image_downloads_the_models_at_build_time():
@@ -62,3 +88,12 @@ def test_codebert_vectors_are_the_masked_mean_of_the_last_layer_cut_at_512_token
 
     for code, vector in zip([short, long], vectors):
         assert np.allclose(vector, by_hand(code), atol=1e-4)
+
+
+@pytest.mark.regression
+def test_sbert_gives_the_same_vector_for_the_same_kc_name():
+    # Carrega o SBERT de verdade, por isso fica fora da suíte padrão
+    vectors = embedding_models.embed_kc_names(["for loop", "for loop", "string length"])
+    assert vectors.shape == (3, 384)
+    assert np.array_equal(vectors[0], vectors[1])
+    assert not np.allclose(vectors[0], vectors[2])

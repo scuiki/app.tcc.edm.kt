@@ -876,19 +876,27 @@ or category shared by the KCs", e o repositório pede "a brief and meaningful su
 captures the broader theme shared by the KCs. The summary name must not contain the word “and”"
 (`KC_gen.py:352`). A mensagem do usuário da tabela traz a lista e "Now follow the instructions in
 system message and perform the task", e a do repositório repete os três passos (`KC_gen.py:341`). O
-`KC_gen.py` tem um commit só (`ac017bc`, de 08/10/2025), e o ACL, de 2026, continua mostrando o texto
-da tabela. Pelo critério 1, o app usa as palavras da Tabela 10. A lista vai no formato que o próprio
-texto de sistema anuncia, ["KC 1 name", "KC 2 name", ..., "KC k name"], como o repositório faz com
-`json.dumps` (critério 2). O TCC 1 reescreveu o prompt (notebook 03b, célula 15), com outro papel para
-o modelo, a definição de KC com 3 a 8 palavras e o nome antes da justificativa, e o app o copiou
-(`group_naming.py:8-44` do app), com chaves simples no modelo de JSON no lugar das duplas que o TCC 1
-mandava, e com um comentário que o atribui à Tabela 9 de Duan et al. (2025)
-(`group_naming.py:7` do app). A Tabela 9 da v3 é a 10 do ACL, e o texto é do TCC 1. Sem a proibição
-do "and", o caso de KCs distintos demais fica com a regra do próprio paper, que manda criar um
-nome-resumo do tema comum. Nos rótulos do TCC 1, 21 de 72 têm a palavra "and" em minúsculas
-(`results/kc_descriptions_A*.json` do TCC 1). Os KCs gerados que o paper publica também têm, como
-"If and else if statement" na Tabela 1 (p. 33406 (PDF 2)) e "Array indexing and assignment" na
-Tabela 7 (p. 33419 (PDF 15)).
+`KC_gen.py` tem um commit só (`ac017bc`, de 08/10/2025), e o ACL, de 2026, continua mostrando o
+texto da tabela. Pelo critério 1, o app usa as palavras da Tabela 10. A lista vai no formato que o
+próprio texto de sistema anuncia, ["KC 1 name", "KC 2 name", ..., "KC k name"], como o repositório
+faz com `json.dumps` (critério 2). A tabela é texto diagramado, que não guarda os recuos, os espaços
+em sequência nem todas as quebras de linha, então o app põe as palavras dela na disposição de linhas
+do repositório (`KC_gen.py:343-360`). Sem contar os espaços e as quebras de linha, o texto de
+sistema do app tem as mesmas 225 palavras da tabela, na mesma ordem. A mensagem do usuário segue a
+tabela, com a lista na mesma linha da abertura, depois de "is: ", e o repositório quebra a linha
+depois dos dois-pontos. A tabela mostra a lista sem aspas, e as aspas são as do formato anunciado. O
+TCC 1 reescreveu o prompt (notebook 03b, célula 15), com outro papel para o modelo, a definição de
+KC com 3 a 8 palavras e o nome antes da justificativa, e o app o copiou (`group_naming.py:8-44` do
+app), com chaves simples no modelo de JSON no lugar das duplas que o TCC 1 mandava, e com um
+comentário que o atribui à Tabela 9 de Duan et al. (2025) (`group_naming.py:7` do app). A Tabela 9
+da v3 é a 10 do ACL, e o texto é do TCC 1. Sem a proibição do "and", o caso de KCs distintos demais
+fica com a regra do próprio paper, que manda criar um nome-resumo do tema comum. Nos rótulos do TCC
+1, 21 de 72 têm a palavra "and" em minúsculas (`results/kc_descriptions_A*.json` do TCC 1). Os KCs
+gerados que o paper publica também têm, como "If and else if statement" na Tabela 1 (p. 33406 (PDF
+2)) e "Array indexing and assignment" na Tabela 7 (p. 33419 (PDF 15)). Na validação de 04/10/2026,
+um grupo de quatro KCs do problema 1 do A439, com o if e else, os operadores lógicos e o operador
+ternário em dois nomes, recebeu o nome-resumo "conditional logic and branching (if/else, ternary
+expressions, logical operators)", um exemplo do que a Tabela 10 permite sem a proibição do "and".
 
 **23. Campos da resposta.** A Tabela 10 pede a justificativa em uma frase, o `representative kc`,
 quando um KC da lista representa o grupo, e o `summary name`, quando nenhum representa, com o outro

@@ -265,8 +265,8 @@ Cada etapa é um commit, com uma revisão independente do diff contra as decisõ
 | 1 | Concluída, commit `7dfae7a` |
 | 2 | Concluída, commit `0aac582` |
 | 3 | Concluída, commit `af49b24` |
-| 4 | Concluída |
-| 5 | A fazer |
+| 4 | Concluída, commit `c38eade` |
+| 5 | Concluída |
 | 6 | A fazer |
 | 7 | A fazer |
 | 8 | A fazer |

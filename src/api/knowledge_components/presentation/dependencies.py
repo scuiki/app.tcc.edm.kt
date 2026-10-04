@@ -186,15 +186,17 @@ def approve_knowledge_components_use_case(
 
 
 def build_run_kc_generation_use_case(
-    conn: sqlite3.Connection, llm=None, embed=None
+    conn: sqlite3.Connection, llm=None, embed=None, embed_names=None
 ) -> RunKnowledgeComponentGenerationUseCase:
-    # `llm` troca o cliente real do `claude` e `embed` o CodeBERT, os testes passam falsos.
+    # `llm` troca o `claude`, `embed` o CodeBERT e `embed_names` o SBERT, os testes passam falsos.
     return RunKnowledgeComponentGenerationUseCase(
         assignments=SqliteAssignmentRepository(conn),
         problems=SqliteProblemRepository(conn),
         submissions=SqliteSubmissionRepository(conn),
         generator=KcGenKtGenerator(
-            llm or ClaudeCliLLMClient(model=KC_GENERATION_MODEL_ID), embed=embed
+            llm or ClaudeCliLLMClient(model=KC_GENERATION_MODEL_ID),
+            embed=embed,
+            embed_names=embed_names,
         ),
         knowledge_components=SqliteKnowledgeComponentRepository(conn),
         problem_kcs=SqliteProblemKnowledgeComponentRepository(conn),

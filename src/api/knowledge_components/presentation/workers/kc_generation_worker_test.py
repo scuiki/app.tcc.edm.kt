@@ -4,6 +4,7 @@ from __future__ import annotations
 import os
 import re
 
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -35,7 +36,7 @@ from api.knowledge_components.presentation.workers.kc_generation_worker import r
 from api.shared.domain.value_objects.job_status import JobStatus
 from api.shared.infrastructure import settings
 from tests.fixtures.job_lock import lock_holder_pid
-from tests.fixtures.knowledge_components import fake_embed
+from tests.fixtures.knowledge_components import fake_embed, naming_answer
 from tests.fixtures.problems import add_problems
 
 
@@ -46,6 +47,9 @@ class _FakeLLM:
         self.prompts: list[str] = []
 
     def generate(self, system: str, prompt: str, schema=None, validate=None) -> dict:
+        naming = naming_answer(prompt)
+        if naming is not None:
+            return naming
         self.prompts.append(prompt)
         return self._respond()
 
@@ -59,18 +63,33 @@ def _llm_ok() -> _FakeLLM:
     return _FakeLLM(lambda: _answer("laços", "usa for"))
 
 
+def _embed_by_problem(names: list[str]) -> np.ndarray:
+    # Vetores falsos do SBERT que juntam os nomes do mesmo problema, o número no fim do nome
+    return np.stack([np.eye(10)[int(name.rsplit(" ", 1)[1])] for name in names])
+
+
 class _PerProblemLLM:
     # Dois KCs com o número do problema no nome, e o problema sai do código que está no prompt
     def __init__(self) -> None:
         self.prompts: dict[int, str] = {}
 
     def generate(self, system: str, prompt: str, schema=None, validate=None) -> dict:
+        naming = naming_answer(prompt)
+        if naming is not None:
+            return naming
         problem = int(re.search(r"_p(\d+)\(", prompt).group(1))
         self.prompts[problem] = prompt
         return {
             "KC 1": {"reasoning": f"first of {problem}", "name": f"alpha {problem}"},
             "KC 2": {"reasoning": f"second of {problem}", "name": f"beta {problem}"},
         }
+
+
+def _run(conn, assignment_id: int, job_id: int, llm, embed_names=fake_embed) -> None:
+    # A extração com vetores falsos no lugar do CodeBERT e do SBERT
+    run_kc_generation(
+        conn, assignment_id, job_id, llm=llm, embed=fake_embed, embed_names=embed_names
+    )
 
 
 def _jobs(conn) -> SqliteKnowledgeComponentGenerationJobRepository:
@@ -152,7 +171,7 @@ def test_lock_busy_marks_failed_and_does_not_persist(tmp_db, data_root):
         (os.getpid(),),
     )
 
-    run_kc_generation(conn, assignment_id, job_id, llm=_llm_ok(), embed=fake_embed)
+    _run(conn, assignment_id, job_id, _llm_ok())
 
     job = _jobs(conn).get(job_id)
     assert job.status == "failed"
@@ -168,7 +187,7 @@ def test_content_hard_fail_marks_failed_nothing_persisted(tmp_db, data_root, mon
 
     llm = _FakeLLM(lambda: {})
 
-    run_kc_generation(conn, assignment_id, job_id, llm=llm, embed=fake_embed)
+    _run(conn, assignment_id, job_id, llm)
 
     job = _jobs(conn).get(job_id)
     assert job.status == "failed"
@@ -180,24 +199,19 @@ def test_content_hard_fail_marks_failed_nothing_persisted(tmp_db, data_root, mon
     assert lock_holder_pid(conn) is None  # lock liberado mesmo na falha (with lock)
 
 
-def test_small_dataset_skips_clustering_no_crash(tmp_db, data_root):
-    # Poucos nomes pulam SBERT/silhouette (cada nome vira seu cluster), evita o ValueError.
+def test_three_names_become_one_concept_named_by_the_llm(tmp_db, data_root):
+    # Três nomes dão 1 grupo pela proporção do paper, e o LLM dá o nome dele
     conn = tmp_db
     assignment_id, job_id = _seed_kc_ready(conn, data_root)
-
-    # 3 problemas, cada um com um nome de KC DISTINTO → 3 nomes únicos (2 <= n_unique < 10).
     names = iter(["laços", "condicionais", "aritmética"])
-
     llm = _FakeLLM(lambda: _answer(next(names)))
 
-    run_kc_generation(conn, assignment_id, job_id, llm=llm, embed=fake_embed)
+    _run(conn, assignment_id, job_id, llm)
 
-    job = _jobs(conn).get(job_id)
-    assert job.status == "done"  # não falhou (sem crash de clustering)
-    asg = SqliteAssignmentRepository(conn).get(assignment_id)
-    assert asg.status == "kc_draft"
-    # 3 nomes únicos → 3 KCs (um cluster por nome, sem labeling LLM).
-    assert conn.execute("SELECT COUNT(*) FROM kc;").fetchone()[0] == 3
+    assert _jobs(conn).get(job_id).status == "done"
+    assert SqliteAssignmentRepository(conn).get(assignment_id).status == "kc_draft"
+    assert conn.execute("SELECT COUNT(*) FROM kc;").fetchone()[0] == 1
+    assert conn.execute("SELECT COUNT(*) FROM problem_kc;").fetchone()[0] == 3
     assert lock_holder_pid(conn) is None
 
 
@@ -212,7 +226,7 @@ def test_mark_done_failure_is_atomic_with_persist(tmp_db, data_root, monkeypatch
 
     monkeypatch.setattr(SqliteKnowledgeComponentGenerationJobRepository, "mark_done", _boom)
 
-    run_kc_generation(conn, assignment_id, job_id, llm=llm, embed=fake_embed)
+    _run(conn, assignment_id, job_id, llm)
 
     asg = SqliteAssignmentRepository(conn).get(assignment_id)
     job = _jobs(conn).get(job_id)
@@ -257,7 +271,7 @@ def test_a_failure_saving_any_part_saves_nothing(
 
     monkeypatch.setattr(repository, method, _boom)
 
-    run_kc_generation(conn, assignment_id, job_id, llm=_PerProblemLLM(), embed=fake_embed)
+    _run(conn, assignment_id, job_id, _PerProblemLLM())
 
     assert _saved(conn, assignment_id, job_id) == {
         "job": "failed",
@@ -276,7 +290,7 @@ def test_success_transitions_job_and_acquires_lock(tmp_db, data_root):
     assignment_id, job_id = _seed_kc_ready(conn, data_root)
     llm = _llm_ok()
 
-    run_kc_generation(conn, assignment_id, job_id, llm=llm, embed=fake_embed)
+    _run(conn, assignment_id, job_id, llm)
 
     job = _jobs(conn).get(job_id)
     assert job.status == "done"
@@ -320,7 +334,7 @@ def test_the_runs_the_llm_read_are_saved_for_each_problem(tmp_db, data_root):
     conn = tmp_db
     assignment_id, job_id = _seed_kc_ready(conn, data_root)
 
-    run_kc_generation(conn, assignment_id, job_id, llm=_llm_ok(), embed=fake_embed)
+    _run(conn, assignment_id, job_id, _llm_ok())
 
     rows = conn.execute(
         "SELECT ss.problem_id, ss.position, s.problem_id AS run_problem, s.is_correct "
@@ -335,11 +349,11 @@ def test_the_runs_the_llm_read_are_saved_for_each_problem(tmp_db, data_root):
     assert all(r["run_problem"] == r["problem_id"] and r["is_correct"] == 1 for r in rows)
 
 
-def test_each_candidate_is_saved_in_order_with_its_own_concept(tmp_db, data_root):
+def test_each_candidate_is_saved_in_order_with_the_concept_of_its_group(tmp_db, data_root):
     conn = tmp_db
     assignment_id, job_id = _seed_kc_ready(conn, data_root)
 
-    run_kc_generation(conn, assignment_id, job_id, llm=_PerProblemLLM(), embed=fake_embed)
+    _run(conn, assignment_id, job_id, _PerProblemLLM(), embed_names=_embed_by_problem)
 
     rows = conn.execute(
         "SELECT c.problem_id, c.position, c.name, c.reasoning, k.name AS concept "
@@ -347,9 +361,9 @@ def test_each_candidate_is_saved_in_order_with_its_own_concept(tmp_db, data_root
         "WHERE c.assignment_id = ? ORDER BY c.problem_id, c.position;",
         (assignment_id,),
     ).fetchall()
-    # Seis nomes distintos, e cada um vira o próprio conceito
+    # Seis nomes dão 3 grupos, um por problema, e o nome do grupo é o primeiro KC dele
     assert [tuple(r) for r in rows] == [
-        (problem, position, f"{name} {problem}", f"{label} of {problem}", f"{name} {problem}")
+        (problem, position, f"{name} {problem}", f"{label} of {problem}", f"alpha {problem}")
         for problem in (1, 2, 3)
         for position, name, label in ((1, "alpha", "first"), (2, "beta", "second"))
     ]
@@ -359,7 +373,7 @@ def test_the_job_records_the_model_and_the_prompt_version(tmp_db, data_root):
     conn = tmp_db
     assignment_id, job_id = _seed_kc_ready(conn, data_root)
 
-    run_kc_generation(conn, assignment_id, job_id, llm=_llm_ok(), embed=fake_embed)
+    _run(conn, assignment_id, job_id, _llm_ok())
 
     job = _jobs(conn).get(job_id)
     assert (job.model_id, job.prompt_version) == ("claude-sonnet-5-5", "kcgen-v2")
@@ -375,7 +389,7 @@ def test_the_statement_saved_on_the_problem_reaches_its_own_prompt(tmp_db, data_
     )
     llm = _PerProblemLLM()
 
-    run_kc_generation(conn, assignment_id, job_id, llm=llm, embed=fake_embed)
+    _run(conn, assignment_id, job_id, llm)
 
     has_statement = {
         problem: "\n# Problem:\nReturn the sum of a and b.\n" in prompt

@@ -1,0 +1,17 @@
+You are an experienced computer science teacher and education expert. You will be provided with a list of knowledge components (KCs) that may vary in wording but sometimes refer to the same or related underlying concepts or skills.
+
+The KCs will be given in the format: ["KC 1 name", "KC 2 name", ..., "KC k name"]
+
+Your task is to:
+1. Carefully examine all the KCs in the list to ensure none are overlooked.
+2. Reason explicitly whether the KCs collectively refer to the same underlying concept or skill, or if they are related but represent distinct or complementary aspects of a broader theme.
+3. Based on your reasoning:
+    - If the KCs refer to the same concept or skill, select one KC from the list that best represents the group — choose the one that is most clearly worded, generalizable, and inclusive of the others.
+    - If the KCs are related but too distinct to be represented by a single KC, create a concise and meaningful summary name that captures the broader theme or category shared by the KCs.
+
+Return your output strictly in the following JSON format:
+{
+  "reasoning": "...",        // Exactly one sentence explaining your reasoning
+  "representative kc": "..." , // Selected KC if applicable, otherwise null
+  "summary name": "..." ,       // Summary name if representative KC not chosen, otherwise null
+}
