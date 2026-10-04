@@ -18,6 +18,12 @@ from api.knowledge_components.domain.interfaces.knowledge_component_repository i
 from api.knowledge_components.domain.entities.problem_knowledge_component_entity import (
     ProblemKnowledgeComponent,
 )
+from api.knowledge_components.domain.entities.candidate_knowledge_component_entity import (
+    CandidateKnowledgeComponent,
+)
+from api.knowledge_components.domain.interfaces.candidate_knowledge_component_repository import (
+    ICandidateKnowledgeComponentRepository,
+)
 from api.knowledge_components.domain.entities.sampled_solution_entity import SampledSolution
 from api.knowledge_components.domain.interfaces.sampled_solution_repository import (
     ISampledSolutionRepository,
@@ -41,6 +47,7 @@ class RunKnowledgeComponentGenerationUseCase:
         jobs: IKnowledgeComponentGenerationJobRepository,
         unit_of_work: IUnitOfWork,
         sampled_solutions: ISampledSolutionRepository,
+        candidate_kcs: ICandidateKnowledgeComponentRepository,
     ) -> None:
         self._assignments = assignments
         self._problems = problems
@@ -51,6 +58,7 @@ class RunKnowledgeComponentGenerationUseCase:
         self._jobs = jobs
         self._unit_of_work = unit_of_work
         self._sampled_solutions = sampled_solutions
+        self._candidate_kcs = candidate_kcs
 
     def execute(self, assignment_id: int, job_id: int) -> dict:
         assignment = self._assignments.get(assignment_id)
@@ -58,8 +66,13 @@ class RunKnowledgeComponentGenerationUseCase:
             raise ValueError(f"assignment {assignment_id} inexistente")
 
         self._jobs.mark_running(job_id, started_at=utc_now_iso())
+        statements = {
+            problem.problem_id: problem.statement
+            for problem in self._problems.list_by_assignment(assignment_id)
+        }
         generated = self._generator.generate(
             self._submissions.list_correct_runs(assignment_id),
+            statements,
             assignment.classroom_id,
             assignment_id,
             on_stage=lambda stage: self._jobs.update_stage(job_id, stage, utc_now_iso()),
@@ -92,7 +105,6 @@ class RunKnowledgeComponentGenerationUseCase:
                             problem_id=problem_id,
                         )
                     )
-            self._problems.set_descriptions(assignment_id, generated.problem_descriptions)
             self._sampled_solutions.add_many(
                 [
                     SampledSolution(assignment_id, problem_id, position, submission_id)
@@ -100,8 +112,25 @@ class RunKnowledgeComponentGenerationUseCase:
                     for position, submission_id in enumerate(submission_ids, start=1)
                 ]
             )
+            self._candidate_kcs.add_many(
+                [
+                    CandidateKnowledgeComponent(
+                        assignment_id=assignment_id,
+                        problem_id=problem_id,
+                        position=position,
+                        name=candidate["name"],
+                        reasoning=candidate["reasoning"],
+                        kc_id=kc_id_of_group[generated.group_of_name[candidate["name"]]],
+                    )
+                    for problem_id, candidates in generated.candidate_kcs.items()
+                    for position, candidate in enumerate(candidates, start=1)
+                ]
+            )
             # Status do assignment e job na mesma transação, evita kc_draft com job marcado failed.
             self._assignments.set_status(assignment_id, AssignmentStatus.KC_DRAFT)
+            self._jobs.record_generation_model(
+                job_id, generated.model_id, generated.prompt_version
+            )
             self._jobs.mark_done(job_id, updated_at=utc_now_iso())
 
         return {"n_groups": len(generated.group_names), "n_problems": len(generated.problem_ids)}

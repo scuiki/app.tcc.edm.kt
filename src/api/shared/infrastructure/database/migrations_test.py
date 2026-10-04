@@ -485,3 +485,51 @@ def test_migration_0018_creates_the_sampled_solutions(tmp_path):
     assert _user_version(conn) >= 18
     columns = _column_names(conn, "sampled_solution")
     assert {"assignment_id", "problem_id", "position", "submission_id"} <= columns
+
+
+# 0019 sobre um banco em user_version=18, os KCs candidatos e o modelo de cada extração.
+def test_migration_0019_adds_the_candidates_and_the_model_of_the_extraction(tmp_path):
+    conn = connect(str(tmp_path / "app.db"))
+    run_migrations(conn, migrations_dir=_migrations_up_to(tmp_path, 18))
+    assignment_id = _seed_assignment(conn)
+    conn.execute(
+        "INSERT INTO kc_job (assignment_id, status, created_at) VALUES (?, 'done', 't0');",
+        (assignment_id,),
+    )
+
+    run_migrations(conn, migrations_dir=_migrations_up_to(tmp_path, 19))
+
+    assert _user_version(conn) == 19
+    columns = _column_names(conn, "candidate_kc")
+    assert {"problem_id", "position", "name", "reasoning", "translated_reasoning", "kc_id"} <= columns
+    assert {"model_id", "prompt_version"} <= _column_names(conn, "kc_job")
+    row = conn.execute("SELECT model_id, prompt_version FROM kc_job;").fetchone()
+    assert (row[0], row[1]) == (None, None)  # a extração antiga não diz o modelo
+
+
+def test_the_candidate_table_refuses_what_makes_no_sense(tmp_path):
+    # Posição repetida, sem conceito, sem justificativa e problema inexistente são recusados
+    conn = connect(str(tmp_path / "app.db"))
+    run_migrations(conn)
+    assignment_id = _seed_assignment(conn)
+    conn.execute("INSERT INTO problem (assignment_id, problem_id) VALUES (?, 1);", (assignment_id,))
+    kc_id = conn.execute(
+        "INSERT INTO kc (assignment_id, name) VALUES (?, 'laços');", (assignment_id,)
+    ).lastrowid
+
+    def insert(problem_id, position, reasoning, concept):
+        conn.execute(
+            "INSERT INTO candidate_kc (assignment_id, problem_id, position, name, reasoning, kc_id) "
+            "VALUES (?, ?, ?, 'Loop', ?, ?);",
+            (assignment_id, problem_id, position, reasoning, concept),
+        )
+
+    insert(1, 1, "loops", kc_id)
+    for problem_id, position, reasoning, concept in (
+        (1, 1, "again", kc_id),
+        (1, 2, "loops", None),
+        (1, 3, None, kc_id),
+        (99, 1, "loops", kc_id),
+    ):
+        with pytest.raises(sqlite3.IntegrityError):
+            insert(problem_id, position, reasoning, concept)

@@ -28,9 +28,3 @@ class SqliteProblemRepository:
             Problem(r["assignment_id"], r["problem_id"], r["description"], r["statement"])
             for r in rows
         ]
-
-    def set_descriptions(self, assignment_id: int, descriptions: dict[int, str]) -> None:
-        self._conn.executemany(
-            "UPDATE problem SET description = ? WHERE assignment_id = ? AND problem_id = ?;",
-            [(text, assignment_id, problem_id) for problem_id, text in descriptions.items()],
-        )

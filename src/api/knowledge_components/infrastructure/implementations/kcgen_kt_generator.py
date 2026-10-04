@@ -12,6 +12,10 @@ import pandas as pd
 from api.knowledge_components.domain.interfaces.knowledge_component_generator import (
     GeneratedKnowledgeComponents,
 )
+from api.knowledge_components.infrastructure.implementations.kc_generation_model import (
+    KC_GENERATION_MODEL_ID,
+    PROMPT_VERSION,
+)
 from api.knowledge_components.infrastructure.implementations.llm_response_cache import (
     CachedLLMClient,
 )
@@ -24,7 +28,7 @@ from ml.kc_generation.kc_grouping import (
     choose_kc_group_count,
     group_similar_kcs,
 )
-from ml.kc_generation.llm_client import LLMClient
+from ml.kc_generation.llm_client import InvalidLLMResponseError, LLMClient
 from ml.kc_generation.qmatrix_builder import build_qmatrix
 from ml.kc_generation.solution_sampling import select_sample_solutions
 
@@ -57,6 +61,16 @@ def run_in_parallel(
     return results
 
 
+def _generate_for_problem(
+    problem_id: str, solutions: list[str], statement: str | None, llm: LLMClient
+) -> list[dict[str, str]]:
+    # A mensagem da resposta inválida vai para o diálogo da extração, então ela diz o problema
+    try:
+        return generate_candidate_kcs(solutions, statement, llm)
+    except InvalidLLMResponseError as exc:
+        raise InvalidLLMResponseError(f"problema {problem_id}, {exc}") from exc
+
+
 class KcGenKtGenerator:
     def __init__(
         self, llm: LLMClient, embed: Callable[[list[str]], np.ndarray] | None = None
@@ -67,6 +81,7 @@ class KcGenKtGenerator:
     def generate(
         self,
         correct_runs: pd.DataFrame,
+        statements: dict[int, str | None],
         classroom_id: int,
         assignment_id: int,
         on_stage: Callable[[str], None],
@@ -77,7 +92,7 @@ class KcGenKtGenerator:
         # Ordenado como texto de propósito ("10" antes de "2"), fiel ao TCC 1, não "corrigir".
         problem_ids = sorted(str(p) for p in correct_runs["problem_id"].dropna().unique())
 
-        # Etapas 1-2 por problema, amostra diversa e KCs candidatos pelo LLM, sem KC é erro duro.
+        # Etapas 1-2 por problema, a amostra e os KCs candidatos, com o enunciado quando existe
         on_stage("generate")
         generate_llm = CachedLLMClient(self._llm, cache_dir, stage="generate")
         # A amostragem roda antes e em ordem, só as chamadas ao LLM vão para o paralelo
@@ -88,15 +103,19 @@ class KcGenKtGenerator:
             samples = select_sample_solutions(runs, self._embed)
             samples_by_problem[problem_id] = samples
             generate_tasks[problem_id] = partial(
-                generate_candidate_kcs, int(problem_id), [s["code"] for s in samples], generate_llm
+                _generate_for_problem,
+                problem_id,
+                [s["code"] for s in samples],
+                statements.get(int(problem_id)),
+                generate_llm,
             )
         generated = run_in_parallel(generate_tasks, on_progress)
-        candidate_kcs_by_problem: dict = {p: generated[p] for p in problem_ids}
+        candidate_kcs_by_problem = {p: generated[p] for p in problem_ids}
 
         # Etapas 3-4, nomes únicos de KC viram grupos; poucos nomes pulam SBERT e a nomeação.
         unique_names: list[str] = []
         for problem_id in problem_ids:
-            for kc in candidate_kcs_by_problem[problem_id]["kcs"]:
+            for kc in candidate_kcs_by_problem[problem_id]:
                 if kc["name"] not in unique_names:
                     unique_names.append(kc["name"])
 
@@ -124,15 +143,14 @@ class KcGenKtGenerator:
                 int(p): [g for g in range(n_groups) if int(qmatrix.loc[p][f"kc_{g}"]) == 1]
                 for p in problem_ids
             },
-            problem_descriptions={
-                int(p): candidate_kcs_by_problem[p]["problem_description"]
-                for p in problem_ids
-                if candidate_kcs_by_problem[p].get("problem_description")
-            },
+            candidate_kcs={int(p): candidate_kcs_by_problem[p] for p in problem_ids},
+            group_of_name=group_of_name,
             sampled_solutions={
                 int(p): [int(s["submission_id"]) for s in samples_by_problem[p]]
                 for p in problem_ids
             },
+            model_id=KC_GENERATION_MODEL_ID,
+            prompt_version=PROMPT_VERSION,
         )
 
     def _group_and_name(

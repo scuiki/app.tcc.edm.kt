@@ -1,0 +1,7 @@
+{
+  "statement": "Write a function in Java that implements the following logic: Given 2 ints, a and b, return their sum. However, sums in the range 10..19 inclusive, are forbidden, so in that case just return 20.",
+  "solutions": [
+    "public int sortaSum(int a, int b)\n{\n    int sum = a + b;\n    if (sum >= 10 && sum <= 19)\n        return 20;\n    return sum;\n}",
+    "public int sortaSum(int a, int b) {\n  return (a + b >= 10 && a + b <= 19) ? 20 : a + b;\n}"
+  ]
+}

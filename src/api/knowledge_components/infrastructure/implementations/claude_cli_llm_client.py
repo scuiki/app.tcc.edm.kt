@@ -5,12 +5,15 @@ import json
 import os
 import subprocess
 import tempfile
+from typing import Callable
 
 from api.knowledge_components.infrastructure.implementations.llm_call_retry import (
-    EmptyContentError,
     TransientLLMError,
 )
+from ml.kc_generation.llm_client import InvalidLLMResponseError
 
+# O tempo limite de uma chamada, folgado para uma resposta lenta não virar outra tentativa
+CALL_TIMEOUT_S = 300
 
 
 def _neutral_cwd() -> str:
@@ -19,29 +22,31 @@ def _neutral_cwd() -> str:
 
 
 def _parse_json_from_text(text: str) -> dict:
-    # Sem structured_output, extrai o JSON do bloco de código markdown ou do texto inteiro.
-    if not text:
-        raise EmptyContentError("envelope sem structured_output e result vazio")
-    fence = "```json"
-    if fence in text:
-        body = text.split(fence, 1)[1].split("```", 1)[0]
-    elif "```" in text:
-        body = text.split("```", 1)[1].split("```", 1)[0]
-    else:
-        start, end = text.find("{"), text.rfind("}")
-        body = text[start : end + 1] if start != -1 and end > start else text
-    try:
-        return json.loads(body.strip())
-    except json.JSONDecodeError as exc:
-        raise EmptyContentError(f"result não-JSON: {exc}") from exc
+    # Sem structured_output, a resposta é o último objeto JSON não vazio do texto, com ou sem cerca
+    decoder = json.JSONDecoder()
+    last: dict | None = None
+    position = text.find("{")
+    while position != -1:
+        try:
+            value, end = decoder.raw_decode(text, position)
+        except json.JSONDecodeError:
+            position = text.find("{", position + 1)
+            continue
+        if value:
+            last = value
+        # A busca segue depois do objeto inteiro, para um objeto de dentro dele não virar a resposta
+        position = text.find("{", end)
+    if last is None:
+        raise InvalidLLMResponseError("a resposta não traz um objeto JSON")
+    return last
 
 
 def call_claude(
     system: str,
     prompt: str,
-    schema: dict,
     model: str,
-    timeout_s: int = 120,
+    schema: dict | None = None,
+    timeout_s: int = CALL_TIMEOUT_S,
 ) -> dict:
     # `model` vem de quem chama, a versão fixada é decisão dele, este transporte não escolhe modelo.
     argv = [
@@ -54,8 +59,6 @@ def call_claude(
         model,
         "--system-prompt",  # substitui o prompt default; nunca bare, que exigiria ANTHROPIC_API_KEY
         system,
-        "--json-schema",
-        json.dumps(schema),
         # Sem ferramenta nenhuma o LLM não faz I/O, e o contexto cai de 10 mil tokens para mil
         "--tools",
         "",
@@ -63,6 +66,9 @@ def call_claude(
         "--strict-mcp-config",
         "--no-session-persistence",
     ]
+    # Sem schema, o JSON vem no texto da resposta, como os prompts do Duan pedem
+    if schema is not None:
+        argv += ["--json-schema", json.dumps(schema)]
     try:
         # list-form, sem shell, fecha command injection.
         proc = subprocess.run(
@@ -88,22 +94,32 @@ def call_claude(
 
     out = env.get("structured_output")
     if out is None:
-        out = _parse_json_from_text(env.get("result", ""))
+        out = _parse_json_from_text(env.get("result") or "")
     return out
 
 
 # LLMClient (interface do ml/kc_generation) sobre `claude -p`, injeção troca o transporte.
 class ClaudeCliLLMClient:
-    def __init__(self, model: str, timeout_s: int = 120) -> None:
+    def __init__(self, model: str, timeout_s: int = CALL_TIMEOUT_S) -> None:
         self._model = model
         self._timeout_s = timeout_s
 
-    def generate(self, system: str, prompt: str, schema: dict) -> dict:
-        return call_claude(
+    def generate(
+        self,
+        system: str,
+        prompt: str,
+        schema: dict | None = None,
+        validate: Callable[[dict], object] | None = None,
+    ) -> dict:
+        response = call_claude(
             system=system,
             prompt=prompt,
-            schema=schema,
             model=self._model,
+            schema=schema,
             timeout_s=self._timeout_s,
         )
+        # Aqui a validação só recusa, e quem pede de novo e guarda é o CachedLLMClient
+        if validate is not None:
+            validate(response)
+        return response
 

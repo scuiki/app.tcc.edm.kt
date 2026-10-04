@@ -15,7 +15,7 @@ def build_qmatrix(problem_ids, candidate_kcs_by_problem: dict, kc_grouping: dict
     for problem_id in problem_ids:
         row = [0] * n_groups
         if problem_id in candidate_kcs_by_problem:
-            for kc in candidate_kcs_by_problem[problem_id]["kcs"]:
+            for kc in candidate_kcs_by_problem[problem_id]:
                 cluster_id = kc_to_cluster.get(kc["name"])
                 if cluster_id is not None:
                     row[cluster_id] = 1

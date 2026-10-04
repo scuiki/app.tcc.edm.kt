@@ -65,3 +65,13 @@ def test_a_new_stage_starts_without_the_progress_of_the_previous_one(tmp_db):
     jobs.update_stage(job_id, "cluster", CREATED)
     job = jobs.get(job_id)
     assert (job.stage, job.progress_done, job.progress_total) == ("cluster", None, None)
+
+
+def test_the_job_records_the_model_and_the_prompt_version(tmp_db):
+    jobs, job_id = _job(tmp_db)
+    assert (jobs.get(job_id).model_id, jobs.get(job_id).prompt_version) == (None, None)
+
+    jobs.record_generation_model(job_id, "claude-sonnet-5-5", "kcgen-v2")
+
+    job = jobs.get(job_id)
+    assert (job.model_id, job.prompt_version) == ("claude-sonnet-5-5", "kcgen-v2")

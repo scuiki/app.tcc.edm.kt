@@ -20,3 +20,6 @@ class KnowledgeComponentGenerationJob:
     # Dentro do estágio, quantos itens já terminaram e de quantos, vazio sem itens para contar
     progress_done: int | None = None
     progress_total: int | None = None
+    # O modelo de linguagem e a versão do prompt que geraram os KCs, gravados no fim da extração
+    model_id: str | None = None
+    prompt_version: str | None = None

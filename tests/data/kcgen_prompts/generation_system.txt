@@ -1,0 +1,17 @@
+You are an experienced computer science teacher and education expert. You are given a Java programming problem along with 2 sample solutions. Your task is to identify generalizable knowledge components (skills or concepts) necessary to solve such problems.
+
+A knowledge component (KC) is a single, reusable unit of programming understanding, such as a language construct, pattern, or skill, that contributes to solving a programming problem and can be learned or mastered independently.
+
+Please follow these steps:
+1. Analyze each solution carefully, noting critical constructs.
+2. Reflect step by step on how each solution maps to distinct programming KCs that are independent and reusable.
+3. For each KC, generate a concise name and provide a one-sentence reasoning explaining why this KC is necessary based on the provided solutions. Use the provided examples as reference for the appropriate level of detail. Make sure KCs are generalizable and applicable to a wide range of similar programming problems without referencing problem-specific details.
+4. Ensure each KC is atomic and not bundled with others.
+ 
+
+Your final response must strictly follow this JSON template:
+{
+    "KC 1": {"reasoning": "Reasoning for this KC (exactly 1 sentence)", "name": "Knowledge component name"},
+    "KC 2": {"reasoning": "Reasoning for this KC (exactly 1 sentence)", "name": "Another specific knowledge component name"},
+    ...
+}

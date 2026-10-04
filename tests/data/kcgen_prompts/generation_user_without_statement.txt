@@ -1,0 +1,46 @@
+# Example 1:
+## Problem:
+Write a function in Java that implements the following logic: Given a string str and a non-empty word, return a version of the original string where all chars have been replaced by pluses (+), except for appearances of the word which are preserved unchanged.
+
+## Expected KCs:
+{
+  "KC 1": "If and else statement",
+  "KC 2": "While loop",
+  "KC 3": "Numerical comparisons",
+  "KC 4": "String formatting",
+  "KC 5": "String concatenation",
+  "KC 6": "String indexing",
+  "KC 7": "String length",
+  "KC 8": "String equality comparison"
+}
+
+# Example 2:
+## Problem:
+Write a function in Java that implements the following logic: You are driving a little too fast, and a police officer stops you. Write code to compute the result, encoded as an int value: 0=no ticket, 1=small ticket, or 2=big ticket. If speed is 60 or less, the result is 0. If speed is between 61 and 80 inclusive, the result is 1. If speed is 81 or more, the result is 2. Unless it is your birthday--on that day, your speed can be 5 higher in all cases.
+
+## Expected KCs:
+{
+  "KC 1": "If and else statement",
+  "KC 2": "Nested if statement",
+  "KC 3": "Basic arithmetic operations",
+  "KC 4": "Logical operators",
+  "KC 5": "Numerical comparisons",
+  "KC 6": "Boolean operations"
+}
+
+Now analyze the following problem using their solution code. 
+
+## Sample solution 1:
+public int sortaSum(int a, int b)
+{
+    int sum = a + b;
+    if (sum >= 10 && sum <= 19)
+        return 20;
+    return sum;
+}
+## Sample solution 2:
+public int sortaSum(int a, int b) {
+  return (a + b >= 10 && a + b <= 19) ? 20 : a + b;
+}
+
+Follow the instructions in system message. First, carefully examine the solutions and identify the important elements and patterns. Then, explicitly reason about what underlying knowledge components are required based on these solution codes. Finally, take the examples as reference and summarize your analysis clearly into generalizable and concise knowledge components.

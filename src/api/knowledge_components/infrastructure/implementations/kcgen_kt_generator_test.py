@@ -9,6 +9,7 @@ import pandas as pd
 import pytest
 
 from api.knowledge_components.infrastructure.implementations import kcgen_kt_generator
+from ml.kc_generation.llm_client import InvalidLLMResponseError
 from api.knowledge_components.infrastructure.implementations.kcgen_kt_generator import (
     LLM_CONCURRENCY,
     KcGenKtGenerator,
@@ -77,12 +78,16 @@ def test_a_failure_stops_the_tasks_that_did_not_start():
 
 
 class _EchoLLM:
-    # Devolve um KC com o id do problema tirado do prompt, para conferir quem ficou com o quê
-    def generate(self, system: str, prompt: str, schema: dict) -> dict:
-        problem_id = re.search(r"Problem (\d+) — Correct student solutions", prompt).group(1)
+    # Devolve um KC com o id do problema tirado do código no prompt, para saber quem ficou com o quê
+    def __init__(self) -> None:
+        self.prompts: dict[str, str] = {}
+
+    def generate(self, system: str, prompt: str, schema=None, validate=None) -> dict:
+        problem_id = re.search(r"public int p(\d+)\(", prompt).group(1)
+        self.prompts[problem_id] = prompt
         # O problema 1 demora mais, então termina depois dos outros
         time.sleep(0.1 if problem_id == "1" else 0.0)
-        return {"kcs": [{"name": f"kc do problema {problem_id}", "reasoning": "eco"}]}
+        return {"KC 1": {"reasoning": "eco", "name": f"kc do problema {problem_id}"}}
 
 
 def _correct_runs(problem_ids: list[int], runs_per_problem: int = 3) -> pd.DataFrame:
@@ -109,6 +114,7 @@ def test_generation_reports_the_progress_of_each_problem(data_root, monkeypatch)
 
     generated = KcGenKtGenerator(_EchoLLM(), embed=fake_embed).generate(
         _correct_runs([1, 2, 3]),
+        statements={},
         classroom_id=1,
         assignment_id=1,
         on_stage=stages.append,
@@ -132,9 +138,9 @@ class _RecordingLLM:
     def __init__(self) -> None:
         self.prompts: list[str] = []
 
-    def generate(self, system: str, prompt: str, schema: dict) -> dict:
+    def generate(self, system: str, prompt: str, schema=None, validate=None) -> dict:
         self.prompts.append(prompt)
-        return {"kcs": [{"name": "kc", "reasoning": "eco"}]}
+        return {"KC 1": {"reasoning": "eco", "name": "kc"}}
 
 
 def test_the_sampled_solutions_keep_the_order_of_the_prompt(data_root):
@@ -143,7 +149,7 @@ def test_the_sampled_solutions_keep_the_order_of_the_prompt(data_root):
     llm = _RecordingLLM()
 
     generated = KcGenKtGenerator(llm, embed=fake_embed).generate(
-        runs, 1, 1, on_stage=lambda stage: None, on_progress=lambda done, total: None
+        runs, {}, 1, 1, on_stage=lambda stage: None, on_progress=lambda done, total: None
     )
 
     code_of = dict(zip(runs["submission_id"], runs["code"]))
@@ -164,7 +170,57 @@ def test_without_fake_vectors_the_generator_uses_the_codebert(data_root, monkeyp
     monkeypatch.setattr(kcgen_kt_generator, "embed_solutions", codebert)
 
     KcGenKtGenerator(_RecordingLLM()).generate(
-        _correct_runs([1]), 1, 1, on_stage=lambda stage: None, on_progress=lambda done, total: None
+        _correct_runs([1]),
+        {},
+        1,
+        1,
+        on_stage=lambda stage: None,
+        on_progress=lambda done, total: None,
     )
 
     assert len(calls) == 1
+
+
+def test_each_problem_gets_its_own_statement_and_the_one_without_gets_none(data_root):
+    llm = _EchoLLM()
+
+    generated = KcGenKtGenerator(llm, embed=fake_embed).generate(
+        _correct_runs([1, 2]),
+        {1: "Return the sum of a and b.", 2: None},
+        1,
+        1,
+        on_stage=lambda stage: None,
+        on_progress=lambda done, total: None,
+    )
+
+    # Os exemplos têm `## Problem:`, e a linha do enunciado do problema analisado é `# Problem:`
+    assert "\n# Problem:\nReturn the sum of a and b.\n" in llm.prompts["1"]
+    assert "\n# Problem:\n" not in llm.prompts["2"]
+    # O resultado traz os candidatos, o grupo de cada nome e quem gerou
+    assert generated.candidate_kcs == {
+        p: [{"name": f"kc do problema {p}", "reasoning": "eco"}] for p in (1, 2)
+    }
+    assert set(generated.group_of_name) == {"kc do problema 1", "kc do problema 2"}
+    assert (generated.model_id, generated.prompt_version) == ("claude-sonnet-5-5", "kcgen-v2")
+
+
+class _EmptyForProblemTwo(_EchoLLM):
+    # O problema 2 recebe sempre uma resposta sem KC, e os outros o eco de sempre
+    def generate(self, system: str, prompt: str, schema=None, validate=None) -> dict:
+        answer = super().generate(system, prompt, schema, validate)
+        return {} if re.search(r"public int p2\(", prompt) else answer
+
+
+def test_an_invalid_answer_names_its_problem(data_root, monkeypatch):
+    # A mensagem vai para o diálogo da extração, e sem o problema ninguém sabe onde olhar
+    monkeypatch.setattr("time.sleep", lambda *_a, **_k: None)
+
+    with pytest.raises(InvalidLLMResponseError, match="problema 2,"):
+        KcGenKtGenerator(_EmptyForProblemTwo(), embed=fake_embed).generate(
+            _correct_runs([1, 2, 3]),
+            {},
+            1,
+            1,
+            on_stage=lambda stage: None,
+            on_progress=lambda done, total: None,
+        )

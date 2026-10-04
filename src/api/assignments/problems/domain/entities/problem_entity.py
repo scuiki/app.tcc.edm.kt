@@ -9,5 +9,5 @@ from dataclasses import dataclass
 class Problem:
     assignment_id: int
     problem_id: int  # o ProblemID do dataset, único só dentro do assignment
-    description: str | None = None  # deduzida pelo LLM na geração de KCs, vazia até lá
+    description: str | None = None  # a que o LLM deduzia nas extrações antigas, hoje não gravada
     statement: str | None = None  # o enunciado do arquivo de enunciados, quando o pacote o traz

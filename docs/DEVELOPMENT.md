@@ -765,7 +765,10 @@ referência de detalhe, que o prompt do TCC 1 não tinha.
 **17. Validação da resposta.** O paper não trata. O repositório lê a resposta no modo JSON da OpenAI,
 guarda só o nome de cada KC e, se um nome contém "KC", para no depurador (`KC_gen.py:155-162`). O app
 valida a estrutura do JSON, com um nome e uma justificativa por KC, tenta de novo se ela vier
-inválida e guarda a justificativa (critério 5).
+inválida e guarda a justificativa (critério 5). Sem o modo JSON, o modelo pode escrever antes do
+JSON. Na validação de 04/10/2026, no problema 1 do A439, a resposta com enunciado trouxe só o bloco
+de JSON, e a sem enunciado trouxe uma análise em texto antes dele, que o app descarta ao ficar com o
+último objeto JSON do texto.
 
 #### O agrupamento e o nível de abstração
 

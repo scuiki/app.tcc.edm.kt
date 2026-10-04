@@ -23,7 +23,8 @@ class SqliteKnowledgeComponentGenerationJobRepository:
     def get(self, job_id: int) -> KnowledgeComponentGenerationJob | None:
         row = self._conn.execute(
             "SELECT id, assignment_id, status, created_at, stage, started_at, updated_at, "
-            "error_message, progress_done, progress_total FROM kc_job WHERE id = ?;",
+            "error_message, progress_done, progress_total, model_id, prompt_version "
+            "FROM kc_job WHERE id = ?;",
             (job_id,),
         ).fetchone()
         if row is None:
@@ -39,6 +40,8 @@ class SqliteKnowledgeComponentGenerationJobRepository:
             error_message=row["error_message"],
             progress_done=row["progress_done"],
             progress_total=row["progress_total"],
+            model_id=row["model_id"],
+            prompt_version=row["prompt_version"],
         )
 
     def mark_running(self, job_id: int, started_at: str) -> None:
@@ -59,6 +62,12 @@ class SqliteKnowledgeComponentGenerationJobRepository:
         self._conn.execute(
             "UPDATE kc_job SET progress_done = ?, progress_total = ?, updated_at = ? WHERE id = ?;",
             (done, total, updated_at, job_id),
+        )
+
+    def record_generation_model(self, job_id: int, model_id: str, prompt_version: str) -> None:
+        self._conn.execute(
+            "UPDATE kc_job SET model_id = ?, prompt_version = ? WHERE id = ?;",
+            (model_id, prompt_version, job_id),
         )
 
     def mark_done(self, job_id: int, updated_at: str) -> None:

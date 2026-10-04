@@ -56,6 +56,9 @@ from api.knowledge_components.infrastructure.implementations.kcgen_kt_generator 
 from api.knowledge_components.infrastructure.implementations.kc_generation_model import (
     KC_GENERATION_MODEL_ID,
 )
+from api.knowledge_components.infrastructure.repositories.sqlite_candidate_knowledge_component_repository import (
+    SqliteCandidateKnowledgeComponentRepository,
+)
 from api.knowledge_components.infrastructure.repositories.sqlite_kc_generation_job_repository import (
     SqliteKnowledgeComponentGenerationJobRepository,
 )
@@ -198,4 +201,5 @@ def build_run_kc_generation_use_case(
         jobs=SqliteKnowledgeComponentGenerationJobRepository(conn),
         unit_of_work=SqliteUnitOfWork(conn),
         sampled_solutions=SqliteSampledSolutionRepository(conn),
+        candidate_kcs=SqliteCandidateKnowledgeComponentRepository(conn),
     )

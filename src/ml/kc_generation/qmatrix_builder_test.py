@@ -15,7 +15,8 @@ def test_build_qmatrix_reproduces_reference(kc_reference_dir):
     # Reproduz qmatrix_A439.csv célula-a-célula, replay determinístico da saída bruta do LLM.
     import pandas as pd
 
-    kc_raw = _load(kc_reference_dir, "kc_raw_A439.json")
+    # O artefato do TCC 1 guarda os KCs de cada problema dentro de "kcs"
+    kc_raw = {p: v["kcs"] for p, v in _load(kc_reference_dir, "kc_raw_A439.json").items()}
     kc_clusters = _load(kc_reference_dir, "kc_clusters_A439.json")
     # O CSV é o artefato do TCC 1 e guarda o índice com o nome do ProgSnap2.
     reference = pd.read_csv(kc_reference_dir / "qmatrix_A439.csv", index_col="ProblemID")

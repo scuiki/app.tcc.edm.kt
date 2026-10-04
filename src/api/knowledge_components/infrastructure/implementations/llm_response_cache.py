@@ -5,13 +5,14 @@ import hashlib
 import json
 import threading
 from pathlib import Path
+from typing import Callable
 
 from api.knowledge_components.infrastructure.implementations.kc_generation_model import (
     KC_GENERATION_MODEL_ID,
     PROMPT_VERSION,
 )
 from api.knowledge_components.infrastructure.implementations.llm_call_retry import call_with_retry
-from ml.kc_generation.llm_client import LLMClient
+from ml.kc_generation.llm_client import InvalidLLMResponseError, LLMClient
 
 # Nome fixo no código, nunca string controlada pelo usuário, fecha path traversal.
 _CACHE_FILENAME = "kc_cache.json"
@@ -74,7 +75,19 @@ def cache_put(base_path, *, problem_id: str, key: str, record: dict) -> None:
     with _FILE_LOCK:
         store = _load(base_path)
         store[str(problem_id)] = record
-        f.write_text(json.dumps(store, ensure_ascii=False, sort_keys=True, indent=2))
+        # Ordena só as entradas, porque a ordem das chaves de uma resposta é a ordem dos KCs dela
+        f.write_text(json.dumps(dict(sorted(store.items())), ensure_ascii=False, indent=2))
+
+
+def _passes(validate: Callable[[dict], object] | None, response: dict) -> bool:
+    # Sem validação toda resposta passa, e com ela só a que não levanta InvalidLLMResponseError
+    if validate is None:
+        return True
+    try:
+        validate(response)
+    except InvalidLLMResponseError:
+        return False
+    return True
 
 
 # LLMClient com cache e retry, resposta já paga não é pedida de novo.
@@ -84,16 +97,30 @@ class CachedLLMClient:
         self._cache_dir = cache_dir
         self._stage = stage  # generate ou label, o mesmo prompt em etapas diferentes não colide
 
-    def generate(self, system: str, prompt: str, schema: dict) -> dict:
+    def generate(
+        self,
+        system: str,
+        prompt: str,
+        schema: dict | None = None,
+        validate: Callable[[dict], object] | None = None,
+    ) -> dict:
         key = kc_input_hash(
             KC_GENERATION_MODEL_ID, PROMPT_VERSION, prompt, system=system, schema=schema
         )
         cache_id = f"{self._stage}:{key}"
         cached = cache_get(self._cache_dir, problem_id=cache_id, key=key)
-        if cached is not None:
+        # Uma resposta guardada que a validação de hoje recusa é pedida de novo e trocada no cache
+        if cached is not None and _passes(validate, cached["parsed"]):
             return cached["parsed"]
 
-        parsed = call_with_retry(lambda: self._llm.generate(system, prompt, schema))
+        def ask() -> dict:
+            response = self._llm.generate(system, prompt, schema)
+            # A resposta inválida levanta aqui, é pedida de novo e nunca chega ao cache
+            if validate is not None:
+                validate(response)
+            return response
+
+        parsed = call_with_retry(ask)
         cache_put(
             self._cache_dir,
             problem_id=cache_id,

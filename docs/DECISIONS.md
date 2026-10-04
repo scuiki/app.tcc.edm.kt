@@ -146,21 +146,29 @@ de qualquer chamada real.
 schema, e não só o conteúdo, porque editar o sistema ou o schema devolveria em silêncio uma
 resposta antiga. As partes são separadas por um byte NUL, para `("a", "b")` e `("ab", "")` não
 colidirem. É identidade, não segredo. Uma resposta só entra no cache depois de validada, então uma
-resposta fora do formato nunca é devolvida de novo.
+resposta fora do formato nunca é devolvida de novo, e uma resposta guardada que a validação de hoje
+recusa é pedida de novo e trocada. O arquivo do cache ordena só as entradas, e não as chaves de
+dentro de uma resposta, porque na resposta da geração a ordem das chaves é a ordem dos KCs, e como
+texto o "KC 10" viria antes do "KC 2".
 
 **O LLM é chamado pela CLI `claude`.** A autenticação é o OAuth da assinatura, que só a CLI resolve.
 O modelo é sempre passado por quem chama, o Claude Sonnet 5.5 (`claude-sonnet-5-5`), um modelo
 forte, a adaptação mais próxima do GPT-4o do paper (o LLM, na linha 9 do KCGen-KT no
 `DEVELOPMENT.md`). Ele não tem versão datada, então o job
 grava o modelo e a versão do prompt de cada extração. Os prompts do Duan pedem o JSON no próprio
-texto, então a chamada vai sem schema, e a resposta é lida do texto e validada pelo app. A CLI roda
+texto, então a chamada vai sem schema, e a resposta é lida do texto e validada pelo app. A leitura
+fica com o último objeto JSON não vazio do texto, com ou sem cerca de código, porque sem o modo
+JSON o modelo pode escrever uma análise antes dele, com chaves de código Java no meio. A CLI roda
 fora do repositório (`EDMKT_KC_CWD`), para o CLAUDE.md do projeto não entrar no contexto e no custo
 de cada chamada.
 
 **Retry para erro transitório e para resposta inválida.** Rede, 429, 5xx e timeout são refeitos com
 espera, e uma resposta vazia, que não é JSON ou que está fora do formato pedido também, até 3 vezes
 ao todo. A temperatura não é fixável no modelo nem na CLI, então uma chamada nova pode vir certa.
-Depois da terceira, a extração para com erro.
+Depois da terceira, a extração para com erro, e a mensagem diz o problema. O tempo limite de uma
+chamada é de 300 segundos. Na validação de 04/10/2026 a geração respondeu em 7 e 8 segundos, e o
+limite folgado evita que uma resposta lenta da assinatura vire erro transitório e gaste outra
+chamada.
 
 **As chamadas de um estágio rodam em paralelo, até 4 de cada vez.** As chamadas do `generate` e do
 `evidence` (uma por problema) e as da nomeação (uma por grupo) não dependem umas das outras, e em

@@ -2,10 +2,21 @@
 
 from __future__ import annotations
 
-from typing import Protocol
+from typing import Callable, Protocol
+
+
+# Resposta vazia, que não é JSON ou fora do formato pedido, e uma nova chamada pode vir certa
+class InvalidLLMResponseError(ValueError):
+    pass
 
 
 class LLMClient(Protocol):
-    def generate(self, system: str, prompt: str, schema: dict) -> dict:
-        # Saída do LLM validada por `schema`, que a app mapeia para `claude -p --json-schema`.
+    def generate(
+        self,
+        system: str,
+        prompt: str,
+        schema: dict | None = None,
+        validate: Callable[[dict], object] | None = None,
+    ) -> dict:
+        # A resposta em JSON, e com `validate` só sai a que passa nele sem InvalidLLMResponseError
         ...

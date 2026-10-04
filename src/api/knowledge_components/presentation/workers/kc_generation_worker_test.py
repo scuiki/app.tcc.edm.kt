@@ -2,8 +2,10 @@
 from __future__ import annotations
 
 import os
+import re
 
 import pandas as pd
+import pytest
 
 from api.assignments.domain.entities.assignment_entity import Assignment
 from api.classrooms.domain.entities.classroom_entity import Classroom
@@ -18,6 +20,9 @@ from api.classroom_import.infrastructure.repositories.sqlite_submission_reposito
 )
 from api.knowledge_components.domain.entities.kc_generation_job_entity import (
     KnowledgeComponentGenerationJob,
+)
+from api.knowledge_components.infrastructure.repositories.sqlite_candidate_knowledge_component_repository import (
+    SqliteCandidateKnowledgeComponentRepository,
 )
 from api.knowledge_components.infrastructure.repositories.sqlite_kc_generation_job_repository import (
     SqliteKnowledgeComponentGenerationJobRepository,
@@ -34,17 +39,38 @@ from tests.fixtures.knowledge_components import fake_embed
 from tests.fixtures.problems import add_problems
 
 
-# LLMClient falso, devolve o que `respond()` mandar, sem tocar o `claude`.
+# LLMClient falso, devolve o que `respond()` mandar e guarda os prompts, sem tocar o `claude`.
 class _FakeLLM:
     def __init__(self, respond) -> None:
         self._respond = respond
+        self.prompts: list[str] = []
 
-    def generate(self, system: str, prompt: str, schema: dict) -> dict:
+    def generate(self, system: str, prompt: str, schema=None, validate=None) -> dict:
+        self.prompts.append(prompt)
         return self._respond()
 
 
+def _answer(name: str, reasoning: str = "x") -> dict:
+    # A resposta no formato do repositório do Duan, com um KC só
+    return {"KC 1": {"reasoning": reasoning, "name": name}}
+
+
 def _llm_ok() -> _FakeLLM:
-    return _FakeLLM(lambda: {"kcs": [{"name": "laços", "reasoning": "usa for"}]})
+    return _FakeLLM(lambda: _answer("laços", "usa for"))
+
+
+class _PerProblemLLM:
+    # Dois KCs com o número do problema no nome, e o problema sai do código que está no prompt
+    def __init__(self) -> None:
+        self.prompts: dict[int, str] = {}
+
+    def generate(self, system: str, prompt: str, schema=None, validate=None) -> dict:
+        problem = int(re.search(r"_p(\d+)\(", prompt).group(1))
+        self.prompts[problem] = prompt
+        return {
+            "KC 1": {"reasoning": f"first of {problem}", "name": f"alpha {problem}"},
+            "KC 2": {"reasoning": f"second of {problem}", "name": f"beta {problem}"},
+        }
 
 
 def _jobs(conn) -> SqliteKnowledgeComponentGenerationJobRepository:
@@ -80,7 +106,9 @@ def _canonical_df() -> pd.DataFrame:
     for s, body in enumerate(_JAVA_BODIES):
         for step, (pid, score) in enumerate([(1, 1.0), (2, 1.0), (3, 1.0)]):
             ts = base + pd.Timedelta(hours=s) + pd.Timedelta(minutes=step)
-            rows.append(_row(f"S{s}", pid, ts, score, body, f"c{s}_{step}"))
+            # O código leva o problema, para os prompts de dois problemas nunca serem iguais
+            code = body.replace("(", f"_p{pid}(", 1)
+            rows.append(_row(f"S{s}", pid, ts, score, code, f"c{s}_{step}"))
     df = pd.DataFrame(rows)
     df["submitted_at"] = pd.to_datetime(df["submitted_at"], utc=True)
     df["progsnap_assignment_id"] = df["progsnap_assignment_id"].astype("Int64")
@@ -132,12 +160,13 @@ def test_lock_busy_marks_failed_and_does_not_persist(tmp_db, data_root):
     assert lock_holder_pid(conn) == os.getpid()  # lock segue do dono vivo
 
 
-def test_content_hard_fail_marks_failed_nothing_persisted(tmp_db, data_root):
-    # LLM devolve 0 KCs, após N tentativas o job marca failed e nada é persistido.
+def test_content_hard_fail_marks_failed_nothing_persisted(tmp_db, data_root, monkeypatch):
+    # LLM devolve 0 KCs, após 3 tentativas o job marca failed e nada é persistido.
     conn = tmp_db
     assignment_id, job_id = _seed_kc_ready(conn, data_root)
+    monkeypatch.setattr("time.sleep", lambda *_a, **_k: None)
 
-    llm = _FakeLLM(lambda: {"kcs": []})
+    llm = _FakeLLM(lambda: {})
 
     run_kc_generation(conn, assignment_id, job_id, llm=llm, embed=fake_embed)
 
@@ -159,7 +188,7 @@ def test_small_dataset_skips_clustering_no_crash(tmp_db, data_root):
     # 3 problemas, cada um com um nome de KC DISTINTO → 3 nomes únicos (2 <= n_unique < 10).
     names = iter(["laços", "condicionais", "aritmética"])
 
-    llm = _FakeLLM(lambda: {"kcs": [{"name": next(names), "reasoning": "x"}]})
+    llm = _FakeLLM(lambda: _answer(next(names)))
 
     run_kc_generation(conn, assignment_id, job_id, llm=llm, embed=fake_embed)
 
@@ -195,22 +224,50 @@ def test_mark_done_failure_is_atomic_with_persist(tmp_db, data_root, monkeypatch
     assert lock_holder_pid(conn) is None
 
 
-def test_a_failure_saving_the_sampled_solutions_saves_nothing(tmp_db, data_root, monkeypatch):
-    # As soluções amostradas entram na mesma transação dos KCs, e uma falha nelas desfaz tudo
+def _saved(conn, assignment_id: int, job_id: int) -> dict:
+    # O que a extração deixou no banco, para conferir que uma falha não grava nada
+    job = _jobs(conn).get(job_id)
+    tables = ("kc", "problem_kc", "sampled_solution", "candidate_kc")
+    return {
+        "job": job.status,
+        "model": job.model_id,
+        "assignment": SqliteAssignmentRepository(conn).get(assignment_id).status,
+        **{t: conn.execute(f"SELECT COUNT(*) FROM {t};").fetchone()[0] for t in tables},
+    }
+
+
+@pytest.mark.parametrize(
+    ("repository", "method"),
+    [
+        (SqliteSampledSolutionRepository, "add_many"),
+        (SqliteCandidateKnowledgeComponentRepository, "add_many"),
+        (SqliteKnowledgeComponentGenerationJobRepository, "record_generation_model"),
+    ],
+    ids=["solucoes_amostradas", "kcs_candidatos", "modelo_do_job"],
+)
+def test_a_failure_saving_any_part_saves_nothing(
+    tmp_db, data_root, monkeypatch, repository, method
+):
+    # Tudo o que a extração grava entra numa transação só, e uma falha em qualquer parte desfaz tudo
     conn = tmp_db
     assignment_id, job_id = _seed_kc_ready(conn, data_root)
 
     def _boom(self, *_a, **_k):
         raise RuntimeError("disco cheio")
 
-    monkeypatch.setattr(SqliteSampledSolutionRepository, "add_many", _boom)
+    monkeypatch.setattr(repository, method, _boom)
 
-    run_kc_generation(conn, assignment_id, job_id, llm=_llm_ok(), embed=fake_embed)
+    run_kc_generation(conn, assignment_id, job_id, llm=_PerProblemLLM(), embed=fake_embed)
 
-    assert _jobs(conn).get(job_id).status == "failed"
-    assert SqliteAssignmentRepository(conn).get(assignment_id).status == "ready_for_kc_generation"
-    assert conn.execute("SELECT COUNT(*) FROM kc;").fetchone()[0] == 0
-    assert conn.execute("SELECT COUNT(*) FROM problem_kc;").fetchone()[0] == 0
+    assert _saved(conn, assignment_id, job_id) == {
+        "job": "failed",
+        "model": None,
+        "assignment": "ready_for_kc_generation",
+        "kc": 0,
+        "problem_kc": 0,
+        "sampled_solution": 0,
+        "candidate_kc": 0,
+    }
 
 
 def test_success_transitions_job_and_acquires_lock(tmp_db, data_root):
@@ -228,23 +285,6 @@ def test_success_transitions_job_and_acquires_lock(tmp_db, data_root):
     assert asg.status == "kc_draft"  # pipeline conclui em kc_draft
     assert conn.execute("SELECT COUNT(*) FROM kc;").fetchone()[0] >= 1  # KCs persistidos
     assert lock_holder_pid(conn) is None  # release garantido
-
-
-def test_the_description_the_llm_deduces_is_saved_on_each_problem(tmp_db, data_root):
-    conn = tmp_db
-    assignment_id, job_id = _seed_kc_ready(conn, data_root)
-    answer = {
-        "problem_description": "Soma dois números",
-        "kcs": [{"name": "laços", "reasoning": "x"}],
-    }
-    llm = _FakeLLM(lambda: answer)
-
-    run_kc_generation(conn, assignment_id, job_id, llm=llm, embed=fake_embed)
-
-    descriptions = conn.execute(
-        "SELECT DISTINCT description FROM problem WHERE assignment_id = ?;", (assignment_id,)
-    ).fetchall()
-    assert [r[0] for r in descriptions] == ["Soma dois números"]
 
 
 def test_main_resolves_paths_from_env_and_runs_pipeline(tmp_path, monkeypatch):
@@ -293,3 +333,52 @@ def test_the_runs_the_llm_read_are_saved_for_each_problem(tmp_db, data_root):
         (problem, position) for problem in (1, 2, 3) for position in (1, 2, 3)
     ]
     assert all(r["run_problem"] == r["problem_id"] and r["is_correct"] == 1 for r in rows)
+
+
+def test_each_candidate_is_saved_in_order_with_its_own_concept(tmp_db, data_root):
+    conn = tmp_db
+    assignment_id, job_id = _seed_kc_ready(conn, data_root)
+
+    run_kc_generation(conn, assignment_id, job_id, llm=_PerProblemLLM(), embed=fake_embed)
+
+    rows = conn.execute(
+        "SELECT c.problem_id, c.position, c.name, c.reasoning, k.name AS concept "
+        "FROM candidate_kc c JOIN kc k ON k.id = c.kc_id "
+        "WHERE c.assignment_id = ? ORDER BY c.problem_id, c.position;",
+        (assignment_id,),
+    ).fetchall()
+    # Seis nomes distintos, e cada um vira o próprio conceito
+    assert [tuple(r) for r in rows] == [
+        (problem, position, f"{name} {problem}", f"{label} of {problem}", f"{name} {problem}")
+        for problem in (1, 2, 3)
+        for position, name, label in ((1, "alpha", "first"), (2, "beta", "second"))
+    ]
+
+
+def test_the_job_records_the_model_and_the_prompt_version(tmp_db, data_root):
+    conn = tmp_db
+    assignment_id, job_id = _seed_kc_ready(conn, data_root)
+
+    run_kc_generation(conn, assignment_id, job_id, llm=_llm_ok(), embed=fake_embed)
+
+    job = _jobs(conn).get(job_id)
+    assert (job.model_id, job.prompt_version) == ("claude-sonnet-5-5", "kcgen-v2")
+
+
+def test_the_statement_saved_on_the_problem_reaches_its_own_prompt(tmp_db, data_root):
+    conn = tmp_db
+    assignment_id, job_id = _seed_kc_ready(conn, data_root)
+    conn.execute(
+        "UPDATE problem SET statement = 'Return the sum of a and b.' "
+        "WHERE assignment_id = ? AND problem_id = 2;",
+        (assignment_id,),
+    )
+    llm = _PerProblemLLM()
+
+    run_kc_generation(conn, assignment_id, job_id, llm=llm, embed=fake_embed)
+
+    has_statement = {
+        problem: "\n# Problem:\nReturn the sum of a and b.\n" in prompt
+        for problem, prompt in llm.prompts.items()
+    }
+    assert has_statement == {1: False, 2: True, 3: False}

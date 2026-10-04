@@ -1,168 +1,110 @@
-# Etapa 2 do KCGen-KT, pede ao LLM os KCs de cada problema; prompts congelados, chave do cache.
+# Etapa 2 do KCGen-KT, pede ao LLM os KCs de cada problema com o prompt do repositório do Duan.
 
 from __future__ import annotations
 
-from ml.kc_generation.llm_client import LLMClient
+from ml.kc_generation.llm_client import InvalidLLMResponseError, LLMClient
 
-
-# O LLM não devolveu nenhum KC para um problema (reforço do minItems=1 do schema).
-class NoCandidateKCsError(ValueError):
-    pass
-
-
-# Schema imposto pelo transporte (claude -p --json-schema); minItems=1 é conferido de novo aqui.
-CANDIDATE_KCS_SCHEMA: dict = {
-    "type": "object",
-    "properties": {
-        "problem_description": {"type": "string"},
-        "kcs": {
-            "type": "array",
-            "minItems": 1,
-            "items": {
-                "type": "object",
-                "properties": {
-                    "name": {"type": "string"},
-                    "reasoning": {"type": "string"},
-                },
-                "required": ["name", "reasoning"],
-            },
-        },
-    },
-    "required": ["problem_description", "kcs"],
+# Os dois exemplos do repositório, com o enunciado e as tags da planilha oficial já convertidas
+_EXAMPLES: dict[str, list[str]] = {
+    "Write a function in Java that implements the following logic: Given a string str and a non-empty word, return a version of the original string where all chars have been replaced by pluses (+), except for appearances of the word which are preserved unchanged.": [
+        "If and else statement",
+        "While loop",
+        "Numerical comparisons",
+        "String formatting",
+        "String concatenation",
+        "String indexing",
+        "String length",
+        "String equality comparison",
+    ],
+    "Write a function in Java that implements the following logic: You are driving a little too fast, and a police officer stops you. Write code to compute the result, encoded as an int value: 0=no ticket, 1=small ticket, or 2=big ticket. If speed is 60 or less, the result is 0. If speed is between 61 and 80 inclusive, the result is 1. If speed is 81 or more, the result is 2. Unless it is your birthday--on that day, your speed can be 5 higher in all cases.": [
+        "If and else statement",
+        "Nested if statement",
+        "Basic arithmetic operations",
+        "Logical operators",
+        "Numerical comparisons",
+        "Boolean operations",
+    ],
 }
 
-# Exemplos in-context de Duan et al. (2025), Apêndice B (Tabela 8); ancoram nome e granularidade.
-_FEW_SHOT_EXAMPLES = """\
-=== FEW-SHOT EXAMPLE 1 ===
-Problem A — Correct student solutions (n=3):
+# O texto de sistema do repositório com Java no lugar da linguagem, e a linha só com espaço é dele
+_SYSTEM_TEMPLATE = """You are an experienced computer science teacher and education expert. You are given a Java programming problem along with {n_solutions} sample solutions. Your task is to identify generalizable knowledge components (skills or concepts) necessary to solve such problems.
 
-Solution 1:
-```java
-public static int sumArray(int[] arr) {
-    int total = 0;
-    for (int i = 0; i < arr.length; i++) {
-        total += arr[i];
-    }
-    return total;
-}
-```
-Solution 2:
-```java
-public static int sumArray(int[] arr) {
-    int sum = 0;
-    for (int num : arr) {
-        sum += num;
-    }
-    return sum;
-}
-```
-Solution 3:
-```java
-public static int sumArray(int[] numbers) {
-    int result = 0;
-    int i = 0;
-    while (i < numbers.length) {
-        result += numbers[i];
-        i++;
-    }
-    return result;
-}
-```
-Expected JSON output:
-{
-  "problem_description": "Compute the sum of all integer elements in an array and return the total.",
-  "kcs": [
-    {"name": "Array traversal with loop", "reasoning": "All solutions iterate through every element using index-based for, enhanced for-each, or while loops."},
-    {"name": "Accumulator variable pattern", "reasoning": "Each solution initializes a running total to zero and adds each element incrementally."},
-    {"name": "Loop boundary with array length", "reasoning": "Index-based solutions use arr.length as the exclusive upper bound to avoid index out-of-bounds."},
-    {"name": "Method return statement", "reasoning": "The method must return the computed integer, exercising the return keyword with a non-void type."}
-  ]
-}
+A knowledge component (KC) is a single, reusable unit of programming understanding, such as a language construct, pattern, or skill, that contributes to solving a programming problem and can be learned or mastered independently.
 
-=== FEW-SHOT EXAMPLE 2 ===
-Problem B — Correct student solutions (n=3):
+Please follow these steps:
+1. Analyze each solution carefully, noting critical constructs.
+2. Reflect step by step on how each solution maps to distinct programming KCs that are independent and reusable.
+3. For each KC, generate a concise name and provide a one-sentence reasoning explaining why this KC is necessary based on the provided solutions. Use the provided examples as reference for the appropriate level of detail. Make sure KCs are generalizable and applicable to a wide range of similar programming problems without referencing problem-specific details.
+4. Ensure each KC is atomic and not bundled with others.
+\x20
 
-Solution 1:
-```java
-public static String letterGrade(int score) {
-    if (score >= 90) return "A";
-    else if (score >= 80) return "B";
-    else if (score >= 70) return "C";
-    else if (score >= 60) return "D";
-    else return "F";
-}
-```
-Solution 2:
-```java
-public static String letterGrade(int score) {
-    String g;
-    if (score >= 90) { g = "A"; }
-    else if (score >= 80) { g = "B"; }
-    else if (score >= 70) { g = "C"; }
-    else if (score >= 60) { g = "D"; }
-    else { g = "F"; }
-    return g;
-}
-```
-Solution 3:
-```java
-public static String letterGrade(int s) {
-    if (s >= 90) return "A";
-    if (s >= 80) return "B";
-    if (s >= 70) return "C";
-    if (s >= 60) return "D";
-    return "F";
-}
-```
-Expected JSON output:
-{
-  "problem_description": "Map a numeric score to a letter grade (A/B/C/D/F) using threshold-based conditionals.",
-  "kcs": [
-    {"name": "Multi-branch conditional chaining", "reasoning": "All solutions use if/else-if chains (or sequential ifs with early return) to partition the score into grade buckets."},
-    {"name": "Numeric comparison with threshold", "reasoning": "Each branch tests the score against a fixed boundary (90, 80, 70, 60) using >= to select the grade."},
-    {"name": "String return value from method", "reasoning": "The method returns a String literal, requiring correct non-void method return type declaration."},
-    {"name": "Default case residual handling", "reasoning": "All solutions correctly handle scores below 60 as the final else/return without an explicit threshold check."}
-  ]
-}
+Your final response must strictly follow this JSON template:
+{{
+    "KC 1": {{"reasoning": "Reasoning for this KC (exactly 1 sentence)", "name": "Knowledge component name"}},
+    "KC 2": {{"reasoning": "Reasoning for this KC (exactly 1 sentence)", "name": "Another specific knowledge component name"}},
+    ...
+}}"""
+
+_CLOSING = "Follow the instructions in system message. First, carefully examine the solutions and identify the important elements and patterns. Then, explicitly reason about what underlying knowledge components are required based on these solution codes. Finally, take the examples as reference and summarize your analysis clearly into generalizable and concise knowledge components."
+
+
+def _examples_block() -> str:
+    # A montagem dos exemplos do repositório, com os KCs de cada um num JSON
+    exam_prompt = ""
+    for idx, (problem, kc_list) in enumerate(_EXAMPLES.items(), 1):
+        kc_json = {f"KC {i+1}": kc for i, kc in enumerate(kc_list)}
+        kc_str = ",\n  ".join([f'"{k}": "{v}"' for k, v in kc_json.items()])
+        example_block = f"""# Example {idx}:
+## Problem:
+{problem}
+
+## Expected KCs:
+{{
+  {kc_str}
+}}
+
 """
-
-_SYSTEM_PROMPT = (
-    "You are an expert CS educator specializing in introductory Java programming courses. "
-    "Analyze correct student solutions to infer what Knowledge Components (KCs) are required "
-    "to solve the problem. KCs must be: (a) specific and teachable (3-8 words each), "
-    "(b) abstract enough to generalize across solutions, (c) 3-7 KCs per problem. "
-    "Reason step-by-step: first infer what the problem asks from the code patterns, "
-    "then identify the specific KCs demonstrated across the solutions."
-)
+        exam_prompt += example_block
+    return exam_prompt
 
 
-def _build_kc_prompt(problem_id: int, code_samples: list[str]) -> str:
-    # Constrói o prompt chain-of-thought com os exemplos in-context (Tabela 8).
-    solutions = "".join(
-        f"\nSolution {i}:\n```java\n{code}\n```"
-        for i, code in enumerate(code_samples, 1)
-    )
+def _user_prompt(solutions: list[str], statement: str | None) -> str:
+    # Sem enunciado, só as duas linhas do enunciado do problema saem, e o resto fica igual
+    problem = f"# Problem:\n{statement}\n" if statement else ""
     return (
-        f"{_FEW_SHOT_EXAMPLES}\n"
-        "=== NOW ANALYZE THE FOLLOWING ===\n\n"
-        f"Problem {problem_id} — Correct student solutions (n={len(code_samples)}):"
-        f"{solutions}\n\n"
-        "Reason step-by-step, then respond ONLY with a valid JSON object:\n"
-        "{\n"
-        '  "problem_description": "1-2 sentence description of what this problem requires",\n'
-        '  "kcs": [\n'
-        '    {"name": "KC name (3-8 words)", "reasoning": "Why this KC is needed (1 sentence)"},\n'
-        "    ...\n"
-        "  ]\n"
-        "}"
+        _examples_block()
+        + "Now analyze the following problem using their solution code. \n"
+        + problem
+        + "\n"
+        + "\n".join([f"## Sample solution {i+1}:\n{sol}" for i, sol in enumerate(solutions)])
+        + "\n\n"
+        + _CLOSING
     )
 
 
-def generate_candidate_kcs(problem_id: int, code_samples: list[str], llm: LLMClient) -> dict:
-    # Código bruto (não AST) alimenta o LLM; Duan et al. (2025) Tab. 4, AST piora AUC 0.812->0.784.
-    result = llm.generate(_SYSTEM_PROMPT, _build_kc_prompt(problem_id, code_samples), CANDIDATE_KCS_SCHEMA)
+def parse_candidate_kcs(response: dict) -> list[dict[str, str]]:
+    # Um objeto por KC com a justificativa e o nome, na ordem da resposta, ou a resposta é inválida
+    if not isinstance(response, dict) or not response:
+        raise InvalidLLMResponseError("a resposta não trouxe nenhum KC")
+    candidates = []
+    for key, kc in response.items():
+        name = kc.get("name") if isinstance(kc, dict) else None
+        reasoning = kc.get("reasoning") if isinstance(kc, dict) else None
+        if not isinstance(name, str) or not name.strip():
+            raise InvalidLLMResponseError(f"{key} veio sem nome")
+        if not isinstance(reasoning, str) or not reasoning.strip():
+            raise InvalidLLMResponseError(f"{key} veio sem justificativa")
+        candidates.append({"name": name, "reasoning": reasoning})
+    return candidates
 
-    # Reforço do minItems do schema, sem KC o job de geração falha inteiro.
-    if not result or "kcs" not in result or not result["kcs"]:
-        raise NoCandidateKCsError(f"problema {problem_id} não gerou nenhum KC")
-    return result
+
+def generate_candidate_kcs(
+    solutions: list[str], statement: str | None, llm: LLMClient
+) -> list[dict[str, str]]:
+    # O LLM lê o código Java cru, porque na Tabela 4 de Duan et al. (2026) a AST piora o AUC
+    response = llm.generate(
+        _SYSTEM_TEMPLATE.format(n_solutions=len(solutions)),
+        _user_prompt(solutions, statement),
+        validate=parse_candidate_kcs,
+    )
+    return parse_candidate_kcs(response)

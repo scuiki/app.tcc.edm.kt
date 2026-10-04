@@ -1,13 +1,22 @@
 # Chave é o hash de tudo que determina a resposta, um acerto não chama o LLM, isolado por problema.
 from __future__ import annotations
 
+import json
 import threading
 
+import pytest
+
+from api.knowledge_components.infrastructure.implementations.kc_generation_model import (
+    KC_GENERATION_MODEL_ID,
+    PROMPT_VERSION,
+)
 from api.knowledge_components.infrastructure.implementations.llm_response_cache import (
+    CachedLLMClient,
     cache_get,
     cache_put,
     kc_input_hash,
 )
+from ml.kc_generation.llm_client import InvalidLLMResponseError
 
 _MODEL = "claude-haiku-4-5-20251001"
 _PV = "kcgen-v1"
@@ -93,3 +102,81 @@ def test_parallel_writes_keep_every_answer(tmp_path):
 
     for i in range(32):
         assert cache_get(tmp_path, problem_id=f"p{i}", key=f"k{i}")["parsed"] == {"i": i}
+
+
+class _ScriptedLLM:
+    # Devolve as respostas na ordem dada e conta as chamadas
+    def __init__(self, *answers: dict) -> None:
+        self._answers = list(answers)
+        self.calls = 0
+
+    def generate(self, system, prompt, schema=None, validate=None) -> dict:
+        self.calls += 1
+        return self._answers.pop(0)
+
+
+def _require_name(response: dict) -> None:
+    if "name" not in response:
+        raise InvalidLLMResponseError("sem nome")
+
+
+def test_an_invalid_response_is_asked_again_and_only_the_valid_one_is_cached(
+    tmp_path, monkeypatch
+):
+    monkeypatch.setattr("time.sleep", lambda *_a, **_k: None)
+    llm = _ScriptedLLM({"nome": "laço"}, {"name": "laço"})
+    cached = CachedLLMClient(llm, tmp_path, stage="generate")
+
+    first = cached.generate("s", "p", validate=_require_name)
+    again = cached.generate("s", "p", validate=_require_name)
+
+    assert first == again == {"name": "laço"}
+    assert llm.calls == 2
+    stored = json.loads((tmp_path / "kc_cache.json").read_text())
+    assert [record["parsed"] for record in stored.values()] == [{"name": "laço"}]
+
+
+def test_three_invalid_responses_stop_with_nothing_cached(tmp_path, monkeypatch):
+    monkeypatch.setattr("time.sleep", lambda *_a, **_k: None)
+    llm = _ScriptedLLM({}, {}, {}, {"name": "laço"})
+    cached = CachedLLMClient(llm, tmp_path, stage="generate")
+
+    with pytest.raises(InvalidLLMResponseError):
+        cached.generate("s", "p", validate=_require_name)
+
+    assert llm.calls == 3
+    assert not (tmp_path / "kc_cache.json").exists()
+
+
+def test_a_cache_hit_keeps_the_order_of_the_kcs_of_the_answer(tmp_path):
+    # A ordem das chaves é a dos KCs, e como texto o KC 10 viria antes do KC 2
+    answer = {f"KC {i}": {"reasoning": f"r{i}", "name": f"n{i}"} for i in range(1, 13)}
+    llm = _ScriptedLLM(answer)
+    cached = CachedLLMClient(llm, tmp_path, stage="generate")
+
+    fresh = cached.generate("s", "p")
+    replay = cached.generate("s", "p")
+
+    assert llm.calls == 1
+    assert list(replay) == list(fresh) == [f"KC {i}" for i in range(1, 13)]
+
+
+def test_the_cache_key_has_the_model_the_prompt_version_the_system_and_the_schema(tmp_path):
+    schema = {"type": "object"}
+    CachedLLMClient(_ScriptedLLM({"name": "laço"}), tmp_path, stage="generate").generate(
+        "sys", "prompt", schema
+    )
+
+    key = kc_input_hash(KC_GENERATION_MODEL_ID, PROMPT_VERSION, "prompt", system="sys", schema=schema)
+    assert list(json.loads((tmp_path / "kc_cache.json").read_text())) == [f"generate:{key}"]
+
+
+def test_a_cached_response_the_validation_refuses_is_asked_again_and_replaced(tmp_path):
+    key = kc_input_hash(KC_GENERATION_MODEL_ID, PROMPT_VERSION, "p", system="s")
+    cache_put(tmp_path, problem_id=f"generate:{key}", key=key, record={"parsed": {"nome": "x"}})
+    llm = _ScriptedLLM({"name": "laço"})
+    cached = CachedLLMClient(llm, tmp_path, stage="generate")
+
+    assert cached.generate("s", "p", validate=_require_name) == {"name": "laço"}
+    assert cached.generate("s", "p", validate=_require_name) == {"name": "laço"}
+    assert llm.calls == 1

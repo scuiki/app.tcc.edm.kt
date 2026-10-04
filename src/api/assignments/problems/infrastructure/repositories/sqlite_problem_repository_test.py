@@ -1,4 +1,4 @@
-# SqliteProblemRepository, ida e volta, ordem por problema e a descrição gravada depois.
+# SqliteProblemRepository, ida e volta, ordem por problema e o enunciado.
 
 from __future__ import annotations
 
@@ -31,19 +31,6 @@ def test_the_problems_come_back_ordered_and_without_description(tmp_db):
     assert repo.list_by_assignment(assignment_id) == [
         Problem(assignment_id, 1),
         Problem(assignment_id, 13),
-    ]
-
-
-def test_descriptions_are_written_only_for_the_given_problems(tmp_db):
-    repo = SqliteProblemRepository(tmp_db)
-    assignment_id = _assignment_id(tmp_db)
-    repo.add_many([Problem(assignment_id, 1), Problem(assignment_id, 2)])
-
-    repo.set_descriptions(assignment_id, {2: "Soma os elementos de um array"})
-
-    assert [p.description for p in repo.list_by_assignment(assignment_id)] == [
-        None,
-        "Soma os elementos de um array",
     ]
 
 

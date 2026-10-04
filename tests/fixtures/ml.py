@@ -18,3 +18,9 @@ def cpu_device() -> torch.device:
 def kc_reference_dir() -> Path:
     # Os artefatos reais do KCGen-KT do TCC 1 para o A439
     return Path(__file__).resolve().parents[1] / "data" / "kc"
+
+
+@pytest.fixture
+def prompt_reference_dir() -> Path:
+    # Os prompts que o próprio código do repositório do Duan monta, para comparar com os do app
+    return Path(__file__).resolve().parents[1] / "data" / "kcgen_prompts"
