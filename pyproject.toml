@@ -24,11 +24,13 @@ dependencies = [
     "javalang==0.13.0",
     "anytree==2.13.0",
     "scikit-learn==1.9.0",
-    # SBERT (KCGen-KT Etapa 3): única dependência nova da Fase 5. Pin = versão do TCC 1
-    # (notebook de pesquisa: s-transformers = 5.4.1), não a latest — fidelidade do silhouette/
-    # embeddings com results/kc_clusters_A*.json (Open Q1, KC-01). Transporte/embeddings, NÃO
-    # toca o resultado numérico do treino (não afeta a tolerância de ±0,1 ponto da regressão).
+    # Os vetores do KCGen-KT (SBERT dos nomes e CodeBERT das soluções), fora da numérica do Code-DKT
+    # Nas versões da imagem de 01/10/2026, para os vetores não mudarem quando a imagem for refeita
     "sentence-transformers==5.4.1",
+    "transformers==5.18.0",
+    "tokenizers==0.23.2",
+    "huggingface_hub==1.33.0",
+    "safetensors==0.8.0",
     # HTTP/I/O stack (waves 2-3): camada de transporte, NÃO toca o resultado numérico do treino,
     # e a tolerância de ±0,1 ponto segue ancorada na tag fixa da imagem torch, não nestes pins.
     "fastapi==0.138.0",

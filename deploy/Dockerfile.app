@@ -1,6 +1,6 @@
 # Runtime image for the EDM·KT FastAPI app + KC pipeline (Phase 5 first live deploy).
-# Derives FROM the CORE-03 reproducibility anchor (edmkt-core:dev) so the regression-test numerics
-# image stays pure: this layer only ADDS a runtime concern — the pre-baked SBERT model.
+# Derives FROM the CORE-03 reproducibility anchor (edmkt-core:dev), which already carries the
+# KCGen-KT embedding models (CodeBERT and SBERT) at their pinned revisions.
 # The `claude` CLI (D-01 subscription transport) and the OAuth credential are deliberately NOT
 # baked: they are mounted read-only at run time (see docker-compose.yml). The mount follows the
 # host's current CLI version and keeps the secret out of the image layers (threat model: no
@@ -8,10 +8,6 @@
 FROM edmkt-core:dev
 
 # O PYTHONHASHSEED=0 vem da imagem base e não pode mudar, porque a ordem dos AST paths depende dele
-
-# Pre-bake the SBERT model so KC-gen never downloads at run time (offline reliability on nitro).
-# all-MiniLM-L6-v2 is the frozen KCGen-KT embedding model (science pin, mirrors TCC 1).
-RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('all-MiniLM-L6-v2')"
 
 # Container binds 0.0.0.0; the host-side `-p 127.0.0.1:PORT` bind in run-app.sh is the real
 # network gate (nitro-env: never publish a bare port — loopback publish = local-only).

@@ -7,6 +7,7 @@ import json
 import numpy as np
 import pytest
 
+from ml.kc_generation.embedding_models import SBERT_MODEL, SBERT_REVISION
 from ml.kc_generation.kc_grouping import choose_kc_group_count
 
 
@@ -40,7 +41,7 @@ def test_selected_n_clusters_matches_reference(kc_reference_dir):
     expected_n = kc_clusters["n_clusters_selected"]
 
     kc_names = list(kc_clusters["kc_to_cluster"].keys())
-    model = SentenceTransformer("all-MiniLM-L6-v2")
+    model = SentenceTransformer(SBERT_MODEL, revision=SBERT_REVISION)
     embeddings = model.encode(kc_names)
 
     best_n, _scores = choose_kc_group_count(embeddings, candidates=(10, 12, 15))

@@ -43,8 +43,9 @@ depois deste plano, e as turmas antigas, que mantêm os conceitos e as descriç�
   do modelo e a versão do prompt (linha 9).
 - **E, os modelos de vetores na imagem.** O CodeBERT e o SBERT passam a ser baixados no build da
   imagem base, a `edmkt-core:dev`, com a revisão do Hugging Face fixada, para os testes e o app
-  usarem os mesmos arquivos. O `transformers` e o `tokenizers` ganham versão fixada no
-  `pyproject.toml` e no `requirements.lock`, a mesma que a imagem já tem, para o SBERT não mudar.
+  usarem os mesmos arquivos. O `transformers`, o `tokenizers`, o `huggingface_hub` e o
+  `safetensors` ganham versão fixada no `pyproject.toml` e no `requirements.lock`, a mesma que a
+  imagem já tem, para o SBERT não mudar.
 - **F, o CodeBERT na GPU.** A extração e o treino nunca rodam juntos, porque o
   `OneJobAtATimeLock` serializa os dois, então o CodeBERT usa sempre a GPU quando ela existe, para a
   extração sair mais rápido, mesmo que os vetores variem um pouco entre execuções. A medida da
@@ -93,13 +94,15 @@ Cada etapa é um commit, com uma revisão independente do diff contra as decisõ
 
 - O download do `microsoft/codebert-base` e do `all-MiniLM-L6-v2` vai para o `./Dockerfile`, com a
   revisão de cada um fixada, e sai do `deploy/Dockerfile.app`, que herda a base.
-- O `transformers` e o `tokenizers` com a versão do `pip freeze` da imagem de hoje, no
-  `pyproject.toml` e no `requirements.lock`. O `pip freeze` da imagem nova é comparado com o lock.
+- O `transformers`, o `tokenizers`, o `huggingface_hub` e o `safetensors` com a versão do
+  `pip freeze` da imagem de hoje, no `pyproject.toml` e no `requirements.lock`, e a conversão
+  automática de pesos do `transformers` desligada (`DISABLE_SAFETENSORS_CONVERSION=1`). O
+  `pip freeze` da imagem nova é comparado com o lock.
 - A sequência de imagens é `docker build -t edmkt-core:dev .`, `docker compose build api` e
   `docker compose up -d api`, sem treino nem extração rodando. No container da api, os dois modelos
   carregam com `HF_HUB_OFFLINE=1`.
-- Medir o CodeBERT na GPU, com a api parada, sobre as execuções corretas do problema do A439 que
-  mais tem. Anotar o tempo e se duas execuções dão os mesmos vetores, bit a bit (F). O número vai
+- Medir o CodeBERT na GPU, com a api parada, sobre as execuções corretas do A439. Anotar o tempo e
+  se duas execuções dão os mesmos vetores, bit a bit (F). O número vai
   para o Estado das linhas 2 e 3. Se os vetores variarem, o teste de regressão da etapa 8 compara as
   soluções sorteadas levando em conta essa variação.
 
@@ -120,7 +123,8 @@ Cada etapa é um commit, com uma revisão independente do diff contra as decisõ
 
 - No `ml/kc_generation`, os vetores do CodeBERT. O tokenizador corta em 512 tokens, a média da
   última camada usa a máscara de atenção e o resultado é normalizado para norma 1, como o trecho
-  comentado do repositório. Roda na GPU quando ela existe (F).
+  comentado do repositório. Roda na GPU quando ela existe (F), em lotes de 32 soluções, porque os
+  vetores mudam um pouco com o tamanho do lote.
 - A amostragem recebe todas as execuções corretas do problema, em ordem de tempo. Ela usa tantos
   grupos quanto o menor entre 5 e o número de soluções de texto distinto, o
   `AgglomerativeClustering` com distância cosseno e ligação média, e sorteia uma solução por grupo
@@ -257,8 +261,8 @@ Cada etapa é um commit, com uma revisão independente do diff contra as decisõ
 
 | Etapa | Estado |
 |---|---|
-| 0 | A fazer |
-| 1 | A fazer |
+| 0 | Concluída, commit `29636e9` |
+| 1 | Concluída |
 | 2 | A fazer |
 | 3 | A fazer |
 | 4 | A fazer |

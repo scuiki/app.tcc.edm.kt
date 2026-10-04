@@ -30,7 +30,11 @@ javalang==0.13.0
 anytree==2.13.0
 scikit-learn==1.9.0
 scipy==1.17.1
-sentence-transformers==5.4.1  # SBERT do KCGen-KT, fora da numérica do Code-DKT
+sentence-transformers==5.4.1  # SBERT dos nomes de KC no KCGen-KT, fora da numérica do Code-DKT
+transformers==5.18.0          # CodeBERT das soluções no KCGen-KT, fora da numérica do Code-DKT
+tokenizers==0.23.2
+huggingface_hub==1.33.0
+safetensors==0.8.0
 
 # --- HTTP/I/O stack (camada de transporte; não toca a numérica do teste de regressão) ---
 fastapi==0.138.0

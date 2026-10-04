@@ -1021,7 +1021,8 @@ prompt (linha 15). Com um anotador só, não há a medida de concordância que o
 
 | # | Estado |
 |---|---|
-| 1 a 29 | Decididas em 03/10/2026, a implementar pelo `KCGEN_KT_PLAN.md`, aprovado em 04/10/2026 |
+| 1 e 4 a 29 | Decididas em 03/10/2026, a implementar pelo `KCGEN_KT_PLAN.md`, aprovado em 04/10/2026 |
+| 2 e 3 | Decididas em 03/10/2026, a implementar pelo `KCGEN_KT_PLAN.md`. Desde a etapa 1 do plano, o `microsoft/codebert-base`, na revisão `3b0952f`, está na imagem base. Medido em 04/10/2026 na GPU, o cálculo dos vetores das 3.821 execuções corretas do A439, em lotes de 32 soluções, levou 44,6 segundos, com pico de 1.069 MiB alocados pelo PyTorch (1.858 MiB reservados). Com o mesmo tamanho de lote, duas execuções deram os mesmos vetores, bit a bit, e lotes de 16 e de 32 diferem em até 3e-5 |
 
 ## Referências
 

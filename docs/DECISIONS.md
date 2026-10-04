@@ -128,7 +128,9 @@ vetores.
 **Os modelos de vetores vêm na imagem base, com a revisão fixada.** O CodeBERT e o SBERT são
 baixados no build da `edmkt-core:dev`, que o app herda, e o app roda com o Hugging Face offline. Os
 testes e o app usam os mesmos arquivos, e uma revisão nova publicada no Hugging Face não muda os
-vetores em silêncio. O `transformers` e o `tokenizers` têm versão fixada pelo mesmo motivo.
+vetores em silêncio. O `transformers`, o `tokenizers`, o `huggingface_hub` e o `safetensors` têm
+versão fixada pelo mesmo motivo, e a conversão automática do `transformers` para outro formato de
+pesos fica desligada, porque ela baixaria arquivos de fora da revisão fixada.
 
 **O LLM recebe o código Java cru.** Em Duan et al. (2026), Tabela 4, mandar a AST no lugar do
 código piora o AUC de 0,812 para 0,784.

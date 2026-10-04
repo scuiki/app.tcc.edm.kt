@@ -16,6 +16,7 @@ from api.knowledge_components.infrastructure.implementations.llm_response_cache 
 )
 from api.shared.infrastructure.filesystem import data_layout
 from ml.kc_generation.candidate_generation import generate_candidate_kcs
+from ml.kc_generation.embedding_models import SBERT_MODEL, SBERT_REVISION
 from ml.kc_generation.group_naming import name_kc_group
 from ml.kc_generation.kc_grouping import (
     CANDIDATE_GROUP_COUNTS,
@@ -25,8 +26,6 @@ from ml.kc_generation.kc_grouping import (
 from ml.kc_generation.llm_client import LLMClient
 from ml.kc_generation.qmatrix_builder import build_qmatrix
 from ml.kc_generation.solution_sampling import select_sample_solutions
-
-SBERT_MODEL = "all-MiniLM-L6-v2"  # o modelo de embedding congelado do KCGen-KT (TCC 1)
 
 # As chamadas de um estágio são independentes, e mais do que isso esbarra no limite da assinatura
 LLM_CONCURRENCY = 4
@@ -137,7 +136,7 @@ class KcGenKtGenerator:
         # SBERT, silhouette/HAC, o LLM nomeia cada grupo; import local, só carrega se for agrupar.
         from sentence_transformers import SentenceTransformer
 
-        embeddings = SentenceTransformer(SBERT_MODEL).encode(unique_names)
+        embeddings = SentenceTransformer(SBERT_MODEL, revision=SBERT_REVISION).encode(unique_names)
         n_groups, _scores = choose_kc_group_count(embeddings)
         labels = group_similar_kcs(embeddings, n_groups)
         members: dict[int, list[str]] = {}
