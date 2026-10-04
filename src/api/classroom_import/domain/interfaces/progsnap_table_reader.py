@@ -18,3 +18,7 @@ class IProgSnapTableReader(Protocol):
     def read_code_snapshots(self, raw_dir: Path) -> dict[str, str]:
         # `{CodeStateID: código Java}`; sem CodeStates no upload, um dict vazio.
         ...
+
+    def read_problem_statements(self, raw_dir: Path) -> dict[tuple[int, int], str]:
+        # `{(AssignmentID, ProblemID): enunciado}`; o arquivo de enunciados é opcional.
+        ...

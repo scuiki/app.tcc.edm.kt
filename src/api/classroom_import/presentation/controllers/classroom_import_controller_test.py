@@ -26,11 +26,13 @@ _CODE_STATES = (
 )
 
 
-def _zip_bytes() -> bytes:
+def _zip_bytes(extra: dict[str, str] | None = None) -> bytes:
     buffer = io.BytesIO()
     with zipfile.ZipFile(buffer, "w") as zf:
         zf.writestr("MainTable.csv", _MAIN_TABLE)
         zf.writestr("CodeStates/CodeStates.csv", _CODE_STATES)
+        for name, content in (extra or {}).items():
+            zf.writestr(name, content)
     return buffer.getvalue()
 
 
@@ -38,11 +40,11 @@ def _classroom(client) -> int:
     return client.post("/classrooms", json={"name": "Turma X"}).json()["id"]
 
 
-def _upload(client, classroom_id: int):
+def _upload(client, classroom_id: int, extra: dict[str, str] | None = None):
     return client.post(
         "/classroom-imports",
         data={"classroom_id": str(classroom_id)},
-        files={"file": ("CSEDM Spring.zip", _zip_bytes(), "application/zip")},
+        files={"file": ("CSEDM Spring.zip", _zip_bytes(extra), "application/zip")},
     )
 
 
@@ -146,3 +148,22 @@ def test_uploading_or_importing_into_a_missing_classroom_is_404(api_client):
 
     assert _upload(client, 999).status_code == 404
 
+
+def test_a_statements_file_inside_the_zip_fills_the_problems_it_covers(api_client):
+    client, conn = api_client
+    classroom_id = _classroom(client)
+    statements = "AssignmentID,ProblemID,Requirement\n439,2,Retorna um\n"
+    upload = _upload(client, classroom_id, {"enunciados/prompts.csv": statements}).json()
+
+    response = client.post(
+        "/classroom-imports/process",
+        json={
+            "classroom_id": classroom_id,
+            "raw_dir": upload["raw_dir"],
+            "main_table": upload["main_tables"][0],
+        },
+    )
+
+    assert response.status_code == 200
+    rows = conn.execute("SELECT problem_id, statement FROM problem ORDER BY problem_id;").fetchall()
+    assert [(r["problem_id"], r["statement"]) for r in rows] == [(1, None), (2, "Retorna um")]

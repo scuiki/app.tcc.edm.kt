@@ -14,6 +14,7 @@ from api.classroom_import.infrastructure.implementations.progsnap_zip_extractor 
     extract_zip,
     find_code_snapshots_file,
     find_main_tables,
+    find_problem_statements_file,
 )
 
 
@@ -128,3 +129,43 @@ def test_upload_extraction_does_not_take_the_job_lock(tmp_db, tmp_path, monkeypa
     assert detected.raw_dir.exists()  # o arquivo enviado fica preservado em raw/
     holder = tmp_db.execute("SELECT holder_pid FROM pipeline_lock WHERE id=1;").fetchone()[0]
     assert holder is None
+
+
+def test_the_statements_file_is_found_by_its_header_whatever_its_name(tmp_path: Path) -> None:
+    # O nome da planilha oficial da CSEDM não é padrão, e a MainTable não tem a coluna Requirement
+    (tmp_path / "MainTable.csv").write_text(
+        "SubjectID,AssignmentID,ProblemID\nS1,439,1\n", encoding="utf-8"
+    )
+    sheet = tmp_path / "2nd CSEDM Data Challenge - Problem Prompts & Concepts Used - Sheet1.csv"
+    sheet.write_text(
+        'AssignmentID,ProblemID,Requirement,If/Else\n439,1,"Soma dois números",1\n',
+        encoding="utf-8",
+    )
+    assert find_problem_statements_file(tmp_path) == sheet
+
+
+def test_a_csv_without_the_statement_columns_is_not_the_statements_file(tmp_path: Path) -> None:
+    (tmp_path / "Other.csv").write_text("AssignmentID,ProblemID\n439,1\n", encoding="utf-8")
+    assert find_problem_statements_file(tmp_path) is None
+
+
+def test_the_main_table_and_code_states_are_never_taken_for_the_statements_file(
+    ingest_layout_dir: Path,
+) -> None:
+    (ingest_layout_dir / "LinkTables" / "Subject.csv").write_text(
+        "SubjectID,X-Grade\nS1,0.9\n", encoding="utf-8"
+    )
+    assert find_problem_statements_file(ingest_layout_dir) is None
+
+
+def test_the_statements_file_is_found_in_a_subfolder_with_a_bom(tmp_path: Path) -> None:
+    sheet = tmp_path / "extra" / "prompts.CSV"
+    sheet.parent.mkdir()
+    sheet.write_text("AssignmentID,ProblemID,Requirement\n439,1,Soma\n", encoding="utf-8-sig")
+    assert find_problem_statements_file(tmp_path) == sheet
+
+
+def test_an_unreadable_csv_is_skipped_without_breaking_the_package(tmp_path: Path) -> None:
+    (tmp_path / "broken.csv").write_bytes(b"\xff\xfeAssign\x00\x81")
+    (tmp_path / "folder.csv").mkdir()
+    assert find_problem_statements_file(tmp_path) is None

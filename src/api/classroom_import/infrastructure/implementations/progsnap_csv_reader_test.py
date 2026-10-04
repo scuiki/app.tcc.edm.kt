@@ -6,7 +6,10 @@ from pathlib import Path
 
 import pandas as pd
 
-from api.classroom_import.infrastructure.implementations.progsnap_csv_reader import read_main_table
+from api.classroom_import.infrastructure.implementations.progsnap_csv_reader import (
+    read_main_table,
+    read_problem_statements,
+)
 
 _HEADER = "SubjectID,AssignmentID,ProblemID,CodeStateID,EventType,Score,ServerTimestamp"
 _ROW = "S1,439,1,c1,Run.Program,1.0,2019-03-01T08:00:00Z"
@@ -131,3 +134,39 @@ def test_all_numeric_score_has_no_warning(tmp_path: Path) -> None:
     assert not any(i.check == "score_coercion" for i in items)
 
 
+def test_the_statements_are_keyed_by_assignment_and_problem(tmp_path: Path) -> None:
+    # Os ids viram número, e a linha sem enunciado fica de fora
+    (tmp_path / "prompts.csv").write_text(
+        "AssignmentID,ProblemID,Requirement\n"
+        "439,1,Soma dois números\n"
+        '439.0,3,"Diz, sem erro, se é par"\n'
+        "492,1,\n",
+        encoding="utf-8",
+    )
+    assert read_problem_statements(tmp_path) == {
+        (439, 1): "Soma dois números",
+        (439, 3): "Diz, sem erro, se é par",
+    }
+
+
+def test_without_the_statements_file_there_are_no_statements(tmp_path: Path) -> None:
+    assert read_problem_statements(tmp_path) == {}
+
+
+def test_blank_statements_and_non_numeric_ids_are_left_out(tmp_path: Path) -> None:
+    # O cabeçalho com espaços é aceito, e o enunciado vai sem os espaços das pontas
+    (tmp_path / "prompts.csv").write_text(
+        "AssignmentID, ProblemID, Requirement\n"
+        "439,1,  Soma dois números  \n"
+        "439,2,   \n"
+        "x,3,Sem exercício\n",
+        encoding="utf-8",
+    )
+    assert read_problem_statements(tmp_path) == {(439, 1): "Soma dois números"}
+
+
+def test_a_statements_file_that_cannot_be_parsed_gives_no_statements(tmp_path: Path) -> None:
+    (tmp_path / "prompts.csv").write_text(
+        'AssignmentID,ProblemID,Requirement\n439,1,"aspas sem fechar\n', encoding="utf-8"
+    )
+    assert read_problem_statements(tmp_path) == {}

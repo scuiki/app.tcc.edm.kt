@@ -63,3 +63,15 @@ def test_a_problem_is_unique_within_its_assignment(tmp_db):
 
     with pytest.raises(sqlite3.IntegrityError):
         repo.add_many([Problem(assignment_id, 1)])
+
+
+def test_the_statement_goes_and_comes_back(tmp_db):
+    repo = SqliteProblemRepository(tmp_db)
+    assignment_id = _assignment_id(tmp_db)
+
+    repo.add_many(
+        [Problem(assignment_id, 1, statement="Soma dois números"), Problem(assignment_id, 2)]
+    )
+
+    statements = [p.statement for p in repo.list_by_assignment(assignment_id)]
+    assert statements == ["Soma dois números", None]

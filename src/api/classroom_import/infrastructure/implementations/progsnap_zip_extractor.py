@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import csv
 import zipfile
 from pathlib import Path
 
@@ -24,6 +25,24 @@ def find_code_snapshots_file(root: Path) -> Path | None:
     for cand in candidates:
         if cand.exists():
             return cand
+    return None
+
+
+# As colunas da planilha oficial de enunciados da CSEDM, pelas quais o arquivo é achado
+PROBLEM_STATEMENT_COLUMNS = ("AssignmentID", "ProblemID", "Requirement")
+
+
+def find_problem_statements_file(root: Path) -> Path | None:
+    # O arquivo de enunciados não tem nome padrão, então é achado pelo cabeçalho, e vence o primeiro
+    candidates = sorted(p for p in root.rglob("*") if p.suffix.lower() == ".csv" and p.is_file())
+    for path in candidates:
+        try:
+            with open(path, newline="", encoding="utf-8-sig") as f:
+                header = next(csv.reader(f), [])
+        except (OSError, UnicodeDecodeError, csv.Error):
+            continue  # um CSV ilegível não é o arquivo de enunciados, e o pacote segue
+        if set(PROBLEM_STATEMENT_COLUMNS) <= {column.strip() for column in header}:
+            return path
     return None
 
 

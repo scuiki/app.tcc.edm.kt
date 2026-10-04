@@ -206,3 +206,55 @@ def test_lock_released_after_successful_ingest(import_classroom, tmp_db, data_ro
     import_classroom(raw, "Turma X", main)
     assert lock_holder_pid(conn) is None
 
+
+# --- o enunciado, opcional, vem do arquivo de enunciados do pacote -------------------------
+
+
+def test_the_statements_file_fills_only_the_problems_it_covers(import_classroom, tmp_db, data_root):
+    raw, main = _make_raw(data_root)
+    (raw / "prompts.csv").write_text(
+        "AssignmentID,ProblemID,Requirement\n439,1,Soma dois números\n", encoding="utf-8"
+    )
+
+    report = import_classroom(raw, "Turma X", main)
+
+    assert not report.has_fatal
+    rows = tmp_db.execute(
+        "SELECT problem_id, statement FROM problem ORDER BY problem_id;"
+    ).fetchall()
+    statements = [(r["problem_id"], r["statement"]) for r in rows]
+    assert statements == [(1, "Soma dois números"), (2, None)]
+
+
+def test_without_the_statements_file_the_problems_have_no_statement(
+    import_classroom, tmp_db, data_root
+):
+    raw, main = _make_raw(data_root)
+
+    import_classroom(raw, "Turma X", main)
+
+    rows = tmp_db.execute("SELECT statement FROM problem;").fetchall()
+    assert rows and all(r["statement"] is None for r in rows)
+
+
+def test_a_statement_matches_the_problem_only_inside_its_own_assignment(
+    import_classroom, tmp_db, data_root
+):
+    # O ProblemID só é único dentro do exercício, então o 1 do 439 e o 1 do 492 são outros
+    raw, main = _make_raw(data_root, _UNSORTED_MAIN_TABLE, _UNSORTED_CODE_STATES)
+    (raw / "prompts.csv").write_text(
+        "AssignmentID,ProblemID,Requirement\n439,1,Do 439\n492,1,Do 492\n", encoding="utf-8"
+    )
+
+    import_classroom(raw, "Turma X", main)
+
+    rows = tmp_db.execute(
+        "SELECT a.progsnap_assignment_id AS a, p.problem_id AS p, p.statement AS s "
+        "FROM problem p JOIN assignment a ON a.id = p.assignment_id ORDER BY a, p;"
+    ).fetchall()
+    assert [(r["a"], r["p"], r["s"]) for r in rows] == [
+        (439, 1, "Do 439"),
+        (439, 2, None),
+        (492, 1, "Do 492"),
+        (492, 2, None),
+    ]

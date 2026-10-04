@@ -209,7 +209,10 @@ amostrada. É o que a origem do conceito mostra e o que os testes de regressão 
 CSEDM está numa planilha oficial à parte. O upload aceita um arquivo só, então o arquivo de
 enunciados vai dentro do zip, e a importação o acha pelo cabeçalho da planilha oficial
 (`AssignmentID`, `ProblemID` e `Requirement`), porque o nome dele não é padrão. Sem ele, a
-importação e a extração rodam como antes, e o prompt sai sem as duas linhas do enunciado.
+importação e a extração rodam como antes, e o prompt sai sem as duas linhas do enunciado. Um arquivo
+que não se lê, por encoding, aspas ou formato, é ignorado como se não existisse, porque o enunciado é
+opcional e não pode derrubar a importação. Com dois arquivos de enunciados no pacote, vale o primeiro
+na ordem dos caminhos. A tela Importar dados é que vai mostrar se o arquivo foi achado.
 
 ## Importação
 

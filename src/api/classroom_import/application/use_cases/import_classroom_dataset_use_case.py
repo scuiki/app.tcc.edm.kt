@@ -76,10 +76,11 @@ class ImportClassroomDatasetUseCase(WriteUseCase):
             return ClassroomImportReport.nothing_imported(checks)  # falha dura, nada é gravado
 
         code_by_snapshot = self._tables.read_code_snapshots(dto.raw_dir)
+        statements = self._tables.read_problem_statements(dto.raw_dir)
         cleaned, cleaning_checks = clean_submissions(main_table, code_by_snapshot)
         per_assignment, trainability_checks = check_assignment_trainability(cleaned)
 
-        self._save(dto.classroom_id, cleaned, per_assignment)
+        self._save(dto.classroom_id, cleaned, per_assignment, statements)
         return ClassroomImportReport(
             checks=checks + cleaning_checks + trainability_checks,
             dataset_summary=summarize_cleaned_submissions(cleaned),
@@ -91,6 +92,7 @@ class ImportClassroomDatasetUseCase(WriteUseCase):
         classroom_id: int,
         cleaned: pd.DataFrame,
         per_assignment: list[AssignmentTrainability],
+        statements: dict[tuple[int, int], str],
     ) -> None:
         # Os assignments, os problemas e o dado limpo de cada um, tudo ou nada.
         created_at = utc_now_iso()
@@ -113,5 +115,11 @@ class ImportClassroomDatasetUseCase(WriteUseCase):
                 )
                 # Os problemas antes das tentativas, que apontam para eles pela FK
                 problem_ids = sorted(int(p) for p in events["problem_id"].dropna().unique())
-                self._problems.add_many([Problem(assignment_id, p) for p in problem_ids])
+                # O enunciado é opcional, e o problema que o arquivo não cobre fica sem ele
+                self._problems.add_many(
+                    [
+                        Problem(assignment_id, p, statement=statements.get((int(progsnap_id), p)))
+                        for p in problem_ids
+                    ]
+                )
                 self._submissions.add_many(assignment_id, events)

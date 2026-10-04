@@ -8,7 +8,9 @@ import pandas as pd
 
 from api.classroom_import.domain.value_objects.import_report import ImportCheck
 from api.classroom_import.infrastructure.implementations.progsnap_zip_extractor import (
+    PROBLEM_STATEMENT_COLUMNS,
     find_code_snapshots_file,
+    find_problem_statements_file,
 )
 
 # Obrigatórias desta ferramenta, além do padrão; sem elas não dá pra rotular first-attempts.
@@ -88,6 +90,27 @@ def read_code_snapshots(raw_dir: Path) -> dict[str, str]:
     return dict(zip(table["CodeStateID"].astype(str), table["Code"].fillna("")))
 
 
+def read_problem_statements(raw_dir: Path) -> dict[tuple[int, int], str]:
+    # `{(AssignmentID, ProblemID): enunciado}`; sem o arquivo de enunciados, um dict vazio.
+    path = find_problem_statements_file(Path(raw_dir))
+    if path is None:
+        return {}
+    try:
+        table = pd.read_csv(path, encoding="utf-8-sig", dtype=str)
+    except (OSError, ValueError):
+        return {}  # o enunciado é opcional, e um arquivo que não se lê não derruba a importação
+    table.columns = [str(column).strip() for column in table.columns]
+    # Os ids viram número, porque a MainTable da CSEDM traz "439.0" e a planilha traz "439"
+    assignment_ids = pd.to_numeric(table["AssignmentID"], errors="coerce")
+    problem_ids = pd.to_numeric(table["ProblemID"], errors="coerce")
+    statements: dict[tuple[int, int], str] = {}
+    for assignment_id, problem_id, text in zip(assignment_ids, problem_ids, table["Requirement"]):
+        if pd.isna(assignment_id) or pd.isna(problem_id) or pd.isna(text) or not str(text).strip():
+            continue
+        statements[(int(assignment_id), int(problem_id))] = str(text).strip()
+    return statements
+
+
 # IProgSnapTableReader sobre os CSVs do upload.
 class ProgSnapCsvReader:
     def read_main_table(self, path: Path) -> tuple[pd.DataFrame | None, list[ImportCheck]]:
@@ -95,3 +118,6 @@ class ProgSnapCsvReader:
 
     def read_code_snapshots(self, raw_dir: Path) -> dict[str, str]:
         return read_code_snapshots(raw_dir)
+
+    def read_problem_statements(self, raw_dir: Path) -> dict[tuple[int, int], str]:
+        return read_problem_statements(raw_dir)

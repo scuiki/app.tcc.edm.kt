@@ -147,7 +147,7 @@ modelo, exceto o domínio médio dos exercícios treinados.
 |---|---|---|
 | `n_students_eligible` | Quantos alunos de um exercício têm ao menos uma execução `Run.Program`, os que entram na partição | — |
 | `PackageRequirement` | Um requisito do pacote ProgSnap2 (tabela de eventos, código dos alunos, formato ProgSnap2 v6, até 512 MB), conferido depois do envio, atendido ou não | "O que veio no pacote" |
-| arquivo de enunciados (`read_problem_statements()`) | O CSV opcional do pacote com o enunciado de cada problema, achado pelas colunas `AssignmentID`, `ProblemID` e `Requirement`, as da planilha oficial da CSEDM. Um pacote sem ele importa sem enunciados | — |
+| arquivo de enunciados (`find_problem_statements_file()`, `read_problem_statements()`) | O CSV opcional do pacote com o enunciado de cada problema, achado pelas colunas `AssignmentID`, `ProblemID` e `Requirement` (`PROBLEM_STATEMENT_COLUMNS`), as da planilha oficial da CSEDM, e lido quando o pacote é processado. Um pacote sem ele importa sem enunciados | — |
 
 ## Pipeline de dados
 

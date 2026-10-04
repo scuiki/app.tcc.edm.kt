@@ -463,3 +463,17 @@ def test_migration_0016_keys_the_matrix_by_problem(tmp_path):
     assert _user_version(conn) >= 16
     columns = _column_names(conn, "mastery_prediction")
     assert "problem_id" in columns and "kc_id" not in columns
+
+
+# 0017 sobre um banco em user_version=16, o problema ganha o enunciado e os antigos ficam sem ele.
+def test_migration_0017_adds_the_statement_to_the_problem(tmp_path):
+    conn = connect(str(tmp_path / "app.db"))
+    run_migrations(conn, migrations_dir=_migrations_up_to(tmp_path, 16))
+    assignment_id = _seed_assignment(conn)
+    conn.execute("INSERT INTO problem (assignment_id, problem_id) VALUES (?, 1);", (assignment_id,))
+
+    run_migrations(conn, migrations_dir=_migrations_up_to(tmp_path, 17))
+
+    assert _user_version(conn) == 17
+    assert "statement" in _column_names(conn, "problem")
+    assert conn.execute("SELECT statement FROM problem;").fetchone()[0] is None
