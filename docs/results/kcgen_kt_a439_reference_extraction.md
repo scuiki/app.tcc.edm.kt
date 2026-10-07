@@ -13,6 +13,8 @@ resultado antes de os outros quatro serem extraídos.
   das soluções saem do `microsoft/codebert-base` (revisão `3b0952f`) e os dos nomes de KC do
   `all-MiniLM-L6-v2` (revisão `1110a24`).
 - Na turma, o A439 é o exercício 8, e a extração foi o job 5.
+- Os trechos de cada conceito e o código completo das soluções que o LLM leu estão em
+  [kcgen_kt_a439_evidence.md](kcgen_kt_a439_evidence.md).
 
 ## Números
 
