@@ -267,8 +267,8 @@ Cada etapa é um commit, com uma revisão independente do diff contra as decisõ
 | 3 | Concluída, commit `af49b24` |
 | 4 | Concluída, commit `c38eade` |
 | 5 | Concluída, commit `11aea49` |
-| 6 | Concluída. Os dois prompts foram aprovados pelo Leo em 06/10/2026, e ele autorizou as chamadas de validação antes disso, em 04/10/2026 |
-| 7 | A fazer |
+| 6 | Concluída, commit `b5278ac`. Os dois prompts foram aprovados pelo Leo em 06/10/2026, e ele autorizou as chamadas de validação antes disso, em 04/10/2026 |
+| 7 | Em andamento. A turma de referência foi importada e o A439 extraído em 06/10/2026, com o resultado em `docs/results/kcgen_kt_a439_reference_extraction.md`, e os outros quatro esperam o Leo |
 | 8 | A fazer |
 | 9 | A fazer |
 | 10 | A fazer |
