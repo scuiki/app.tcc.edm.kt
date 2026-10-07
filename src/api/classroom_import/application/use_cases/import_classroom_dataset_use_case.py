@@ -4,7 +4,8 @@ from __future__ import annotations
 
 import pandas as pd
 
-from api.assignments.domain.entities.assignment_entity import Assignment, AssignmentStatus
+from api.assignments.domain.entities.assignment_entity import Assignment
+from api.assignments.domain.value_objects.assignment_status import AssignmentStatus
 from api.assignments.domain.interfaces.assignment_repository import IAssignmentRepository
 from api.assignments.problems.domain.entities.problem_entity import Problem
 from api.assignments.problems.domain.interfaces.problem_repository import IProblemRepository

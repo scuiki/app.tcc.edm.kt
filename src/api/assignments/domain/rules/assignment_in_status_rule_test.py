@@ -4,7 +4,8 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
-from api.assignments.domain.entities.assignment_entity import Assignment, AssignmentStatus
+from api.assignments.domain.entities.assignment_entity import Assignment
+from api.assignments.domain.value_objects.assignment_status import AssignmentStatus
 from api.assignments.domain.rules.assignment_in_status_rule import AssignmentInStatusRule
 
 

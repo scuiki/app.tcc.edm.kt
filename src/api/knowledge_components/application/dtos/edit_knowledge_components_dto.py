@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from pydantic import BaseModel
 
-from api.assignments.domain.entities.assignment_entity import AssignmentStatus
+from api.assignments.domain.value_objects.assignment_status import AssignmentStatus
 
 
 class AddKnowledgeComponentDTO(BaseModel):

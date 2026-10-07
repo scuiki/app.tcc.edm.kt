@@ -6,7 +6,8 @@ import contextlib
 
 import pandas as pd
 
-from api.assignments.domain.entities.assignment_entity import Assignment, AssignmentStatus
+from api.assignments.domain.entities.assignment_entity import Assignment
+from api.assignments.domain.value_objects.assignment_status import AssignmentStatus
 from api.model_training.application.use_cases.run_training_use_case import RunTrainingUseCase
 from api.model_training.domain.value_objects.training_outcome import TrainingOutcome
 

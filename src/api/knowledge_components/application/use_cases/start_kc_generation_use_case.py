@@ -1,7 +1,7 @@
 # Dispara a geração de KCs em background e devolve o job na hora (o KCGen-KT leva minutos).
 from __future__ import annotations
 
-from api.assignments.domain.entities.assignment_entity import AssignmentStatus
+from api.assignments.domain.value_objects.assignment_status import AssignmentStatus
 from api.assignments.domain.rules.assignment_in_status_rule import AssignmentInStatusRule
 from api.assignments.domain.interfaces.assignment_repository import IAssignmentRepository
 from api.knowledge_components.application.dtos.start_kc_generation_dto import (

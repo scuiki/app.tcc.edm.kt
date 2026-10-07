@@ -4,7 +4,8 @@ from __future__ import annotations
 
 from typing import Protocol
 
-from api.assignments.domain.entities.assignment_entity import Assignment, AssignmentStatus
+from api.assignments.domain.entities.assignment_entity import Assignment
+from api.assignments.domain.value_objects.assignment_status import AssignmentStatus
 
 
 class IAssignmentRepository(Protocol):

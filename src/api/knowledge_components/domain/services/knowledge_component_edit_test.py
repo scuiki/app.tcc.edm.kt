@@ -4,7 +4,8 @@ from __future__ import annotations
 
 import pytest
 
-from api.assignments.domain.entities.assignment_entity import Assignment, AssignmentStatus
+from api.assignments.domain.entities.assignment_entity import Assignment
+from api.assignments.domain.value_objects.assignment_status import AssignmentStatus
 from api.knowledge_components.domain.services.knowledge_component_edit import (
     refuse_edit_after_training,
 )

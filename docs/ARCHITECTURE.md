@@ -37,7 +37,7 @@ quando tem conteúdo:
 <funcionalidade>/
   domain/
     entities/         as entidades: têm identidade (id) e ciclo de vida
-    value_objects/    valores sem identidade, imutáveis (ClassroomSlug, MasteryLevel, TrainingOutcome…)
+    value_objects/    valores sem identidade, imutáveis, enums inclusive (ClassroomSlug, AssignmentStatus, TrainingOutcome…)
     interfaces/       TODOS os Protocols que outra camada implementa, repositórios inclusive
     rules/            as regras de negócio (IBusinessRule) que os use cases de escrita checam
     services/         lógica de negócio pura, em funções (limpeza, treinabilidade, classificação…)

@@ -3,7 +3,8 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
-from api.assignments.domain.entities.assignment_entity import Assignment, AssignmentStatus
+from api.assignments.domain.entities.assignment_entity import Assignment
+from api.assignments.domain.value_objects.assignment_status import AssignmentStatus
 from api.assignments.problems.domain.entities.problem_entity import Problem
 from api.knowledge_components.domain.rules.assignment_has_knowledge_components_rule import (
     AssignmentHasKnowledgeComponentsRule,

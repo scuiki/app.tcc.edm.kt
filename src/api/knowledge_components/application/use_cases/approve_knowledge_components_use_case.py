@@ -1,7 +1,7 @@
 # O professor aprova os KCs que o LLM rascunhou, é o único caminho que libera o treino.
 from __future__ import annotations
 
-from api.assignments.domain.entities.assignment_entity import AssignmentStatus
+from api.assignments.domain.value_objects.assignment_status import AssignmentStatus
 from api.assignments.domain.interfaces.assignment_repository import IAssignmentRepository
 from api.assignments.domain.services.existing_assignment import get_existing_assignment
 from api.knowledge_components.application.dtos.edit_knowledge_components_dto import (
