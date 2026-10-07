@@ -1,4 +1,4 @@
-# build_qmatrix reproduz a Q-matrix do TCC 1 (A439) célula a célula; LLM nunca é chamado aqui.
+# build_qmatrix reproduz a Q-matrix da extração de referência do A439, sem chamar o LLM.
 
 from __future__ import annotations
 
@@ -7,37 +7,35 @@ import json
 from ml.kc_generation.qmatrix_builder import build_qmatrix
 
 
-def _load(kc_reference_dir, name):
-    return json.loads((kc_reference_dir / name).read_text())
+def _reference(kc_reference_dir) -> dict:
+    path = kc_reference_dir / "a439_reference_extraction.json"
+    return json.loads(path.read_text(encoding="utf-8"))
 
 
-def test_build_qmatrix_reproduces_reference(kc_reference_dir):
-    # Reproduz qmatrix_A439.csv célula-a-célula, replay determinístico da saída bruta do LLM.
-    import pandas as pd
+def test_build_qmatrix_reproduces_the_reference_extraction(kc_reference_dir):
+    # Os KCs candidatos e o grupo de cada nome dão de novo os conceitos de cada problema
+    reference = _reference(kc_reference_dir)
+    problem_ids = sorted(int(p) for p in reference["candidate_kcs"])
+    candidates = {int(p): kcs for p, kcs in reference["candidate_kcs"].items()}
+    n_groups = len(reference["concepts"])
 
-    # O artefato do TCC 1 guarda os KCs de cada problema dentro de "kcs"
-    kc_raw = {p: v["kcs"] for p, v in _load(kc_reference_dir, "kc_raw_A439.json").items()}
-    kc_clusters = _load(kc_reference_dir, "kc_clusters_A439.json")
-    # O CSV é o artefato do TCC 1 e guarda o índice com o nome do ProgSnap2.
-    reference = pd.read_csv(kc_reference_dir / "qmatrix_A439.csv", index_col="ProblemID")
-    reference.index.name = "problem_id"
+    qmatrix = build_qmatrix(
+        problem_ids,
+        candidates,
+        {"n_clusters_selected": n_groups, "kc_to_cluster": reference["group_of_name"]},
+    )
 
-    # Os problem_ids da referência (o índice do CSV) na mesma ordem.
-    problem_ids = [str(p) for p in reference.index.tolist()]
-    produced = build_qmatrix(problem_ids, kc_raw, kc_clusters)
-
-    # Mesma forma (n_problemas × n_clusters) e mesmos valores binários.
-    assert list(produced.columns) == list(reference.columns)
-    assert produced.shape == reference.shape
-    # Comparação célula-a-célula (alinha por reset de índice; valores 0/1).
-    assert produced.to_numpy().tolist() == reference.to_numpy().tolist()
+    assert qmatrix.shape == (len(problem_ids), n_groups)
+    assert list(qmatrix.columns) == [f"kc_{g}" for g in range(n_groups)]
+    assert list(qmatrix.index) == problem_ids
+    produced = {
+        p: [g for g in range(n_groups) if qmatrix.loc[p][f"kc_{g}"] == 1] for p in problem_ids
+    }
+    assert produced == {int(p): groups for p, groups in reference["groups_by_problem"].items()}
 
 
-def test_zero_kc_problem_guard(kc_reference_dir):
-    # Guarda 0-KC, problema sem KC mapeado fica com a linha toda zero; não inventamos vínculo.
-    kc_clusters = _load(kc_reference_dir, "kc_clusters_A439.json")
-    kc_raw = {}  # nenhum KC para nenhum problema
+def test_zero_kc_problem_guard():
+    # Um problema sem KC candidato fica com a linha zerada, e quem recusa é a validação da geração
+    produced = build_qmatrix([999], {}, {"n_clusters_selected": 2, "kc_to_cluster": {"loop": 0}})
 
-    produced = build_qmatrix(["999"], kc_raw, kc_clusters)
-    # Sem KCs, a linha do problema é inteiramente 0 (a falha-dura é decisão da validação).
-    assert produced.loc["999"].sum() == 0
+    assert produced.loc[999].sum() == 0

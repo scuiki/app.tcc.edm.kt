@@ -1,9 +1,9 @@
 # Extração de referência do KCGen-KT no A439
 
 A extração do exercício A439 na turma "CSEDM CodeWorkout, referência do KCGen-KT", feita em
-06/10/2026 pelas rotas da API que a tela usa, com o código do commit `b5278ac`. É o primeiro dos
-cinco exercícios da extração de referência (etapa 7 do `KCGEN_KT_PLAN.md`), e o Leo vê este
-resultado antes de os outros quatro serem extraídos.
+06/10/2026 pelas rotas da API que a tela usa, com o código do commit `b5278ac`. É a extração de
+referência da etapa 7 do `KCGEN_KT_PLAN.md`, e os outros quatro exercícios da turma saem pela
+aplicação, como o Leo decidiu em 07/10/2026.
 
 ## Como foi feita
 

@@ -11,8 +11,9 @@ data/
 app.db
 app.db-shm
 app.db-wal
-# Exceção: fixtures de teste versionadas (pequenas, artefatos de referência do TCC 1 — NÃO são dados de
-# turma nem o CSEDM grande do D-12). tests/data/ é raiz hermética dos testes.
+# Exceção: fixtures de teste versionadas (pequenas, a extração de referência do KCGen-KT no A439 e a
+# planilha de enunciados — NÃO são dados de turma nem o CSEDM grande do D-12). tests/data/ é raiz
+# hermética dos testes.
 !tests/data/
 !tests/data/**
 

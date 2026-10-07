@@ -16,7 +16,7 @@ def cpu_device() -> torch.device:
 
 @pytest.fixture
 def kc_reference_dir() -> Path:
-    # Os artefatos reais do KCGen-KT do TCC 1 para o A439
+    # Os artefatos da extração de referência do KCGen-KT no A439, a de 06/10/2026
     return Path(__file__).resolve().parents[1] / "data" / "kc"
 
 

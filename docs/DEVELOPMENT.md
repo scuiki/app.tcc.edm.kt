@@ -697,7 +697,7 @@ da metodologia do TCC 1 diz que o paper documenta robustez à troca de LLM, o qu
 temperatura diferente da padrão, e a CLI não tem opção para ela, então o app usa a padrão
 (critério 4). Temperatura 0 também não garantia respostas idênticas. O que torna a extração
 repetível no app é o cache das respostas do LLM, com chave no modelo, na versão do prompt, no texto
-de sistema, no schema e no prompt (`llm_response_cache.py:23-40` do app). Uma extração nova com o
+de sistema, no schema e no prompt (`llm_response_cache.py:24-41` do app). Uma extração nova com o
 cache vazio pode dar outros KCs.
 
 **11. Descrição do problema na resposta.** No paper, o enunciado do problema é entrada do prompt
@@ -955,10 +955,11 @@ do CodeBERT e do SBERT, no papel que o teste de regressão tem no Code-DKT (crit
 
 **28. Regressão da extração inteira.** O app não tem como fixar a temperatura (linha 10), então a
 extração inteira só se repete pelo cache das respostas do LLM. As respostas da extração de
-referência da CSEDM, feita nos cinco exercícios e com os enunciados, ficam gravadas como dado de
-teste. Um teste repete a
-extração lendo o cache, sem gastar cota, e confere os nomes e a Q-matrix. A chave do cache inclui o
-texto dos prompts (`llm_response_cache.py:23-40` do app), então mudar um prompt faz o teste falhar
+referência da CSEDM, feita no A439 e com os enunciados, ficam gravadas como dado de teste, e os
+outros quatro exercícios saem pela aplicação, como o Leo decidiu em 07/10/2026. Um teste repete a
+extração lendo o cache, sem gastar cota, e confere as soluções amostradas, os KCs candidatos, os
+conceitos com os nomes gerados e traduzidos, a Q-matrix e os trechos. A chave do cache inclui o
+texto dos prompts (`llm_response_cache.py:24-41` do app), então mudar um prompt faz o teste falhar
 por falta de resposta gravada (critério 5).
 
 **29. Comparação com o paper.** O paper não publica a lista completa de KCs gerados, então não há um

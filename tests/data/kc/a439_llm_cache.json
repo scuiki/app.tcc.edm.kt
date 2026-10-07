@@ -1,0 +1,1095 @@
+{
+  "evidence:2587da834c2b30ee37d81e1b4122d8e64a9179aa24d005b19a7b325d5c56e6ea": {
+    "input_hash": "2587da834c2b30ee37d81e1b4122d8e64a9179aa24d005b19a7b325d5c56e6ea",
+    "model_id": "claude-sonnet-5-5",
+    "prompt_version": "kcgen-v2",
+    "parsed": {
+      "KC 1": {
+        "solution": 2,
+        "snippet": "return (a>=60 && a<=upper);"
+      },
+      "KC 2": {
+        "solution": 1,
+        "snippet": "return (true);"
+      },
+      "KC 3": {
+        "solution": 3,
+        "snippet": "else if(isSummer == true)"
+      },
+      "KC 4": {
+        "solution": 5,
+        "snippet": "int max = 90;\n    if(isSummer)max=100;"
+      },
+      "KC 5": {
+        "solution": 1,
+        "snippet": "if (isSummer)\n    {\n    \tif (temp >= 60 && temp <= 100)\n        {\n        \treturn (true);\n        }\n        else\n        {\n        \treturn (false);\n        }\n    }"
+      },
+      "KC 6": {
+        "solution": 4,
+        "snippet": "return temp >= 60 && temp <= upperLimit;"
+      },
+      "KC 7": {
+        "solution": 4,
+        "snippet": "int upperLimit = isSummer ? 100 : 90;"
+      },
+      "KC 8": {
+        "solution": 4,
+        "snippet": "public boolean squirrelPlay(int temp, boolean isSummer)\n{\n\t\tint upperLimit = isSummer ? 100 : 90;\n\t\treturn temp >= 60 && temp <= upperLimit;\n\t}"
+      },
+      "KC 9": {
+        "solution": 5,
+        "snippet": "int max = 90;"
+      }
+    }
+  },
+  "evidence:2f05ea6a9d4435bde43cdbb150f35c042a44351a8b60b9368d1d1bb6592be630": {
+    "input_hash": "2f05ea6a9d4435bde43cdbb150f35c042a44351a8b60b9368d1d1bb6592be630",
+    "model_id": "claude-sonnet-5-5",
+    "prompt_version": "kcgen-v2",
+    "parsed": {
+      "KC 1": {
+        "solution": 3,
+        "snippet": "if(isAsleep)\n\t\treturn false;\n\tif(isMom)\n\t\treturn true;"
+      },
+      "KC 2": {
+        "solution": 1,
+        "snippet": "else if (isMorning && !isMom && !isAsleep)"
+      },
+      "KC 3": {
+        "solution": 1,
+        "snippet": "boolean answer = true;"
+      },
+      "KC 4": {
+        "solution": 2,
+        "snippet": "if (isAsleep)\n        return false;\n    else if (!isMorning || isMom)\n        return true;\n    else\n        return false;"
+      },
+      "KC 5": {
+        "solution": 5,
+        "snippet": "else if (isMorning)\n    {\n        if (isMom)\n        {\n            return true;\n        }\n        else\n        {\n            return false;\n        }\n    }"
+      },
+      "KC 6": {
+        "solution": 2,
+        "snippet": "else if (!isMorning || isMom)"
+      },
+      "KC 7": {
+        "solution": 3,
+        "snippet": "return (!isMorning);"
+      },
+      "KC 8": {
+        "solution": 3,
+        "snippet": "if(isAsleep)\n\t\treturn false;"
+      },
+      "KC 9": {
+        "solution": 3,
+        "snippet": "public boolean answerCell(boolean isMorning, boolean isMom, boolean isAsleep)"
+      }
+    }
+  },
+  "evidence:308b9e88f3422f0e82541bf954a47727ecb235de5b180c68d6c406200e3cee39": {
+    "input_hash": "308b9e88f3422f0e82541bf954a47727ecb235de5b180c68d6c406200e3cee39",
+    "model_id": "claude-sonnet-5-5",
+    "prompt_version": "kcgen-v2",
+    "parsed": {
+      "KC 1": {
+        "solution": 4,
+        "snippet": "return sum >= 10 && sum < 20 ? 20 : sum;"
+      },
+      "KC 2": {
+        "solution": 3,
+        "snippet": "if(sum >=10 && sum <=19) {"
+      },
+      "KC 3": {
+        "solution": 3,
+        "snippet": "sum = a + b;"
+      },
+      "KC 4": {
+        "solution": 1,
+        "snippet": "if (a + b >= 10 && a + b <= 19)\n        return 20;\n    else return (a + b);"
+      },
+      "KC 5": {
+        "solution": 1,
+        "snippet": "if (a + b >= 10 && a + b <= 19)"
+      },
+      "KC 6": {
+        "solution": 4,
+        "snippet": "return sum >= 10 && sum < 20 ? 20 : sum;"
+      },
+      "KC 7": {
+        "solution": 4,
+        "snippet": "public int sortaSum(int a, int b) {\n\t\tint sum = a + b;\t\t\n\t\treturn sum >= 10 && sum < 20 ? 20 : sum;\n\t}"
+      },
+      "KC 8": {
+        "solution": 2,
+        "snippet": "int sum = a + b;"
+      }
+    }
+  },
+  "evidence:5564f8ccbe9e2161d31b5c4f7831ccbc91ceb2306eb3a909ede8f376097b8ff3": {
+    "input_hash": "5564f8ccbe9e2161d31b5c4f7831ccbc91ceb2306eb3a909ede8f376097b8ff3",
+    "model_id": "claude-sonnet-5-5",
+    "prompt_version": "kcgen-v2",
+    "parsed": {
+      "KC 1": {
+        "solution": 3,
+        "snippet": "        if (cigars >= 40)"
+      },
+      "KC 2": {
+        "solution": 3,
+        "snippet": "            return true;\n        }\n        else\n        {\n            return false;"
+      },
+      "KC 3": {
+        "solution": 4,
+        "snippet": "    if (isWeekend == false)"
+      },
+      "KC 4": {
+        "solution": 5,
+        "snippet": "  if(isWeekend && cigars >= 40)\n    return true;\n  else if(cigars >= 40 && cigars <=60)\n    return true;\n  else\n    return false;"
+      },
+      "KC 5": {
+        "solution": 2,
+        "snippet": "return cigars >= 40 && (cigars <= 60 || isWeekend);"
+      },
+      "KC 6": {
+        "solution": 2,
+        "snippet": "return cigars >= 40 && (cigars <= 60 || isWeekend);"
+      },
+      "KC 7": {
+        "solution": 1,
+        "snippet": "    if(isWeekend)\n        return (cigars >= 40);\n        return (cigars >= 40 && cigars <= 60);"
+      },
+      "KC 8": {
+        "solution": 2,
+        "snippet": "public boolean cigarParty(int cigars, boolean isWeekend) {\n\t\treturn cigars >= 40 && (cigars <= 60 || isWeekend);\n\t}"
+      }
+    }
+  },
+  "evidence:5b36ec83f01767139e0dd511de366f74a822d0c605d6f08aeba409cff31a89cb": {
+    "input_hash": "5b36ec83f01767139e0dd511de366f74a822d0c605d6f08aeba409cff31a89cb",
+    "model_id": "claude-sonnet-5-5",
+    "prompt_version": "kcgen-v2",
+    "parsed": {
+      "KC 1": {
+        "solution": 4,
+        "snippet": "    if (a != b)\n    {\n        if (a != c)"
+      },
+      "KC 2": {
+        "solution": 3,
+        "snippet": "\tif (( a - b == b - c) && ( a - b == a - c )){"
+      },
+      "KC 3": {
+        "solution": 5,
+        "snippet": "\tif(a == b)\n\t{\n\t\tif(b == c)\n\t\t\treturn 20;\n\t\treturn 10;\n\t}\n\tif(a == c || b == c)\n\t\treturn 10;\n\treturn 0;"
+      },
+      "KC 4": {
+        "solution": 2,
+        "snippet": "    if (a == b) \n    {\n        if (b == c)\n        {\n            return 20;\n        }\n        return 10;\n    }\n    if (a == c || b == c)\n    {\n        return 10;\n    }\n    else\n    {\n        return 0;\n    }"
+      },
+      "KC 5": {
+        "solution": 5,
+        "snippet": "\tif(a == c || b == c)"
+      },
+      "KC 6": {
+        "solution": 5,
+        "snippet": "\t\tif(b == c)\n\t\t\treturn 20;\n\t\treturn 10;"
+      },
+      "KC 7": {
+        "solution": 5,
+        "snippet": "public int greenTicket(int a, int b, int c)\n{"
+      }
+    }
+  },
+  "evidence:64a7808c39b8bcf2ec5d70b40af8b41c372c9bab8121143e3087f97dd5538baa": {
+    "input_hash": "64a7808c39b8bcf2ec5d70b40af8b41c372c9bab8121143e3087f97dd5538baa",
+    "model_id": "claude-sonnet-5-5",
+    "prompt_version": "kcgen-v2",
+    "parsed": {
+      "KC 1": {
+        "solution": 5,
+        "snippet": "    if (you > 7)\n    {\n        if (date > 2)"
+      },
+      "KC 2": {
+        "solution": 2,
+        "snippet": "    if (you <= 2 || date <= 2)\n        return 0;"
+      },
+      "KC 3": {
+        "solution": 2,
+        "snippet": "    if (you <= 2 || date <= 2)\n        return 0;\n    if (you >= 8 || date >= 8)\n        return 2;\n    return 1;"
+      },
+      "KC 4": {
+        "solution": 5,
+        "snippet": "        if (date > 7)\n        {\n            return 2;\n        }\n        else if (date > 2)\n        {\n            return 1;\n        }\n        else\n        {\n            return 0;\n        }"
+      },
+      "KC 5": {
+        "solution": 1,
+        "snippet": "    if (you >= 8 || date >= 8)\n    {\n        if (you <= 2 || date <= 2)\n        {\n            return 0;\n        }\n        else\n        {\n            return 2;\n        }\n    }"
+      },
+      "KC 6": {
+        "solution": 2,
+        "snippet": "    if (you <= 2 || date <= 2)"
+      },
+      "KC 7": {
+        "solution": 3,
+        "snippet": "\tif(you >= 8 || date >= 8)\n\t\treturn 2;\n\treturn 1;"
+      },
+      "KC 8": {
+        "solution": 2,
+        "snippet": "public int dateFashion(int you, int date)\n{\n    if (you <= 2 || date <= 2)\n        return 0;"
+      }
+    }
+  },
+  "evidence:9ece474a6f3866cba44538b5db0d589ca7fcb06e3353bc7edc20986c27e9876f": {
+    "input_hash": "9ece474a6f3866cba44538b5db0d589ca7fcb06e3353bc7edc20986c27e9876f",
+    "model_id": "claude-sonnet-5-5",
+    "prompt_version": "kcgen-v2",
+    "parsed": {
+      "KC 1": {
+        "solution": 2,
+        "snippet": "if (n >= 1 && n <= 10)"
+      },
+      "KC 2": {
+        "solution": 4,
+        "snippet": "return (n <= 1 || n >= 10);"
+      },
+      "KC 3": {
+        "solution": 3,
+        "snippet": "if ( outsideMode == false && n >= 1 && n <= 10 )"
+      },
+      "KC 4": {
+        "solution": 2,
+        "snippet": "if (outsideMode)\n    {\n        if (n <= 1 || n >= 10)\n        {\n            return true;\n        }\n        else\n        {\n            return false;\n        }\n    }\n    else \n    {"
+      },
+      "KC 5": {
+        "solution": 5,
+        "snippet": "return n <= 1 || n >= 10;"
+      },
+      "KC 6": {
+        "solution": 5,
+        "snippet": "public boolean in1To10(int n, boolean outsideMode) {"
+      }
+    }
+  },
+  "evidence:b86cf957382fad6e51f1523c3e6bb0ca36ca5d4ab661b21bf4c500588bea1d51": {
+    "input_hash": "b86cf957382fad6e51f1523c3e6bb0ca36ca5d4ab661b21bf4c500588bea1d51",
+    "model_id": "claude-sonnet-5-5",
+    "prompt_version": "kcgen-v2",
+    "parsed": {
+      "KC 1": {
+        "solution": 2,
+        "snippet": "    else if(day == 1)"
+      },
+      "KC 2": {
+        "solution": 4,
+        "snippet": "        if (day <= 5 && day >= 1)"
+      },
+      "KC 3": {
+        "solution": 1,
+        "snippet": "        if ( vacation == true && ( day == 0 || day == 6 ) )"
+      },
+      "KC 4": {
+        "solution": 2,
+        "snippet": "    else if(day == 1)\n        if(vacation)\n            return \"10:00\";\n    \telse\n            return \"7:00\";\n    else if(day == 2)"
+      },
+      "KC 5": {
+        "solution": 4,
+        "snippet": "    if (vacation)\n    {\n        if (day <= 5 && day >= 1)\n        {\n            return \"10:00\";\n        }\n        else\n        {\n            return \"off\";\n        }\n    }"
+      },
+      "KC 6": {
+        "solution": 5,
+        "snippet": "    else if (day == 0 || day == 6)"
+      },
+      "KC 7": {
+        "solution": 3,
+        "snippet": "String k = \"7:00\";"
+      },
+      "KC 8": {
+        "solution": 3,
+        "snippet": "String c = \"10:00\";"
+      },
+      "KC 9": {
+        "solution": 1,
+        "snippet": "  if ( vacation == true && ( day == 1 || day == 2 || day == 3 || day == 4 || day == 5 ) )"
+      }
+    }
+  },
+  "evidence:e1ba252dedcdc3117ad2f9813d7904ecfb398e886d82ad865e68daeb2fe2e9dc": {
+    "input_hash": "e1ba252dedcdc3117ad2f9813d7904ecfb398e886d82ad865e68daeb2fe2e9dc",
+    "model_id": "claude-sonnet-5-5",
+    "prompt_version": "kcgen-v2",
+    "parsed": {
+      "KC 1": {
+        "solution": 5,
+        "snippet": "if(speed <= 60)"
+      },
+      "KC 2": {
+        "solution": 4,
+        "snippet": "if (isBirthday) speed -= 5;"
+      },
+      "KC 3": {
+        "solution": 2,
+        "snippet": "if (isBirthday)"
+      },
+      "KC 4": {
+        "solution": 5,
+        "snippet": "else if(speed <= 80)\n\t\treturn 1;"
+      },
+      "KC 5": {
+        "solution": 2,
+        "snippet": "if (speed <= 65)\n        {\n            return 0;\n        }\n        else if (speed >= 66 && speed <=85)\n        {\n            return 1;\n        }\n        else\n        {\n            return 2;\n        }"
+      },
+      "KC 6": {
+        "solution": 3,
+        "snippet": "if (speed > 65 && speed <= 85)"
+      },
+      "KC 7": {
+        "solution": 4,
+        "snippet": "return (speed > 60 && speed <= 80) ? 1 : 2;"
+      },
+      "KC 8": {
+        "solution": 4,
+        "snippet": "if (speed <= 60) return 0;"
+      },
+      "KC 9": {
+        "solution": 3,
+        "snippet": "public int caughtSpeeding(int speed, boolean isBirthday) {"
+      },
+      "KC 10": {
+        "solution": 3,
+        "snippet": "int resultTicket = 0;"
+      },
+      "KC 11": {
+        "solution": 5,
+        "snippet": "if(isBirthday)\n\t\tspeed -= 5;"
+      }
+    }
+  },
+  "evidence:e7c9e2e796aaa6f94b266a2c8e22252aaa61d45cfc5beb5046e4a3ee433609ee": {
+    "input_hash": "e7c9e2e796aaa6f94b266a2c8e22252aaa61d45cfc5beb5046e4a3ee433609ee",
+    "model_id": "claude-sonnet-5-5",
+    "prompt_version": "kcgen-v2",
+    "parsed": {
+      "KC 1": {
+        "solution": 1,
+        "snippet": "if(a == 6 || b == 6 || a + b == 6 || Math.abs(a - b) == 6)"
+      },
+      "KC 2": {
+        "solution": 3,
+        "snippet": "if (a - b == 6 || a + b == 6 || b - a == 6)"
+      },
+      "KC 3": {
+        "solution": 5,
+        "snippet": "else if (b + a == 6)\n   {\n\t\treturn true;\n   }\n   else if (a - b == 6)"
+      },
+      "KC 4": {
+        "solution": 1,
+        "snippet": "return true;\n          \n    return false;"
+      },
+      "KC 5": {
+        "solution": 2,
+        "snippet": "else\n    {\n        if (a + b == 6)\n        {\n            return true;\n        }\n        else if (Math.abs(a - b) == 6)"
+      },
+      "KC 6": {
+        "solution": 1,
+        "snippet": "if(a == 6 || b == 6 || a + b == 6 || Math.abs(a - b) == 6)"
+      },
+      "KC 7": {
+        "solution": 4,
+        "snippet": "if (a == Math.abs(6))\n        return true;\n    if (b == Math.abs(6))\n        return true;"
+      },
+      "KC 8": {
+        "solution": 4,
+        "snippet": "int sum = a + b;"
+      },
+      "KC 9": {
+        "solution": 1,
+        "snippet": "if(a == 6 || b == 6 || a + b == 6 || Math.abs(a - b) == 6)"
+      }
+    }
+  },
+  "generate:0b74928de7d8369aef00172ce8890c69ad59e824952ed404568010ee3779ea8d": {
+    "input_hash": "0b74928de7d8369aef00172ce8890c69ad59e824952ed404568010ee3779ea8d",
+    "model_id": "claude-sonnet-5-5",
+    "prompt_version": "kcgen-v2",
+    "parsed": {
+      "KC 1": {
+        "reasoning": "Every solution uses if/else statements to choose between the alarm outputs depending on the day and vacation status.",
+        "name": "If and else statement"
+      },
+      "KC 2": {
+        "reasoning": "Solutions 2, 4 and 5 nest an if on vacation inside a branch on the day (or the reverse) to separate the weekday/weekend and vacation cases.",
+        "name": "Nested if statement"
+      },
+      "KC 3": {
+        "reasoning": "Solutions 2 and 5 chain else-if branches so that only one of several mutually exclusive conditions is executed.",
+        "name": "Else-if chains"
+      },
+      "KC 4": {
+        "reasoning": "The solutions compare the integer day against specific values (day == 0, day == 6) to identify particular days such as the weekend.",
+        "name": "Numerical equality comparison"
+      },
+      "KC 5": {
+        "reasoning": "Solutions 3, 4 and 5 use relational operators such as <, >, <= and >= to test whether the day falls in the weekday range 1 to 5.",
+        "name": "Numerical comparisons (relational operators)"
+      },
+      "KC 6": {
+        "reasoning": "The solutions combine conditions with && and || (e.g., vacation && (day == 0 || day == 6), day > 0 && day < 6) to express compound rules.",
+        "name": "Logical operators"
+      },
+      "KC 7": {
+        "reasoning": "The boolean vacation parameter is used directly as a condition (if(vacation)), negated with !, or compared with == true/false to drive decisions.",
+        "name": "Boolean variables and conditions"
+      },
+      "KC 8": {
+        "reasoning": "Each solution must return the correct String literal (\"7:00\", \"10:00\", \"off\") from a method with a String return type, often via multiple return statements.",
+        "name": "Returning values from a method / String literals"
+      },
+      "KC 9": {
+        "reasoning": "Solution 3 stores the candidate weekday and weekend alarm strings in variables and overrides them if on vacation, then returns the appropriate one.",
+        "name": "Variable declaration and reassignment"
+      },
+      "KC 10": {
+        "reasoning": "Solutions must encode the day as an integer range (0 and 6 as weekend, 1-5 as weekdays) and map the encoding to the correct category of day.",
+        "name": "Mapping encoded integer values to categories"
+      }
+    }
+  },
+  "generate:3086f3b3b181e5b379d7f2f4f3053c61e927b0c0936d3bf3eecacc72a4e856dc": {
+    "input_hash": "3086f3b3b181e5b379d7f2f4f3053c61e927b0c0936d3bf3eecacc72a4e856dc",
+    "model_id": "claude-sonnet-5-5",
+    "prompt_version": "kcgen-v2",
+    "parsed": {
+      "KC 1": {
+        "reasoning": "Every solution uses an if statement to test conditions and choose a return path, and several add else branches for the remaining cases.",
+        "name": "If and else statement"
+      },
+      "KC 2": {
+        "reasoning": "Solutions 2, 3, and 5 chain else-if branches or nest an if inside an else to check multiple alternative conditions in sequence.",
+        "name": "Else-if chaining and nested if statements"
+      },
+      "KC 3": {
+        "reasoning": "Each solution compares values to the target number 6 using the equality operator, for example a == 6 or a + b == 6.",
+        "name": "Numerical equality comparison"
+      },
+      "KC 4": {
+        "reasoning": "Solutions 1, 2, 3, and 5 combine several conditions with the logical OR operator so that any one true condition triggers the result.",
+        "name": "Logical OR operator"
+      },
+      "KC 5": {
+        "reasoning": "The problem requires computing the sum and difference of the two inputs with + and - before comparing them to 6.",
+        "name": "Basic arithmetic operations"
+      },
+      "KC 6": {
+        "reasoning": "Solution 1 uses Math.abs(a - b) to handle the difference in either direction, and the others emulate this by checking both a - b and b - a.",
+        "name": "Absolute value with Math.abs"
+      },
+      "KC 7": {
+        "reasoning": "The method must have a boolean return type and return true or false literals based on the evaluated conditions.",
+        "name": "Boolean return values"
+      },
+      "KC 8": {
+        "reasoning": "Solutions 1 and 4 use a default return false after the if checks, relying on early return to exit the method once a condition is met.",
+        "name": "Early return and default return"
+      },
+      "KC 9": {
+        "reasoning": "Solution 4 stores the sum and differences in int variables before comparing them, which makes the code clearer and avoids recomputation.",
+        "name": "Local variable declaration and assignment"
+      },
+      "KC 10": {
+        "reasoning": "Because the difference can be negative, solutions need to recognize that a - b and b - a differ in sign and that both orderings must be considered.",
+        "name": "Handling symmetric or order-independent cases"
+      }
+    }
+  },
+  "generate:3359fed76c467f269e394151efcd2d124d60b03460c260c8ecbaf0770b7cd220": {
+    "input_hash": "3359fed76c467f269e394151efcd2d124d60b03460c260c8ecbaf0770b7cd220",
+    "model_id": "claude-sonnet-5-5",
+    "prompt_version": "kcgen-v2",
+    "parsed": {
+      "KC 1": {
+        "reasoning": "All solutions branch on the outsideMode flag (and on range conditions) using if statements to choose which logic to apply.",
+        "name": "If and else statement"
+      },
+      "KC 2": {
+        "reasoning": "Solutions 1 and 2 nest a range check inside the outsideMode branch, so understanding nested conditionals and their else-pairing is needed.",
+        "name": "Nested if statement"
+      },
+      "KC 3": {
+        "reasoning": "Every solution compares n against the boundary values 1 and 10 using <=, >=, and inclusive-bound reasoning.",
+        "name": "Numerical comparisons"
+      },
+      "KC 4": {
+        "reasoning": "The solutions combine two comparisons with && for the inside-range check and || for the outside-range check.",
+        "name": "Logical operators"
+      },
+      "KC 5": {
+        "reasoning": "The boolean parameter outsideMode is used directly as a condition (or compared with == true/false) to select between behaviors.",
+        "name": "Boolean variables as conditions"
+      },
+      "KC 6": {
+        "reasoning": "Solutions 4 and 5 return the value of a boolean expression directly rather than wrapping it in if/else returning true or false.",
+        "name": "Returning boolean expressions directly"
+      },
+      "KC 7": {
+        "reasoning": "All solutions must return a boolean value from a method with specified parameters and a boolean return type, including early returns and a fall-through return.",
+        "name": "Method definition and return statements"
+      }
+    }
+  },
+  "generate:3604e13d45ed6b603222709f09179cffc93a0faa976918fbae4d1069b4aa6ac6": {
+    "input_hash": "3604e13d45ed6b603222709f09179cffc93a0faa976918fbae4d1069b4aa6ac6",
+    "model_id": "claude-sonnet-5-5",
+    "prompt_version": "kcgen-v2",
+    "parsed": {
+      "KC 1": {
+        "reasoning": "Every solution uses if/else branching to choose between the weekend and weekday success rules and to return true or false.",
+        "name": "If and else statement"
+      },
+      "KC 2": {
+        "reasoning": "Solutions 3 and 4 nest a cigar-count check inside the weekend/non-weekend branch, so the second condition is only evaluated after the first is decided.",
+        "name": "Nested if statement"
+      },
+      "KC 3": {
+        "reasoning": "The cigar count must be compared with the bounds 40 and 60, using >= and <= so that both ends are inclusive.",
+        "name": "Numerical comparisons"
+      },
+      "KC 4": {
+        "reasoning": "The weekday rule needs both bounds to hold at once (&&), and solution 2 combines || with && to express the weekend exception.",
+        "name": "Logical operators"
+      },
+      "KC 5": {
+        "reasoning": "The boolean parameter isWeekend is used directly as a condition (or compared with == false) to switch between rule sets.",
+        "name": "Boolean variables as conditions"
+      },
+      "KC 6": {
+        "reasoning": "Solutions 1 and 2 return the value of a boolean expression directly, and the other solutions return the literals true and false from if/else branches.",
+        "name": "Returning boolean values"
+      },
+      "KC 7": {
+        "reasoning": "Solution 2 uses parentheses to group (cigars <= 60 || isWeekend) before combining it with &&, so operator precedence and grouping decide whether the logic is correct.",
+        "name": "Operator precedence and parentheses"
+      },
+      "KC 8": {
+        "reasoning": "Solution 1 returns early from inside the if block, so the following return statement runs only when the weekend condition is false.",
+        "name": "Early return and control flow"
+      },
+      "KC 9": {
+        "reasoning": "Each solution implements the logic as a method with a boolean return type and int and boolean parameters.",
+        "name": "Method definition with parameters and return type"
+      }
+    }
+  },
+  "generate:3d52e8703b314c209c1925e9589b0e79c0d1005cd1b4964af7ff7c7e5daf0772": {
+    "input_hash": "3d52e8703b314c209c1925e9589b0e79c0d1005cd1b4964af7ff7c7e5daf0772",
+    "model_id": "claude-sonnet-5-5",
+    "prompt_version": "kcgen-v2",
+    "parsed": {
+      "KC 1": {
+        "reasoning": "Every solution uses if statements to choose among the three possible outcomes (0, 1, 2) depending on the style values.",
+        "name": "If and else statement"
+      },
+      "KC 2": {
+        "reasoning": "Solutions 1 and 5 place if/else blocks inside other if/else blocks to refine the result after an initial condition is checked.",
+        "name": "Nested if statement"
+      },
+      "KC 3": {
+        "reasoning": "Solutions 1, 2, 3 and 4 chain 'else if' or sequential if statements so that only one branch determines the outcome.",
+        "name": "Else-if chains and multi-branch conditionals"
+      },
+      "KC 4": {
+        "reasoning": "Conditions such as 'you >= 8 || date >= 8' require the logical OR operator to express that either person meeting a condition is enough.",
+        "name": "Logical operators"
+      },
+      "KC 5": {
+        "reasoning": "All solutions compare the integer style values against thresholds (e.g., <= 2, >= 8, > 7) using relational operators.",
+        "name": "Numerical comparisons"
+      },
+      "KC 6": {
+        "reasoning": "The solutions must choose the correct boundary operator and constant (e.g., >= 8 versus > 7) so inclusive thresholds are handled accurately.",
+        "name": "Inclusive and exclusive boundary handling"
+      },
+      "KC 7": {
+        "reasoning": "Solutions 2, 3 and 4 check the 'no' condition (style <= 2) first so it overrides the 'yes' condition, which requires understanding that the order of checks determines precedence.",
+        "name": "Condition ordering and precedence of rules"
+      },
+      "KC 8": {
+        "reasoning": "Every solution uses return statements to give back an int result from the method, and solutions 2 and 3 use early returns that end execution before later checks.",
+        "name": "Return statements and early exit"
+      },
+      "KC 9": {
+        "reasoning": "The method is declared with a return type of int and two int parameters, which is needed to accept the inputs and encode the result as an integer code.",
+        "name": "Method definition with parameters and return type"
+      }
+    }
+  },
+  "generate:41e5c39b6ff4f27f97ad2730501cb2fae362cafb51459bfbfcbaee9476baeeeb": {
+    "input_hash": "41e5c39b6ff4f27f97ad2730501cb2fae362cafb51459bfbfcbaee9476baeeeb",
+    "model_id": "claude-sonnet-5-5",
+    "prompt_version": "kcgen-v2",
+    "parsed": {
+      "KC 1": {
+        "reasoning": "All solutions use if/else statements to choose between the summer and non-summer temperature limits or to decide the returned value.",
+        "name": "If and else statement"
+      },
+      "KC 2": {
+        "reasoning": "Solutions 1 and 3 place a range check inside a branch on isSummer, which requires nested conditionals.",
+        "name": "Nested if statement"
+      },
+      "KC 3": {
+        "reasoning": "Every solution compares the temperature against numeric bounds with >= and <= operators.",
+        "name": "Numerical comparisons"
+      },
+      "KC 4": {
+        "reasoning": "Every solution combines the lower-bound and upper-bound checks with && to test an inclusive range.",
+        "name": "Logical operators"
+      },
+      "KC 5": {
+        "reasoning": "Solution 3 negates a boolean parameter with ! and tests it with == true, and all solutions use the boolean isSummer directly as a condition.",
+        "name": "Boolean operations"
+      },
+      "KC 6": {
+        "reasoning": "Solutions 2, 4 and 5 store the temperature upper limit in an int variable that is set to a default and possibly changed.",
+        "name": "Variable declaration and assignment"
+      },
+      "KC 7": {
+        "reasoning": "Solutions 2, 4 and 5 return the result of a boolean expression directly instead of branching to return true or false.",
+        "name": "Returning boolean expressions directly"
+      },
+      "KC 8": {
+        "reasoning": "Solution 4 uses the ternary conditional operator to select the upper limit based on a boolean.",
+        "name": "Ternary conditional operator"
+      },
+      "KC 9": {
+        "reasoning": "Solutions 2 and 5 first assign a default value to a variable and then override it conditionally, so the special case is handled without a separate else branch.",
+        "name": "Default value with conditional override"
+      },
+      "KC 10": {
+        "reasoning": "All solutions define a method with a specific signature, parameter types (int, boolean), and a boolean return type.",
+        "name": "Method definition with parameters and return type"
+      }
+    }
+  },
+  "generate:563911e1ed4cb03ab4fbdc19599bf136252c09beaa84a5de89b4f7f1d9a23afd": {
+    "input_hash": "563911e1ed4cb03ab4fbdc19599bf136252c09beaa84a5de89b4f7f1d9a23afd",
+    "model_id": "claude-sonnet-5-5",
+    "prompt_version": "kcgen-v2",
+    "parsed": {
+      "KC 1": {
+        "reasoning": "All solutions branch on whether the sum falls in the forbidden range, using if (and optionally else) to choose between returning 20 and the sum.",
+        "name": "If and else statement"
+      },
+      "KC 2": {
+        "reasoning": "The range 10..19 is checked using comparisons such as >=, <=, <, and == against the computed sum.",
+        "name": "Numerical comparisons"
+      },
+      "KC 3": {
+        "reasoning": "Combining the lower and upper bound checks (&&) or multiple equality checks (||) is required to test that the sum lies within a range.",
+        "name": "Logical operators"
+      },
+      "KC 4": {
+        "reasoning": "Every solution adds the two input integers to compute the sum that is compared and returned.",
+        "name": "Basic arithmetic operations"
+      },
+      "KC 5": {
+        "reasoning": "Solutions 2, 3, and 4 store a + b in a local variable to avoid recomputation and make the conditions more readable.",
+        "name": "Variable declaration and assignment"
+      },
+      "KC 6": {
+        "reasoning": "Each solution must return either the special value 20 or the actual sum from a function with an int return type.",
+        "name": "Return statements and method return values"
+      },
+      "KC 7": {
+        "reasoning": "Solution 4 uses the ternary operator to select between 20 and the sum in a single expression.",
+        "name": "Ternary conditional operator"
+      },
+      "KC 8": {
+        "reasoning": "Solutions 1, 4, and 5 correctly handle the inclusive/exclusive boundaries (<= 19 vs < 20) of the forbidden range.",
+        "name": "Inclusive range boundary handling"
+      }
+    }
+  },
+  "generate:a7061abae1f63b97fc2507aec900fd0a3d731a2f9679c9116d3278c3438eec69": {
+    "input_hash": "a7061abae1f63b97fc2507aec900fd0a3d731a2f9679c9116d3278c3438eec69",
+    "model_id": "claude-sonnet-5-5",
+    "prompt_version": "kcgen-v2",
+    "parsed": {
+      "KC 1": {
+        "reasoning": "Every solution uses if statements to decide whether the phone should be answered based on the boolean conditions.",
+        "name": "If and else statement"
+      },
+      "KC 2": {
+        "reasoning": "Solutions 1 and 2 chain conditions with else if so that later checks run only when earlier ones fail.",
+        "name": "Else-if chaining"
+      },
+      "KC 3": {
+        "reasoning": "Solutions 4 and 5 place if/else blocks inside other branches to test isMom or isMorning only after earlier conditions are resolved.",
+        "name": "Nested if statement"
+      },
+      "KC 4": {
+        "reasoning": "Solutions 1, 2 and 3 negate boolean values with the NOT operator (e.g., !isMom, !isMorning) to express the conditions.",
+        "name": "Logical NOT operator"
+      },
+      "KC 5": {
+        "reasoning": "Solutions 1 and 2 combine multiple boolean conditions with && and || to express the morning/mom rule in one condition.",
+        "name": "Logical AND/OR operators"
+      },
+      "KC 6": {
+        "reasoning": "All solutions take boolean parameters and use them directly as conditions without comparing them to true or false.",
+        "name": "Boolean variables as conditions"
+      },
+      "KC 7": {
+        "reasoning": "Solutions 2-5 return true or false directly from within branches, ending the method early, and solution 3 returns a boolean expression directly.",
+        "name": "Boolean return statements and early return"
+      },
+      "KC 8": {
+        "reasoning": "Solution 1 initializes a boolean result variable to a default value and overwrites it in conditional branches before returning it.",
+        "name": "Boolean variable assignment and default value"
+      },
+      "KC 9": {
+        "reasoning": "All solutions give isAsleep the highest priority by checking it first, so ordering of conditions must reflect the problem's precedence rules.",
+        "name": "Condition ordering and precedence of rules"
+      },
+      "KC 10": {
+        "reasoning": "All solutions define a public method with a boolean return type and multiple boolean parameters.",
+        "name": "Method definition with parameters and return type"
+      }
+    }
+  },
+  "generate:c46ffbd2802f8a8a1486fd4dca0c61958a83a531f151006d9f30166fa0e3c65f": {
+    "input_hash": "c46ffbd2802f8a8a1486fd4dca0c61958a83a531f151006d9f30166fa0e3c65f",
+    "model_id": "claude-sonnet-5-5",
+    "prompt_version": "kcgen-v2",
+    "parsed": {
+      "KC 1": {
+        "reasoning": "All solutions use if statements, and several use else to select the ticket result based on conditions.",
+        "name": "If and else statement"
+      },
+      "KC 2": {
+        "reasoning": "Solutions 2, 3, and 5 chain else-if branches so that only the first matching speed range is applied.",
+        "name": "Else-if chains"
+      },
+      "KC 3": {
+        "reasoning": "Solutions 2 and 3 place speed-range checks inside an outer isBirthday check, creating two separate threshold sets.",
+        "name": "Nested if statement"
+      },
+      "KC 4": {
+        "reasoning": "Every solution compares speed against thresholds such as 60, 65, 80, and 85 using relational operators, including inclusive and exclusive boundaries.",
+        "name": "Numerical comparisons"
+      },
+      "KC 5": {
+        "reasoning": "Solutions 1, 2, and 3 combine two range conditions with && to test that speed lies within an inclusive interval.",
+        "name": "Logical operators"
+      },
+      "KC 6": {
+        "reasoning": "The boolean parameter isBirthday is used directly as a condition, negated with !, or compared with == true to switch behavior.",
+        "name": "Boolean variables and conditions"
+      },
+      "KC 7": {
+        "reasoning": "Solutions 4 and 5 subtract 5 from speed with a compound assignment so a single set of thresholds covers the birthday case.",
+        "name": "Basic arithmetic and compound assignment"
+      },
+      "KC 8": {
+        "reasoning": "Solutions 4 and 5 modify the speed parameter in place, then reuse it in later comparisons.",
+        "name": "Reassigning method parameters"
+      },
+      "KC 9": {
+        "reasoning": "Solutions 1, 2, 4, and 5 return an int directly from multiple branches, using early exit to end the method.",
+        "name": "Return statements and early return"
+      },
+      "KC 10": {
+        "reasoning": "Solution 3 declares an int variable with a default value, assigns it in branches, and returns it at the end.",
+        "name": "Variable declaration and assignment"
+      },
+      "KC 11": {
+        "reasoning": "Solution 4 uses the conditional (ternary) operator to choose between return values inline.",
+        "name": "Ternary conditional operator"
+      },
+      "KC 12": {
+        "reasoning": "All solutions define a method with a specific signature, typed parameters, and an int return type.",
+        "name": "Method definition with parameters and return type"
+      }
+    }
+  },
+  "generate:cdda81eadf6aa87b283ec176715e8999cabea77168361c2bac1527b3f783a9ca": {
+    "input_hash": "cdda81eadf6aa87b283ec176715e8999cabea77168361c2bac1527b3f783a9ca",
+    "model_id": "claude-sonnet-5-5",
+    "prompt_version": "kcgen-v2",
+    "parsed": {
+      "KC 1": {
+        "reasoning": "All solutions branch on the relationship between the three numbers using if, else if, and else to select among the three possible outcomes.",
+        "name": "If, else if, and else statements"
+      },
+      "KC 2": {
+        "reasoning": "Solutions 2, 4, and 5 place an if inside another if (e.g., checking b == c after a == b) to refine the result once a first condition holds.",
+        "name": "Nested if statements"
+      },
+      "KC 3": {
+        "reasoning": "Every solution tests whether pairs of ints are equal or unequal using == and != to detect matching values.",
+        "name": "Numerical equality and inequality comparison"
+      },
+      "KC 4": {
+        "reasoning": "Solutions 1, 2, 3, and 5 combine several comparisons with && and || to express conditions like all-equal or any-pair-equal in a single test.",
+        "name": "Logical operators (AND, OR)"
+      },
+      "KC 5": {
+        "reasoning": "Each solution returns a different int value (0, 10, or 20) from the method depending on which case applies, often returning early to skip the remaining checks.",
+        "name": "Return statements with early exit"
+      },
+      "KC 6": {
+        "reasoning": "The solution must correctly handle the exhaustive cases (all same, exactly two same, all different), including recognizing that checking all-same first makes the two-same check valid.",
+        "name": "Case analysis and ordering of conditions"
+      },
+      "KC 7": {
+        "reasoning": "Solution 3 uses subtraction of the variables (a - b == b - c) as part of its comparison logic, requiring arithmetic expressions inside conditions.",
+        "name": "Basic arithmetic operations in conditions"
+      },
+      "KC 8": {
+        "reasoning": "The method is defined with int parameters and an int return type, which every solution needs in order to accept a, b, c and produce the result.",
+        "name": "Method definition with parameters and return type"
+      }
+    }
+  },
+  "label:068ef76c3c3eaef9120965400198584af1e1c34d6574539f522730a68503afe8": {
+    "input_hash": "068ef76c3c3eaef9120965400198584af1e1c34d6574539f522730a68503afe8",
+    "model_id": "claude-sonnet-5-5",
+    "prompt_version": "kcgen-v2",
+    "parsed": {
+      "reasoning": "The first and third KCs both describe using Boolean variables as conditions in control flow and are essentially identical, while 'Boolean operations' (AND, OR, NOT) is a related but distinct skill, so together they fall under a broader theme of Boolean logic.",
+      "representative kc": null,
+      "summary name": "Boolean variables, conditions, and operations"
+    }
+  },
+  "label:07e2e5245304edf9f1d53315161129e9dfe4342f96cafd46865334f7d9e301a6": {
+    "input_hash": "07e2e5245304edf9f1d53315161129e9dfe4342f96cafd46865334f7d9e301a6",
+    "model_id": "claude-sonnet-5-5",
+    "prompt_version": "kcgen-v2",
+    "parsed": {
+      "reasoning": "Both KCs concern correctly handling range boundaries, and 'Inclusive and exclusive boundary handling' is the broader wording that subsumes the inclusive-only case.",
+      "representative kc": "Inclusive and exclusive boundary handling",
+      "summary name": null
+    }
+  },
+  "label:1aab4fd0ee13adb4e0e7cfc96a259b330318a3741b6d6318e2ec7c013633e2f7": {
+    "input_hash": "1aab4fd0ee13adb4e0e7cfc96a259b330318a3741b6d6318e2ec7c013633e2f7",
+    "model_id": "claude-sonnet-5-5",
+    "prompt_version": "kcgen-v2",
+    "parsed": {
+      "reasoning": "All three KCs describe the same skill of having a function return a boolean value, and 'Returning boolean values' is the clearest, most general wording that covers the others, including returning boolean expressions directly.",
+      "representative kc": "Returning boolean values",
+      "summary name": null
+    }
+  },
+  "label:2257ff1e8ea8d4500662cc05af5146c8a3b6d70a8194f9bb435dd33c9df0a65c": {
+    "input_hash": "2257ff1e8ea8d4500662cc05af5146c8a3b6d70a8194f9bb435dd33c9df0a65c",
+    "model_id": "claude-sonnet-5-5",
+    "prompt_version": "kcgen-v2",
+    "parsed": {
+      "reasoning": "All five KCs center on using return statements to exit a function early, differing only in wording or minor emphasis (Boolean returns, default returns), so 'Return statements and early return' is the clearest and most inclusive representative.",
+      "representative kc": "Return statements and early return",
+      "summary name": null
+    }
+  },
+  "label:322493a20b34cfcc656637e82e8abd1d602011f408594e426de453c8929c1a80": {
+    "input_hash": "322493a20b34cfcc656637e82e8abd1d602011f408594e426de453c8929c1a80",
+    "model_id": "claude-sonnet-5-5",
+    "prompt_version": "kcgen-v2",
+    "parsed": {
+      "reasoning": "All three KCs center on declaring a variable and giving it a value, differing only in minor emphasis (reassignment or local scope), so the general 'Variable declaration and assignment' is the most inclusive representative.",
+      "representative kc": "Variable declaration and assignment",
+      "summary name": null
+    }
+  },
+  "label:36505574e4d692f8dc2d2138a28b480b85d6dd3c293504d6aaf8e7eb02bfb09a": {
+    "input_hash": "36505574e4d692f8dc2d2138a28b480b85d6dd3c293504d6aaf8e7eb02bfb09a",
+    "model_id": "claude-sonnet-5-5",
+    "prompt_version": "kcgen-v2",
+    "parsed": {
+      "reasoning": "All three KCs describe the same skill of using else-if chains to handle multi-branch conditionals, and the third wording is the most inclusive since it names both the construct and its purpose.",
+      "representative kc": "Else-if chains and multi-branch conditionals",
+      "summary name": null
+    }
+  },
+  "label:732b0f2d07ebd974d68e2dfe24601b080244b528dd7d353c6b5ad3bb62a38db8": {
+    "input_hash": "732b0f2d07ebd974d68e2dfe24601b080244b528dd7d353c6b5ad3bb62a38db8",
+    "model_id": "claude-sonnet-5-5",
+    "prompt_version": "kcgen-v2",
+    "parsed": {
+      "reasoning": "All three KCs center on using basic arithmetic operations, with the second adding compound assignment and the third applying them within conditions, so the first, 'Basic arithmetic operations', is the most general and inclusive representative.",
+      "representative kc": "Basic arithmetic operations",
+      "summary name": null
+    }
+  },
+  "label:9b3792aa339fffb1f685f437e89acb1da6441793d63ce8818f6f9e24d185826e": {
+    "input_hash": "9b3792aa339fffb1f685f437e89acb1da6441793d63ce8818f6f9e24d185826e",
+    "model_id": "claude-sonnet-5-5",
+    "prompt_version": "kcgen-v2",
+    "parsed": {
+      "reasoning": "All five KCs concern conditional branching with if statements (if/else, else-if chains, and nested ifs), which are related but distinct forms of the same control-flow theme, so they are best captured by a broader summary rather than a single KC.",
+      "representative kc": null,
+      "summary name": "Conditional statements: if/else, else-if chaining, and nested if"
+    }
+  },
+  "label:9d16b71e591b35a5904bd4871c56f8ef642d54a39a649a1d0dcf9f91e92a7cda": {
+    "input_hash": "9d16b71e591b35a5904bd4871c56f8ef642d54a39a649a1d0dcf9f91e92a7cda",
+    "model_id": "claude-sonnet-5-5",
+    "prompt_version": "kcgen-v2",
+    "parsed": {
+      "reasoning": "All four KCs refer to the same underlying skill of using logical operators (AND/OR) in boolean expressions, with 'Logical operators (AND, OR)' being the clearest and most inclusive wording that covers the others, including the OR-only variant.",
+      "representative kc": "Logical operators (AND, OR)",
+      "summary name": null
+    }
+  },
+  "label:c5c9980c41ba388203adf68a1eeae814a0b4eed3c431bde5a5f4eab2b199854e": {
+    "input_hash": "c5c9980c41ba388203adf68a1eeae814a0b4eed3c431bde5a5f4eab2b199854e",
+    "model_id": "claude-sonnet-5-5",
+    "prompt_version": "kcgen-v2",
+    "parsed": {
+      "reasoning": "Both KCs describe the same skill of comparing numbers, with the second simply specifying the relational operators used, so the more specific and clearer second wording can represent both.",
+      "representative kc": "Numerical comparisons (relational operators)",
+      "summary name": null
+    }
+  },
+  "label:cedd20c9330f0d2463bb50d57cf4916f08c617e77953689378388d64966a968f": {
+    "input_hash": "cedd20c9330f0d2463bb50d57cf4916f08c617e77953689378388d64966a968f",
+    "model_id": "claude-sonnet-5-5",
+    "prompt_version": "kcgen-v2",
+    "parsed": {
+      "reasoning": "All three KCs center on defining methods and how they return values, overlapping heavily (return statements, method definitions, parameters and return types), so 'Method definition and return statements' best covers the shared core while the parameter/return-type aspect is a closely related part of method definition.",
+      "representative kc": "Method definition and return statements",
+      "summary name": null
+    }
+  },
+  "label:eb428dd118e43680e03b5692fa9df0ac64b8f7f06ab5d725d476107764e180e8": {
+    "input_hash": "eb428dd118e43680e03b5692fa9df0ac64b8f7f06ab5d725d476107764e180e8",
+    "model_id": "claude-sonnet-5-5",
+    "prompt_version": "kcgen-v2",
+    "parsed": {
+      "reasoning": "Both KCs describe comparing numbers for equality, with the second simply being broader by explicitly including inequality, so they refer to essentially the same skill and the second wording is the most inclusive.",
+      "representative kc": "Numerical equality and inequality comparison",
+      "summary name": null
+    }
+  },
+  "translate:f60f455f4625c7488d7043869bc11ec2f509742b6b98ce60d50a7e87ad9ba8fc": {
+    "input_hash": "f60f455f4625c7488d7043869bc11ec2f509742b6b98ce60d50a7e87ad9ba8fc",
+    "model_id": "claude-sonnet-5-5",
+    "prompt_version": "kcgen-v2",
+    "parsed": {
+      "N1": "Tratamento de limites inclusivos e exclusivos",
+      "N2": "Comparação numérica de igualdade e desigualdade",
+      "N3": "Comparações numéricas (operadores relacionais)",
+      "N4": "Operações aritméticas básicas",
+      "N5": "Ordem das condições e precedência das regras",
+      "N6": "Análise de casos e ordem das condições",
+      "N7": "Tratamento de casos simétricos ou independentes da ordem",
+      "N8": "Retorno de valores boolean",
+      "N9": "Variáveis, condições e operações boolean",
+      "N10": "Atribuição de variável boolean e valor padrão",
+      "N11": "Valor padrão com sobrescrita condicional",
+      "N12": "Encadeamento de else if e condicionais de múltiplos ramos",
+      "N13": "Instruções condicionais: if/else, encadeamento de else if e if aninhado",
+      "N14": "Operadores lógicos (e, ou)",
+      "N15": "Operador lógico de negação",
+      "N16": "Operador condicional ternário",
+      "N17": "Precedência de operadores e parênteses",
+      "N18": "Instruções return e retorno antecipado",
+      "N19": "Retorno antecipado e fluxo de controle",
+      "N20": "Definição de método e instruções return",
+      "N21": "Retorno de valores de um método / literais String",
+      "N22": "Declaração e atribuição de variáveis",
+      "N23": "Reatribuição de parâmetros de método",
+      "N24": "Valor absoluto com math.abs",
+      "N25": "Mapeamento de valores inteiros codificados para categorias",
+      "R1": "Todas as soluções se ramificam conforme a soma esteja ou não no intervalo proibido, usando if (e opcionalmente else) para escolher entre retornar 20 e retornar a soma.",
+      "R2": "O intervalo 10..19 é verificado por meio de comparações como >=, <=, < e == com a soma calculada.",
+      "R3": "Combinar as verificações dos limites inferior e superior (&&) ou várias verificações de igualdade (||) é necessário para testar se a soma está dentro de um intervalo.",
+      "R4": "Toda solução soma os dois inteiros de entrada para calcular a soma que é comparada e retornada.",
+      "R5": "As soluções 2, 3 e 4 armazenam a + b em uma variável local para evitar o recálculo e tornar as condições mais legíveis.",
+      "R6": "Cada solução deve retornar o valor especial 20 ou a soma real a partir de uma função com tipo de retorno int.",
+      "R7": "A solução 4 usa o operador ternário para escolher entre 20 e a soma em uma única expressão.",
+      "R8": "As soluções 1, 4 e 5 tratam corretamente os limites inclusivos/exclusivos (<= 19 versus < 20) do intervalo proibido.",
+      "R9": "Todas as soluções se ramificam conforme a flag outsideMode (e conforme condições de intervalo) usando instruções if para escolher qual lógica aplicar.",
+      "R10": "As soluções 1 e 2 aninham uma verificação de intervalo dentro do ramo de outsideMode, portanto é necessário entender condicionais aninhadas e o pareamento de seus else.",
+      "R11": "Toda solução compara n com os valores limite 1 e 10 usando <=, >= e raciocínio sobre limites inclusivos.",
+      "R12": "As soluções combinam duas comparações com && para a verificação de dentro do intervalo e com || para a verificação de fora do intervalo.",
+      "R13": "O parâmetro boolean outsideMode é usado diretamente como condição (ou comparado com == true/false) para escolher entre comportamentos.",
+      "R14": "As soluções 4 e 5 retornam diretamente o valor de uma expressão boolean, em vez de envolvê-la em um if/else que retorna true ou false.",
+      "R15": "Todas as soluções devem retornar um valor boolean a partir de um método com parâmetros especificados e tipo de retorno boolean, incluindo retornos antecipados e um retorno final de saída natural do fluxo.",
+      "R16": "Toda solução usa instruções if para decidir se o telefone deve ser atendido com base nas condições boolean.",
+      "R17": "As soluções 1 e 2 encadeiam condições com else if de modo que as verificações seguintes só sejam executadas quando as anteriores falham.",
+      "R18": "As soluções 4 e 5 colocam blocos if/else dentro de outros ramos para testar isMom ou isMorning somente depois que as condições anteriores forem resolvidas.",
+      "R19": "As soluções 1, 2 e 3 negam valores boolean com o operador NOT (por exemplo, !isMom, !isMorning) para expressar as condições.",
+      "R20": "As soluções 1 e 2 combinam várias condições boolean com && e || para expressar a regra da manhã/mãe em uma única condição.",
+      "R21": "Todas as soluções recebem parâmetros boolean e os usam diretamente como condições, sem compará-los com true ou false.",
+      "R22": "As soluções 2 a 5 retornam true ou false diretamente de dentro dos ramos, encerrando o método antecipadamente, e a solução 3 retorna diretamente uma expressão boolean.",
+      "R23": "A solução 1 inicializa uma variável boolean de resultado com um valor padrão e a sobrescreve nos ramos condicionais antes de retorná-la.",
+      "R24": "Todas as soluções dão a maior prioridade a isAsleep verificando-a primeiro, de modo que a ordem das condições deve refletir as regras de precedência do problema.",
+      "R25": "Todas as soluções definem um método public com tipo de retorno boolean e vários parâmetros boolean.",
+      "R26": "Todas as soluções usam instruções if/else para escolher entre os limites de temperatura de verão e de não verão ou para decidir o valor retornado.",
+      "R27": "As soluções 1 e 3 colocam uma verificação de intervalo dentro de um ramo de isSummer, o que exige condicionais aninhadas.",
+      "R28": "Toda solução compara a temperatura com limites numéricos usando os operadores >= e <=.",
+      "R29": "Toda solução combina as verificações dos limites inferior e superior com && para testar um intervalo inclusivo.",
+      "R30": "A solução 3 nega um parâmetro boolean com ! e o testa com == true, e todas as soluções usam o boolean isSummer diretamente como condição.",
+      "R31": "As soluções 2, 4 e 5 armazenam o limite superior de temperatura em uma variável int que recebe um valor padrão e possivelmente é alterada.",
+      "R32": "As soluções 2, 4 e 5 retornam diretamente o resultado de uma expressão boolean, em vez de se ramificarem para retornar true ou false.",
+      "R33": "A solução 4 usa o operador condicional ternário para selecionar o limite superior com base em um boolean.",
+      "R34": "As soluções 2 e 5 primeiro atribuem um valor padrão a uma variável e depois o sobrescrevem condicionalmente, de modo que o caso especial é tratado sem um ramo else separado.",
+      "R35": "Todas as soluções definem um método com assinatura específica, tipos de parâmetros (int, boolean) e tipo de retorno boolean.",
+      "R36": "Todas as soluções usam instruções if, e várias usam else, para selecionar o resultado da multa com base em condições.",
+      "R37": "As soluções 2, 3 e 5 encadeiam ramos else if de modo que apenas a primeira faixa de velocidade correspondente seja aplicada.",
+      "R38": "As soluções 2 e 3 colocam as verificações de faixas de velocidade dentro de uma verificação externa de isBirthday, criando dois conjuntos separados de limites.",
+      "R39": "Toda solução compara a velocidade com limites como 60, 65, 80 e 85 usando operadores relacionais, incluindo limites inclusivos e exclusivos.",
+      "R40": "As soluções 1, 2 e 3 combinam duas condições de intervalo com && para testar que a velocidade está dentro de um intervalo inclusivo.",
+      "R41": "O parâmetro boolean isBirthday é usado diretamente como condição, negado com ! ou comparado com == true para alternar o comportamento.",
+      "R42": "As soluções 4 e 5 subtraem 5 da velocidade com uma atribuição composta, de modo que um único conjunto de limites cubra o caso do aniversário.",
+      "R43": "As soluções 4 e 5 modificam o parâmetro speed diretamente e depois o reutilizam em comparações posteriores.",
+      "R44": "As soluções 1, 2, 4 e 5 retornam um int diretamente a partir de vários ramos, usando saída antecipada para encerrar o método.",
+      "R45": "A solução 3 declara uma variável int com um valor padrão, atribui a ela nos ramos e a retorna no final.",
+      "R46": "A solução 4 usa o operador condicional (ternário) para escolher entre valores de retorno na própria linha.",
+      "R47": "Todas as soluções definem um método com assinatura específica, parâmetros tipados e tipo de retorno int.",
+      "R48": "Toda solução usa instruções if/else para escolher entre as saídas do alarme dependendo do dia e da situação de férias.",
+      "R49": "As soluções 2, 4 e 5 aninham um if sobre vacation dentro de um ramo sobre o dia (ou o inverso) para separar os casos de dia útil/fim de semana e de férias.",
+      "R50": "As soluções 2 e 5 encadeiam ramos else if de modo que apenas uma de várias condições mutuamente exclusivas seja executada.",
+      "R51": "As soluções comparam o dia inteiro com valores específicos (day == 0, day == 6) para identificar dias particulares, como o fim de semana.",
+      "R52": "As soluções 3, 4 e 5 usam operadores relacionais como <, >, <= e >= para testar se o dia está na faixa de dias úteis de 1 a 5.",
+      "R53": "As soluções combinam condições com && e || (por exemplo, vacation && (day == 0 || day == 6), day > 0 && day < 6) para expressar regras compostas.",
+      "R54": "O parâmetro boolean vacation é usado diretamente como condição (if(vacation)), negado com ! ou comparado com == true/false para conduzir as decisões.",
+      "R55": "Cada solução deve retornar o literal String correto (\"7:00\", \"10:00\", \"off\") a partir de um método com tipo de retorno String, frequentemente por meio de várias instruções return.",
+      "R56": "A solução 3 armazena em variáveis as strings candidatas de alarme para dia útil e fim de semana, sobrescreve-as se estiver de férias e então retorna a apropriada.",
+      "R57": "As soluções devem codificar o dia como uma faixa de inteiros (0 e 6 como fim de semana, 1 a 5 como dias úteis) e mapear a codificação para a categoria de dia correta.",
+      "R58": "Toda solução usa uma instrução if para testar condições e escolher um caminho de retorno, e várias adicionam ramos else para os demais casos.",
+      "R59": "As soluções 2, 3 e 5 encadeiam ramos else if ou aninham um if dentro de um else para verificar várias condições alternativas em sequência.",
+      "R60": "Cada solução compara valores com o número alvo 6 usando o operador de igualdade, por exemplo a == 6 ou a + b == 6.",
+      "R61": "As soluções 1, 2, 3 e 5 combinam várias condições com o operador lógico OR de modo que qualquer condição verdadeira desencadeie o resultado.",
+      "R62": "O problema exige calcular a soma e a diferença das duas entradas com + e - antes de compará-las com 6.",
+      "R63": "A solução 1 usa Math.abs(a - b) para tratar a diferença em qualquer direção, e as outras emulam isso verificando tanto a - b quanto b - a.",
+      "R64": "O método deve ter tipo de retorno boolean e retornar os literais true ou false com base nas condições avaliadas.",
+      "R65": "As soluções 1 e 4 usam um return false padrão após as verificações com if, contando com o retorno antecipado para sair do método assim que uma condição for satisfeita.",
+      "R66": "A solução 4 armazena a soma e as diferenças em variáveis int antes de compará-las, o que deixa o código mais claro e evita o recálculo.",
+      "R67": "Como a diferença pode ser negativa, as soluções precisam reconhecer que a - b e b - a diferem em sinal e que ambas as ordens devem ser consideradas.",
+      "R68": "Toda solução usa ramificação if/else para escolher entre as regras de sucesso de fim de semana e de dia útil e para retornar true ou false.",
+      "R69": "As soluções 3 e 4 aninham uma verificação da quantidade de charutos dentro do ramo de fim de semana/não fim de semana, de modo que a segunda condição só é avaliada depois que a primeira é decidida.",
+      "R70": "A quantidade de charutos deve ser comparada com os limites 40 e 60, usando >= e <= para que ambas as extremidades sejam inclusivas.",
+      "R71": "A regra de dia útil precisa que ambos os limites valham ao mesmo tempo (&&), e a solução 2 combina || com && para expressar a exceção do fim de semana.",
+      "R72": "O parâmetro boolean isWeekend é usado diretamente como condição (ou comparado com == false) para alternar entre os conjuntos de regras.",
+      "R73": "As soluções 1 e 2 retornam diretamente o valor de uma expressão boolean, e as demais soluções retornam os literais true e false a partir de ramos if/else.",
+      "R74": "A solução 2 usa parênteses para agrupar (cigars <= 60 || isWeekend) antes de combiná-lo com &&, de modo que a precedência de operadores e o agrupamento determinam se a lógica está correta.",
+      "R75": "A solução 1 retorna antecipadamente de dentro do bloco if, de modo que a instrução return seguinte só é executada quando a condição de fim de semana é falsa.",
+      "R76": "Cada solução implementa a lógica como um método com tipo de retorno boolean e parâmetros int e boolean.",
+      "R77": "Toda solução usa instruções if para escolher entre os três resultados possíveis (0, 1, 2) dependendo dos valores de estilo.",
+      "R78": "As soluções 1 e 5 colocam blocos if/else dentro de outros blocos if/else para refinar o resultado depois que uma condição inicial é verificada.",
+      "R79": "As soluções 1, 2, 3 e 4 encadeiam 'else if' ou instruções if sequenciais de modo que apenas um ramo determine o resultado.",
+      "R80": "Condições como 'you >= 8 || date >= 8' exigem o operador lógico OR para expressar que basta uma das pessoas satisfazer uma condição.",
+      "R81": "Todas as soluções comparam os valores inteiros de estilo com limites (por exemplo, <= 2, >= 8, > 7) usando operadores relacionais.",
+      "R82": "As soluções devem escolher o operador de limite e a constante corretos (por exemplo, >= 8 versus > 7) para que os limites inclusivos sejam tratados com precisão.",
+      "R83": "As soluções 2, 3 e 4 verificam primeiro a condição 'não' (style <= 2) para que ela se sobreponha à condição 'sim', o que exige entender que a ordem das verificações determina a precedência.",
+      "R84": "Toda solução usa instruções return para devolver um resultado int do método, e as soluções 2 e 3 usam retornos antecipados que encerram a execução antes das verificações seguintes.",
+      "R85": "O método é declarado com tipo de retorno int e dois parâmetros int, o que é necessário para receber as entradas e codificar o resultado como um código inteiro.",
+      "R86": "Todas as soluções se ramificam conforme a relação entre os três números usando if, else if e else para selecionar entre os três resultados possíveis.",
+      "R87": "As soluções 2, 4 e 5 colocam um if dentro de outro if (por exemplo, verificando b == c após a == b) para refinar o resultado quando uma primeira condição é satisfeita.",
+      "R88": "Toda solução testa se pares de ints são iguais ou diferentes usando == e != para detectar valores coincidentes.",
+      "R89": "As soluções 1, 2, 3 e 5 combinam várias comparações com && e || para expressar condições como todos iguais ou algum par igual em um único teste.",
+      "R90": "Cada solução retorna um valor int diferente (0, 10 ou 20) do método dependendo de qual caso se aplica, frequentemente retornando antecipadamente para pular as verificações restantes.",
+      "R91": "A solução deve tratar corretamente os casos exaustivos (todos iguais, exatamente dois iguais, todos diferentes), incluindo reconhecer que verificar primeiro o caso de todos iguais torna válida a verificação de dois iguais.",
+      "R92": "A solução 3 usa a subtração das variáveis (a - b == b - c) como parte de sua lógica de comparação, exigindo expressões aritméticas dentro de condições.",
+      "R93": "O método é definido com parâmetros int e tipo de retorno int, o que toda solução precisa para receber a, b, c e produzir o resultado."
+    }
+  }
+}

@@ -56,7 +56,9 @@ depois deste plano, e as turmas antigas, que mantêm os conceitos e as descriç�
 - **H, os prompts que não vêm do Duan.** O texto dos dois prompts novos, o dos trechos e o da
   tradução, é mostrado ao Leo na etapa 6, antes do commit e antes de qualquer chamada real.
 - **I, a ordem da extração de referência.** O A439 primeiro, com uma parada para o Leo ver o número
-  de conceitos e o resultado (linha 19), e depois os outros quatro exercícios.
+  de conceitos e o resultado (linha 19), e depois os outros quatro exercícios. Em 07/10/2026, depois
+  de ver o A439, o Leo decidiu que a extração de referência fica só nele, e que os outros quatro
+  saem pela aplicação, como o professor faria.
 - **J, quem dispara.** As chamadas reais ao LLM gastam cota da assinatura, e o Leo autorizou, em
   04/10/2026, que elas sejam disparadas sem ele. As de validação das etapas 4 a 6, uma por prompt
   num problema do A439, e duas no de geração, com e sem enunciado, saem de um script fora do
@@ -209,21 +211,23 @@ Cada etapa é um commit, com uma revisão independente do diff contra as decisõ
   número de KCs candidatos por problema, de nomes únicos, de grupos e de conceitos, os trechos
   descartados, o tempo e o número de chamadas, e aprova antes de seguir. Os números do paper, 103
   nomes para 50 problemas, servem de orientação (linha 19).
-- Com o aval do Leo, os outros quatro exercícios.
-- Os números vão para o Estado das linhas 19 e 28.
+- Os outros quatro exercícios saem depois, pela aplicação (I).
+- Os números vão para o Estado das linhas 19 e 28, e o resultado do A439 está em
+  `docs/results/kcgen_kt_a439_reference_extraction.md`, com os trechos e o código das soluções em
+  `docs/results/kcgen_kt_a439_evidence.md`.
 
 ### 8. Testes de regressão (linhas 27 e 28)
 
-- Os artefatos da extração de referência vão para `tests/data/kc`, no lugar dos do TCC 1. São o
-  cache das respostas do LLM dos cinco exercícios, as soluções amostradas, os nomes candidatos, os
-  grupos, os conceitos, as Q-matrices, os trechos e as traduções. A planilha oficial também entra em
-  `tests/data`, com a origem anotada.
+- Os artefatos da extração de referência do A439 vão para `tests/data/kc`, no lugar dos do TCC 1.
+  São o cache das respostas do LLM, as soluções amostradas, os nomes candidatos, os grupos, os
+  conceitos, a Q-matrix, os trechos e as traduções. A planilha oficial também entra em
+  `tests/data`, com a origem anotada. A regressão fica só no A439, como o Leo decidiu em 07/10/2026.
 - A primeira camada, com o marcador `regression`, porque precisa da CSEDM e dos modelos. O sorteio
-  do A439 pelo CodeBERT dá os mesmos `code_snapshot_id`, o agrupamento dos nomes gravados pelo SBERT
-  dá os mesmos grupos, e a Q-matrix sai igual.
-- A segunda camada, também com o marcador `regression`. A extração inteira dos cinco exercícios,
-  lendo o cache gravado com um LLM falso que falha a qualquer pergunta fora dele, dá os mesmos
-  conceitos, nomes, Q-matrices, trechos e traduções.
+  do A439 pelo CodeBERT dá os mesmos `code_snapshot_id`, e o agrupamento dos nomes gravados pelo
+  SBERT dá os mesmos grupos.
+- A segunda camada, também com o marcador `regression`. A extração inteira do A439, lendo o cache
+  gravado com um LLM falso que falha a qualquer pergunta fora dele, dá os mesmos conceitos, nomes,
+  Q-matrix, trechos e traduções. A Q-matrix também é conferida na suíte padrão, sem modelos.
 - Os testes com os artefatos do TCC 1 saem, e o `kc_reference_dir` aponta para os novos.
 
 ### 9. Comparação com o paper (linha 29)
@@ -253,7 +257,7 @@ Cada etapa é um commit, com uma revisão independente do diff contra as decisõ
 - O teste vem antes do código em cada mudança de comportamento.
 - As chamadas reais ao LLM são só as de validação das etapas 4 a 6, perto de 5 chamadas, e a
   extração de referência da etapa 7, perto de 30 a 40 chamadas por exercício, entre a geração, a
-  nomeação, os trechos e a tradução, de 150 a 200 nas cinco.
+  nomeação, os trechos e a tradução. Ela ficou só no A439, com 33 respostas guardadas.
 - O Leo aprova antes de seguir em três pontos, os prompts novos (H), o resultado do A439 (I) e
   qualquer surpresa na extração.
 
@@ -268,7 +272,7 @@ Cada etapa é um commit, com uma revisão independente do diff contra as decisõ
 | 4 | Concluída, commit `c38eade` |
 | 5 | Concluída, commit `11aea49` |
 | 6 | Concluída, commit `b5278ac`. Os dois prompts foram aprovados pelo Leo em 06/10/2026, e ele autorizou as chamadas de validação antes disso, em 04/10/2026 |
-| 7 | Em andamento. A turma de referência foi importada e o A439 extraído em 06/10/2026, com o resultado em `docs/results/kcgen_kt_a439_reference_extraction.md`, e os outros quatro esperam o Leo |
-| 8 | A fazer |
+| 7 | Concluída em 06/10/2026, só com o A439, commits `dbe8fad` e `4edcb3e` (resultado e trechos) |
+| 8 | Concluída |
 | 9 | A fazer |
 | 10 | A fazer |

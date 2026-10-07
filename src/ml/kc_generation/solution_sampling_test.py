@@ -2,11 +2,17 @@
 
 from __future__ import annotations
 
+import random
+
 import numpy as np
 import pandas as pd
 from sklearn.cluster import AgglomerativeClustering
 
-from ml.kc_generation.solution_sampling import SOLUTIONS_PER_PROBLEM, select_sample_solutions
+from ml.kc_generation.solution_sampling import (
+    SEED,
+    SOLUTIONS_PER_PROBLEM,
+    select_sample_solutions,
+)
 
 
 def _vector(code: str) -> np.ndarray:
@@ -138,3 +144,12 @@ def test_the_time_and_not_the_id_decides_the_order():
     forward = select_sample_solutions(_runs(codes), _Embed())
     backward = select_sample_solutions(_runs(codes, submission_ids=backward_ids), _Embed())
     assert [s["code"] for s in forward] == [s["code"] for s in backward]
+
+
+def test_runs_at_the_same_instant_are_drawn_in_the_ascending_order_of_their_id():
+    # Um código só é um grupo só, e o sorteio escolhe pela posição na ordem de horário e de id
+    runs = _runs(["0.1", "0.1"], submission_ids=[20, 10], same_instant=True)
+
+    [sample] = select_sample_solutions(runs, _Embed())
+
+    assert sample["submission_id"] == random.Random(SEED).choice([10, 20])
