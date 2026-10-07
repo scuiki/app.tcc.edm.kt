@@ -12,7 +12,7 @@ class KnowledgeComponentGenerationJob:
     assignment_id: int
     status: JobStatus
     created_at: str
-    # Etapa do KCGen-KT (generate, cluster, qmatrix), progresso nomeado, não são épocas.
+    # Etapa do KCGen-KT (generate, cluster, qmatrix, evidence, translate), não são épocas
     stage: str | None = None
     started_at: str | None = None
     updated_at: str | None = None

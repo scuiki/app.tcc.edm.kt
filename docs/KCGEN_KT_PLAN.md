@@ -266,8 +266,8 @@ Cada etapa é um commit, com uma revisão independente do diff contra as decisõ
 | 2 | Concluída, commit `0aac582` |
 | 3 | Concluída, commit `af49b24` |
 | 4 | Concluída, commit `c38eade` |
-| 5 | Concluída |
-| 6 | A fazer |
+| 5 | Concluída, commit `11aea49` |
+| 6 | Concluída. Os dois prompts foram aprovados pelo Leo em 06/10/2026, e ele autorizou as chamadas de validação antes disso, em 04/10/2026 |
 | 7 | A fazer |
 | 8 | A fazer |
 | 9 | A fazer |

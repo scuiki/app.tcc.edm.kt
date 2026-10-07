@@ -42,3 +42,13 @@ de linha, então o `naming_system.txt` tem as palavras da tabela na disposição
 - `naming_system.txt`, o texto de sistema.
 - `naming_user.txt`, a mensagem do usuário, com a lista em JSON, no formato que o texto de sistema
   anuncia, como o repositório faz com `json.dumps`.
+
+## Os prompts do app
+
+Os textos de sistema dos dois pedidos que o app acrescenta ao método, os trechos de cada conceito e a
+tradução, que não vêm do Duan. Eles seguem o formato dos prompts dele, com os passos e o modelo de
+JSON, e foram aprovados pelo Leo em 06/10/2026. Os testes do `evidence_location.py` e do
+`text_translation.py` comparam o texto do app com eles, para uma mudança no prompt ser deliberada.
+
+- `evidence_system.txt`, o texto de sistema do pedido dos trechos.
+- `translation_system.txt`, o texto de sistema do pedido da tradução.

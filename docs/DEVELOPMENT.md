@@ -1015,14 +1015,19 @@ prompt (linha 15). Com um anotador só, não há a medida de concordância que o
   que o modelo escreve, e não a causa da extração, e a tela o mostra como o lugar onde o conceito
   aparece. A justificativa de uma frase que o prompt do Duan pede para cada KC, "a one-sentence
   reasoning explaining why this KC is necessary based on the provided solutions" (Tabela 9, p. 33421
-  (PDF 17)), também passa a ser guardada e mostrada. Decidido em 03/10/2026, a implementar.
+  (PDF 17)), também passa a ser guardada e mostrada. Decidido em 03/10/2026, a implementar. Na
+  validação de 04/10/2026, no problema 1 do A439, os 7 conceitos ganharam um trecho, e os 7 trechos
+  estavam nas soluções. No problema 232 do A439, com aspas em todas as soluções (`return "off";`),
+  a geração, os trechos e a tradução vieram em JSON válido, com as aspas escapadas, e os 11 trechos
+  estavam nas soluções.
 - **Os nomes em português.** O método roda em inglês, como no paper, com os prompts do Duan e, no
   agrupamento, o SBERT `all-MiniLM-L6-v2` do repositório, que é um modelo de inglês. Depois da
   nomeação, uma chamada ao mesmo modelo traduz para o português todos os nomes finais do exercício de
   uma vez, para que o mesmo termo saia igual em todos os conceitos, e na mesma chamada as
   justificativas de cada KC que a origem do conceito mostra. O app guarda o nome em inglês, que é o
   resultado do método, e o nome em português, que a tela mostra e o professor pode renomear.
-  Decidido em 03/10/2026, a implementar.
+  Decidido em 03/10/2026, a implementar. Na validação de 04/10/2026, a tradução de 7 nomes e 18
+  justificativas do problema 1 do A439 manteve os termos de Java, como em "Instrução return".
 - **Os problemas sem conceito.** Um problema sem nenhuma execução correta não tem solução para o LLM
   ler e fica sem conceito. O paper não trata, e o repositório e o TCC 1 o deixam de fora sem aviso. O
   app também, porque a lista de problemas sai das execuções corretas (`kcgen_kt_generator.py:75-77` do

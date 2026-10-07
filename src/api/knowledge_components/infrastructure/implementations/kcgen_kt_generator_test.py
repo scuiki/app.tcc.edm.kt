@@ -17,7 +17,17 @@ from api.knowledge_components.infrastructure.implementations.kcgen_kt_generator 
     KcGenKtGenerator,
     run_in_parallel,
 )
-from tests.fixtures.knowledge_components import fake_embed, naming_answer
+from tests.fixtures.knowledge_components import (
+    FOR_MARK,
+    LENGTH_MARK,
+    MarkedCodeLLM,
+    evidence_concepts,
+    evidence_solutions,
+    fake_embed,
+    multiline_runs,
+    naming_answer,
+    stage_answer,
+)
 
 
 class _ConcurrencyProbe:
@@ -85,9 +95,9 @@ class _EchoLLM:
         self.prompts: dict[str, str] = {}
 
     def generate(self, system: str, prompt: str, schema=None, validate=None) -> dict:
-        naming = naming_answer(prompt)
-        if naming is not None:
-            return naming
+        answer = stage_answer(prompt)
+        if answer is not None:
+            return answer
         problem_id = re.search(r"public int p(\d+)\(", prompt).group(1)
         self.prompts[problem_id] = prompt
         # O problema 1 demora mais, então termina depois dos outros
@@ -124,9 +134,11 @@ def test_generation_reports_the_progress_of_each_problem(data_root):
         on_progress=lambda done, total: progress.append((done, total)),
     )
 
-    assert stages == ["generate", "cluster", "qmatrix"]
-    # Três problemas no generate, e os 3 nomes viram 1 grupo, que a nomeação conta
-    assert progress == [(0, 3), (1, 3), (2, 3), (3, 3), (0, 1), (1, 1)]
+    assert stages == ["generate", "cluster", "qmatrix", "evidence", "translate"]
+    # Três problemas no generate e nos trechos, 1 grupo na nomeação, e a tradução não conta itens
+    assert progress == [
+        (0, 3), (1, 3), (2, 3), (3, 3), (0, 1), (1, 1), (0, 3), (1, 3), (2, 3), (3, 3)
+    ]
     assert generated.problem_ids == [1, 2, 3]
     # Cada problema fica com o próprio KC candidato, mesmo o que terminou por último
     assert {p: [kc["name"] for kc in kcs] for p, kcs in generated.candidate_kcs.items()} == {
@@ -139,11 +151,14 @@ def test_generation_reports_the_progress_of_each_problem(data_root):
 
 
 class _RecordingLLM:
-    # Guarda os prompts, para conferir a ordem das soluções que o LLM leu
+    # Guarda os prompts de geração, para conferir a ordem das soluções que o LLM leu
     def __init__(self) -> None:
         self.prompts: list[str] = []
 
     def generate(self, system: str, prompt: str, schema=None, validate=None) -> dict:
+        answer = stage_answer(prompt)
+        if answer is not None:
+            return answer
         self.prompts.append(prompt)
         return {"KC 1": {"reasoning": "eco", "name": "kc"}}
 
@@ -203,17 +218,19 @@ def test_each_problem_gets_its_own_statement_and_the_one_without_gets_none(data_
     assert "\n# Problem:\n" not in llm.prompts["2"]
     # O resultado traz os candidatos, o grupo de cada nome e quem gerou
     assert generated.candidate_kcs == {
-        p: [{"name": f"kc do problema {p}", "reasoning": "eco"}] for p in (1, 2)
+        p: [{"name": f"kc do problema {p}", "reasoning": "eco", "translated_reasoning": "pt eco"}]
+        for p in (1, 2)
     }
     assert set(generated.group_of_name) == {"kc do problema 1", "kc do problema 2"}
     assert (generated.model_id, generated.prompt_version) == ("claude-sonnet-5-5", "kcgen-v2")
 
 
 class _EmptyForProblemTwo(_EchoLLM):
-    # O problema 2 recebe sempre uma resposta sem KC, e os outros o eco de sempre
+    # O pedido de geração do problema 2 recebe sempre uma resposta sem KC, e o resto o de sempre
     def generate(self, system: str, prompt: str, schema=None, validate=None) -> dict:
-        answer = super().generate(system, prompt, schema, validate)
-        return {} if re.search(r"public int p2\(", prompt) else answer
+        if prompt.startswith("# Example 1:") and re.search(r"public int p2\(", prompt):
+            return {}
+        return super().generate(system, prompt, schema, validate)
 
 
 def test_an_invalid_answer_names_its_problem(data_root, monkeypatch):
@@ -242,6 +259,9 @@ class _ScriptedLLM:
         if naming is not None:
             self.naming_prompts.append(prompt)
             return naming
+        answer = stage_answer(prompt)
+        if answer is not None:
+            return answer
         problem_id = int(re.search(r"public int p(\d+)\(", prompt).group(1))
         return {
             f"KC {i}": {"reasoning": "r", "name": name}
@@ -256,14 +276,16 @@ def _embed_by_group(group_of: dict[str, int]):
 
 
 def _generate(llm, problem_ids: list[int], group_of: dict[str, int], progress=None):
+    # O progresso vai para `progress` como (estágio, feitos, total)
     progress = [] if progress is None else progress
+    stages: list[str] = []
     return KcGenKtGenerator(llm, embed=fake_embed, embed_names=_embed_by_group(group_of)).generate(
         _correct_runs(problem_ids),
         {},
         1,
         1,
-        on_stage=lambda stage: None,
-        on_progress=lambda done, total: progress.append((done, total)),
+        on_stage=stages.append,
+        on_progress=lambda done, total: progress.append((stages[-1], done, total)),
     )
 
 
@@ -293,7 +315,10 @@ def test_a_group_of_one_kc_keeps_its_name_in_lowercase_without_a_call(data_root)
     assert [_listed_names(prompt) for prompt in llm.naming_prompts] == [
         ["For loop", "While loop", "Do while loop"]
     ]
-    assert progress[-2:] == [(0, 1), (1, 1)]
+    assert [item for item in progress if item[0] == "cluster"] == [
+        ("cluster", 0, 1),
+        ("cluster", 1, 1),
+    ]
     assert generated.group_names == {0: "for loop", 1: "string length"}
     assert generated.groups_by_problem == {1: [0], 2: [1]}
 
@@ -318,7 +343,8 @@ def test_a_single_name_is_one_concept_without_naming(data_root):
     generated = _generate(llm, [1, 2], {"While Loop": 0}, progress)
 
     assert llm.naming_prompts == []
-    assert progress == [(0, 2), (1, 2), (2, 2)]
+    # Sem grupo para nomear, o estágio da nomeação não conta nada
+    assert [item for item in progress if item[0] == "cluster"] == []
     assert generated.group_names == {0: "while loop"}
     assert generated.groups_by_problem == {1: [0], 2: [0]}
 
@@ -364,7 +390,7 @@ def test_without_correct_runs_nothing_is_embedded_named_or_asked(data_root):
 
     assert llm.prompts == []
     assert (generated.problem_ids, generated.group_names, generated.group_of_name) == ([], {}, {})
-    assert stages == ["generate", "cluster", "qmatrix"]
+    assert stages == ["generate", "cluster", "qmatrix", "evidence", "translate"]
 
 
 class _InvalidNaming(_ScriptedLLM):
@@ -393,3 +419,200 @@ def test_names_are_deduplicated_by_the_exact_text(data_root):
     assert list(generated.group_of_name) == ["Loop", "loop", "For loop", "Loop "]
     # O grupo de um KC só guarda o nome como veio, só que em minúsculas
     assert sorted(generated.group_names.values()) == ["loop", "loop "]
+
+
+def test_the_evidence_points_to_the_sampled_solution_and_its_lines(data_root):
+    # O LLM falso aponta a primeira linha da solução 1 para cada conceito
+    llm = _ScriptedLLM({1: ["For loop"], 2: ["String length"]})
+
+    generated = _generate(llm, [1, 2], {"For loop": 0, "String length": 0})
+
+    assert generated.evidence == {
+        1: [{"group": 0, "position": 1, "first_line": 1, "last_line": 1}],
+        2: [{"group": 0, "position": 1, "first_line": 1, "last_line": 1}],
+    }
+
+
+class _SnippetOutsideTheCode(_ScriptedLLM):
+    # O pedido dos trechos recebe um trecho que não está em solução nenhuma
+    def generate(self, system: str, prompt: str, schema=None, validate=None) -> dict:
+        if prompt.startswith("# Knowledge components:"):
+            return {"KC 1": {"solution": 1, "snippet": "while (true) { }"}}
+        return super().generate(system, prompt, schema, validate)
+
+
+def test_a_snippet_that_is_not_in_the_solution_is_dropped(data_root):
+    generated = _generate(_SnippetOutsideTheCode({1: ["For loop"]}), [1], {"For loop": 0})
+
+    assert generated.evidence == {1: []}
+    # O conceito continua, só sem trecho
+    assert generated.groups_by_problem == {1: [0]}
+
+
+class _CountingTranslations(_ScriptedLLM):
+    def __init__(self, names_by_problem: dict[int, list[str]]) -> None:
+        super().__init__(names_by_problem)
+        self.translation_prompts: list[str] = []
+
+    def generate(self, system: str, prompt: str, schema=None, validate=None) -> dict:
+        if prompt.startswith("# Names:"):
+            self.translation_prompts.append(prompt)
+        return super().generate(system, prompt, schema, validate)
+
+
+def test_the_names_and_the_reasonings_come_translated_in_one_call(data_root):
+    names = {1: ["For loop"], 2: ["For loop", "String length"], 3: ["While loop"]}
+    llm = _CountingTranslations(names)
+
+    generated = _generate(llm, [1, 2, 3], {"For loop": 0, "String length": 1, "While loop": 0})
+
+    assert len(llm.translation_prompts) == 1
+    assert generated.translated_group_names == {
+        group: f"pt {name}" for group, name in generated.group_names.items()
+    }
+    reasonings = {kc["translated_reasoning"] for kcs in generated.candidate_kcs.values() for kc in kcs}
+    assert reasonings == {"pt r"}
+
+
+# Quatro nomes únicos dão 2 grupos, os laços e os textos, e cada problema tem os seus
+_MARKED_NAMES = {
+    1: ["For loop", "String length", "While loop", "Array index"],
+    2: ["String length", "Array index"],
+    3: ["For loop", "While loop"],
+}
+_MARKED_GROUPS = {"For loop": 0, "While loop": 0, "String length": 1, "Array index": 1}
+
+
+def _generate_marked(llm):
+    return KcGenKtGenerator(
+        llm, embed=fake_embed, embed_names=_embed_by_group(_MARKED_GROUPS)
+    ).generate(
+        multiline_runs([1, 2, 3]),
+        {},
+        1,
+        1,
+        on_stage=lambda stage: None,
+        on_progress=lambda done, total: None,
+    )
+
+
+def test_the_evidence_of_each_concept_is_the_lines_of_its_own_snippet(data_root):
+    generated = _generate_marked(MarkedCodeLLM(_MARKED_NAMES))
+
+    runs = multiline_runs([1, 2, 3])
+    code_of = dict(zip(runs["submission_id"], runs["code"]))
+    assert generated.group_names == {0: "for loop", 1: "string length"}
+    assert generated.groups_by_problem == {1: [0, 1], 2: [1], 3: [0]}
+    for problem, items in generated.evidence.items():
+        sampled = [code_of[i] for i in generated.sampled_solutions[problem]]
+        for item in items:
+            mark = FOR_MARK if generated.group_names[item["group"]] == "for loop" else LENGTH_MARK
+            position = max(k for k, code in enumerate(sampled, 1) if mark in code)
+            lines = sampled[position - 1].split("\r\n")
+            first = next(j for j, line in enumerate(lines) if mark in line) + 1
+            assert (item["position"], item["first_line"], item["last_line"]) == (
+                position,
+                first,
+                first + 1,
+            )
+    assert {p: [i["group"] for i in items] for p, items in generated.evidence.items()} == {
+        1: [0, 1],
+        2: [1],
+        3: [0],
+    }
+    # No problema 1 os dois conceitos apontam solução e linha diferentes, então uma troca aparece
+    assert len({(i["position"], i["first_line"]) for i in generated.evidence[1]}) == 2
+
+
+def test_each_evidence_request_has_only_the_concepts_and_the_solutions_of_its_problem(data_root):
+    llm = MarkedCodeLLM(_MARKED_NAMES)
+
+    generated = _generate_marked(llm)
+
+    runs = multiline_runs([1, 2, 3])
+    code_of = dict(zip(runs["submission_id"], runs["code"]))
+    requests = {}
+    for prompt in llm.evidence_prompts:
+        solutions = evidence_solutions(prompt)
+        problem = int(re.search(r"public int p(\d+)v", solutions[0]).group(1))
+        requests[problem] = (evidence_concepts(prompt), solutions)
+    assert {p: concepts for p, (concepts, _) in requests.items()} == {
+        1: ["for loop", "string length"],
+        2: ["string length"],
+        3: ["for loop"],
+    }
+    for problem, (_, solutions) in requests.items():
+        assert solutions == [code_of[i] for i in generated.sampled_solutions[problem]]
+
+
+class _InvalidEvidenceForProblemTwo(MarkedCodeLLM):
+    # O pedido dos trechos do problema 2 recebe sempre uma solução que não existe
+    def __init__(self, names_by_problem: dict[int, list[str]]) -> None:
+        super().__init__(names_by_problem)
+        self.invalid_calls = 0
+
+    def generate(self, system: str, prompt: str, schema=None, validate=None) -> dict:
+        if prompt.startswith("# Knowledge components:") and "public int p2v" in prompt:
+            self.invalid_calls += 1
+            return {"KC 1": {"solution": 99, "snippet": "x"}}
+        return super().generate(system, prompt, schema, validate)
+
+
+def test_an_invalid_evidence_answer_is_asked_three_times_and_names_its_problem(
+    data_root, monkeypatch
+):
+    monkeypatch.setattr("time.sleep", lambda *_a, **_k: None)
+    llm = _InvalidEvidenceForProblemTwo(_MARKED_NAMES)
+
+    with pytest.raises(InvalidLLMResponseError, match="problema 2, KC 1 aponta uma solução"):
+        _generate_marked(llm)
+
+    assert llm.invalid_calls == 3
+    cache = json.loads(next(data_root.rglob("kc_cache.json")).read_text())
+    assert all('"solution": 99' not in json.dumps(record["parsed"]) for record in cache.values())
+
+
+class _InvalidTranslation(MarkedCodeLLM):
+    # A tradução volta sempre com um texto só
+    def __init__(self, names_by_problem: dict[int, list[str]]) -> None:
+        super().__init__(names_by_problem)
+        self.invalid_calls = 0
+
+    def generate(self, system: str, prompt: str, schema=None, validate=None) -> dict:
+        if prompt.startswith("# Names:"):
+            self.invalid_calls += 1
+            return {"N1": "só um"}
+        return super().generate(system, prompt, schema, validate)
+
+
+def test_an_invalid_translation_is_asked_three_times_then_stops(data_root, monkeypatch):
+    monkeypatch.setattr("time.sleep", lambda *_a, **_k: None)
+    llm = _InvalidTranslation(_MARKED_NAMES)
+
+    with pytest.raises(InvalidLLMResponseError, match="tradução"):
+        _generate_marked(llm)
+
+    assert llm.invalid_calls == 3
+
+
+def test_a_second_extraction_reads_the_evidence_and_the_translation_from_the_cache(data_root):
+    first = MarkedCodeLLM(_MARKED_NAMES)
+    _generate_marked(first)
+    assert (len(first.evidence_prompts), len(first.translation_prompts)) == (3, 1)
+
+    second = MarkedCodeLLM(_MARKED_NAMES)
+    _generate_marked(second)
+
+    assert (second.evidence_prompts, second.translation_prompts) == ([], [])
+
+
+def test_each_translation_goes_back_to_its_own_concept_and_candidate(data_root):
+    generated = _generate_marked(MarkedCodeLLM(_MARKED_NAMES))
+
+    assert generated.translated_group_names == {
+        group: f"pt {name}" for group, name in generated.group_names.items()
+    }
+    candidates = [kc for kcs in generated.candidate_kcs.values() for kc in kcs]
+    assert all(kc["translated_reasoning"] == f"pt {kc['reasoning']}" for kc in candidates)
+    # Cada justificativa tem o problema no texto, então uma troca de ordem apareceria
+    assert len({kc["reasoning"] for kc in candidates}) == 8

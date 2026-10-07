@@ -174,7 +174,10 @@ repetidas descartadas, numa lista neutra de título e detalhe, sem ícone de ale
 para a recusa, que não grava nada.
 
 **Lista de estágios.** Em `--color-model`, tanto na extração de conceitos, feita pelo modelo de
-linguagem, quanto no treino do Code-DKT, porque os dois são trabalho de modelo.
+linguagem, quanto no treino do Code-DKT, porque os dois são trabalho de modelo. A extração tem cinco
+estágios, "Identificando os conceitos de cada problema", "Agrupando os conceitos parecidos e
+nomeando cada grupo", "Ligando os conceitos aos problemas", "Apontando onde cada conceito aparece
+nas soluções" e "Traduzindo os conceitos para o português".
 
 **Carregamento e vazio.** O indicador de carregamento (spinner) é `--color-text`. O estado vazio
 tem o ícone num quadrado `--color-hover`, um título e uma frase de apoio.

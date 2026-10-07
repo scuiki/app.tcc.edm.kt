@@ -15,14 +15,17 @@ class ProblemWithoutKnowledgeComponent(ValueError):
 @dataclass(frozen=True)
 class GeneratedKnowledgeComponents:
     problem_ids: list[int]
-    group_names: dict[int, str]  # group_index -> o nome do KC
+    group_names: dict[int, str]  # group_index -> o nome gerado, em inglês e em minúsculas
     groups_by_problem: dict[int, list[int]]  # problem_id -> os group_index que ele exige
-    # Os KCs que o LLM listou em cada problema, na ordem da resposta, com `name` e `reasoning`
+    translated_group_names: dict[int, str]  # group_index -> o nome em português, o da tela
+    # Os KCs que o LLM listou em cada problema, na ordem da resposta, com nome e as justificativas
     candidate_kcs: dict[int, list[dict[str, str]]] = field(default_factory=dict)
     # O grupo em que caiu cada nome de KC candidato
     group_of_name: dict[str, int] = field(default_factory=dict)
     # As execuções que o LLM leu em cada problema, na ordem do prompt
     sampled_solutions: dict[int, list[int]] = field(default_factory=dict)
+    # Os trechos de cada problema, com `group`, `position` da solução, `first_line` e `last_line`
+    evidence: dict[int, list[dict[str, int]]] = field(default_factory=dict)
     # O modelo de linguagem e a versão do prompt que geraram os KCs
     model_id: str = ""
     prompt_version: str = ""

@@ -1,4 +1,4 @@
-# IKnowledgeComponentGenerator sobre o KCGen-KT, amostra, gera, agrupa/nomeia, Q-matrix.
+# IKnowledgeComponentGenerator sobre o KCGen-KT, da amostra à Q-matrix, com trechos e tradução.
 from __future__ import annotations
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -22,11 +22,13 @@ from api.knowledge_components.infrastructure.implementations.llm_response_cache 
 from api.shared.infrastructure.filesystem import data_layout
 from ml.kc_generation.candidate_generation import generate_candidate_kcs
 from ml.kc_generation.embedding_models import embed_kc_names, embed_solutions
+from ml.kc_generation.evidence_location import locate_kc_evidence
 from ml.kc_generation.group_naming import name_kc_group
 from ml.kc_generation.kc_grouping import group_similar_kcs, kc_group_count
 from ml.kc_generation.llm_client import InvalidLLMResponseError, LLMClient
 from ml.kc_generation.qmatrix_builder import build_qmatrix
 from ml.kc_generation.solution_sampling import select_sample_solutions
+from ml.kc_generation.text_translation import translate_kc_texts
 
 # As chamadas de um estágio são independentes, e mais do que isso esbarra no limite da assinatura
 LLM_CONCURRENCY = 4
@@ -57,22 +59,12 @@ def run_in_parallel(
     return results
 
 
-def _generate_for_problem(
-    problem_id: int, solutions: list[str], statement: str | None, llm: LLMClient
-) -> list[dict[str, str]]:
-    # A mensagem da resposta inválida vai para o diálogo da extração, então ela diz o problema
+def _in_context(context: str, call: Callable[[], _Result]) -> _Result:
+    # A mensagem da resposta inválida vai para o diálogo da extração, então ela diz de onde veio
     try:
-        return generate_candidate_kcs(solutions, statement, llm)
+        return call()
     except InvalidLLMResponseError as exc:
-        raise InvalidLLMResponseError(f"problema {problem_id}, {exc}") from exc
-
-
-def _name_group(names: list[str], llm: LLMClient) -> str:
-    # A mensagem da resposta inválida vai para o diálogo da extração, então ela diz o grupo
-    try:
-        return name_kc_group(names, llm)
-    except InvalidLLMResponseError as exc:
-        raise InvalidLLMResponseError(f"grupo {names}, {exc}") from exc
+        raise InvalidLLMResponseError(f"{context}, {exc}") from exc
 
 
 class KcGenKtGenerator:
@@ -111,11 +103,14 @@ class KcGenKtGenerator:
             samples = select_sample_solutions(runs, self._embed)
             samples_by_problem[problem_id] = samples
             generate_tasks[problem_id] = partial(
-                _generate_for_problem,
-                problem_id,
-                [s["code"] for s in samples],
-                statements.get(problem_id),
-                generate_llm,
+                _in_context,
+                f"problema {problem_id}",
+                partial(
+                    generate_candidate_kcs,
+                    [s["code"] for s in samples],
+                    statements.get(problem_id),
+                    generate_llm,
+                ),
             )
         generated = run_in_parallel(generate_tasks, on_progress)
         candidate_kcs_by_problem = {p: generated[p] for p in problem_ids}
@@ -134,18 +129,66 @@ class KcGenKtGenerator:
             candidate_kcs_by_problem,
             {"n_clusters_selected": len(concept_names), "kc_to_cluster": concept_of_name},
         )
+        groups_by_problem = {
+            p: [g for g in range(len(concept_names)) if int(qmatrix.loc[p][f"kc_{g}"]) == 1]
+            for p in problem_ids
+        }
+
+        # Etapa 6, onde cada conceito aparece nas soluções que o LLM leu, uma chamada por problema
+        on_stage("evidence")
+        evidence_llm = CachedLLMClient(self._llm, cache_dir, stage="evidence")
+        evidence_tasks = {
+            p: partial(
+                _in_context,
+                f"problema {p}",
+                partial(
+                    locate_kc_evidence,
+                    [concept_names[g] for g in groups_by_problem[p]],
+                    [s["code"] for s in samples_by_problem[p]],
+                    evidence_llm,
+                ),
+            )
+            for p in problem_ids
+            if groups_by_problem[p]
+        }
+        located = run_in_parallel(evidence_tasks, on_progress) if evidence_tasks else {}
+        evidence = {
+            p: [
+                {"group": g, "position": item[0], "first_line": item[1], "last_line": item[2]}
+                for g, item in zip(groups_by_problem[p], located[p])
+                if item is not None
+            ]
+            for p in problem_ids
+            if p in located
+        }
+
+        # Etapa 7, o português dos nomes e das justificativas do exercício, numa chamada só
+        on_stage("translate")
+        translate_llm = CachedLLMClient(self._llm, cache_dir, stage="translate")
+        reasonings = [kc["reasoning"] for p in problem_ids for kc in candidate_kcs_by_problem[p]]
+        translated_names, translated_reasonings = translate_kc_texts(
+            concept_names, reasonings, translate_llm
+        )
+        translated = iter(translated_reasonings)
+        candidate_kcs = {
+            p: [
+                {**kc, "translated_reasoning": next(translated)}
+                for kc in candidate_kcs_by_problem[p]
+            ]
+            for p in problem_ids
+        }
+
         return GeneratedKnowledgeComponents(
             problem_ids=problem_ids,
             group_names=dict(enumerate(concept_names)),
-            groups_by_problem={
-                p: [g for g in range(len(concept_names)) if int(qmatrix.loc[p][f"kc_{g}"]) == 1]
-                for p in problem_ids
-            },
-            candidate_kcs=candidate_kcs_by_problem,
+            groups_by_problem=groups_by_problem,
+            translated_group_names=dict(enumerate(translated_names)),
+            candidate_kcs=candidate_kcs,
             group_of_name=concept_of_name,
             sampled_solutions={
                 p: [int(s["submission_id"]) for s in samples_by_problem[p]] for p in problem_ids
             },
+            evidence=evidence,
             model_id=KC_GENERATION_MODEL_ID,
             prompt_version=PROMPT_VERSION,
         )
@@ -168,7 +211,7 @@ class KcGenKtGenerator:
 
         name_llm = CachedLLMClient(self._llm, cache_dir, stage="label")
         tasks = {
-            group: partial(_name_group, names, name_llm)
+            group: partial(_in_context, f"grupo {names}", partial(name_kc_group, names, name_llm))
             for group, names in sorted(members.items())
             if len(names) > 1
         }

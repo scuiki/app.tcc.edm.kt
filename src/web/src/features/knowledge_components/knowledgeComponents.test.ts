@@ -11,6 +11,7 @@ import {
   problemCount,
   problemsOnlyMarkedBy,
   stageStateOf,
+  GENERATION_STAGES,
 } from './knowledgeComponents'
 
 const LOOPS = { id: 1, name: 'Laços' }
@@ -82,7 +83,35 @@ describe('stageStateOf', () => {
   })
 
   it('marks every stage as done when the job is done', () => {
-    expect(stageStateOf('qmatrix', job('done', 'qmatrix'))).toBe('done')
+    expect(stageStateOf('translate', job('done', 'translate'))).toBe('done')
+  })
+
+  it('knows the evidence and the translation, the last two stages', () => {
+    expect(GENERATION_STAGES.map((item) => item.stage)).toEqual([
+      'generate',
+      'cluster',
+      'qmatrix',
+      'evidence',
+      'translate',
+    ])
+    expect(stageStateOf('qmatrix', job('running', 'evidence'))).toBe('done')
+    expect(stageStateOf('evidence', job('running', 'evidence'))).toBe('current')
+    expect(stageStateOf('translate', job('running', 'evidence'))).toBe('todo')
+  })
+
+  it('shows the five texts of the extraction, in the order the job runs them', () => {
+    expect(GENERATION_STAGES.map((item) => item.label)).toEqual([
+      'Identificando os conceitos de cada problema',
+      'Agrupando os conceitos parecidos e nomeando cada grupo',
+      'Ligando os conceitos aos problemas',
+      'Apontando onde cada conceito aparece nas soluções',
+      'Traduzindo os conceitos para o português',
+    ])
+  })
+
+  it('shows a job done at an older stage as done, like the ones of the older classrooms', () => {
+    const states = GENERATION_STAGES.map((item) => stageStateOf(item.stage, job('done', 'qmatrix')))
+    expect(states).toEqual(GENERATION_STAGES.map(() => 'done'))
   })
 })
 

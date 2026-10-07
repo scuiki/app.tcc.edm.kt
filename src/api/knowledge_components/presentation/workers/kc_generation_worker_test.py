@@ -28,6 +28,9 @@ from api.knowledge_components.infrastructure.repositories.sqlite_candidate_knowl
 from api.knowledge_components.infrastructure.repositories.sqlite_kc_generation_job_repository import (
     SqliteKnowledgeComponentGenerationJobRepository,
 )
+from api.knowledge_components.infrastructure.repositories.sqlite_knowledge_component_evidence_repository import (
+    SqliteKnowledgeComponentEvidenceRepository,
+)
 from api.knowledge_components.infrastructure.repositories.sqlite_sampled_solution_repository import (
     SqliteSampledSolutionRepository,
 )
@@ -36,7 +39,14 @@ from api.knowledge_components.presentation.workers.kc_generation_worker import r
 from api.shared.domain.value_objects.job_status import JobStatus
 from api.shared.infrastructure import settings
 from tests.fixtures.job_lock import lock_holder_pid
-from tests.fixtures.knowledge_components import fake_embed, naming_answer
+from tests.fixtures.knowledge_components import (
+    FOR_MARK,
+    LENGTH_MARK,
+    MarkedCodeLLM,
+    fake_embed,
+    multiline_runs,
+    stage_answer,
+)
 from tests.fixtures.problems import add_problems
 
 
@@ -47,9 +57,9 @@ class _FakeLLM:
         self.prompts: list[str] = []
 
     def generate(self, system: str, prompt: str, schema=None, validate=None) -> dict:
-        naming = naming_answer(prompt)
-        if naming is not None:
-            return naming
+        answer = stage_answer(prompt)
+        if answer is not None:
+            return answer
         self.prompts.append(prompt)
         return self._respond()
 
@@ -74,9 +84,9 @@ class _PerProblemLLM:
         self.prompts: dict[int, str] = {}
 
     def generate(self, system: str, prompt: str, schema=None, validate=None) -> dict:
-        naming = naming_answer(prompt)
-        if naming is not None:
-            return naming
+        answer = stage_answer(prompt)
+        if answer is not None:
+            return answer
         problem = int(re.search(r"_p(\d+)\(", prompt).group(1))
         self.prompts[problem] = prompt
         return {
@@ -241,7 +251,7 @@ def test_mark_done_failure_is_atomic_with_persist(tmp_db, data_root, monkeypatch
 def _saved(conn, assignment_id: int, job_id: int) -> dict:
     # O que a extração deixou no banco, para conferir que uma falha não grava nada
     job = _jobs(conn).get(job_id)
-    tables = ("kc", "problem_kc", "sampled_solution", "candidate_kc")
+    tables = ("kc", "problem_kc", "sampled_solution", "candidate_kc", "kc_evidence")
     return {
         "job": job.status,
         "model": job.model_id,
@@ -256,8 +266,9 @@ def _saved(conn, assignment_id: int, job_id: int) -> dict:
         (SqliteSampledSolutionRepository, "add_many"),
         (SqliteCandidateKnowledgeComponentRepository, "add_many"),
         (SqliteKnowledgeComponentGenerationJobRepository, "record_generation_model"),
+        (SqliteKnowledgeComponentEvidenceRepository, "add_many"),
     ],
-    ids=["solucoes_amostradas", "kcs_candidatos", "modelo_do_job"],
+    ids=["solucoes_amostradas", "kcs_candidatos", "modelo_do_job", "trechos"],
 )
 def test_a_failure_saving_any_part_saves_nothing(
     tmp_db, data_root, monkeypatch, repository, method
@@ -281,6 +292,7 @@ def test_a_failure_saving_any_part_saves_nothing(
         "problem_kc": 0,
         "sampled_solution": 0,
         "candidate_kc": 0,
+        "kc_evidence": 0,
     }
 
 
@@ -356,14 +368,23 @@ def test_each_candidate_is_saved_in_order_with_the_concept_of_its_group(tmp_db, 
     _run(conn, assignment_id, job_id, _PerProblemLLM(), embed_names=_embed_by_problem)
 
     rows = conn.execute(
-        "SELECT c.problem_id, c.position, c.name, c.reasoning, k.name AS concept "
+        "SELECT c.problem_id, c.position, c.name, c.reasoning, c.translated_reasoning, "
+        "k.generated_name, k.name AS shown "
         "FROM candidate_kc c JOIN kc k ON k.id = c.kc_id "
         "WHERE c.assignment_id = ? ORDER BY c.problem_id, c.position;",
         (assignment_id,),
     ).fetchall()
     # Seis nomes dão 3 grupos, um por problema, e o nome do grupo é o primeiro KC dele
     assert [tuple(r) for r in rows] == [
-        (problem, position, f"{name} {problem}", f"{label} of {problem}", f"alpha {problem}")
+        (
+            problem,
+            position,
+            f"{name} {problem}",
+            f"{label} of {problem}",
+            f"pt {label} of {problem}",
+            f"alpha {problem}",
+            f"pt alpha {problem}",
+        )
         for problem in (1, 2, 3)
         for position, name, label in ((1, "alpha", "first"), (2, "beta", "second"))
     ]
@@ -396,3 +417,107 @@ def test_the_statement_saved_on_the_problem_reaches_its_own_prompt(tmp_db, data_
         for problem, prompt in llm.prompts.items()
     }
     assert has_statement == {1: False, 2: True, 3: False}
+
+
+def test_the_evidence_of_each_concept_is_saved_with_its_lines(tmp_db, data_root):
+    conn = tmp_db
+    assignment_id, job_id = _seed_kc_ready(conn, data_root)
+
+    _run(conn, assignment_id, job_id, _PerProblemLLM(), embed_names=_embed_by_problem)
+
+    rows = conn.execute(
+        "SELECT e.problem_id, k.generated_name, e.position, e.first_line, e.last_line "
+        "FROM kc_evidence e JOIN kc k ON k.id = e.kc_id "
+        "WHERE e.assignment_id = ? ORDER BY e.problem_id;",
+        (assignment_id,),
+    ).fetchall()
+    # O LLM falso aponta a primeira linha da solução 1, e cada código do teste tem uma linha só
+    assert [tuple(r) for r in rows] == [(p, f"alpha {p}", 1, 1, 1) for p in (1, 2, 3)]
+
+
+def test_a_problem_without_a_correct_run_does_not_stop_the_extraction(tmp_db, data_root):
+    # O problema 4 só tem uma execução errada, então fica sem amostra e sem conceito
+    conn = tmp_db
+    assignment_id, job_id = _seed_kc_ready(conn, data_root)
+    add_problems(conn, assignment_id, [4])
+    wrong = pd.DataFrame(
+        [_row("S9", 4, pd.Timestamp("2019-03-02T08:00:00Z"), 0.0, "int f_p4() { return 0; }", "c9")]
+    )
+    wrong["progsnap_assignment_id"] = wrong["progsnap_assignment_id"].astype("Int64")
+    wrong["problem_id"] = wrong["problem_id"].astype("Int64")
+    SqliteSubmissionRepository(conn).add_many(assignment_id, wrong)
+
+    _run(conn, assignment_id, job_id, _llm_ok())
+
+    assert _jobs(conn).get(job_id).status == "done"
+    assert SqliteAssignmentRepository(conn).get(assignment_id).status == "kc_draft"
+    for table in ("problem_kc", "sampled_solution", "candidate_kc", "kc_evidence"):
+        count = conn.execute(
+            f"SELECT COUNT(*) FROM {table} WHERE assignment_id = ? AND problem_id = 4;",
+            (assignment_id,),
+        ).fetchone()[0]
+        assert count == 0, table
+
+
+def _seed_multiline(conn) -> tuple[int, int]:
+    # Os três problemas com o código de várias linhas e CRLF, e as marcas que o LLM falso aponta
+    assignment_id, job_id = _seed_kc_ready(conn, data_root=None)
+    conn.execute("DELETE FROM submission WHERE assignment_id = ?;", (assignment_id,))
+    runs = multiline_runs([1, 2, 3])
+    cleaned = pd.DataFrame(
+        {
+            "student_id": runs["student_id"],
+            "progsnap_assignment_id": pd.array([ASSIGNMENT_ID] * len(runs), dtype="Int64"),
+            "problem_id": runs["problem_id"].astype("Int64"),
+            "code_snapshot_id": runs["code_snapshot_id"],
+            "code": runs["code"],
+            "score": 1.0,
+            "submitted_at": pd.to_datetime(runs["submitted_at"], utc=True),
+            "event_type": "Run.Program",
+            "is_correct": 1,
+        }
+    )
+    SqliteSubmissionRepository(conn).add_many(assignment_id, cleaned)
+    return assignment_id, job_id
+
+
+def test_the_saved_evidence_points_to_the_right_solution_and_lines(tmp_db, data_root):
+    conn = tmp_db
+    assignment_id, job_id = _seed_multiline(conn)
+    names = {
+        1: ["For loop", "String length", "While loop", "Array index"],
+        2: ["String length", "Array index"],
+        3: ["For loop", "While loop"],
+    }
+    groups = {"For loop": 0, "While loop": 0, "String length": 1, "Array index": 1}
+
+    _run(
+        conn,
+        assignment_id,
+        job_id,
+        MarkedCodeLLM(names),
+        embed_names=lambda texts: np.stack([np.eye(2)[groups[t]] for t in texts]),
+    )
+
+    rows = conn.execute(
+        "SELECT e.problem_id, k.generated_name, e.position, e.first_line, e.last_line, s.code "
+        "FROM kc_evidence e JOIN kc k ON k.id = e.kc_id "
+        "JOIN sampled_solution ss ON ss.assignment_id = e.assignment_id "
+        "AND ss.problem_id = e.problem_id AND ss.position = e.position "
+        "JOIN submission s ON s.id = ss.submission_id "
+        "WHERE e.assignment_id = ? ORDER BY e.problem_id, k.generated_name;",
+        (assignment_id,),
+    ).fetchall()
+    assert [(r["problem_id"], r["generated_name"]) for r in rows] == [
+        (1, "for loop"),
+        (1, "string length"),
+        (2, "string length"),
+        (3, "for loop"),
+    ]
+    for r in rows:
+        mark = FOR_MARK if r["generated_name"] == "for loop" else LENGTH_MARK
+        lines = r["code"].split("\r\n")
+        # As linhas gravadas são as duas do trecho, na solução da posição gravada
+        assert mark in lines[r["first_line"] - 1]
+        assert r["last_line"] == r["first_line"] + 1
+    assert len({(r["position"], r["first_line"]) for r in rows}) >= 2

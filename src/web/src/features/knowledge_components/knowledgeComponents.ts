@@ -70,11 +70,13 @@ export function hasKnowledgeComponents(status: AssignmentStatus | null | undefin
   return isEditable(status) || status === 'trained'
 }
 
-// Os três estágios que o job informa, na ordem em que roda
+// Os cinco estágios que o job informa, na ordem em que roda
 export const GENERATION_STAGES = [
   { stage: 'generate', label: 'Identificando os conceitos de cada problema' },
   { stage: 'cluster', label: 'Agrupando os conceitos parecidos e nomeando cada grupo' },
   { stage: 'qmatrix', label: 'Ligando os conceitos aos problemas' },
+  { stage: 'evidence', label: 'Apontando onde cada conceito aparece nas soluções' },
+  { stage: 'translate', label: 'Traduzindo os conceitos para o português' },
 ] as const
 
 export function stageStateOf(stage: string, job: GenerationJob | undefined): StageState {

@@ -62,6 +62,9 @@ from api.knowledge_components.infrastructure.repositories.sqlite_candidate_knowl
 from api.knowledge_components.infrastructure.repositories.sqlite_kc_generation_job_repository import (
     SqliteKnowledgeComponentGenerationJobRepository,
 )
+from api.knowledge_components.infrastructure.repositories.sqlite_knowledge_component_evidence_repository import (
+    SqliteKnowledgeComponentEvidenceRepository,
+)
 from api.knowledge_components.infrastructure.repositories.sqlite_knowledge_component_repository import (
     SqliteKnowledgeComponentRepository,
 )
@@ -204,4 +207,5 @@ def build_run_kc_generation_use_case(
         unit_of_work=SqliteUnitOfWork(conn),
         sampled_solutions=SqliteSampledSolutionRepository(conn),
         candidate_kcs=SqliteCandidateKnowledgeComponentRepository(conn),
+        evidence=SqliteKnowledgeComponentEvidenceRepository(conn),
     )

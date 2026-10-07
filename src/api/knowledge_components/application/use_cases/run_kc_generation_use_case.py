@@ -24,6 +24,12 @@ from api.knowledge_components.domain.entities.candidate_knowledge_component_enti
 from api.knowledge_components.domain.interfaces.candidate_knowledge_component_repository import (
     ICandidateKnowledgeComponentRepository,
 )
+from api.knowledge_components.domain.entities.knowledge_component_evidence_entity import (
+    KnowledgeComponentEvidence,
+)
+from api.knowledge_components.domain.interfaces.knowledge_component_evidence_repository import (
+    IKnowledgeComponentEvidenceRepository,
+)
 from api.knowledge_components.domain.entities.sampled_solution_entity import SampledSolution
 from api.knowledge_components.domain.interfaces.sampled_solution_repository import (
     ISampledSolutionRepository,
@@ -48,6 +54,7 @@ class RunKnowledgeComponentGenerationUseCase:
         unit_of_work: IUnitOfWork,
         sampled_solutions: ISampledSolutionRepository,
         candidate_kcs: ICandidateKnowledgeComponentRepository,
+        evidence: IKnowledgeComponentEvidenceRepository,
     ) -> None:
         self._assignments = assignments
         self._problems = problems
@@ -59,6 +66,7 @@ class RunKnowledgeComponentGenerationUseCase:
         self._unit_of_work = unit_of_work
         self._sampled_solutions = sampled_solutions
         self._candidate_kcs = candidate_kcs
+        self._evidence = evidence
 
     def execute(self, assignment_id: int, job_id: int) -> dict:
         assignment = self._assignments.get(assignment_id)
@@ -89,8 +97,9 @@ class RunKnowledgeComponentGenerationUseCase:
                     KnowledgeComponent(
                         id=None,
                         assignment_id=assignment_id,
-                        name=generated.group_names[group],
+                        name=generated.translated_group_names[group],
                         group_index=group,
+                        generated_name=generated.group_names[group],
                     )
                 )
                 for group in sorted(generated.group_names)
@@ -121,9 +130,24 @@ class RunKnowledgeComponentGenerationUseCase:
                         name=candidate["name"],
                         reasoning=candidate["reasoning"],
                         kc_id=kc_id_of_group[generated.group_of_name[candidate["name"]]],
+                        translated_reasoning=candidate["translated_reasoning"],
                     )
                     for problem_id, candidates in generated.candidate_kcs.items()
                     for position, candidate in enumerate(candidates, start=1)
+                ]
+            )
+            self._evidence.add_many(
+                [
+                    KnowledgeComponentEvidence(
+                        assignment_id=assignment_id,
+                        problem_id=problem_id,
+                        kc_id=kc_id_of_group[item["group"]],
+                        position=item["position"],
+                        first_line=item["first_line"],
+                        last_line=item["last_line"],
+                    )
+                    for problem_id, items in generated.evidence.items()
+                    for item in items
                 ]
             )
             # Status do assignment e job na mesma transação, evita kc_draft com job marcado failed.

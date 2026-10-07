@@ -12,6 +12,7 @@ def _to_entity(row: sqlite3.Row) -> KnowledgeComponent:
         assignment_id=row["assignment_id"],
         name=row["name"],
         group_index=row["kc_index"],
+        generated_name=row["generated_name"],
     )
 
 
@@ -21,25 +22,27 @@ class SqliteKnowledgeComponentRepository:
 
     def add(self, knowledge_component: KnowledgeComponent) -> int:
         cur = self._conn.execute(
-            "INSERT INTO kc (assignment_id, name, kc_index) VALUES (?, ?, ?);",
+            "INSERT INTO kc (assignment_id, name, kc_index, generated_name) VALUES (?, ?, ?, ?);",
             (
                 knowledge_component.assignment_id,
                 knowledge_component.name,
                 knowledge_component.group_index,
+                knowledge_component.generated_name,
             ),
         )
         return cur.lastrowid
 
     def get(self, kc_id: int) -> KnowledgeComponent | None:
         row = self._conn.execute(
-            "SELECT id, assignment_id, name, kc_index FROM kc WHERE id = ? AND deleted_at IS NULL;",
+            "SELECT id, assignment_id, name, kc_index, generated_name FROM kc "
+            "WHERE id = ? AND deleted_at IS NULL;",
             (kc_id,),
         ).fetchone()
         return None if row is None else _to_entity(row)
 
     def list_by_assignment(self, assignment_id: int) -> list[KnowledgeComponent]:
         rows = self._conn.execute(
-            "SELECT id, assignment_id, name, kc_index FROM kc "
+            "SELECT id, assignment_id, name, kc_index, generated_name FROM kc "
             "WHERE assignment_id = ? AND deleted_at IS NULL ORDER BY id;",
             (assignment_id,),
         ).fetchall()

@@ -36,16 +36,22 @@ def assignment_id(tmp_db) -> int:
     return assignment_id
 
 
-def test_a_kc_round_trips_with_its_group_index(tmp_db, assignment_id):
+def test_a_kc_round_trips_with_its_group_index_and_generated_name(tmp_db, assignment_id):
     repository = SqliteKnowledgeComponentRepository(tmp_db)
-    generated = KnowledgeComponent(id=None, assignment_id=assignment_id, name="laços", group_index=7)
+    generated = KnowledgeComponent(
+        id=None, assignment_id=assignment_id, name="Laços", group_index=7, generated_name="loops"
+    )
     by_teacher = KnowledgeComponent(id=None, assignment_id=assignment_id, name="manual")
 
     generated.id = repository.add(generated)
     by_teacher.id = repository.add(by_teacher)
 
     assert repository.get(generated.id) == generated
-    assert repository.get(by_teacher.id).group_index is None  # KC do professor, sem grupo
+    # O KC do professor fica sem grupo e sem nome gerado
+    assert (repository.get(by_teacher.id).group_index, repository.get(by_teacher.id).generated_name) == (
+        None,
+        None,
+    )
     assert repository.list_by_assignment(assignment_id) == [generated, by_teacher]
 
 
@@ -126,3 +132,18 @@ def test_a_generation_job_moves_through_its_states(tmp_db, assignment_id):
     jobs.mark_failed(job_id, "problema 7 ficaria com 0 KCs")
     assert jobs.get(job_id).error_message == "problema 7 ficaria com 0 KCs"
     assert jobs.get(999) is None
+
+
+def test_renaming_a_concept_keeps_its_generated_name(tmp_db, assignment_id):
+    # O professor muda só o nome mostrado, e o nome gerado fica como registro do método
+    repository = SqliteKnowledgeComponentRepository(tmp_db)
+    kc_id = repository.add(
+        KnowledgeComponent(
+            id=None, assignment_id=assignment_id, name="Laço for", generated_name="for loop"
+        )
+    )
+
+    repository.rename(kc_id, "Laços")
+
+    renamed = repository.get(kc_id)
+    assert (renamed.name, renamed.generated_name) == ("Laços", "for loop")

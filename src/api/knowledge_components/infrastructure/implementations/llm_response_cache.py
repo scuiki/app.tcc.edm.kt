@@ -95,7 +95,7 @@ class CachedLLMClient:
     def __init__(self, llm: LLMClient, cache_dir: Path, stage: str) -> None:
         self._llm = llm
         self._cache_dir = cache_dir
-        self._stage = stage  # generate ou label, o mesmo prompt em etapas diferentes não colide
+        self._stage = stage  # generate, label, evidence ou translate, sem colisão entre as etapas
 
     def generate(
         self,

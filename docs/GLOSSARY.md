@@ -50,7 +50,7 @@ Todo `Protocol` da `api/` começa com `I` e fica numa pasta `interfaces/` (ver
 
 | Interface | Quem implementa | O que é | Nome antigo |
 |---|---|---|---|
-| `I<Entidade>Repository` (`IAssignmentRepository`, `IClassroomRepository`, `IProblemRepository`, `ISubmissionRepository`, `IKnowledgeComponentRepository`, `IKnowledgeComponentGenerationJobRepository`, `IProblemKnowledgeComponentRepository`, `ISampledSolutionRepository`, `ICandidateKnowledgeComponentRepository`, `ITrainingJobRepository`, `ITrainedModelRepository`, `ITrainingEpochMetricRepository`, `IStudentMasteryRepository`) | `Sqlite<Entidade>Repository` | Ler e gravar uma entidade | sem o `I` |
+| `I<Entidade>Repository` (`IAssignmentRepository`, `IClassroomRepository`, `IProblemRepository`, `ISubmissionRepository`, `IKnowledgeComponentRepository`, `IKnowledgeComponentGenerationJobRepository`, `IProblemKnowledgeComponentRepository`, `ISampledSolutionRepository`, `ICandidateKnowledgeComponentRepository`, `IKnowledgeComponentEvidenceRepository`, `ITrainingJobRepository`, `ITrainedModelRepository`, `ITrainingEpochMetricRepository`, `IStudentMasteryRepository`) | `Sqlite<Entidade>Repository` | Ler e gravar uma entidade | sem o `I` |
 | `IProgSnapUploadExtractor` | `ProgSnapZipExtractor` | Extrair o `.zip` enviado e achar as tabelas | `ProgSnapUploadExtractor` |
 | `IProgSnapTableReader` | `ProgSnapCsvReader` | Ler as tabelas ProgSnap2 do CSV | `ProgSnapTableReader` |
 | `IKnowledgeComponentGenerator` | `KcGenKtGenerator` | Gerar os KCs de um assignment | `KnowledgeComponentGenerator` |

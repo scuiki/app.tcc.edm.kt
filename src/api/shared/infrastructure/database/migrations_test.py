@@ -533,3 +533,61 @@ def test_the_candidate_table_refuses_what_makes_no_sense(tmp_path):
     ):
         with pytest.raises(sqlite3.IntegrityError):
             insert(problem_id, position, reasoning, concept)
+
+
+# 0020 sobre um banco em user_version=19, o nome gerado do conceito e a tabela dos trechos.
+def test_migration_0020_adds_the_generated_name_and_the_evidence(tmp_path):
+    conn = connect(str(tmp_path / "app.db"))
+    run_migrations(conn, migrations_dir=_migrations_up_to(tmp_path, 19))
+    assignment_id = _seed_assignment(conn)
+    conn.execute("INSERT INTO kc (assignment_id, name) VALUES (?, 'Laços');", (assignment_id,))
+
+    run_migrations(conn, migrations_dir=_migrations_up_to(tmp_path, 20))
+
+    assert _user_version(conn) == 20
+    # O conceito que já existia fica sem nome gerado
+    assert conn.execute("SELECT name, generated_name FROM kc;").fetchone()[:] == ("Laços", None)
+    columns = _column_names(conn, "kc_evidence")
+    assert {"problem_id", "kc_id", "position", "first_line", "last_line"} <= columns
+
+
+def test_the_evidence_table_refuses_what_makes_no_sense(tmp_path):
+    # Conceito repetido no problema, conceito ou solução que não existe e linha nula são recusados
+    conn = connect(str(tmp_path / "app.db"))
+    run_migrations(conn)
+    assignment_id = _seed_assignment(conn)
+    conn.execute("INSERT INTO problem (assignment_id, problem_id) VALUES (?, 1);", (assignment_id,))
+    submission_id = conn.execute(
+        "INSERT INTO submission (assignment_id, student_id, problem_id, code_snapshot_id, code, "
+        "submitted_at, event_type, is_correct) VALUES (?, 'S', 1, 'c', 'x', 't0', 'Run.Program', 1);",
+        (assignment_id,),
+    ).lastrowid
+    conn.execute(
+        "INSERT INTO sampled_solution (assignment_id, problem_id, position, submission_id) "
+        "VALUES (?, 1, 1, ?);",
+        (assignment_id, submission_id),
+    )
+    kcs = [
+        conn.execute(
+            "INSERT INTO kc (assignment_id, name) VALUES (?, ?);", (assignment_id, name)
+        ).lastrowid
+        for name in ("a", "b", "c", "d")
+    ]
+
+    def insert(kc_id, position=1, first_line=1, last_line=1):
+        conn.execute(
+            "INSERT INTO kc_evidence (assignment_id, problem_id, kc_id, position, first_line, "
+            "last_line) VALUES (?, 1, ?, ?, ?, ?);",
+            (assignment_id, kc_id, position, first_line, last_line),
+        )
+
+    insert(kcs[0], first_line=3, last_line=4)
+    for kwargs in (
+        {"kc_id": kcs[0]},
+        {"kc_id": 999_999},
+        {"kc_id": kcs[1], "position": 2},
+        {"kc_id": kcs[2], "first_line": None},
+        {"kc_id": kcs[3], "last_line": None},
+    ):
+        with pytest.raises(sqlite3.IntegrityError):
+            insert(**kwargs)

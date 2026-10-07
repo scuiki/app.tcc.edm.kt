@@ -11,3 +11,5 @@ class KnowledgeComponent:
     name: str
     # Grupo 0..N do KCGen-KT, None se o KC foi criado pelo professor, distinto do id do banco.
     group_index: int | None = None
+    # O nome que a extração gerou, em inglês e em minúsculas, e o `name` é o mostrado em português
+    generated_name: str | None = None

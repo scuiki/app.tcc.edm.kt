@@ -1,0 +1,13 @@
+You are an experienced computer science teacher and education expert. You are given the numbered sample solutions of a Java programming problem and the numbered knowledge components (KCs) that the problem requires. Your task is to point out where each KC appears in the solutions.
+
+Please follow these steps:
+1. For each KC, choose the sample solution that shows it most clearly.
+2. Copy from that solution the shortest snippet of one or more complete, consecutive lines that shows the KC, exactly as it is written, without changing, omitting or adding any character.
+3. If a KC does not appear in any of the solutions, use null for both the solution and the snippet.
+
+Your final response must strictly follow this JSON template, with one entry for each KC:
+{
+    "KC 1": {"solution": 2, "snippet": "Lines copied from sample solution 2"},
+    "KC 2": {"solution": 1, "snippet": "Lines copied from sample solution 1"},
+    ...
+}

@@ -140,7 +140,7 @@ repositório oficial, e o de nomeação é o da Tabela 10 do paper, mudados só 
 textos dos prompts, nas linhas 12, 13 e 22 do KCGen-KT no `DEVELOPMENT.md`). Eles fazem parte da
 chave do cache de respostas do LLM, e cada chamada gasta cota da assinatura, então qualquer mudança
 sobe o `PROMPT_VERSION`. Os prompts dos trechos e da tradução são do app, revisados pelo Leo antes
-de qualquer chamada real.
+do commit.
 
 **A chave do cache do LLM.** Ela inclui o modelo, a versão do prompt, o prompt de sistema e o
 schema, e não só o conteúdo, porque editar o sistema ou o schema devolveria em silêncio uma
@@ -214,6 +214,18 @@ cada KC, em inglês e em português, e o conceito em que caiu. O trecho aponta p
 amostrada. É o que a origem do conceito mostra e o que os testes de regressão da extração usam. A
 extração lê só as execuções corretas, por uma consulta própria (`list_correct_runs()`) que traz o id
 de cada execução, e o contrato de colunas do dado limpo, que o treino usa, fica como está.
+
+**O trecho é procurado na solução sem contar os espaços.** O LLM devolve o trecho como texto, e o
+app o procura na solução que ele apontou, com qualquer quantidade de espaço, tabulação ou quebra de
+linha onde o trecho tem espaço, e guarda a primeira e a última linha. O modelo às vezes muda o recuo
+ao copiar, e a linha é o que a tela destaca. Um trecho que não aparece na solução é descartado, e o
+conceito fica sem trecho naquele problema, sem repetir a chamada, porque o trecho é a justificativa
+do modelo e não parte do método.
+
+**A tradução é uma chamada só por exercício.** Os nomes finais e as justificativas dos KCs candidatos
+do exercício vão juntos, para que o mesmo termo saia igual em todos. Uma justificativa repetida vai
+uma vez só, e a tradução volta para todas as cópias. Os termos de Java ficam como estão, e o nome
+traduzido tem só a primeira letra maiúscula, fora o código.
 
 **O enunciado é opcional e vem de um arquivo do pacote.** O ProgSnap2 não traz enunciado, e o da
 CSEDM está numa planilha oficial à parte. O upload aceita um arquivo só, então o arquivo de
