@@ -103,9 +103,8 @@ leva cerca de 19 minutos na GPU, e falha só por erro de execução ou por AUC i
 ## Geração de KCs
 
 **O KCGen-KT segue Duan et al. (2026).** O método, as fontes e o porquê de cada escolha estão na
-seção KCGen-KT do `DEVELOPMENT.md`, que está sendo levada ao código pelo `KCGEN_KT_PLAN.md`. As
-entradas abaixo guardam as decisões de engenharia em volta do método e descrevem o que o plano leva
-ao código, e o código pode divergir delas até o plano terminar.
+seção KCGen-KT do `DEVELOPMENT.md`, que o `KCGEN_KT_PLAN.md` levou ao código. As entradas abaixo
+guardam as decisões de engenharia em volta do método.
 
 **Os problemas entram em ordem numérica.** A ordem em que os nomes de KC entram no agrupamento não
 muda os grupos, salvo empates nas distâncias, mas muda a numeração deles e o texto dos pedidos de
@@ -195,7 +194,7 @@ são cinco, `generate`, `cluster`, `qmatrix`, `evidence` e `translate`, e a tela
 cada um, porque um estágio que ela não conhece deixa o diálogo parado no primeiro até o fim.
 
 **A Q-matrix não inventa vínculos.** `build_qmatrix`, no `ml/`, bate célula a célula com a Q-matrix
-da extração de referência da CSEDM, no teste das partes sem LLM do KCGen-KT. Um problema sem KC fica
+da extração de referência do A439, na suíte padrão, sem modelos. Um problema sem KC fica
 com a linha zerada, e quem recusa isso é a validação da geração. Na aplicação, cada célula 1 vira um
 `ProblemKnowledgeComponent`.
 
@@ -226,6 +225,13 @@ do modelo e não parte do método.
 do exercício vão juntos, para que o mesmo termo saia igual em todos. Uma justificativa repetida vai
 uma vez só, e a tradução volta para todas as cópias. Os termos de Java ficam como estão, e o nome
 traduzido tem só a primeira letra maiúscula, fora o código.
+
+**A regressão do KCGen-KT fica no A439 e lê o cache gravado.** A extração de referência, feita em
+06/10/2026 numa turma nova da CSEDM, gravou em `tests/data/kc` as respostas do LLM e o que a
+extração produziu. A primeira camada refaz o sorteio pelo CodeBERT e o agrupamento pelo SBERT, e a
+segunda refaz a extração inteira com um LLM que falha em toda pergunta, então qualquer mudança no
+prompt, no modelo ou na versão do prompt faz faltar uma resposta e o teste falha. Os outros quatro
+exercícios saem pela aplicação, e o Leo decidiu em 07/10/2026 que a regressão fica só no A439.
 
 **O enunciado é opcional e vem de um arquivo do pacote.** O ProgSnap2 não traz enunciado, e o da
 CSEDM está numa planilha oficial à parte. O upload aceita um arquivo só, então o arquivo de

@@ -7,16 +7,16 @@ no TCC 1 (`../tcc.edm.kt`), que elegeu o Code-DKT como modelo base.
 
 O código vive em `src/`, em três partes:
 
-- `src/ml/` — a ciência: o Code-DKT, que segue Shi et al. (2022) pelas decisões de
-  [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md), e o KCGen-KT, portado do TCC 1 (commit `0e8807c`),
-  os dois blindados por testes de caracterização. Não conhece a aplicação.
+- `src/ml/` — a ciência: o Code-DKT, que segue Shi et al. (2022), e o KCGen-KT, que segue Duan et
+  al. (2026), os dois pelas decisões de [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) e blindados
+  por testes de regressão. Não conhece a aplicação.
 - `src/api/` — a aplicação FastAPI, organizada por funcionalidade, cada uma com as camadas
   `domain/`, `application/`, `infrastructure/` e `presentation/`.
 - `src/web/` — a SPA em React (Vite + TypeScript) que o professor usa no navegador.
 
 Os nomes estão em [`docs/GLOSSARY.md`](docs/GLOSSARY.md) e as camadas e a regra de dependência
 em [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md). Cada teste fica ao lado do arquivo que testa
-(`<arquivo>_test.py`); `tests/` guarda só o teste de regressão, a comparação com o paper, as
+(`<arquivo>_test.py`); `tests/` guarda só os testes de regressão, a comparação com o paper, as
 fixtures e os dados de exemplo.
 
 ## Reprodutibilidade científica
@@ -47,9 +47,9 @@ quando o `PYTHONHASHSEED` não é 0.
 
 ### Pré-requisito: `EDMKT_CSEDM_PATH`
 
-O teste de regressão lê o dataset CSEDM real a partir da variável de ambiente `EDMKT_CSEDM_PATH`,
-que aponta para o dataset provisionado em `datasets/CSEDM/` (ignorado pelo git, grande demais para
-ser versionado):
+Os testes de regressão leem o dataset CSEDM real a partir da variável de ambiente
+`EDMKT_CSEDM_PATH`, que aponta para o dataset provisionado em `datasets/CSEDM/` (ignorado pelo git,
+grande demais para ser versionado):
 
 ```
 $EDMKT_CSEDM_PATH/
@@ -58,8 +58,8 @@ $EDMKT_CSEDM_PATH/
 └── LinkTables/Subject.csv      # SubjectID -> X-Grade
 ```
 
-Quando `EDMKT_CSEDM_PATH` não está setada, o teste de regressão **pula com motivo claro** — a suíte
-rápida continua verde em máquinas sem o dataset (a suíte padrão não depende dele).
+Quando `EDMKT_CSEDM_PATH` não está setada, os testes de regressão **pulam com motivo claro** — a
+suíte rápida continua verde em máquinas sem o dataset (a suíte padrão não depende dele).
 
 ## Rodando os testes (somente via Docker — host limpo)
 
@@ -67,7 +67,7 @@ Todas as dependências de ML vivem **apenas** dentro da imagem `edmkt-core:dev` 
 nitro, nunca em venv de host). `--security-opt label=disable` é obrigatório em todo `docker run`
 para ler os bind mounts de `/srv` sem relabel SELinux.
 
-### Suite rápido (padrão — teste de regressão desmarcado, CPU)
+### Suite rápido (padrão — testes de regressão desmarcados, CPU)
 
 ```bash
 docker run --rm --security-opt label=disable -v "$PWD":/app -w /app \
@@ -81,10 +81,10 @@ docker run --rm --security-opt label=disable -v "$PWD":/app -w /app edmkt-core:d
   sh -c "pip install -q import-linter==2.15 && PYTHONPATH=/app/src lint-imports"
 ```
 
-O `addopts = -m 'not regression and not literature'` (em `pyproject.toml`) desmarca o teste de
+O `addopts = -m 'not regression and not literature'` (em `pyproject.toml`) desmarca os testes de
 regressão e a comparação com o paper por padrão.
 
-### Suite completo com o teste de regressão (GPU + dataset)
+### Teste de regressão do Code-DKT (GPU + dataset)
 
 ```bash
 docker run --rm --gpus all --security-opt label=disable \
@@ -99,6 +99,22 @@ de referência foi medida na GPU, então `torch.cuda.is_available()` tem de ser 
 sem GPU o teste falha. O comando roda também a conferência da partição do A439 contra o
 procedimento do repositório oficial (386 alunos, 78 no teste), que não treina. O `-s` mostra a
 média e o AUC de cada seed.
+
+### Teste de regressão do KCGen-KT (GPU + dataset)
+
+```bash
+docker run --rm --gpus all --security-opt label=disable \
+  -v "$PWD":/app -w /app \
+  -v "$PWD/datasets/CSEDM":/data/CSEDM:ro \
+  -e EDMKT_CSEDM_PATH=/data/CSEDM \
+  edmkt-core:dev python -m pytest tests/test_regression_kcgen_kt_a439.py -m regression -q
+```
+
+Compara com a extração de referência do A439, gravada em `tests/data/kc`, sem chamar o LLM. Refaz o
+sorteio das soluções pelo CodeBERT, o agrupamento dos nomes pelo SBERT e a extração inteira, lendo o
+cache gravado das respostas, com um LLM que falha em toda pergunta. Uma mudança no prompt, no modelo
+de linguagem ou em vetores que mudem o sorteio ou os grupos deixa o teste vermelho. Leva cerca de um
+minuto e meio na RTX 4050.
 
 ### Comparação com o paper (sob demanda, com a api parada)
 

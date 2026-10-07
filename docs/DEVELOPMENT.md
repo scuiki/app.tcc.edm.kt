@@ -514,7 +514,8 @@ para mostrar ao professor o domínio de cada aluno, e isso não está no paper.
 - **App.** As linhas do app citadas, marcadas como "do app", são do commit `855d69d`, de antes da
   implementação.
 - **TCC 1.** [scuiki/tcc.edm.kt](https://github.com/scuiki/tcc.edm.kt), commit `0e8807c`, com o
-  notebook `notebooks/03b_kc_generation.ipynb`, de onde o código do app foi portado, e a nota
+  notebook `notebooks/03b_kc_generation.ipynb`, de onde o código do app foi portado antes desta
+  revisão, e a nota
   `docs/refs/duan2025_automatedkc.md` sobre o paper. As células são contadas pela posição no
   arquivo, a partir do 0 e incluindo as de texto.
 - **O nome.** No paper, KCGen-KT nomeia o método de KT (§2.2) e às vezes o conjunto, como na legenda
@@ -704,7 +705,7 @@ cache vazio pode dar outros KCs.
 (Tabela 9, p. 33421 (PDF 17)), e o LLM devolve só os KCs. O TCC 1, sem enunciado, pedia ao LLM uma
 descrição de uma a duas frases deduzida das soluções e a recebia na resposta (notebook 03b, célula
 8). O app a grava e a mostra na lista de problemas da tela Conceitos, e o desenho da origem do
-conceito, ainda não implementado, também a prevê (`docs/DESIGN.md:208-210`). É uma etapa que o paper
+conceito, ainda não implementado, também a prevê (`docs/DESIGN.md:211-214`). É uma etapa que o paper
 não tem, e a adaptação do critério 4 não cria etapa nova. A descrição sai da resposta, da tela e do
 desenho.
 
@@ -1001,8 +1002,8 @@ prompt (linha 15). Com um anotador só, não há a medida de concordância que o
 
 ### O que o app acrescenta ao KCGen-KT
 
-- **A revisão pelo professor.** O ACL recomenda que especialistas revisem os KCs gerados antes do uso
-  real, "we recommend that automatically generated KCs be reviewed by domain experts before
+- **A revisão pelo professor.** O ACL recomenda que especialistas revisem os KCs gerados antes do
+  uso real, "we recommend that automatically generated KCs be reviewed by domain experts before
   deployment in real educational settings" (p. 33414 (PDF 10)), sem dizer como. No app, o exercício
   fica em rascunho até o professor aprovar os conceitos, e só a aprovação libera o treino
   (`approve_knowledge_components_use_case.py:49` e `start_training_use_case.py:41` do app). A v3 não
@@ -1016,33 +1017,40 @@ prompt (linha 15). Com um anotador só, não há a medida de concordância que o
   que o modelo escreve, e não a causa da extração, e a tela o mostra como o lugar onde o conceito
   aparece. A justificativa de uma frase que o prompt do Duan pede para cada KC, "a one-sentence
   reasoning explaining why this KC is necessary based on the provided solutions" (Tabela 9, p. 33421
-  (PDF 17)), também passa a ser guardada e mostrada. Decidido em 03/10/2026, a implementar. Na
-  validação de 04/10/2026, no problema 1 do A439, os 7 conceitos ganharam um trecho, e os 7 trechos
-  estavam nas soluções. No problema 232 do A439, com aspas em todas as soluções (`return "off";`),
-  a geração, os trechos e a tradução vieram em JSON válido, com as aspas escapadas, e os 11 trechos
-  estavam nas soluções.
+  (PDF 17)), também passa a ser guardada e mostrada. Decidido em 03/10/2026, implementado em
+  06/10/2026 no commit `b5278ac`. Na validação de 04/10/2026, no problema 1 do A439, os 7 conceitos
+  ganharam um trecho, e os 7 trechos estavam nas soluções. No problema 232 do A439, com aspas em
+  todas as soluções (`return "off";`), a geração, os trechos e a tradução vieram em JSON válido, com
+  as aspas escapadas, e os 11 trechos estavam nas soluções.
 - **Os nomes em português.** O método roda em inglês, como no paper, com os prompts do Duan e, no
   agrupamento, o SBERT `all-MiniLM-L6-v2` do repositório, que é um modelo de inglês. Depois da
-  nomeação, uma chamada ao mesmo modelo traduz para o português todos os nomes finais do exercício de
-  uma vez, para que o mesmo termo saia igual em todos os conceitos, e na mesma chamada as
+  nomeação, uma chamada ao mesmo modelo traduz para o português todos os nomes finais do exercício
+  de uma vez, para que o mesmo termo saia igual em todos os conceitos, e na mesma chamada as
   justificativas de cada KC que a origem do conceito mostra. O app guarda o nome em inglês, que é o
   resultado do método, e o nome em português, que a tela mostra e o professor pode renomear.
-  Decidido em 03/10/2026, a implementar. Na validação de 04/10/2026, a tradução de 7 nomes e 18
-  justificativas do problema 1 do A439 manteve os termos de Java, como em "Instrução return".
+  Decidido em 03/10/2026, implementado em 06/10/2026 no commit `b5278ac`. Na validação de
+  04/10/2026, a tradução de 7 nomes e 18 justificativas do problema 1 do A439 manteve os termos de
+  Java, como em "Instrução return".
 - **Os problemas sem conceito.** Um problema sem nenhuma execução correta não tem solução para o LLM
-  ler e fica sem conceito. O paper não trata, e o repositório e o TCC 1 o deixam de fora sem aviso. O
-  app também, porque a lista de problemas sai das execuções corretas (`kcgen_kt_generator.py:75-77` do
-  app) e a conferência só olha os problemas gerados (`knowledge_component_generator.py:24-32` do app).
-  Durante a disciplina, é o caso do problema que ninguém acertou ainda. A extração passa a gerar os
-  conceitos dos outros problemas e a listar para o professor os que ficaram sem conceito, com o
-  motivo. Decidido em 03/10/2026, a implementar.
+  ler e fica sem conceito. O paper não trata, e o repositório e o TCC 1 o deixam de fora sem aviso.
+  O app também, porque a lista de problemas sai das execuções corretas
+  (`kcgen_kt_generator.py:75-77` do app) e a conferência só olha os problemas gerados
+  (`knowledge_component_generator.py:24-32` do app). Durante a disciplina, é o caso do problema que
+  ninguém acertou ainda. A extração passa a gerar os conceitos dos outros problemas e a listar para
+  o professor os que ficaram sem conceito, com o motivo. Decidido em 03/10/2026. Desde o commit
+  `b5278ac` a extração segue sem eles, e a lista para o professor entra com a tela Conceitos.
 
 ### Estado
 
 | # | Estado |
 |---|---|
-| 1 e 4 a 29 | Decididas em 03/10/2026, a implementar pelo `KCGEN_KT_PLAN.md`, aprovado em 04/10/2026 |
-| 2 e 3 | Decididas em 03/10/2026, a implementar pelo `KCGEN_KT_PLAN.md`. Desde a etapa 1 do plano, o `microsoft/codebert-base`, na revisão `3b0952f`, está na imagem base. Medido em 04/10/2026 na GPU, o cálculo dos vetores das 3.821 execuções corretas do A439, em lotes de 32 soluções, levou 44,6 segundos, com pico de 1.069 MiB alocados pelo PyTorch (1.858 MiB reservados). Com o mesmo tamanho de lote, duas execuções deram os mesmos vetores, bit a bit, e lotes de 16 e de 32 diferem em até 3e-5 |
+| 1 e 4 a 8 | Decididas em 03/10/2026, implementadas em 04/10/2026 no commit `af49b24`. Na extração de referência, cada um dos 10 problemas do A439 deu 5 soluções de 5 alunos distintos, e a regressão do commit `653b1a2` refaz o sorteio |
+| 2 e 3 | Decididas em 03/10/2026. O `microsoft/codebert-base`, na revisão `3b0952f`, entrou na imagem base em 04/10/2026 no commit `7dfae7a`, e o vetor de cada solução no commit `af49b24`. Medido em 04/10/2026 na GPU, o cálculo dos vetores das 3.821 execuções corretas do A439, em lotes de 32 soluções, levou 44,6 segundos, com pico de 1.069 MiB alocados pelo PyTorch (1.858 MiB reservados). Com o mesmo tamanho de lote, duas execuções deram os mesmos vetores, bit a bit, e lotes de 16 e de 32 diferem em até 3e-5 |
+| 9 e 11 a 17 | Decididas em 03/10/2026, implementadas em 04/10/2026 no commit `c38eade`. O enunciado da linha 14 entra pela importação desde o commit `0aac582`, e na turma de referência os 50 problemas da CSEDM têm enunciado. A troca da descrição pelo enunciado na tela e no desenho, das linhas 11 e 14, fica com a tela Conceitos, como registra a seção 6 do `IMPLEMENTATION_PLAN.md` |
+| 10 e 18 | Decididas em 03/10/2026, sem mudança no código |
+| 19 a 26 | Decididas em 03/10/2026, implementadas em 04/10/2026 no commit `11aea49`. Na extração de referência do A439, os 51 nomes únicos deram 25 grupos e 25 conceitos, sem fusão por nome. O TCC 1 tinha 15 conceitos no A439 |
+| 27 e 28 | Decididas em 03/10/2026, implementadas em 07/10/2026 no commit `653b1a2`, só no A439, como o Leo decidiu em 07/10/2026. A extração de referência, de 06/10/2026, tem o cache das respostas e os artefatos em `tests/data/kc`, e o resumo em `docs/results/kcgen_kt_a439_reference_extraction.md` |
+| 29 | Decidida em 03/10/2026, a fazer pela etapa 9 do `KCGEN_KT_PLAN.md`, com a anotação do A439 pelo Leo |
 
 ## Referências
 

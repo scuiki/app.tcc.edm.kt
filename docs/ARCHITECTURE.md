@@ -6,9 +6,13 @@ terceira, `web/`, é a SPA em React, com o próprio `package.json`, e tem a sua 
 
 - **`ml/`**: a ciência (Code-DKT, KCGen-KT, AUC). É uma biblioteca, como o
   torch: não conhece HTTP, banco nem disco da aplicação, e **nunca importa de `api/`**. É o que o
-  teste de regressão e a comparação com o paper exercitam.
+  testes de regressão e a comparação com o paper exercitam.
 - **`api/`**: a aplicação. Organizada **por funcionalidade primeiro**, com as camadas de clean
   architecture dentro de cada uma.
+
+Os dois modelos de vetores do KCGen-KT, o CodeBERT das soluções e o SBERT dos nomes de KC, vêm na
+imagem base, baixados no build na revisão fixada do Hugging Face, e o app roda com o Hugging Face
+offline. Os testes e o app usam os mesmos arquivos.
 
 Os nomes seguem o [glossário](GLOSSARY.md).
 
@@ -18,9 +22,9 @@ Os nomes seguem o [glossário](GLOSSARY.md).
 |---|---|
 | `api/classrooms/` | `Classroom`, a turma do professor, o CRUD dela e o `ClassroomStatus` |
 | `api/assignments/` | `Assignment` e o ciclo de `AssignmentStatus`. O assignment pertence a uma turma, e todas as outras funcionalidades dependem dele |
-| `api/assignments/problems/` | `Problem`, os problemas de cada assignment e a descrição que o LLM deduz. É uma sub-funcionalidade de `assignments`, com camadas próprias |
-| `api/classroom_import/` | Upload do ProgSnap2, validação, limpeza, checagem de treinabilidade |
-| `api/knowledge_components/` | Gerar KCs com o LLM, editar os KCs de cada problema e aprová-los |
+| `api/assignments/problems/` | `Problem`, os problemas de cada assignment e o enunciado de cada um, quando o pacote traz o arquivo de enunciados. A descrição que o LLM deduzia só existe nas turmas extraídas antes do KCGen-KT novo. É uma sub-funcionalidade de `assignments`, com camadas próprias |
+| `api/classroom_import/` | Upload do ProgSnap2, validação, limpeza, checagem de treinabilidade e o arquivo opcional de enunciados |
+| `api/knowledge_components/` | Gerar os conceitos pelo KCGen-KT, gravando as soluções amostradas (`sampled_solution`), os KCs candidatos (`candidate_kc`) e os trechos de cada conceito (`kc_evidence`), editar os conceitos de cada problema e aprová-los |
 | `api/model_training/` | Disparar e acompanhar o treino do Code-DKT, guardar os modelos |
 | `api/mastery_dashboard/` | O que aconteceu nas execuções e o que o modelo prevê, por problema, conceito e aluno |
 | `api/shared/` | O que todas usam: erros, base de use case, banco, trava, settings |
@@ -181,16 +185,21 @@ start_training_use_case_test.py
   camada e o domínio. Quando precisa da infraestrutura real (SQLite, disco), quem a monta é uma
   fixture em `tests/fixtures/<funcionalidade>.py`, que fica fora de `api/` e é registrada no
   `conftest.py` da raiz. Assim o `import-linter` vale para o teste como vale para o código.
-- Em `tests/` ficam só o teste de regressão do Code-DKT no A439 (o sistema
+- Em `tests/` ficam só os testes de regressão do Code-DKT e do KCGen-KT no A439 (o sistema
   inteiro, com GPU e o CSEDM real), a comparação com as Tabelas 1 e 2 de Shi et al. (2022), os
   dados de exemplo em `tests/data/` e as fixtures de `tests/fixtures/`. A comparação tem o marcador
   `literature`, fica fora da suíte padrão como o marcador `regression` e grava o AUC de cada seed em
-  `docs/results/code_dkt_literature_comparison.json`. As duas leem a CSEDM real pela fixture de
-  `tests/fixtures/csedm.py`.
-- A regressão roda as dez seeds e confere a média do first-attempt AUC com tolerância de ±0,1 ponto
-  em torno da média de referência, medida pelo próprio app. Ela detecta que o código, as
+  `docs/results/code_dkt_literature_comparison.json`. A regressão do Code-DKT e a comparação leem a
+  CSEDM real pela fixture `csedm_main_table`, e a regressão do KCGen-KT a lê pelo leitor e pela
+  limpeza da importação, a partir do `resolve_csedm_path()` da mesma `tests/fixtures/csedm.py`.
+- A regressão do Code-DKT roda as dez seeds e confere a média do first-attempt AUC com tolerância de
+  ±0,1 ponto em torno da média de referência, medida pelo próprio app. Ela detecta que o código, as
   dependências ou o ambiente mudaram o comportamento do Code-DKT, e não compara o app com o TCC 1
   nem com o paper. Falha sem GPU, porque a média de referência foi medida nela.
+- A regressão do KCGen-KT (`tests/test_regression_kcgen_kt_a439.py`) compara com a extração de
+  referência gravada em `tests/data/kc`. Ela refaz o sorteio das soluções e o agrupamento dos nomes
+  e, lendo o cache gravado com um LLM que falha em toda pergunta, a extração inteira. Leva cerca de
+  um minuto e meio na GPU, e o comando está no `README.md`.
 - Tudo roda no container, nunca no host. A imagem fixa o `PYTHONHASHSEED=0`, e o guarda de
   `ast_paths_test.py` e o da fixture da CSEDM falham, sem pular, num processo com outro valor.
 

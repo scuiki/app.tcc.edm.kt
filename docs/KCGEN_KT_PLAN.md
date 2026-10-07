@@ -273,6 +273,6 @@ Cada etapa é um commit, com uma revisão independente do diff contra as decisõ
 | 5 | Concluída, commit `11aea49` |
 | 6 | Concluída, commit `b5278ac`. Os dois prompts foram aprovados pelo Leo em 06/10/2026, e ele autorizou as chamadas de validação antes disso, em 04/10/2026 |
 | 7 | Concluída em 06/10/2026, só com o A439, commits `dbe8fad` e `4edcb3e` (resultado e trechos) |
-| 8 | Concluída |
-| 9 | A fazer |
-| 10 | A fazer |
+| 8 | Concluída, commit `653b1a2` |
+| 9 | A fazer, com a anotação do A439 pelo Leo |
+| 10 | Concluída |

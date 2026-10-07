@@ -89,7 +89,8 @@ Os estágios do `KnowledgeComponentGenerationJob` são `generate`, `cluster`, `q
 `progress_done` e `progress_total`, quantos itens já terminaram, de quantos (problemas no `generate`
 e no `evidence`, grupos na nomeação do `cluster`). Os dois ficam vazios quando o estágio não tem
 itens para contar. O job guarda também o modelo de linguagem (`model_id`) e a versão do prompt
-(`prompt_version`) da extração.
+(`prompt_version`) da extração, gravados pelo `record_generation_model()` no fim dela. Uma chamada
+à CLI espera até `CALL_TIMEOUT_S`, 300 segundos.
 
 ## Dashboard
 
@@ -179,6 +180,7 @@ modelo, exceto o domínio médio dos exercícios treinados.
 | `TRAINED_MODEL_FORMAT_VERSION` | A versão do formato do artefato de um `TrainedModel`, gravada como `format_version` no `config.json` | — |
 | `IncompatibleTrainedModelError` | O erro de quando um artefato não tem a `format_version` atual. Vira 409 | — |
 | marcador `regression` | O teste que treina o A439 com as dez seeds e confere a média da primeira tentativa em ±0,1 ponto em torno de 0,7278, `tests/test_regression_a439.py`, fora da suíte padrão. O mesmo marcador separa os testes do KCGen-KT que carregam os modelos de vetores ou a extração de referência da CSEDM | — |
+| extração de referência | A extração do A439 da CSEDM, feita em 06/10/2026 numa turma própria, cujas respostas do LLM e cujo resultado ficam em `tests/data/kc` para os testes de regressão do KCGen-KT | — |
 | tolerância do teste de regressão (`TOLERANCE`) | O quanto a média do first-attempt AUC das dez seeds pode se afastar da média de referência, ±0,001 (±0,1 ponto). A média de referência (`REGRESSION_CENTER`) é 0,7278, a que o app mediu no A439 em 02/10/2026, e fora da tolerância o teste de regressão falha | — |
 | marcador `literature` | O teste que compara o app com as Tabelas 1 e 2 de Shi et al. (2022), `tests/test_literature_comparison.py`, fora da suíte padrão | — |
 | `java_parse_rate` | A fração dos snapshots que o javalang conseguiu parsear | `parse_rate` |
@@ -207,12 +209,12 @@ modelo, exceto o domínio médio dos exercícios treinados.
 | Etapa | Nome no código | O que faz | Nome antigo |
 |---|---|---|---|
 | 1 | `embed_solutions()` + `select_sample_solutions()` | Calcula os vetores do CodeBERT das execuções corretas de cada problema, na GPU, e escolhe até 5 soluções, uma por grupo | `diversity_sample` |
-| 2 | `generate_candidate_kcs()` | Pede ao LLM os KCs que cada problema exige, com o prompt de Duan et al. (2026), com ou sem o enunciado | `generate_kcs_for_problem` |
+| 2 | `generate_candidate_kcs()` | Pede ao LLM os KCs que cada problema exige, com o prompt de Duan et al. (2026), com ou sem o enunciado. `parse_candidate_kcs()` lê e valida a resposta, e as execuções corretas chegam pelas colunas `CORRECT_RUN_COLUMNS` | `generate_kcs_for_problem` |
 | 3 | `embed_kc_names()` + `kc_group_count()` + `group_similar_kcs()` | Calcula os vetores do SBERT dos nomes de KC, o número de grupos pela proporção do nível médio do paper (`MEDIUM_ABSTRACTION_RATIO`, 50/103) e agrupa os nomes de KC parecidos (SBERT + clustering hierárquico) | `choose_kc_group_count` (silhouette), `select_best_n_clusters`, `_cluster_with_n` |
-| 4 | `name_kc_group()` | Pede ao LLM o nome de cada grupo com mais de um KC, pela Tabela 10 do paper. O grupo de um KC só fica com o nome dele, e os grupos de mesmo nome viram um conceito só | `label_cluster` |
+| 4 | `name_kc_group()` | Pede ao LLM o nome de cada grupo com mais de um KC, pela Tabela 10 do paper, e `parse_group_name()` lê e valida a resposta. O grupo de um KC só fica com o nome dele, e os grupos de mesmo nome viram um conceito só | `label_cluster` |
 | 5 | `build_qmatrix()` | Monta a Q-matrix problema × KC | `build_qmatrix` |
-| 6 | `locate_kc_evidence()` | Pede ao LLM, por problema, onde cada conceito aparece nas soluções amostradas | — |
-| 7 | `translate_kc_texts()` | Pede ao LLM o português dos nomes e das justificativas do exercício, numa chamada só | — |
+| 6 | `locate_kc_evidence()` | Pede ao LLM, por problema, onde cada conceito aparece nas soluções amostradas. `parse_kc_evidence()` lê e valida a resposta, e `find_snippet_lines()` acha as linhas do trecho na solução | — |
+| 7 | `translate_kc_texts()` | Pede ao LLM o português dos nomes e das justificativas do exercício, numa chamada só, e `parse_translations()` lê e valida a resposta | — |
 | — | `CachedLLMClient` | O LLM com o cache das respostas, guardadas por hash, para não pagar duas vezes. Uma resposta só entra no cache depois de validada | `LLMResponseCache`, `kc_cache` |
 | — | `LLMClient` | A interface do LLM que o `ml/` declara e a `api/` implementa | `ports.LLMClient` |
 | — | `InvalidLLMResponseError` | Uma resposta do LLM vazia, que não é JSON ou fora do formato pedido. É pedida até 3 vezes ao todo, como o erro transitório | `EmptyContentError` |

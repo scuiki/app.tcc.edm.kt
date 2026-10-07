@@ -14,7 +14,8 @@ services:
       context: .
       dockerfile: deploy/Dockerfile.app
     image: edmkt-app:dev
-    # GPU for SBERT (KC-gen) — NVIDIA Container Toolkit is installed on nitro.
+    # GPU for the Code-DKT training and the KCGen-KT embeddings (CodeBERT and SBERT); the NVIDIA
+    # Container Toolkit is installed on nitro.
     deploy:
       resources:
         reservations:

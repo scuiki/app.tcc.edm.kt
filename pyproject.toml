@@ -50,7 +50,7 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 # Testes ficam ao lado do arquivo testado (<arquivo>_test.py, docs/ARCHITECTURE.md); tests/ guarda
-# só o teste de regressão, a comparação com o paper, as fixtures e os dados de exemplo.
+# só os testes de regressão, a comparação com o paper, as fixtures e os dados de exemplo.
 testpaths = ["src", "tests"]
 python_files = ["*_test.py", "test_*.py"]
 pythonpath = ["src", "."]  # "." para tests.fixtures (ver tests/fixtures/__init__.py)
