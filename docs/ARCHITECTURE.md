@@ -132,8 +132,9 @@ apagada.
 
 Remover é sempre soft delete: a linha fica, com a data da remoção em `deleted_at`, e só os
 repositórios sabem disso. Toda leitura de um repositório devolve só as linhas ativas
-(`deleted_at IS NULL`), então nenhum use case precisa lembrar do filtro. Hoje vale para `kc` e
-`problem_kc`; uma tabela nova que ganhe remoção segue a mesma regra.
+(`deleted_at IS NULL`), então nenhum use case precisa lembrar do filtro. Hoje vale para
+`classroom`, `assignment`, `kc` e `problem_kc`; uma tabela nova que ganhe remoção segue a mesma
+regra.
 
 ## Nomes
 
