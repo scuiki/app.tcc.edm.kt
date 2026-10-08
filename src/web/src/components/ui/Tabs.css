@@ -1,9 +1,37 @@
+/* A faixa das abas, com o rótulo à esquerda, a lista no meio e as ações à direita */
 .tabs {
   display: flex;
-  gap: 2px;
+  align-items: flex-end;
+  gap: 8px;
   padding: 8px 12px 0;
   border-bottom: 1px solid var(--color-rule);
   background: var(--color-surface);
+}
+
+.tabs__list {
+  display: flex;
+  gap: 2px;
+  min-width: 0;
+}
+
+/* Mais leve que uma aba e separado dela por um fio */
+.tabs__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  align-self: center;
+  height: 20px;
+  margin: 0 6px 6px 0;
+  padding-right: 12px;
+  border-right: 1px solid var(--color-rule);
+  font-size: 12px;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.tabs__label svg {
+  flex-shrink: 0;
 }
 
 .tabs__tab {
@@ -19,6 +47,7 @@
   font-family: var(--font-sans);
   font-size: 13px;
   color: var(--color-text-secondary);
+  white-space: nowrap;
   cursor: pointer;
 }
 
@@ -34,4 +63,12 @@
   color: var(--color-text);
   border-bottom-color: var(--color-text);
   font-weight: 600;
+}
+
+.tabs__actions {
+  display: inline-flex;
+  gap: 8px;
+  align-self: center;
+  margin-bottom: 6px;
+  margin-left: auto;
 }

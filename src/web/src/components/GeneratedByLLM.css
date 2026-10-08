@@ -1,0 +1,36 @@
+.generated-by-llm {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: 50%;
+  color: var(--color-model-strong);
+  background: var(--color-model-soft);
+  vertical-align: middle;
+}
+
+/* No fim do texto, como depois do nome do conceito */
+.generated-by-llm--text {
+  width: 20px;
+  height: 20px;
+  margin-left: 6px;
+}
+
+.generated-by-llm--title {
+  width: 24px;
+  height: 24px;
+  margin-left: 8px;
+}
+
+/* Antes do rótulo de seção o espaço fica do lado do texto, à direita */
+.generated-by-llm--label {
+  width: 18px;
+  height: 18px;
+  margin-right: 4px;
+}
+
+.generated-by-llm--tab {
+  width: 16px;
+  height: 16px;
+  margin-left: 1px;
+}

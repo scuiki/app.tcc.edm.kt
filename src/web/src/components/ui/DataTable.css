@@ -14,6 +14,11 @@
   color: var(--color-text);
 }
 
+/* As colunas tomam a largura do colgroup, e o texto longo quebra dentro dela */
+.data-table--fixed {
+  table-layout: fixed;
+}
+
 .data-table th {
   height: var(--table-row-height);
   padding: 0 8px;
@@ -48,6 +53,21 @@
   background: var(--color-surface-subtle);
 }
 
+/* A primeira coluna presa cobre com o fundo do cartão as colunas que rolam por baixo dela */
+.data-table--sticky th:first-child,
+.data-table--sticky td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background: var(--color-surface);
+}
+
+/* O único fio vertical, e só quando há coluna rolada por baixo da presa */
+.data-table__scroll.is-scrolled .data-table--sticky th:first-child,
+.data-table__scroll.is-scrolled .data-table--sticky td:first-child {
+  box-shadow: inset -1px 0 0 var(--color-rule);
+}
+
 /* O marcador, o rótulo e a dica de um cabeçalho, centrados como os números abaixo deles */
 .data-table__th {
   display: inline-flex;
@@ -70,6 +90,12 @@
   white-space: nowrap;
 }
 
+/* Sem o teto, o rótulo vai até a largura da célula e só então corta */
+.data-table__label--fill {
+  display: block;
+  max-width: none;
+}
+
 .data-table__name {
   font-weight: 700;
   white-space: nowrap;
@@ -89,6 +115,26 @@
 .data-table__missing {
   font-size: 12.5px;
   color: var(--color-text-disabled);
+}
+
+/* A célula de texto longo, como o enunciado, quebra linha e sai da altura de 32px */
+.data-table td.data-table__wrap {
+  padding-top: 7px;
+  padding-bottom: 7px;
+  white-space: normal;
+  overflow-wrap: break-word;
+  line-height: 1.45;
+  color: var(--color-text-body);
+}
+
+/* O texto longo fica à esquerda, como o nome */
+.data-table th.data-table__left,
+.data-table td.data-table__left {
+  text-align: left;
+}
+
+.data-table th.data-table__left .data-table__th {
+  justify-content: flex-start;
 }
 
 /* A coluna de botões é a única à direita */

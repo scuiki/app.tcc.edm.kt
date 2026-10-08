@@ -13,7 +13,20 @@
   text-align: left;
   text-transform: none;
   letter-spacing: normal;
-  white-space: normal;
+  white-space: pre-line;
   transform: translateX(-50%);
   pointer-events: none;
+}
+
+/* O largo toma a largura do texto até 360px mesmo perto da borda direita da janela */
+.tooltip--wide {
+  width: max-content;
+  max-width: 360px;
+  overflow-wrap: break-word;
+}
+
+.tooltip__title {
+  display: block;
+  margin-bottom: 2px;
+  font-weight: 600;
 }
