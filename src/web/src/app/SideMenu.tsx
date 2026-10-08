@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState, type MouseEvent } from 'react'
 import {
+  Blocks,
   ChartColumn,
   ClipboardPen,
-  Database,
-  Layers,
   Minus,
   Plus,
+  Upload,
   Users,
   type LucideIcon,
 } from 'lucide-react'
@@ -13,6 +13,7 @@ import {
 import {
   ASSIGNMENT_STATUS_LABEL,
   useAssignments,
+  type AssignmentStatus,
   type AssignmentSummary,
 } from '../features/assignments/api/useAssignments'
 import { useClassrooms, type ClassroomSummary } from '../features/classrooms/api/classrooms'
@@ -27,6 +28,23 @@ interface SideMenuProps {
 }
 
 const STORAGE_KEY = 'edmkt.menu.expanded'
+
+// O pronto para conceitos e o rascunho dividem o ponto vazio, e quem não treina fica sem ponto
+type StatusDot = 'awaiting' | 'kc_approved' | 'trained'
+
+const STATUS_DOT: Record<AssignmentStatus, StatusDot | undefined> = {
+  statistics_only: undefined,
+  ready_for_kc_generation: 'awaiting',
+  kc_draft: 'awaiting',
+  kc_approved: 'kc_approved',
+  trained: 'trained',
+}
+
+const STATUS_DOT_LABEL: Record<StatusDot, string> = {
+  awaiting: 'Aguardando conceitos',
+  kc_approved: ASSIGNMENT_STATUS_LABEL.kc_approved,
+  trained: ASSIGNMENT_STATUS_LABEL.trained,
+}
 const CLASSROOMS_KEY = 'classrooms'
 
 // Os nós abertos ficam no navegador; o caminho da rota atual abre sempre
@@ -50,7 +68,7 @@ function writeExpanded(keys: string[]) {
 const classroomKey = (classroomId: number) => `classroom:${classroomId}`
 const assignmentKey = (assignmentId: number) => `assignment:${assignmentId}`
 
-// O menu lista o que existe, turma › exercício › tela, alinhado e com o mais e o menos na ponta
+// O menu lista o que existe, turma › exercício › tela, recuado e com o mais e o menos na ponta
 export function SideMenu({ path, params }: SideMenuProps) {
   // Só uma tela de exercício abre o caminho até ela, para a linha atual aparecer marcada
   const [expanded, setExpanded] = useState<string[]>(() => {
@@ -94,7 +112,7 @@ export function SideMenu({ path, params }: SideMenuProps) {
       <MenuRow
         href={classroomImportPath()}
         label="Importar dados"
-        icon={Database}
+        icon={Upload}
         level="main"
         isCurrent={path === classroomImportPath()}
       />
@@ -200,6 +218,7 @@ interface AssignmentRowProps {
 function AssignmentRow({ classroomId, assignment, path, isOpen, onToggle }: AssignmentRowProps) {
   const concepts = assignmentPath(classroomId, assignment.id, 'knowledge-components')
   const analysis = assignmentPath(classroomId, assignment.id, 'analysis')
+  const dot = assignment.status ? STATUS_DOT[assignment.status] : undefined
   return (
     <>
       <MenuRow
@@ -208,15 +227,15 @@ function AssignmentRow({ classroomId, assignment, path, isOpen, onToggle }: Assi
         level="assignment"
         isOpen={isOpen}
         onToggle={onToggle}
-        status={assignment.status ? ASSIGNMENT_STATUS_LABEL[assignment.status] : undefined}
-        statusKey={assignment.status ?? undefined}
+        status={dot ? STATUS_DOT_LABEL[dot] : undefined}
+        statusKey={dot}
       />
       {isOpen ? (
         <>
           <MenuRow
             href={concepts}
             label="Conceitos"
-            icon={Layers}
+            icon={Blocks}
             level="screen"
             isCurrent={path === concepts}
           />
@@ -247,7 +266,7 @@ interface MenuRowProps {
   statusKey?: string
 }
 
-// Uma linha do menu é um controle só, com o mais ou o menos dentro; entre os níveis muda só o peso
+// Uma linha do menu é um controle só, com o mais ou o menos dentro, e cada nível tem o seu recuo
 function MenuRow({
   label,
   level,

@@ -41,6 +41,20 @@ const ASSIGNMENTS: Record<number, AssignmentSummary[]> = {
       status: 'kc_approved',
       published_model_id: null,
     },
+    {
+      id: 3,
+      progsnap_assignment_id: 492,
+      name: 'Assignment 492',
+      status: 'kc_draft',
+      published_model_id: null,
+    },
+    {
+      id: 4,
+      progsnap_assignment_id: 494,
+      name: 'Assignment 494',
+      status: 'statistics_only',
+      published_model_id: null,
+    },
   ],
   7: [],
 }
@@ -110,6 +124,27 @@ describe('SideMenu', () => {
       'aria-expanded',
       'true',
     )
+  })
+
+  it('marks each exercise with its status dot, and the one that never trains with none', async () => {
+    fakeApi()
+    renderWithClient(
+      <SideMenu
+        path="/classrooms/1/assignments/1/analysis"
+        params={{ classroomId: 1, assignmentId: 1 }}
+      />,
+    )
+
+    const row = async (name: string) => (await screen.findByText(name)).closest('button')!
+    expect(within(await row('Assignment 439')).getByLabelText('Treinado')).toBeInTheDocument()
+    expect(
+      within(await row('Assignment 487')).getByLabelText('Conceitos aprovados'),
+    ).toBeInTheDocument()
+    // O rascunho divide com o pronto para conceitos o ponto vazio
+    expect(
+      within(await row('Assignment 492')).getByLabelText('Aguardando conceitos'),
+    ).toBeInTheDocument()
+    expect(within(await row('Assignment 494')).queryByRole('img')).not.toBeInTheDocument()
   })
 
   it('says when an open classroom has no exercises', async () => {

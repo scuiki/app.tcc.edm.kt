@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ChevronRight, Layers } from 'lucide-react'
+import { Blocks, ChevronRight } from 'lucide-react'
 
 import { Histogram } from '../../../components/ui/Histogram'
 import { InfoHint } from '../../../components/ui/InfoHint'
@@ -179,7 +179,7 @@ export function ProblemsTable({ problems, withModel }: ProblemsTableProps) {
                               role="img"
                               aria-label="Conceitos"
                             >
-                              <Layers size={14} aria-hidden="true" />
+                              <Blocks size={14} aria-hidden="true" />
                             </span>
                           </Tooltip>
                         }

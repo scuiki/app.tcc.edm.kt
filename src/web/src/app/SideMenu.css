@@ -84,12 +84,10 @@
   height: 100%;
   margin-right: -8px;
   color: var(--color-text-muted);
-  stroke-width: 2;
 }
 
 .side-menu__item:hover .side-menu__sign {
   color: var(--color-text);
-  stroke-width: 3;
 }
 
 /* A situação do exercício num ponto, vazio, meio preenchido ou azul do modelo, sem cor de alerta */
@@ -98,12 +96,15 @@
   height: 8px;
   flex-shrink: 0;
   border-radius: 50%;
-  border: 1.5px solid var(--color-control-border);
+  border: 1.5px solid var(--color-text);
   background: transparent;
 }
 
+.side-menu__dot--awaiting {
+  border-color: var(--color-control-border);
+}
+
 .side-menu__dot--kc_approved {
-  border-color: var(--color-text);
   background: linear-gradient(90deg, var(--color-text) 50%, transparent 50%);
 }
 

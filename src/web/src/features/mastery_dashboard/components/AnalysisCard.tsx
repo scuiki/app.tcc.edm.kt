@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ClipboardList, Layers, Users } from 'lucide-react'
+import { Blocks, FileCode, Users } from 'lucide-react'
 
 import { EmptyState, QueryStates } from '../../../components/states/states'
 import { Card } from '../../../components/ui/Card'
@@ -20,8 +20,8 @@ import { StudentsTable } from './StudentsTable'
 import './AnalysisTable.css'
 
 const TABS: TabItem<AnalysisTab>[] = [
-  { key: 'problems', label: 'Problemas', icon: ClipboardList },
-  { key: 'concepts', label: 'Conceitos', icon: Layers },
+  { key: 'problems', label: 'Problemas', icon: FileCode },
+  { key: 'concepts', label: 'Conceitos', icon: Blocks },
   { key: 'students', label: 'Alunos', icon: Users },
 ]
 
