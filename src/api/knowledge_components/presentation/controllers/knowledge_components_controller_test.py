@@ -117,28 +117,6 @@ def test_rename_kc_updates_name(api_client, monkeypatch):
     assert SqliteKnowledgeComponentRepository(conn).get(kc_id).name == "nome novo"
 
 
-def test_merge_unions_bindings(api_client):
-    client, conn = api_client
-    aid = add_assignment(conn, add_classroom(conn), status="kc_draft")
-    keep = _seed_kc(conn, aid, "keep")
-    drop = _seed_kc(conn, aid, "drop")
-    _bind(conn, aid, keep, problem_id=1)
-    _bind(conn, aid, drop, problem_id=2)  # binding distinto migra para keep
-
-    resp = client.post("/knowledge-components/merge", json={"assignment_id": aid, "keep_kc_id": keep, "drop_kc_id": drop})
-    assert resp.status_code == 200
-
-    # União, keep agora cobre os problemas 1 e 2; drop sumiu.
-    problems = {
-        r["problem_id"]
-        for r in conn.execute(
-            "SELECT problem_id FROM problem_kc WHERE kc_id=?;", (keep,)
-        ).fetchall()
-    }
-    assert problems == {1, 2}
-    assert SqliteKnowledgeComponentRepository(conn).get(drop) is None
-
-
 def test_remove_that_empties_a_problem_is_blocked(api_client):
     # remover o único KC de um problema o deixaria com 0 KCs → BLOQUEADO + ROLLBACK.
     client, conn = api_client
@@ -152,57 +130,6 @@ def test_remove_that_empties_a_problem_is_blocked(api_client):
     # ROLLBACK, o KC e seu binding continuam intactos.
     assert SqliteKnowledgeComponentRepository(conn).get(only_kc) is not None
     assert conn.execute("SELECT COUNT(*) FROM problem_kc WHERE kc_id=?;", (only_kc,)).fetchone()[0] == 1
-
-
-def test_merge_rejects_cross_assignment_kc(api_client):
-    # kc_drop pertence a OUTRO assignment → merge rejeitado (sem delete cross-assignment).
-    client, conn = api_client
-    aid_a = add_assignment(conn, add_classroom(conn), status="kc_draft")
-    aid_b = add_assignment(conn, add_classroom(conn), status="kc_draft")
-    keep = _seed_kc(conn, aid_a, "keep")
-    _bind(conn, aid_a, keep, problem_id=1)
-    # KC de OUTRO assignment, não pode ser tocado por um merge sobre aid_a.
-    foreign = _seed_kc(conn, aid_b, "foreign")
-    _bind(conn, aid_b, foreign, problem_id=1)
-
-    resp = client.post(
-        "/knowledge-components/merge", json={"assignment_id": aid_a, "keep_kc_id": keep, "drop_kc_id": foreign}
-    )
-    assert resp.status_code in (403, 409)
-
-    # O KC alheio (e seu binding) seguem intactos, nenhuma FK pendurada.
-    assert SqliteKnowledgeComponentRepository(conn).get(foreign) is not None
-    assert (
-        conn.execute("SELECT COUNT(*) FROM problem_kc WHERE kc_id=?;", (foreign,)).fetchone()[0] == 1
-    )
-
-
-def test_merge_rejects_keep_from_other_assignment(api_client):
-    # keep_kc_id alheio também é rejeitado (qualquer um dos dois fora do assignment falha).
-    client, conn = api_client
-    aid_a = add_assignment(conn, add_classroom(conn), status="kc_draft")
-    aid_b = add_assignment(conn, add_classroom(conn), status="kc_draft")
-    drop = _seed_kc(conn, aid_a, "drop")
-    _bind(conn, aid_a, drop, problem_id=1)
-    foreign_keep = _seed_kc(conn, aid_b, "foreign-keep")
-
-    resp = client.post(
-        "/knowledge-components/merge", json={"assignment_id": aid_a, "keep_kc_id": foreign_keep, "drop_kc_id": drop}
-    )
-    assert resp.status_code in (403, 409)
-    assert SqliteKnowledgeComponentRepository(conn).get(drop) is not None  # nada deletado
-
-
-def test_merge_self_merge_rejected(api_client):
-    # mesclar um KC consigo mesmo é uma operação sem sentido → 409 claro.
-    client, conn = api_client
-    aid = add_assignment(conn, add_classroom(conn), status="kc_draft")
-    kc_id = _seed_kc(conn, aid, "x")
-    _bind(conn, aid, kc_id, problem_id=1)
-
-    resp = client.post("/knowledge-components/merge", json={"assignment_id": aid, "keep_kc_id": kc_id, "drop_kc_id": kc_id})
-    assert resp.status_code == 409
-    assert SqliteKnowledgeComponentRepository(conn).get(kc_id) is not None  # não se autodeletou
 
 
 # --- aprovação dos KCs pelo professor ---

@@ -15,7 +15,6 @@ import {
 } from '../knowledgeComponents'
 import { AddKnowledgeComponentDialog } from './AddKnowledgeComponentDialog'
 import { KnowledgeComponentsCard } from './KnowledgeComponentsCard'
-import { MergeKnowledgeComponentsDialog } from './MergeKnowledgeComponentsDialog'
 import { ProblemsCard } from './ProblemsCard'
 import { RemoveKnowledgeComponentDialog } from './RemoveKnowledgeComponentDialog'
 import { RenameKnowledgeComponentDialog } from './RenameKnowledgeComponentDialog'
@@ -26,7 +25,7 @@ import './KnowledgeComponentEditor.css'
 type EditorDialog =
   | { kind: 'closed' }
   | { kind: 'add'; problemId: number }
-  | { kind: 'rename' | 'merge' | 'remove'; kcId: number }
+  | { kind: 'rename' | 'remove'; kcId: number }
   | { kind: 'unlink'; target: UnlinkTarget }
 
 const CLOSED: EditorDialog = { kind: 'closed' }
@@ -47,7 +46,7 @@ export function KnowledgeComponentEditor({
   const editable = isEditable(status)
   const knowledgeComponents = knowledgeComponentsOf(problems)
   const kcOfDialog =
-    dialog.kind === 'rename' || dialog.kind === 'merge' || dialog.kind === 'remove'
+    dialog.kind === 'rename' || dialog.kind === 'remove'
       ? knowledgeComponents.find((kc) => kc.id === dialog.kcId)
       : undefined
   const close = () => setDialog(CLOSED)
@@ -101,7 +100,6 @@ export function KnowledgeComponentEditor({
               problems.filter((problem) => problem.knowledge_components.length === 0).length
             }
             onRename={editable ? (kcId) => setDialog({ kind: 'rename', kcId }) : undefined}
-            onMerge={editable ? (kcId) => setDialog({ kind: 'merge', kcId }) : undefined}
             onRemove={editable ? (kcId) => setDialog({ kind: 'remove', kcId }) : undefined}
             isBusy={unlink.isPending}
           />
@@ -116,12 +114,6 @@ export function KnowledgeComponentEditor({
       <RenameKnowledgeComponentDialog
         assignmentId={assignmentId}
         knowledgeComponent={dialog.kind === 'rename' ? kcOfDialog : undefined}
-        onClose={close}
-      />
-      <MergeKnowledgeComponentsDialog
-        assignmentId={assignmentId}
-        knowledgeComponent={dialog.kind === 'merge' ? kcOfDialog : undefined}
-        knowledgeComponents={knowledgeComponents}
         onClose={close}
       />
       <RemoveKnowledgeComponentDialog

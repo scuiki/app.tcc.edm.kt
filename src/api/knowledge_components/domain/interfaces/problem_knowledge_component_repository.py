@@ -19,12 +19,6 @@ class IProblemKnowledgeComponentRepository(Protocol):
 
     def is_linked(self, assignment_id: int, kc_id: int, problem_id: int) -> bool: ...
 
-    def move_bindings(
-        self, assignment_id: int, from_kc_id: int, to_kc_id: int, removed_at: str
-    ) -> None:
-        # Problemas de `from_kc_id` passam a ser de `to_kc_id` (união, sem duplicar)
-        ...
-
     def remove(self, assignment_id: int, kc_id: int, problem_id: int, removed_at: str) -> bool:
         # Marca o vínculo como removido e diz se havia um ativo
         ...

@@ -7,7 +7,6 @@ import {
   isEditable,
   knowledgeComponentsOf,
   listProblemIds,
-  mergedProblemIds,
   problemCount,
   problemsOnlyMarkedBy,
   stageStateOf,
@@ -41,14 +40,6 @@ describe('listProblemIds and problemCount', () => {
   it('counts problems in the singular and plural', () => {
     expect(problemCount(1)).toBe('1 problema')
     expect(problemCount(3)).toBe('3 problemas')
-  })
-})
-
-describe('mergedProblemIds', () => {
-  it('joins the problems of both without repeating', () => {
-    const keep = { id: 1, name: 'A', problemIds: [5, 12, 233] }
-    const drop = { id: 2, name: 'B', problemIds: [12, 235] }
-    expect(mergedProblemIds(keep, drop)).toEqual([5, 12, 233, 235])
   })
 })
 

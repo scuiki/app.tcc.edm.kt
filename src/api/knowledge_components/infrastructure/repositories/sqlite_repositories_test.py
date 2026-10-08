@@ -7,9 +7,6 @@ from api.knowledge_components.domain.entities.kc_generation_job_entity import (
     KnowledgeComponentGenerationJob,
 )
 from api.knowledge_components.domain.entities.knowledge_component_entity import KnowledgeComponent
-from api.knowledge_components.domain.entities.problem_knowledge_component_entity import (
-    ProblemKnowledgeComponent,
-)
 from api.knowledge_components.infrastructure.repositories.sqlite_kc_generation_job_repository import (
     SqliteKnowledgeComponentGenerationJobRepository,
 )
@@ -65,25 +62,16 @@ def test_rename_and_remove_keeps_the_row_as_history(tmp_db, assignment_id):
     assert tuple(row) == ("b", "t1")  # a linha fica, só marcada como removida
 
 
-def test_bindings_union_on_move_and_ignore_duplicates(tmp_db, assignment_id):
-    kcs = SqliteKnowledgeComponentRepository(tmp_db)
-    keep = kcs.add(KnowledgeComponent(id=None, assignment_id=assignment_id, name="keep"))
-    drop = kcs.add(KnowledgeComponent(id=None, assignment_id=assignment_id, name="drop"))
+def test_binding_the_same_problem_twice_keeps_one_active_link(tmp_db, assignment_id):
+    kc_id = SqliteKnowledgeComponentRepository(tmp_db).add(
+        KnowledgeComponent(id=None, assignment_id=assignment_id, name="k")
+    )
     problem_kcs = SqliteProblemKnowledgeComponentRepository(tmp_db)
-    problem_kcs.bind_problems(assignment_id, keep, [1, 1])  # o duplicado é ignorado
-    problem_kcs.add(ProblemKnowledgeComponent(id=None, assignment_id=assignment_id, kc_id=drop, problem_id=1))
-    problem_kcs.add(ProblemKnowledgeComponent(id=None, assignment_id=assignment_id, kc_id=drop, problem_id=2))
 
-    problem_kcs.move_bindings(assignment_id, from_kc_id=drop, to_kc_id=keep, removed_at="t1")
+    problem_kcs.bind_problems(assignment_id, kc_id, [1, 1])
 
-    assert sorted(problem_kcs.problems_of(keep)) == [1, 2]
-    assert problem_kcs.problems_of(drop) == []
+    assert problem_kcs.problems_of(kc_id) == [1]
     assert problem_kcs.count_kcs_of_problem(assignment_id, 1) == 1
-    # Os vínculos do KC descartado ficam como histórico
-    removed = tmp_db.execute(
-        "SELECT COUNT(*) FROM problem_kc WHERE kc_id = ? AND deleted_at = 't1';", (drop,)
-    ).fetchone()[0]
-    assert removed == 2
 
 
 def test_removing_a_link_hides_it_and_relinking_creates_a_new_row(tmp_db, assignment_id):

@@ -54,22 +54,6 @@ class SqliteProblemKnowledgeComponentRepository:
         ).fetchone()
         return row is not None
 
-    def move_bindings(
-        self, assignment_id: int, from_kc_id: int, to_kc_id: int, removed_at: str
-    ) -> None:
-        # Os vínculos de from_kc ganham uma cópia ativa em to_kc e ficam como histórico
-        self._conn.execute(
-            "INSERT OR IGNORE INTO problem_kc (assignment_id, kc_id, problem_id) "
-            "SELECT assignment_id, ?, problem_id FROM problem_kc "
-            "WHERE kc_id = ? AND assignment_id = ? AND deleted_at IS NULL;",
-            (to_kc_id, from_kc_id, assignment_id),
-        )
-        self._conn.execute(
-            "UPDATE problem_kc SET deleted_at = ? "
-            "WHERE kc_id = ? AND assignment_id = ? AND deleted_at IS NULL;",
-            (removed_at, from_kc_id, assignment_id),
-        )
-
     def remove(self, assignment_id: int, kc_id: int, problem_id: int, removed_at: str) -> bool:
         cur = self._conn.execute(
             "UPDATE problem_kc SET deleted_at = ? "

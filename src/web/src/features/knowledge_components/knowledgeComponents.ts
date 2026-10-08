@@ -35,11 +35,6 @@ export function problemCount(count: number): string {
   return count === 1 ? '1 problema' : `${count} problemas`
 }
 
-// Os problemas que o conceito mantido marca depois de mesclar, sem repetir e em ordem
-export function mergedProblemIds(keep: KnowledgeComponentUsage, drop: KnowledgeComponentUsage) {
-  return [...new Set([...keep.problemIds, ...drop.problemIds])].sort((a, b) => a - b)
-}
-
 // Os problemas em que este é o único conceito, e que ficariam sem nenhum se ele saísse
 export function problemsOnlyMarkedBy(
   kcId: number,

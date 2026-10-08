@@ -1,4 +1,4 @@
-import { Merge, Pencil, Trash2 } from 'lucide-react'
+import { Pencil, Trash2 } from 'lucide-react'
 
 import { IconButton } from '../../../components/ui/Button'
 import { Card } from '../../../components/ui/Card'
@@ -11,7 +11,6 @@ interface KnowledgeComponentsCardProps {
   problemsWithoutKnowledgeComponent: number
   // Sem as ações, o cartão fica só para consulta
   onRename?: (kcId: number) => void
-  onMerge?: (kcId: number) => void
   onRemove?: (kcId: number) => void
   isBusy?: boolean
 }
@@ -21,7 +20,6 @@ export function KnowledgeComponentsCard({
   problemTotal,
   problemsWithoutKnowledgeComponent,
   onRename,
-  onMerge,
   onRemove,
   isBusy,
 }: KnowledgeComponentsCardProps) {
@@ -52,19 +50,13 @@ export function KnowledgeComponentsCard({
                 {problemTotal === 1 ? 'problema' : 'problemas'}
               </span>
             </div>
-            {onRename && onMerge && onRemove ? (
+            {onRename && onRemove ? (
               <div className="kc-usage__actions">
                 <IconButton
                   icon={Pencil}
                   label={`Editar o nome de ${kc.name}`}
                   disabled={isBusy}
                   onClick={() => onRename(kc.id)}
-                />
-                <IconButton
-                  icon={Merge}
-                  label={`Mesclar ${kc.name} com outro conceito`}
-                  disabled={isBusy || knowledgeComponents.length < 2}
-                  onClick={() => onMerge(kc.id)}
                 />
                 <IconButton
                   icon={Trash2}

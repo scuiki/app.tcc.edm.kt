@@ -219,23 +219,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/knowledge-components/merge": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Merge Knowledge Components */
-        post: operations["merge_knowledge_components_knowledge_components_merge_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/knowledge-components/approve": {
         parameters: {
             query?: never;
@@ -645,22 +628,6 @@ export interface components {
             knowledge_components: components["schemas"]["KnowledgeComponentMasteryDTO"][];
             /** Problems */
             problems: components["schemas"]["ProblemMasteryDTO"][];
-        };
-        /** MergeKnowledgeComponentsDTO */
-        MergeKnowledgeComponentsDTO: {
-            /** Assignment Id */
-            assignment_id: number;
-            /** Keep Kc Id */
-            keep_kc_id: number;
-            /** Drop Kc Id */
-            drop_kc_id: number;
-        };
-        /** MergedKnowledgeComponentsDTO */
-        MergedKnowledgeComponentsDTO: {
-            /** Keep Kc Id */
-            keep_kc_id: number;
-            /** Drop Kc Id */
-            drop_kc_id: number;
         };
         /** ProblemDTO */
         ProblemDTO: {
@@ -1360,39 +1327,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RemovedKnowledgeComponentDTO"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    merge_knowledge_components_knowledge_components_merge_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["MergeKnowledgeComponentsDTO"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MergedKnowledgeComponentsDTO"];
                 };
             };
             /** @description Validation Error */

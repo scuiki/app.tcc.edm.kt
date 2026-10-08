@@ -109,19 +109,6 @@ export function useRemoveKnowledgeComponent(assignmentId: number) {
   })
 }
 
-export function useMergeKnowledgeComponents(assignmentId: number) {
-  const invalidate = useRefreshAssignment(assignmentId)
-  return useMutation({
-    mutationFn: ({ keepKcId, dropKcId }: { keepKcId: number; dropKcId: number }) =>
-      sendJson<unknown>('POST', '/knowledge-components/merge', {
-        assignment_id: assignmentId,
-        keep_kc_id: keepKcId,
-        drop_kc_id: dropKcId,
-      }),
-    onSuccess: invalidate,
-  })
-}
-
 export function useApproveKnowledgeComponents(assignmentId: number) {
   const invalidate = useRefreshAssignment(assignmentId)
   return useMutation({

@@ -23,9 +23,6 @@ from api.knowledge_components.application.use_cases.approve_knowledge_components
 from api.knowledge_components.application.use_cases.get_kc_generation_job_use_case import (
     GetKnowledgeComponentGenerationJobUseCase,
 )
-from api.knowledge_components.application.use_cases.merge_knowledge_components_use_case import (
-    MergeKnowledgeComponentsUseCase,
-)
 from api.knowledge_components.application.use_cases.remove_knowledge_component_use_case import (
     RemoveKnowledgeComponentUseCase,
 )
@@ -160,17 +157,6 @@ def remove_knowledge_component_use_case(
     conn: sqlite3.Connection = Depends(open_database_session),
 ) -> RemoveKnowledgeComponentUseCase:
     return RemoveKnowledgeComponentUseCase(
-        SqliteAssignmentRepository(conn),
-        SqliteKnowledgeComponentRepository(conn),
-        SqliteProblemKnowledgeComponentRepository(conn),
-        SqliteUnitOfWork(conn),
-    )
-
-
-def merge_knowledge_components_use_case(
-    conn: sqlite3.Connection = Depends(open_database_session),
-) -> MergeKnowledgeComponentsUseCase:
-    return MergeKnowledgeComponentsUseCase(
         SqliteAssignmentRepository(conn),
         SqliteKnowledgeComponentRepository(conn),
         SqliteProblemKnowledgeComponentRepository(conn),

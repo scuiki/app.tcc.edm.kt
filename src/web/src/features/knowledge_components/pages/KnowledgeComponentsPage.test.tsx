@@ -323,23 +323,6 @@ describe('KnowledgeComponentsPage, editing a draft', () => {
     await waitFor(() => expect(calls(spy, 'DELETE', '/knowledge-components/2')).toHaveLength(1))
   })
 
-  it('merges two concepts, previewing the problems that stay', async () => {
-    const spy = await openDraft()
-    fireEvent.click(screen.getByRole('button', { name: 'Mesclar Recursão com outro conceito' }))
-    const dialog = screen.getByRole('dialog', { name: 'Mesclar conceitos' })
-    fireEvent.change(within(dialog).getByLabelText('Mesclar com'), { target: { value: '2' } })
-    fireEvent.click(within(dialog).getByRole('radio', { name: /Manter Condicionais/ }))
-    expect(dialog).toHaveTextContent('No fim serão 2 problemas: 5 e 20.')
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Mesclar' }))
-    await waitFor(() => expect(calls(spy, 'POST', '/knowledge-components/merge')).toHaveLength(1))
-    const [, init] = calls(spy, 'POST', '/knowledge-components/merge')[0]
-    expect(JSON.parse(String(init!.body))).toEqual({
-      assignment_id: 1,
-      keep_kc_id: 2,
-      drop_kc_id: 3,
-    })
-  })
-
   it('approves this exercise only', async () => {
     const spy = await openDraft()
     expect(screen.getByText(/1 de 4 exercícios aprovados/)).toBeInTheDocument()

@@ -14,8 +14,6 @@ from api.knowledge_components.application.dtos.edit_knowledge_components_dto imp
     ApprovedKnowledgeComponentsDTO,
     ApproveKnowledgeComponentsDTO,
     KnowledgeComponentDTO,
-    MergedKnowledgeComponentsDTO,
-    MergeKnowledgeComponentsDTO,
     ProblemKnowledgeComponentDTO,
     RemovedKnowledgeComponentDTO,
     RemovedProblemKnowledgeComponentDTO,
@@ -34,9 +32,6 @@ from api.knowledge_components.application.use_cases.list_knowledge_components_us
 )
 from api.knowledge_components.application.use_cases.get_kc_generation_job_use_case import (
     GetKnowledgeComponentGenerationJobUseCase,
-)
-from api.knowledge_components.application.use_cases.merge_knowledge_components_use_case import (
-    MergeKnowledgeComponentsUseCase,
 )
 from api.knowledge_components.application.use_cases.remove_knowledge_component_use_case import (
     RemoveKnowledgeComponentUseCase,
@@ -123,16 +118,6 @@ def remove_knowledge_component(
     ),
 ) -> RemovedKnowledgeComponentDTO:
     return use_case.execute(RemoveKnowledgeComponentDTO(kc_id=kc_id))
-
-
-@router.post("/merge", response_model=MergedKnowledgeComponentsDTO)
-def merge_knowledge_components(
-    body: MergeKnowledgeComponentsDTO,
-    use_case: MergeKnowledgeComponentsUseCase = Depends(
-        dependencies.merge_knowledge_components_use_case
-    ),
-) -> MergedKnowledgeComponentsDTO:
-    return use_case.execute(body)
 
 
 @router.post("/approve", response_model=ApprovedKnowledgeComponentsDTO)
