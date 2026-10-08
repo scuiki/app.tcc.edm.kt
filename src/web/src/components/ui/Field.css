@@ -7,19 +7,20 @@
 .field__label {
   font-size: 12px;
   font-weight: 600;
-  color: var(--color-text);
+  color: var(--color-text-body);
 }
 
+/* O asterisco é neutro, porque o vermelho fica para o erro */
 .field__required {
-  color: var(--color-danger-text);
+  color: var(--color-text-muted);
 }
 
 .field__input {
   height: var(--control-height);
-  padding: 0 12px;
+  padding: 0 10px;
   border: 1px solid var(--color-control-border);
   background: var(--color-surface);
-  font-family: inherit;
+  font-family: var(--font-sans);
   font-size: 13px;
   color: var(--color-text);
 }
@@ -38,28 +39,44 @@
   color: var(--color-danger-text);
 }
 
+/* O contorno e o anel de foco ficam na caixa inteira, com a lupa dentro dela */
 .search-field {
-  position: relative;
-  width: 220px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 240px;
+  height: var(--control-height-compact);
+  padding: 0 10px;
+  border: 1px solid var(--color-control-border);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+}
+
+.search-field:focus-within {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
 }
 
 .search-field__icon {
-  position: absolute;
-  left: 10px;
-  top: 8px;
-  color: var(--color-text-muted);
-  pointer-events: none;
+  flex-shrink: 0;
 }
 
 .search-field__input {
-  width: 100%;
-  height: var(--control-height-compact);
-  padding: 0 10px 0 32px;
-  border: 1px solid var(--color-control-border);
-  background: var(--color-surface);
-  font-family: inherit;
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font-family: var(--font-sans);
   font-size: 13px;
   color: var(--color-text);
+}
+
+/* O anel já está na caixa, então o campo não desenha o seu */
+.search-field__input:focus-visible {
+  outline: none;
 }
 
 .field__input:disabled {

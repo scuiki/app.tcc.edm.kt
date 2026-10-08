@@ -230,8 +230,8 @@ som só toca se houver problema.
 | 0 | Concluída, commit `7c4fb56` |
 | 1 | Concluída, sem commit |
 | 2 | Concluída, commit `736bfb0` |
-| 3 | Concluída, aguardando a conferência do Leo |
-| 4 | Pendente |
+| 3 | Concluída, commit `3f1eea1`, conferida pelo Leo |
+| 4 | Concluída |
 | 5 | Pendente |
 | 6 | Pendente |
 | 7 | Pendente |

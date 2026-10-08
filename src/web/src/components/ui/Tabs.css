@@ -3,7 +3,7 @@
   gap: 2px;
   padding: 8px 12px 0;
   border-bottom: 1px solid var(--color-rule);
-  background: var(--color-surface-subtle);
+  background: var(--color-surface);
 }
 
 .tabs__tab {
@@ -16,10 +16,14 @@
   border: 0;
   border-bottom: 2px solid transparent;
   background: transparent;
-  font: inherit;
+  font-family: var(--font-sans);
   font-size: 13px;
   color: var(--color-text-secondary);
   cursor: pointer;
+}
+
+.tabs__tab svg {
+  flex-shrink: 0;
 }
 
 .tabs__tab:hover {

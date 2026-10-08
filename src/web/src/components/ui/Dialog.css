@@ -13,7 +13,7 @@
 }
 
 .dialog__header {
-  padding: 18px 20px 4px;
+  padding: 16px 20px 6px;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -25,7 +25,7 @@
 }
 
 .dialog__body {
-  padding: 12px 20px 20px;
+  padding: 4px 20px 18px;
   display: flex;
   flex-direction: column;
   gap: 6px;

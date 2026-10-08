@@ -9,7 +9,7 @@ interface SortableHeaderProps {
   direction: 'asc' | 'desc' | null
   onSort: () => void
   align?: 'start' | 'center' | 'end'
-  // Um "!" com a explicação, ao lado do botão e nunca dentro dele, porque botão não aninha botão
+  // A dica com a explicação, ao lado do botão e nunca dentro dele, porque botão não aninha botão
   hint?: ReactNode
 }
 

@@ -24,7 +24,7 @@ export function Button({
 }: ButtonProps) {
   return (
     <button type={type} className={`btn btn--${variant} btn--${size}`} {...rest}>
-      {Icon ? <Icon size={15} strokeWidth={2.4} aria-hidden="true" /> : null}
+      {Icon ? <Icon size={15} aria-hidden="true" /> : null}
       {children}
     </button>
   )
