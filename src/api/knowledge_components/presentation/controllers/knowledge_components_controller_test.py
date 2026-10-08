@@ -299,7 +299,7 @@ def test_editing_after_training_is_refused(api_client):
     assert SqliteAssignmentRepository(conn).get(aid).status == "trained"
 
 
-# Tirar um KC de um problema só, no botão remover do chip, e o caminho de volta
+# Tirar um KC de um problema só pela célula da matriz, e o caminho de volta
 
 
 def _active_links(conn, kc_id) -> list[int]:

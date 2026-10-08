@@ -1,0 +1,13 @@
+/* O 0 do problema sem conceito, em vermelho com o alerta, como o da última linha da matriz */
+.problem-statements__zero {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 700;
+  color: var(--color-danger-text);
+}
+
+.problem-statements__zero svg {
+  flex-shrink: 0;
+  color: var(--color-danger);
+}

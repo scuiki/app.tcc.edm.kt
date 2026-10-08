@@ -1,4 +1,4 @@
-import { Sparkles } from 'lucide-react'
+import { Blocks } from 'lucide-react'
 
 import { FactsLine, type Fact } from '../../../components/FactsLine'
 import { PageHeader } from '../../../components/PageHeader'
@@ -94,10 +94,10 @@ export function AssignmentWorkspace({ assignment }: { assignment: AssignmentSumm
               problems={data.problems}
             />
           ) : (
-            <Card title="Conceitos por problema">
+            <Card>
               {data.status === 'ready_for_kc_generation' ? (
                 <EmptyState
-                  icon={Sparkles}
+                  icon={Blocks}
                   title="Sem conceitos ainda"
                   text="O modelo lê as soluções corretas de cada problema e sugere os conceitos que ele exige. Leva alguns minutos, e você revisa tudo antes de aprovar."
                   action={

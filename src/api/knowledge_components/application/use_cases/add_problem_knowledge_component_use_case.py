@@ -1,4 +1,4 @@
-# O professor liga um KC que já existe a mais um problema, o caminho de volta da remoção pelo chip.
+# O professor liga um KC que já existe a mais um problema, pela célula da matriz.
 
 from __future__ import annotations
 

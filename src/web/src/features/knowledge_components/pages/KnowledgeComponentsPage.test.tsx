@@ -243,6 +243,22 @@ describe('KnowledgeComponentsPage, the exercise in the address', () => {
     fakeApi()
     renderWithClient(<KnowledgeComponentsPage classroomId={1} assignmentId={3} />)
     expect(await screen.findByText('Não há conceitos para extrair')).toBeInTheDocument()
+    // O cabeçalho já diz o que é, então o cartão não repete o título
+    expect(screen.queryByRole('heading', { level: 2 })).not.toBeInTheDocument()
+  })
+
+  it('offers the extraction with the blocks and no card title before the concepts exist', async () => {
+    fakeApi()
+    renderWithClient(<KnowledgeComponentsPage classroomId={1} assignmentId={2} />)
+    const empty = (await screen.findByText('Sem conceitos ainda')).closest('.state--empty')!
+    expect(empty.querySelector('.state__icon-box svg')).toHaveClass('lucide-blocks')
+    expect(empty.querySelector('.lucide-sparkles')).toBeNull()
+    expect(within(empty as HTMLElement).getAllByRole('button')).toHaveLength(1)
+    expect(
+      within(empty as HTMLElement).getByRole('button', { name: 'Extrair conceitos' }),
+    ).toBeVisible()
+    expect(screen.queryByRole('heading', { level: 2 })).not.toBeInTheDocument()
+    expect(screen.queryByRole('tab')).not.toBeInTheDocument()
   })
 
   it('shows a trained exercise for reference only, with no edit and no approval', async () => {
@@ -264,7 +280,8 @@ describe('KnowledgeComponentsPage, the exercise in the address', () => {
     expect(screen.queryByRole('button', { name: 'Novo conceito' })).not.toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('tab', { name: 'Problemas' }))
-    expect(screen.queryByRole('button', { name: /^Tirar / })).not.toBeInTheDocument()
+    const problemsTable = screen.getByRole('table', { name: 'Problemas' })
+    expect(within(problemsTable).queryByRole('button')).not.toBeInTheDocument()
     // A frase de consulta vale nas duas abas
     expect(
       screen.getByText(/Exercício treinado. Os conceitos ficam só para consulta/),
@@ -546,6 +563,81 @@ describe('KnowledgeComponentsPage, the matrix', () => {
     fireEvent.click(screen.getByRole('tab', { name: 'Problemas' }))
     expect(screen.queryByText(help)).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Aprovar conceitos' })).not.toBeInTheDocument()
+  })
+})
+
+describe('KnowledgeComponentsPage, the problems tab', () => {
+  async function openProblems(options: FakeApiOptions = {}) {
+    fakeApi(options)
+    renderWithClient(<KnowledgeComponentsPage classroomId={1} assignmentId={1} />)
+    fireEvent.click(await screen.findByRole('tab', { name: 'Problemas' }))
+    return screen.getByRole('table', { name: 'Problemas' })
+  }
+
+  // O texto de cada célula, por linha, sem o cabeçalho
+  function bodyOf(table: HTMLElement) {
+    return within(table)
+      .getAllByRole('row')
+      .slice(1)
+      .map((row) =>
+        within(row)
+          .getAllByRole('cell')
+          .map((cell) => cell.textContent),
+      )
+  }
+
+  it('shows a row per problem with only its number, its statement and its concept count', async () => {
+    const table = await openProblems()
+    expect(
+      within(table)
+        .getAllByRole('columnheader')
+        .map((header) => header.textContent),
+    ).toEqual(['Problema', 'Enunciado', 'Conceitos'])
+    expect(bodyOf(table)).toEqual([
+      ['5', STATEMENT, '2'],
+      ['12', 'sem enunciado', '1'],
+      ['20', 'sem enunciado', '2'],
+    ])
+  })
+
+  it('keeps the statement on the left, breaking lines and with no stars', async () => {
+    const table = await openProblems()
+    const cell = within(table).getByRole('cell', { name: STATEMENT })
+    expect(cell).toHaveClass('data-table__wrap', 'data-table__left')
+    expect(within(table).getByRole('columnheader', { name: 'Enunciado' })).toHaveClass(
+      'data-table__left',
+    )
+    expect(within(table).queryByRole('img')).not.toBeInTheDocument()
+    expect(within(table).getByRole('columnheader', { name: 'Conceitos' })).not.toHaveClass(
+      'data-table__left',
+    )
+  })
+
+  it('says sem enunciado in gray where the package has no statement', async () => {
+    const table = await openProblems()
+    const missing = within(table).getAllByText('sem enunciado')
+    expect(missing).toHaveLength(2)
+    missing.forEach((text) => expect(text).toHaveClass('data-table__missing'))
+    expect(within(table).queryByText(STATEMENT)).not.toHaveClass('data-table__missing')
+  })
+
+  it('shows the 0 of a problem without concepts in red with the alert icon, and no other', async () => {
+    const table = await openProblems({
+      draft: [
+        ...draftProblems(),
+        { problem_id: 31, statement: null, correct_run_count: 0, knowledge_components: [] },
+      ],
+    })
+    expect(bodyOf(table).at(-1)).toEqual(['31', 'sem enunciado', '0'])
+    const rows = within(table).getAllByRole('row')
+    const zero = within(rows.at(-1)!).getAllByRole('cell')[2]
+    expect(zero.querySelector('.problem-statements__zero svg')).not.toBeNull()
+    rows.slice(1, -1).forEach((row) => expect(row.querySelector('svg')).toBeNull())
+  })
+
+  it('has no button, because the matrix is the only place that edits', async () => {
+    const table = await openProblems()
+    expect(within(table).queryByRole('button')).not.toBeInTheDocument()
   })
 })
 

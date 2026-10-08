@@ -23,7 +23,7 @@ import {
 } from '../knowledgeComponents'
 import { KnowledgeComponentMatrix } from './KnowledgeComponentMatrix'
 import { NewKnowledgeComponentDialog } from './NewKnowledgeComponentDialog'
-import { ProblemsCard } from './ProblemsCard'
+import { ProblemStatementsTable } from './ProblemStatementsTable'
 import { RemoveKnowledgeComponentDialog } from './RemoveKnowledgeComponentDialog'
 import { RenameKnowledgeComponentDialog } from './RenameKnowledgeComponentDialog'
 import { UnlinkKnowledgeComponentDialog, type UnlinkTarget } from './UnlinkKnowledgeComponentDialog'
@@ -174,11 +174,7 @@ export function KnowledgeComponentEditor({
             onRemove={editable ? (kcId) => setDialog({ kind: 'remove', kcId }) : undefined}
           />
         ) : (
-          <ProblemsCard
-            problems={problems}
-            onUnlink={editable ? (kc, problemId) => handleCellClick(kc.id, problemId) : undefined}
-            isBusy={unlink.isPending}
-          />
+          <ProblemStatementsTable problems={problems} />
         )}
       </Card>
       <NewKnowledgeComponentDialog

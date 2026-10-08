@@ -1,4 +1,4 @@
-# O professor tira um KC de um problema só, no botão remover do chip, sem deixar o problema sem KC.
+# O professor tira um KC de um problema só, pela célula da matriz, sem deixar o problema sem KC.
 
 from __future__ import annotations
 
