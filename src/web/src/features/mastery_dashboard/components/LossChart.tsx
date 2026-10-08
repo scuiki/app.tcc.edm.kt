@@ -10,9 +10,8 @@ Chart.register(CategoryScale, LinearScale, LineElement, PointElement)
 type Epoch = TrainingLossHistory['epochs'][number]
 
 // O canvas não lê variáveis do CSS, então a cor vem do token lido na hora
-function tokenColor(name: string, fallback: string) {
-  const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim()
-  return value || fallback
+function tokenColor(name: string) {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim()
 }
 
 // A perda de treino por época, que o professor vê cair enquanto espera
@@ -23,9 +22,9 @@ export function LossChart({
   epochs: Epoch[]
   totalEpochs: number | null
 }) {
-  const line = tokenColor('--color-bar-predicted', '#3b7be0')
-  const grid = tokenColor('--color-rule', '#e2e8f0')
-  const text = tokenColor('--color-text-muted', '#64748b')
+  const line = tokenColor('--color-model')
+  const grid = tokenColor('--color-rule')
+  const text = tokenColor('--color-text-muted')
   // O eixo x já nasce com todas as épocas, para a linha crescer da esquerda sem reescalar
   const total = Math.max(totalEpochs ?? 0, epochs.length)
   const labels = Array.from({ length: total }, (_, index) => String(index + 1))

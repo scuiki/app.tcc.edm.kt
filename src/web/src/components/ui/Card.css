@@ -1,6 +1,5 @@
 .card {
   background: var(--color-surface);
-  border-radius: var(--radius);
   box-shadow: var(--shadow-card);
   display: flex;
   flex-direction: column;

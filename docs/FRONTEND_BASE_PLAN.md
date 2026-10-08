@@ -227,9 +227,9 @@ som só toca se houver problema.
 
 | Etapa | Situação |
 |---|---|
-| 0 | Concluída |
-| 1 | Em andamento, sem commit |
-| 2 | Pendente |
+| 0 | Concluída, commit `7c4fb56` |
+| 1 | Concluída, sem commit |
+| 2 | Concluída |
 | 3 | Pendente |
 | 4 | Pendente |
 | 5 | Pendente |

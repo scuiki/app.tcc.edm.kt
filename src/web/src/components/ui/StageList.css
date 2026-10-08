@@ -36,7 +36,7 @@
 
 .stage-list__item--done .stage-list__icon,
 .stage-list__item--current .stage-list__icon {
-  color: var(--color-accent);
+  color: var(--color-model);
 }
 
 .stage-list__item--current {

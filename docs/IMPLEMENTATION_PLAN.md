@@ -4,8 +4,9 @@ Documento para retomar o trabalho. Ele junta o contexto das iterações de desig
 hoje e a separação inicial do trabalho em blocos de backend e de frontend. O plano de cada bloco
 ainda vai ser discutido, e este arquivo é o ponto de partida dessa discussão, não o plano fechado.
 
-Estado em 30/09/2026. Nada do design v5 foi implementado ainda. A seção 9 registra as decisões da
-discussão de 30/09 e 01/10/2026 e a ordem nova, que põe a fidelidade à literatura antes da base.
+Estado em 30/09/2026, com a base em andamento desde 08/10/2026 pelo `FRONTEND_BASE_PLAN.md`. A
+seção 9 registra as decisões da discussão de 30/09 e 01/10/2026 e a ordem nova, que põe a fidelidade
+à literatura antes da base.
 
 ## 1. Contexto
 
@@ -37,9 +38,9 @@ Várias opções delas foram descartadas depois, então elas não servem de refe
 
 ### Frontend
 
-Todo o `src/web` segue a linguagem anterior. O `tokens.css` tem o azul de ação (`--color-accent`),
-o raio de 2px, a Open Sans carregada do Google Fonts no `index.html`, `--font-mono` e
-`--font-table` (Arial só nas tabelas da Análise). As telas têm a organização anterior ao design, e
+O `tokens.css` já tem as cores, as sombras e o raio 0 da v5. A tipografia ainda é a anterior, com a
+Open Sans carregada do Google Fonts no `index.html`, `--font-mono` e `--font-table` (Arial só nas
+tabelas da Análise). As telas têm a organização anterior ao design, e
 a importação e os conceitos usam o `PageActionBar`, a barra fixa no rodapé.
 
 Componentes que existem e mudam na migração estão em `src/web/src/components/` (`Breadcrumb`,

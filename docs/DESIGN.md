@@ -7,11 +7,10 @@ papel é citado pelo nome do token.
 **Versão 5, 30/09/2026, revista em 08/10/2026.** Referência visual em [`design/design-system-v5.html`](design/design-system-v5.html),
 que abre direto no navegador.
 
-**Estado.** Este documento é a especificação. O `tokens.css` e os componentes ainda seguem a
-linguagem anterior (azul de ação, Open Sans com Arial nas tabelas, raio de 2px), e as cinco telas
-ainda têm a organização antiga. O desenho das páginas terminou com as cinco organizadas, e a
-migração vem depois. Até lá, os valores estão na página de referência, e os nomes de token abaixo
-são os planejados.
+**Estado.** Este documento é a especificação. A migração para ela segue o `FRONTEND_BASE_PLAN.md`.
+As cores, as sombras e o raio do `tokens.css` já são os da v5, e a tipografia (Open Sans com Arial
+nas tabelas) e os componentes ainda seguem a linguagem anterior. As cinco telas ainda têm a
+organização antiga e mudam uma a uma depois da base.
 
 ## Princípios
 
@@ -58,10 +57,6 @@ de uso.
 | | `--color-bar-track` | Trilho das barras |
 | Erro | `--color-danger` | Ícone de erro, contorno de campo com erro, botão destrutivo |
 | | `--color-danger-text` | Texto de erro, hover do destrutivo |
-
-A migração troca `--color-accent`, `--color-accent-soft`, `--color-accent-soft-border` e
-`--color-accent-text` por `--color-primary` e pelos tokens de modelo, e `--color-bar-observed` e
-`--color-bar-predicted` por `--color-observed` e `--color-model`.
 
 ## Tipografia
 

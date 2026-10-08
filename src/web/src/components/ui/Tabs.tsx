@@ -15,7 +15,7 @@ interface TabsProps<K extends string> {
   label: string
 }
 
-// Abas no topo de um cartão; a ativa leva o azul e o fio embaixo, como a página atual no menu
+// Abas no topo de um cartão; a ativa leva o texto escuro, o negrito e o fio embaixo
 export function Tabs<K extends string>({ items, active, onChange, label }: TabsProps<K>) {
   return (
     <div role="tablist" aria-label={label} className="tabs">

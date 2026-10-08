@@ -13,7 +13,6 @@
   align-items: center;
   height: 20px;
   padding: 0 6px;
-  border-radius: var(--radius);
   background: var(--color-hover);
   font-size: 11px;
   color: var(--color-text-secondary);

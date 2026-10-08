@@ -5,7 +5,6 @@
 
 .training__note {
   padding: 10px 12px;
-  border-radius: var(--radius);
   background: var(--color-surface-subtle);
   font-size: 12px;
   line-height: 1.5;
@@ -22,7 +21,6 @@
   flex-direction: column;
   gap: 4px;
   padding: 10px 12px;
-  border-radius: var(--radius);
   background: var(--color-surface-subtle);
   font-size: 12px;
   overflow-wrap: anywhere;

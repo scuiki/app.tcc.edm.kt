@@ -28,8 +28,7 @@
 .state__icon-box {
   width: 40px;
   height: 40px;
-  border-radius: var(--radius);
-  background: var(--color-surface-icon);
+  background: var(--color-hover);
   color: var(--color-text-secondary);
   display: flex;
   align-items: center;
@@ -41,7 +40,7 @@
 }
 
 .state__spinner {
-  color: var(--color-accent);
+  color: var(--color-text);
 }
 
 @media (prefers-reduced-motion: no-preference) {

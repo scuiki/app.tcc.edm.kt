@@ -14,7 +14,7 @@
   border: 0;
   background: transparent;
   font: inherit;
-  color: var(--color-accent-text);
+  color: var(--color-text);
   text-decoration: underline;
   text-underline-offset: 2px;
   cursor: pointer;
@@ -29,7 +29,6 @@
   list-style: none;
   margin: 0;
   padding: 6px 8px;
-  border-radius: var(--radius);
   background: var(--color-surface-subtle);
   font-size: 12px;
   text-align: right;

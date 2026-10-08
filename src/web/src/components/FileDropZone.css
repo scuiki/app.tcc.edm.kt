@@ -2,7 +2,6 @@
   min-height: 150px;
   padding: 24px;
   border: 1px dashed var(--color-control-border);
-  border-radius: var(--radius);
   background: var(--color-surface-subtle);
   display: flex;
   flex-direction: column;
@@ -17,20 +16,20 @@
 }
 
 .dropzone:hover {
-  border-color: var(--color-accent);
+  border-color: var(--color-text);
 }
 
 /* O anel de foco vai na área, porque o input de verdade é invisível */
 .dropzone:focus-within {
-  outline: 2px solid var(--color-accent);
+  outline: 2px solid var(--color-focus);
   outline-offset: 2px;
 }
 
-/* Com o arquivo sobre a área, borda e fundo assumem o azul */
+/* Com o arquivo sobre a área, a borda fica sólida e escura e o fundo cinza */
 .dropzone--dragging {
   border-style: solid;
-  border-color: var(--color-accent);
-  background: var(--color-accent-soft);
+  border-color: var(--color-text);
+  background: var(--color-hover);
 }
 
 .dropzone--disabled,
@@ -42,7 +41,7 @@
 
 .dropzone__icon {
   margin-bottom: 6px;
-  color: var(--color-accent);
+  color: var(--color-text-body);
 }
 
 .dropzone__title {

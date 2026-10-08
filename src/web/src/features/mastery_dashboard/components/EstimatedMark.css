@@ -6,8 +6,8 @@
   height: 18px;
   margin-right: 4px;
   border-radius: 50%;
-  color: var(--color-accent-text);
-  background: var(--color-accent-soft);
+  color: var(--color-model-strong);
+  background: var(--color-model-soft);
   vertical-align: middle;
   cursor: help;
 }

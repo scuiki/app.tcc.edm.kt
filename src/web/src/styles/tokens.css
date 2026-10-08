@@ -1,41 +1,60 @@
 /* A linguagem visual do design system, e cada token com a sua situação de uso */
 
 :root {
-  /* O único azul, no botão primário, no ícone da ferramenta, no anel de foco e nos links */
-  --color-accent: #0a5cff;
-  /* A página atual no menu e a etiqueta de modelo treinado, sempre com o texto azul escuro */
-  --color-accent-soft: #eaf1ff;
-  --color-accent-soft-border: #c7dbff;
-  --color-accent-text: #0a4bcc;
+  color-scheme: light;
 
-  --color-page: #f1f4f8;
+  /* Fundo da página */
+  --color-page: #f4f4f4;
+  /* Cartão, menu e barra superior */
   --color-surface: #ffffff;
-  /* O cabeçalho de tabela e o rodapé de diálogo */
-  --color-surface-subtle: #f8fafc;
-  /* O fundo do ícone num estado vazio e na atividade recente */
-  --color-surface-icon: #eef2f7;
-  --color-hover: #f1f5f9;
+  /* Hover de linha de tabela, rodapé de diálogo, arquivo enviado e fundo de nota em cartão */
+  --color-surface-subtle: #f4f4f4;
+  /* Hover de controle, etiqueta neutra, ícone de estado vazio e de atividade, soltar arquivo */
+  --color-hover: #e8e8e8;
+  /* Item ativo do menu */
+  --color-active: #e0e0e0;
+  /* Fio dentro do cartão e entre linhas de tabela, e a borda do menu */
+  --color-rule: #e0e0e0;
+  /* Contorno de campo, botão secundário e de ícone, área de soltar, passo e ponto aguardando */
+  --color-control-border: #8d8d8d;
 
-  /* O fio de 1px dentro do cartão, que nunca contorna o cartão */
-  --color-rule: #e2e8f0;
-  --color-menu-rule: #dde3ea;
-  /* O contorno de campos e de botões secundários */
-  --color-control-border: #cbd5e1;
+  /* Texto, traço do cabeçalho de tabela e balão */
+  --color-text: #161616;
+  /* Texto corrido */
+  --color-text-body: #393939;
+  /* Menu e aba inativa */
+  --color-text-secondary: #525252;
+  /* Apoio, eixo de gráfico e ícone de dica */
+  --color-text-muted: #6f6f6f;
+  /* Desabilitado */
+  --color-text-disabled: #a8a8a8;
+  /* Botão primário */
+  --color-primary: #161616;
+  /* Hover do botão primário */
+  --color-primary-hover: #393939;
+  /* Anel de foco */
+  --color-focus: #161616;
+  /* Texto sobre o preenchido, no botão primário e no destrutivo, no passo atual e no balão */
+  --color-text-inverse: #ffffff;
 
-  --color-text: #0f172a;
-  --color-text-body: #334155;
-  --color-text-secondary: #475569;
-  --color-text-muted: #64748b;
-  --color-text-disabled: #94a3b8;
+  /* Domínio, distribuição, curva de perda, ponto de treinado e estágios da extração e do treino */
+  --color-model: #3b7be0;
+  /* Hover das marcas do modelo e texto sobre o azul claro */
+  --color-model-strong: #2a64c2;
+  /* Fundo da etiqueta Treinado e dos marcadores de modelo */
+  --color-model-soft: #eaf1fc;
+  /* Contorno da etiqueta Treinado */
+  --color-model-soft-border: #c4d7f5;
 
-  /* O vermelho marca recusa e exclusão, e preenchido só no botão que confirma uma exclusão */
-  --color-danger: #dc2626;
-  --color-danger-text: #b91c1c;
+  /* Taxa de acerto e toda barra do que aconteceu */
+  --color-observed: #393939;
+  /* Trilho das barras */
+  --color-bar-track: #efefef;
 
-  /* As barras do dashboard, o observado em cinza e o previsto em azul, sobre a mesma régua */
-  --color-bar-observed: #475569;
-  --color-bar-predicted: #3b7be0;
-  --color-bar-track: #eef2f7;
+  /* Ícone de erro, contorno de campo com erro e botão destrutivo */
+  --color-danger: #da1e28;
+  /* Texto de erro e hover do destrutivo */
+  --color-danger-text: #a2191f;
 
   --font-sans: 'Open Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
   /* Contagem, percentual, data e identificador, com dígitos de largura fixa */
@@ -43,21 +62,31 @@
   /* As tabelas da Análise, no padrão das tabelas de trabalho acadêmico */
   --font-table: Arial, Helvetica, sans-serif;
 
-  --radius: 2px;
-  --shadow-bar: 0 1px 0 #e2e8f0, 0 2px 8px rgba(15, 23, 42, 0.06);
-  --shadow-card: 0 1px 2px rgba(15, 23, 42, 0.06), 0 3px 10px rgba(15, 23, 42, 0.07);
-  --shadow-dialog: 0 20px 50px rgba(15, 23, 42, 0.3);
-  --backdrop: rgba(15, 23, 42, 0.48);
+  /* Barra superior */
+  --shadow-bar: 0 1px 0 #e0e0e0, 0 2px 8px rgba(22, 22, 22, 0.06);
+  /* Cartão e figura */
+  --shadow-card: 0 1px 2px rgba(22, 22, 22, 0.06), 0 3px 10px rgba(22, 22, 22, 0.07);
+  /* Diálogo */
+  --shadow-dialog: 0 20px 50px rgba(22, 22, 22, 0.28);
+  /* Fundo escurecido atrás do diálogo */
+  --backdrop: rgba(22, 22, 22, 0.42);
 
+  /* Botão, campo e aba */
   --control-height: 36px;
+  /* Botão de ícone */
   --control-height-compact: 32px;
+  /* Linha e cabeçalho de tabela */
+  --table-row-height: 32px;
+  /* A troca de cor dos controles, dos itens do menu e da área de soltar */
   --transition: 200ms ease-out;
 }
 
+/* O raio é 0 em tudo, e só os pontos e os marcadores de modelo o redefinem para redondo */
 *,
 *::before,
 *::after {
   box-sizing: border-box;
+  border-radius: 0;
 }
 
 /* A janela nunca rola; o app shell ocupa a altura toda e só o conteúdo rola */
@@ -70,16 +99,25 @@ body {
   line-height: 1.5;
   color: var(--color-text);
   background: var(--color-page);
+  accent-color: var(--color-text);
   -webkit-font-smoothing: antialiased;
 }
 
 a {
-  color: var(--color-accent);
+  color: var(--color-text);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+/* Só a espessura muda no hover, para o sublinhado não aparecer nos itens do menu */
+a:hover {
+  text-decoration-thickness: 2px;
 }
 
 /* O anel de foco em todo controle, nunca removido sem substituto */
 :focus-visible {
-  outline: 2px solid var(--color-accent);
+  outline: 2px solid var(--color-focus);
   outline-offset: 2px;
 }
 

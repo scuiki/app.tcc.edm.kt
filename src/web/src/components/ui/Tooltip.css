@@ -4,9 +4,8 @@
   z-index: 50;
   max-width: 260px;
   padding: 5px 8px;
-  border-radius: var(--radius);
   background: var(--color-text);
-  color: var(--color-surface);
+  color: var(--color-text-inverse);
   font-family: var(--font-sans);
   font-size: 12px;
   font-weight: 400;

@@ -40,14 +40,12 @@
 .kc-editor__notice {
   margin: 0;
   padding: 12px 16px;
-  border-radius: var(--radius);
-  background: var(--color-surface-icon);
+  background: var(--color-hover);
   color: var(--color-text-secondary);
 }
 
 .kc-editor__notice--approved {
-  background: var(--color-accent-soft);
-  color: var(--color-accent-text);
+  color: var(--color-text);
 }
 
 .kc-editor__error {

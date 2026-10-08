@@ -24,13 +24,8 @@
 }
 
 .breadcrumb__item a {
-  color: var(--color-accent-text);
+  color: var(--color-text-secondary);
   font-weight: 600;
-  text-decoration: none;
-}
-
-.breadcrumb__item a:hover {
-  text-decoration: underline;
 }
 
 .breadcrumb__separator {

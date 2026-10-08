@@ -19,7 +19,6 @@
 .kc-summary__coverage {
   margin: 12px 16px;
   padding: 8px 12px;
-  border-radius: var(--radius);
   background: var(--color-surface-subtle);
   font-size: 12px;
   color: var(--color-text-secondary);

@@ -14,12 +14,11 @@
 
 .histogram__bar {
   flex: 1;
-  border-radius: 2px 2px 0 0;
-  background: var(--color-bar-predicted);
+  background: var(--color-model);
 }
 
 .histogram__bar:hover {
-  background: var(--color-accent-text);
+  background: var(--color-model-strong);
 }
 
 .histogram__axis {

@@ -3,7 +3,6 @@
   max-width: calc(100vw - 32px);
   padding: 0;
   border: none;
-  border-radius: var(--radius);
   background: var(--color-surface);
   color: var(--color-text);
   box-shadow: var(--shadow-dialog);

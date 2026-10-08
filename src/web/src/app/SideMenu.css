@@ -1,10 +1,10 @@
-/* O menu em árvore sem recuo, turma › exercício › tela, com o mais e o menos na ponta da linha */
+/* O menu em árvore recuado, turma › exercício › tela, com o mais e o menos na ponta da linha */
 .side-menu {
   width: 260px;
   flex-shrink: 0;
   padding: 16px 10px;
   background: var(--color-surface);
-  border-right: 1px solid var(--color-menu-rule);
+  border-right: 1px solid var(--color-rule);
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -17,7 +17,6 @@
   height: 38px;
   padding: 0 12px;
   border: 0;
-  border-radius: var(--radius);
   background: transparent;
   display: flex;
   align-items: center;
@@ -56,10 +55,10 @@
   color: var(--color-text-secondary);
 }
 
-/* A página atual com fundo azul suave e texto azul, sem barra lateral */
+/* A página atual com fundo cinza e texto escuro, sem barra lateral */
 .side-menu__item[aria-current='page'] {
-  background: var(--color-accent-soft);
-  color: var(--color-accent-text);
+  background: var(--color-active);
+  color: var(--color-text);
   font-weight: 600;
 }
 
@@ -93,21 +92,24 @@
   stroke-width: 3;
 }
 
-/* A situação do exercício num ponto, só em azuis, sem cor de alerta */
+/* A situação do exercício num ponto, vazio, meio preenchido ou azul do modelo, sem cor de alerta */
 .side-menu__dot {
   width: 8px;
   height: 8px;
   flex-shrink: 0;
   border-radius: 50%;
-  background: var(--color-control-border);
+  border: 1.5px solid var(--color-control-border);
+  background: transparent;
 }
 
 .side-menu__dot--kc_approved {
-  background: var(--color-bar-predicted);
+  border-color: var(--color-text);
+  background: linear-gradient(90deg, var(--color-text) 50%, transparent 50%);
 }
 
 .side-menu__dot--trained {
-  background: var(--color-accent);
+  border-color: var(--color-model);
+  background: var(--color-model);
 }
 
 .side-menu__note {
