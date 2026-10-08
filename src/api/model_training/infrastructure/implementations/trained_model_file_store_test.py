@@ -25,6 +25,8 @@ from api.model_training.infrastructure.implementations.trained_model_file_store 
 from api.shared.domain.errors.incompatible_trained_model_error import (
     IncompatibleTrainedModelError,
 )
+from tests.fixtures.assignments import add_assignment
+from tests.fixtures.classrooms import add_classroom
 
 
 def _save(conn, classroom_id: int, assignment_id: int, model, vocab, config) -> dict:
@@ -48,21 +50,6 @@ def _save(conn, classroom_id: int, assignment_id: int, model, vocab, config) -> 
 
 def sqlite3_connection(conn):
     return getattr(conn, "_real", conn)
-
-
-def _seed_turma_assignment(conn) -> tuple[int, int]:
-    # classroom + assignment em SQL puro; devolve (classroom_id, assignment_id).
-    classroom_id = conn.execute(
-        "INSERT INTO classroom (name, created_at) VALUES ('Turma A', 't0');"
-    ).lastrowid
-    return classroom_id, _add_assignment(conn, classroom_id, "A1")
-
-
-def _add_assignment(conn, classroom_id: int, name: str) -> int:
-    return conn.execute(
-        "INSERT INTO assignment (classroom_id, name, created_at) VALUES (?, ?, 't0');",
-        (classroom_id, name),
-    ).lastrowid
 
 
 def test_save_writes_blob_and_sidecars(tmp_path, tiny_model, tiny_vocab, tiny_config):
@@ -104,8 +91,9 @@ def test_save_writes_blob_and_sidecars(tmp_path, tiny_model, tiny_vocab, tiny_co
 def test_version_monotonic_per_scope(tmp_db, data_root, tiny_model, tiny_vocab, tiny_config):
     # 3 versões do mesmo assignment geram v1,v2,v3; outro assignment recomeça em v1 (escopo turma).
     conn = tmp_db
-    classroom_id, assignment_a = _seed_turma_assignment(conn)
-    assignment_b = _add_assignment(conn, classroom_id, "A2")
+    classroom_id = add_classroom(conn)
+    assignment_a = add_assignment(conn, classroom_id)
+    assignment_b = add_assignment(conn, classroom_id)
 
     versions_a = [
         _save(conn, classroom_id, assignment_a, tiny_model, tiny_vocab, tiny_config)
@@ -223,7 +211,8 @@ def test_persist_failure_does_not_block_next_version(
     import pathlib
 
     conn = tmp_db
-    classroom_id, assignment_id = _seed_turma_assignment(conn)
+    classroom_id = add_classroom(conn)
+    assignment_id = add_assignment(conn, classroom_id)
 
     # Connection.execute é read-only (objeto C); um proxy intercepta só o INSERT do model_artifact.
     class _FailOnceInsertProxy:
@@ -306,7 +295,8 @@ def test_load_version_refuses_dir_outside_base(tmp_path):
 
 def test_version_dir_has_no_repeated_models_segment(tmp_db, data_root, tiny_model, tiny_vocab, tiny_config):
     # A raiz duplicava "models"; a guarda de traversal acabava valendo também sobre data/<turma>/raw
-    classroom_id, assignment_id = _seed_turma_assignment(tmp_db)
+    classroom_id = add_classroom(tmp_db)
+    assignment_id = add_assignment(tmp_db, classroom_id)
 
     persisted = _save(tmp_db, classroom_id, assignment_id, tiny_model, tiny_vocab, tiny_config)
 

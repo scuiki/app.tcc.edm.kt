@@ -4,13 +4,8 @@ from __future__ import annotations
 import subprocess
 import sys
 
-from api.assignments.domain.entities.assignment_entity import Assignment
-from api.classrooms.domain.entities.classroom_entity import Classroom
 from api.assignments.infrastructure.repositories.sqlite_assignment_repository import (
     SqliteAssignmentRepository,
-)
-from api.classrooms.infrastructure.repositories.sqlite_classroom_repository import (
-    SqliteClassroomRepository,
 )
 from api.knowledge_components.domain.entities.knowledge_component_entity import KnowledgeComponent
 from api.knowledge_components.domain.entities.problem_knowledge_component_entity import (
@@ -26,26 +21,11 @@ from api.knowledge_components.infrastructure.repositories.sqlite_problem_knowled
     SqliteProblemKnowledgeComponentRepository,
 )
 from api.knowledge_components.presentation.dependencies import KC_GENERATION_WORKER
+from tests.fixtures.assignments import add_assignment
+from tests.fixtures.classrooms import add_classroom
 from tests.fixtures.problems import add_problems
 
 _NOW = "2026-06-21T00:00:00Z"
-
-
-def _seed_assignment(conn, status: str = "ready_for_kc_generation") -> int:
-    classroom_id = SqliteClassroomRepository(conn).add(
-        Classroom(id=None, name="Turma X", created_at=_NOW)
-    )
-    return SqliteAssignmentRepository(conn).add(
-        Assignment(
-            id=None,
-            classroom_id=classroom_id,
-            name="Assignment 439",
-            progsnap_assignment_id=439,
-            published_model_id=None,
-            created_at=_NOW,
-            status=status,
-        )
-    )
 
 
 def _seed_kc(conn, assignment_id, name, kc_index=None) -> int:
@@ -74,7 +54,7 @@ class _FakePopen:
 
 def test_generate_dispatches_list_form_and_returns_job_id(api_client, monkeypatch):
     client, conn = api_client
-    aid = _seed_assignment(conn)
+    aid = add_assignment(conn, add_classroom(conn), status="ready_for_kc_generation")
     _FakePopen.calls = []
     monkeypatch.setattr(subprocess, "Popen", _FakePopen)
 
@@ -99,7 +79,7 @@ def test_generate_dispatches_list_form_and_returns_job_id(api_client, monkeypatc
 
 def test_poll_returns_job_fields(api_client, monkeypatch):
     client, conn = api_client
-    aid = _seed_assignment(conn)
+    aid = add_assignment(conn, add_classroom(conn), status="ready_for_kc_generation")
     _FakePopen.calls = []
     monkeypatch.setattr(subprocess, "Popen", _FakePopen)
     job_id = client.post("/knowledge-components/generation-jobs", json={"assignment_id": aid}).json()["job_id"]
@@ -127,7 +107,7 @@ def test_poll_missing_job_404(api_client):
 
 def test_rename_kc_updates_name(api_client, monkeypatch):
     client, conn = api_client
-    aid = _seed_assignment(conn, status="kc_draft")
+    aid = add_assignment(conn, add_classroom(conn), status="kc_draft")
     kc_id = _seed_kc(conn, aid, "nome antigo")
     _bind(conn, aid, kc_id, problem_id=1)
 
@@ -139,7 +119,7 @@ def test_rename_kc_updates_name(api_client, monkeypatch):
 
 def test_merge_unions_bindings(api_client):
     client, conn = api_client
-    aid = _seed_assignment(conn, status="kc_draft")
+    aid = add_assignment(conn, add_classroom(conn), status="kc_draft")
     keep = _seed_kc(conn, aid, "keep")
     drop = _seed_kc(conn, aid, "drop")
     _bind(conn, aid, keep, problem_id=1)
@@ -162,7 +142,7 @@ def test_merge_unions_bindings(api_client):
 def test_remove_that_empties_a_problem_is_blocked(api_client):
     # remover o único KC de um problema o deixaria com 0 KCs → BLOQUEADO + ROLLBACK.
     client, conn = api_client
-    aid = _seed_assignment(conn, status="kc_draft")
+    aid = add_assignment(conn, add_classroom(conn), status="kc_draft")
     only_kc = _seed_kc(conn, aid, "único")
     _bind(conn, aid, only_kc, problem_id=1)
 
@@ -177,8 +157,8 @@ def test_remove_that_empties_a_problem_is_blocked(api_client):
 def test_merge_rejects_cross_assignment_kc(api_client):
     # kc_drop pertence a OUTRO assignment → merge rejeitado (sem delete cross-assignment).
     client, conn = api_client
-    aid_a = _seed_assignment(conn, status="kc_draft")
-    aid_b = _seed_assignment(conn, status="kc_draft")
+    aid_a = add_assignment(conn, add_classroom(conn), status="kc_draft")
+    aid_b = add_assignment(conn, add_classroom(conn), status="kc_draft")
     keep = _seed_kc(conn, aid_a, "keep")
     _bind(conn, aid_a, keep, problem_id=1)
     # KC de OUTRO assignment, não pode ser tocado por um merge sobre aid_a.
@@ -200,8 +180,8 @@ def test_merge_rejects_cross_assignment_kc(api_client):
 def test_merge_rejects_keep_from_other_assignment(api_client):
     # keep_kc_id alheio também é rejeitado (qualquer um dos dois fora do assignment falha).
     client, conn = api_client
-    aid_a = _seed_assignment(conn, status="kc_draft")
-    aid_b = _seed_assignment(conn, status="kc_draft")
+    aid_a = add_assignment(conn, add_classroom(conn), status="kc_draft")
+    aid_b = add_assignment(conn, add_classroom(conn), status="kc_draft")
     drop = _seed_kc(conn, aid_a, "drop")
     _bind(conn, aid_a, drop, problem_id=1)
     foreign_keep = _seed_kc(conn, aid_b, "foreign-keep")
@@ -216,7 +196,7 @@ def test_merge_rejects_keep_from_other_assignment(api_client):
 def test_merge_self_merge_rejected(api_client):
     # mesclar um KC consigo mesmo é uma operação sem sentido → 409 claro.
     client, conn = api_client
-    aid = _seed_assignment(conn, status="kc_draft")
+    aid = add_assignment(conn, add_classroom(conn), status="kc_draft")
     kc_id = _seed_kc(conn, aid, "x")
     _bind(conn, aid, kc_id, problem_id=1)
 
@@ -230,7 +210,7 @@ def test_merge_self_merge_rejected(api_client):
 
 def test_approve_sets_kc_approved(api_client):
     client, conn = api_client
-    aid = _seed_assignment(conn, status="kc_draft")
+    aid = add_assignment(conn, add_classroom(conn), status="kc_draft")
     kc_id = _seed_kc(conn, aid, "x")
     _bind(conn, aid, kc_id, problem_id=1)
 
@@ -243,7 +223,7 @@ def test_approve_sets_kc_approved(api_client):
 def test_approve_rejects_non_draft_assignment(api_client):
     # Aprovar sem gerar KCs burlaria a revisão e treinaria sobre KCs inexistentes, é 409.
     client, conn = api_client
-    aid = _seed_assignment(conn, status="ready_for_kc_generation")
+    aid = add_assignment(conn, add_classroom(conn), status="ready_for_kc_generation")
 
     resp = client.post("/knowledge-components/approve", json={"assignment_id": aid})
     assert resp.status_code == 409
@@ -253,7 +233,7 @@ def test_approve_rejects_non_draft_assignment(api_client):
 def test_approve_rejects_draft_without_kcs(api_client):
     # kc_draft mas SEM nenhum KC não pode ser aprovado (não há KC a treinar).
     client, conn = api_client
-    aid = _seed_assignment(conn, status="kc_draft")  # nenhum KC inserido
+    aid = add_assignment(conn, add_classroom(conn), status="kc_draft")  # nenhum KC inserido
 
     resp = client.post("/knowledge-components/approve", json={"assignment_id": aid})
     assert resp.status_code == 409
@@ -263,7 +243,7 @@ def test_approve_rejects_draft_without_kcs(api_client):
 def test_editing_after_approval_reverts_status(api_client):
     # editar um KC após aprovar reverte kc_approved → kc_draft (re-aprovação necessária).
     client, conn = api_client
-    aid = _seed_assignment(conn, status="kc_approved")
+    aid = add_assignment(conn, add_classroom(conn), status="kc_approved")
     a = _seed_kc(conn, aid, "a")
     b = _seed_kc(conn, aid, "b")
     _bind(conn, aid, a, problem_id=1)
@@ -278,7 +258,7 @@ def test_editing_after_approval_reverts_status(api_client):
 def test_editing_after_training_is_refused(api_client):
     # sem re-treino, o modelo publicado fixa os conceitos; qualquer edição é 409 e nada muda.
     client, conn = api_client
-    aid = _seed_assignment(conn, status="trained")
+    aid = add_assignment(conn, add_classroom(conn), status="trained")
     a = _seed_kc(conn, aid, "a")
     b = _seed_kc(conn, aid, "b")
     _bind(conn, aid, a, problem_id=1)
@@ -305,7 +285,7 @@ def _active_links(conn, kc_id) -> list[int]:
 
 def test_removing_a_kc_from_one_problem_keeps_it_on_the_others(api_client):
     client, conn = api_client
-    aid = _seed_assignment(conn, status="kc_draft")
+    aid = add_assignment(conn, add_classroom(conn), status="kc_draft")
     loops, other = _seed_kc(conn, aid, "laços"), _seed_kc(conn, aid, "outro")
     for problem_id in (1, 2):
         _bind(conn, aid, loops, problem_id)
@@ -325,7 +305,7 @@ def test_removing_a_kc_from_one_problem_keeps_it_on_the_others(api_client):
 
 def test_removing_the_only_kc_of_a_problem_is_refused_and_nothing_changes(api_client):
     client, conn = api_client
-    aid = _seed_assignment(conn, status="kc_draft")
+    aid = add_assignment(conn, add_classroom(conn), status="kc_draft")
     only = _seed_kc(conn, aid, "único")
     _bind(conn, aid, only, problem_id=1)
 
@@ -338,7 +318,7 @@ def test_removing_the_only_kc_of_a_problem_is_refused_and_nothing_changes(api_cl
 
 def test_a_kc_that_loses_its_last_problem_is_removed_too(api_client):
     client, conn = api_client
-    aid = _seed_assignment(conn, status="kc_draft")
+    aid = add_assignment(conn, add_classroom(conn), status="kc_draft")
     leaving, staying = _seed_kc(conn, aid, "sai"), _seed_kc(conn, aid, "fica")
     _bind(conn, aid, leaving, problem_id=1)
     _bind(conn, aid, staying, problem_id=1)
@@ -353,7 +333,7 @@ def test_a_kc_that_loses_its_last_problem_is_removed_too(api_client):
 
 def test_removing_a_link_sends_approved_kcs_back_to_draft(api_client):
     client, conn = api_client
-    aid = _seed_assignment(conn, status="kc_approved")
+    aid = add_assignment(conn, add_classroom(conn), status="kc_approved")
     loops, other = _seed_kc(conn, aid, "laços"), _seed_kc(conn, aid, "outro")
     _bind(conn, aid, loops, problem_id=1)
     _bind(conn, aid, other, problem_id=1)
@@ -365,7 +345,7 @@ def test_removing_a_link_sends_approved_kcs_back_to_draft(api_client):
 
 def test_removing_a_missing_kc_or_link_is_404(api_client):
     client, conn = api_client
-    aid = _seed_assignment(conn, status="kc_draft")
+    aid = add_assignment(conn, add_classroom(conn), status="kc_draft")
     kc_id = _seed_kc(conn, aid, "k")
     _bind(conn, aid, kc_id, problem_id=1)
 
@@ -375,7 +355,7 @@ def test_removing_a_missing_kc_or_link_is_404(api_client):
 
 def test_linking_an_existing_kc_to_another_problem_creates_a_new_row(api_client):
     client, conn = api_client
-    aid = _seed_assignment(conn, status="kc_approved")
+    aid = add_assignment(conn, add_classroom(conn), status="kc_approved")
     loops, other = _seed_kc(conn, aid, "laços"), _seed_kc(conn, aid, "outro")
     _bind(conn, aid, loops, problem_id=1)
     _bind(conn, aid, loops, problem_id=2)
@@ -396,7 +376,7 @@ def test_linking_an_existing_kc_to_another_problem_creates_a_new_row(api_client)
 
 def test_linking_is_refused_for_a_repeated_link_or_a_problem_of_another_assignment(api_client):
     client, conn = api_client
-    aid = _seed_assignment(conn, status="kc_draft")
+    aid = add_assignment(conn, add_classroom(conn), status="kc_draft")
     kc_id = _seed_kc(conn, aid, "k")
     _bind(conn, aid, kc_id, problem_id=1)
 
@@ -411,7 +391,7 @@ def test_linking_is_refused_for_a_repeated_link_or_a_problem_of_another_assignme
 
 def test_a_kc_of_a_removed_assignment_is_404_on_every_route_by_kc_id(api_client):
     client, conn = api_client
-    aid = _seed_assignment(conn, status="kc_draft")
+    aid = add_assignment(conn, add_classroom(conn), status="kc_draft")
     kc_id = _seed_kc(conn, aid, "k")
     _bind(conn, aid, kc_id, problem_id=1)
     conn.execute("UPDATE assignment SET deleted_at = 't1' WHERE id = ?;", (aid,))

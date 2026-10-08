@@ -6,13 +6,8 @@ import os
 import subprocess
 import sys
 
-from api.assignments.domain.entities.assignment_entity import Assignment
-from api.classrooms.domain.entities.classroom_entity import Classroom
 from api.assignments.infrastructure.repositories.sqlite_assignment_repository import (
     SqliteAssignmentRepository,
-)
-from api.classrooms.infrastructure.repositories.sqlite_classroom_repository import (
-    SqliteClassroomRepository,
 )
 from api.model_training.domain.entities.training_epoch_metric import TrainingEpochMetric
 from api.model_training.infrastructure.repositories.sqlite_training_epoch_metric_repository import (
@@ -22,26 +17,10 @@ from api.model_training.infrastructure.repositories.sqlite_training_job_reposito
     SqliteTrainingJobRepository,
 )
 from api.model_training.presentation.dependencies import TRAINING_WORKER
+from tests.fixtures.assignments import add_assignment
+from tests.fixtures.classrooms import add_classroom
 
 _NOW = "2026-06-21T00:00:00Z"
-
-
-# O treino exige os KCs aprovados; o caminho feliz semeia kc_approved, as recusas passam outro.
-def _seed_assignment(conn, status: str = "kc_approved") -> int:
-    classroom_id = SqliteClassroomRepository(conn).add(
-        Classroom(id=None, name="Turma X", created_at=_NOW)
-    )
-    return SqliteAssignmentRepository(conn).add(
-        Assignment(
-            id=None,
-            classroom_id=classroom_id,
-            name="Assignment 439",
-            progsnap_assignment_id=439,
-            published_model_id=None,
-            created_at=_NOW,
-            status=status,
-        )
-    )
 
 
 # Captura os args do dispatch sem spawnar processo (treino real nunca roda no teste).
@@ -54,7 +33,7 @@ class _FakePopen:
 
 def test_dispatch_returns_job_id_immediately(api_client, monkeypatch):
     client, conn = api_client
-    aid = _seed_assignment(conn)
+    aid = add_assignment(conn, add_classroom(conn), status="kc_approved")
     _FakePopen.calls = []
     monkeypatch.setattr(subprocess, "Popen", _FakePopen)
 
@@ -81,7 +60,7 @@ def test_dispatch_returns_job_id_immediately(api_client, monkeypatch):
 
 def test_dispatch_rejects_statistics_only_409(api_client, monkeypatch):
     client, conn = api_client
-    aid = _seed_assignment(conn, status="statistics_only")
+    aid = add_assignment(conn, add_classroom(conn), status="statistics_only")
     monkeypatch.setattr(subprocess, "Popen", _FakePopen)
 
     resp = client.post("/training-jobs", json={"assignment_id": aid})
@@ -91,7 +70,7 @@ def test_dispatch_rejects_statistics_only_409(api_client, monkeypatch):
 def test_dispatch_blocked_before_approval_then_ok_after(api_client, monkeypatch):
     # sem a aprovação do professor, kc_draft (não-aprovado) é 409; aprovar destrava o /training.
     client, conn = api_client
-    aid = _seed_assignment(conn, status="kc_draft")
+    aid = add_assignment(conn, add_classroom(conn), status="kc_draft")
     _FakePopen.calls = []
     monkeypatch.setattr(subprocess, "Popen", _FakePopen)
 
@@ -110,7 +89,7 @@ def test_dispatch_rejects_missing_assignment_409(api_client, monkeypatch):
 
 def test_dispatch_rejects_busy_pipeline_409(api_client, monkeypatch):
     client, conn = api_client
-    aid = _seed_assignment(conn)
+    aid = add_assignment(conn, add_classroom(conn), status="kc_approved")
     # Trava tomada por um PID VIVO (o próprio processo de teste) ⇒ pré-check rejeita 409.
     conn.execute(
         "UPDATE pipeline_lock SET holder_pid=?, operation='training', acquired_at=? WHERE id=1;",
@@ -124,7 +103,7 @@ def test_dispatch_rejects_busy_pipeline_409(api_client, monkeypatch):
 
 def test_poll_returns_progress_fields(api_client, monkeypatch):
     client, conn = api_client
-    aid = _seed_assignment(conn)
+    aid = add_assignment(conn, add_classroom(conn), status="kc_approved")
     _FakePopen.calls = []
     monkeypatch.setattr(subprocess, "Popen", _FakePopen)
     job_id = client.post("/training-jobs", json={"assignment_id": aid}).json()["job_id"]
@@ -147,7 +126,7 @@ def test_poll_returns_progress_fields(api_client, monkeypatch):
 def test_poll_returns_parse_rate(api_client, monkeypatch):
     # O progresso expõe ao professor a taxa de parse gravada pelo worker.
     client, conn = api_client
-    aid = _seed_assignment(conn)
+    aid = add_assignment(conn, add_classroom(conn), status="kc_approved")
     _FakePopen.calls = []
     monkeypatch.setattr(subprocess, "Popen", _FakePopen)
     job_id = client.post("/training-jobs", json={"assignment_id": aid}).json()["job_id"]
@@ -163,7 +142,7 @@ def test_poll_returns_parse_rate(api_client, monkeypatch):
 def test_poll_parse_rate_null_when_unset(api_client, monkeypatch):
     # Um job em andamento, sem taxa de parse gravada, devolve null sem erro.
     client, conn = api_client
-    aid = _seed_assignment(conn)
+    aid = add_assignment(conn, add_classroom(conn), status="kc_approved")
     _FakePopen.calls = []
     monkeypatch.setattr(subprocess, "Popen", _FakePopen)
     job_id = client.post("/training-jobs", json={"assignment_id": aid}).json()["job_id"]
@@ -181,7 +160,7 @@ def test_poll_missing_job_404(api_client):
 
 def test_loss_history_lists_every_epoch_in_order(api_client, monkeypatch):
     client, conn = api_client
-    aid = _seed_assignment(conn)
+    aid = add_assignment(conn, add_classroom(conn), status="kc_approved")
     monkeypatch.setattr(subprocess, "Popen", _FakePopen)
     job_id = client.post("/training-jobs", json={"assignment_id": aid}).json()["job_id"]
     metrics = SqliteTrainingEpochMetricRepository(conn)

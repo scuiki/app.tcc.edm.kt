@@ -12,18 +12,9 @@ from api.classroom_import.infrastructure.repositories.sqlite_submission_reposito
     CORRECT_RUN_COLUMNS,
     SqliteSubmissionRepository,
 )
+from tests.fixtures.assignments import add_assignment
+from tests.fixtures.classrooms import add_classroom
 from tests.fixtures.problems import add_problems
-
-
-def _assignment_id(conn, progsnap_assignment_id: int = 439) -> int:
-    classroom_id = conn.execute(
-        "INSERT INTO classroom (name, created_at) VALUES ('T', 't0');"
-    ).lastrowid
-    return conn.execute(
-        "INSERT INTO assignment (classroom_id, name, created_at, progsnap_assignment_id) "
-        "VALUES (?, 'A', 't0', ?);",
-        (classroom_id, progsnap_assignment_id),
-    ).lastrowid
 
 
 def _cleaned(student_ids, snapshot_ids) -> pd.DataFrame:
@@ -58,7 +49,7 @@ def _cleaned(student_ids, snapshot_ids) -> pd.DataFrame:
 )
 def test_the_cleaned_data_comes_back_identical(tmp_db, student_ids, snapshot_ids):
     repo = SqliteSubmissionRepository(tmp_db)
-    assignment_id = _assignment_id(tmp_db)
+    assignment_id = add_assignment(tmp_db, add_classroom(tmp_db), progsnap_assignment_id=439)
     cleaned = _cleaned(student_ids, snapshot_ids)
     add_problems(tmp_db, assignment_id, [1, 2])
 
@@ -69,7 +60,9 @@ def test_the_cleaned_data_comes_back_identical(tmp_db, student_ids, snapshot_ids
 
 def test_each_assignment_reads_only_its_own_rows_in_insertion_order(tmp_db):
     repo = SqliteSubmissionRepository(tmp_db)
-    first, second = _assignment_id(tmp_db, 439), _assignment_id(tmp_db, 487)
+    classroom_id = add_classroom(tmp_db)
+    first = add_assignment(tmp_db, classroom_id, progsnap_assignment_id=439)
+    second = add_assignment(tmp_db, classroom_id, progsnap_assignment_id=487)
     add_problems(tmp_db, first, [1, 2])
     add_problems(tmp_db, second, [1])
     repo.add_many(first, _cleaned([3, 1, 2], [30, 10, 20]))
@@ -80,7 +73,9 @@ def test_each_assignment_reads_only_its_own_rows_in_insertion_order(tmp_db):
 
 
 def test_an_assignment_without_submissions_reads_as_empty_with_the_same_columns(tmp_db):
-    empty = SqliteSubmissionRepository(tmp_db).list_by_assignment(_assignment_id(tmp_db))
+    assignment_id = add_assignment(tmp_db, add_classroom(tmp_db))
+
+    empty = SqliteSubmissionRepository(tmp_db).list_by_assignment(assignment_id)
 
     assert empty.empty
     assert list(empty.columns) == CLEANED_COLUMNS
@@ -93,7 +88,7 @@ def test_submissions_for_a_missing_assignment_are_refused(tmp_db):
 
 def test_the_correct_runs_come_with_their_submission_id(tmp_db):
     repo = SqliteSubmissionRepository(tmp_db)
-    assignment_id = _assignment_id(tmp_db)
+    assignment_id = add_assignment(tmp_db, add_classroom(tmp_db))
     add_problems(tmp_db, assignment_id, [1, 2])
     repo.add_many(assignment_id, _cleaned(["S1", "S1", "S2"], ["c1", "c2", "c3"]))
 
@@ -117,7 +112,7 @@ def test_the_correct_runs_come_with_their_submission_id(tmp_db):
 )
 def test_the_correct_runs_keep_the_types_of_the_cleaned_data(tmp_db, student_ids, snapshot_ids):
     repo = SqliteSubmissionRepository(tmp_db)
-    assignment_id = _assignment_id(tmp_db)
+    assignment_id = add_assignment(tmp_db, add_classroom(tmp_db))
     cleaned = _cleaned(student_ids, snapshot_ids)
     add_problems(tmp_db, assignment_id, [1, 2])
     repo.add_many(assignment_id, cleaned)
@@ -133,7 +128,9 @@ def test_the_correct_runs_keep_the_types_of_the_cleaned_data(tmp_db, student_ids
 def test_each_assignment_reads_only_its_own_correct_runs(tmp_db):
     # O mesmo problema existe nos dois exercícios, e só o filtro do exercício separa as execuções
     repo = SqliteSubmissionRepository(tmp_db)
-    first, second = _assignment_id(tmp_db, 439), _assignment_id(tmp_db, 487)
+    classroom_id = add_classroom(tmp_db)
+    first = add_assignment(tmp_db, classroom_id, progsnap_assignment_id=439)
+    second = add_assignment(tmp_db, classroom_id, progsnap_assignment_id=487)
     add_problems(tmp_db, first, [1, 2])
     add_problems(tmp_db, second, [1, 2])
     repo.add_many(first, _cleaned(["S1", "S1", "S2"], ["c1", "c2", "c3"]))
@@ -145,7 +142,7 @@ def test_each_assignment_reads_only_its_own_correct_runs(tmp_db):
 
 def test_an_assignment_without_a_correct_run_reads_as_empty_with_the_same_columns(tmp_db):
     repo = SqliteSubmissionRepository(tmp_db)
-    assignment_id = _assignment_id(tmp_db)
+    assignment_id = add_assignment(tmp_db, add_classroom(tmp_db))
     add_problems(tmp_db, assignment_id, [1, 2])
     repo.add_many(assignment_id, _cleaned(["S1", "S1"], ["c1", "c2"]))  # nenhuma correta
 

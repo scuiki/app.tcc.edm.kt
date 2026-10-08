@@ -12,18 +12,14 @@ from api.knowledge_components.domain.entities.knowledge_component_evidence_entit
 from api.knowledge_components.infrastructure.repositories.sqlite_knowledge_component_evidence_repository import (
     SqliteKnowledgeComponentEvidenceRepository,
 )
+from tests.fixtures.assignments import add_assignment
+from tests.fixtures.classrooms import add_classroom
 from tests.fixtures.problems import add_problems
 
 
 def _seed(conn) -> tuple[int, int, int]:
     # Um exercício com dois problemas, uma solução amostrada em cada e dois conceitos
-    classroom_id = conn.execute(
-        "INSERT INTO classroom (name, created_at) VALUES ('T', 't0');"
-    ).lastrowid
-    assignment_id = conn.execute(
-        "INSERT INTO assignment (classroom_id, name, created_at) VALUES (?, 'A', 't0');",
-        (classroom_id,),
-    ).lastrowid
+    assignment_id = add_assignment(conn, add_classroom(conn))
     add_problems(conn, assignment_id, [1, 2])
     for problem_id in (1, 2):
         submission_id = conn.execute(

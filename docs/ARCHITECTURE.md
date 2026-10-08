@@ -186,6 +186,13 @@ start_training_use_case_test.py
   camada e o domínio. Quando precisa da infraestrutura real (SQLite, disco), quem a monta é uma
   fixture em `tests/fixtures/<funcionalidade>.py`, que fica fora de `api/` e é registrada no
   `conftest.py` da raiz. Assim o `import-linter` vale para o teste como vale para o código.
+- **Um pré-requisito no banco sai de uma função de `tests/fixtures/`.** A turma e o assignment de
+  que um teste precisa nascem de `add_classroom` (`tests/fixtures/classrooms.py`) e de
+  `add_assignment` (`tests/fixtures/assignments.py`), e os problemas de `add_problems`, em SQL
+  direto. São funções comuns, importadas pelo teste e não registradas no `conftest.py`, e o valor
+  que o teste confere vai explícito na chamada. Só não as usam o teste de migration, que grava o
+  SQL de cada versão do schema, e o teste que confere a própria criação, seja o repositório sob
+  teste, seja a rota HTTP.
 - Em `tests/` ficam só os testes de regressão do Code-DKT e do KCGen-KT no A439 (o sistema
   inteiro, com GPU e o CSEDM real), a comparação com as Tabelas 1 e 2 de Shi et al. (2022), os
   dados de exemplo em `tests/data/` e as fixtures de `tests/fixtures/`. A comparação tem o marcador

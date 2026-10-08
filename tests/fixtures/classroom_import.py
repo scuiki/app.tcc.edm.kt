@@ -7,7 +7,6 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from api.classrooms.domain.entities.classroom_entity import Classroom
 from api.assignments.infrastructure.repositories.sqlite_assignment_repository import (
     SqliteAssignmentRepository,
 )
@@ -31,6 +30,7 @@ from api.classroom_import.infrastructure.repositories.sqlite_submission_reposito
 )
 from api.shared.infrastructure.implementations.sqlite_unit_of_work import SqliteUnitOfWork
 from api.shared.infrastructure.implementations.one_job_at_a_time_lock import OneJobAtATimeLock
+from tests.fixtures.classrooms import add_classroom
 from tests.fixtures.sample_data import (
     JAVA_OK_A,
     JAVA_OK_B,
@@ -47,12 +47,10 @@ def sqlite_submissions(tmp_db) -> SqliteSubmissionRepository:
 
 @pytest.fixture
 def import_classroom(tmp_db, sqlite_submissions):
-    # Cria a turma, como o CRUD faz, e importa nela; `submissions=` troca o repositório
+    # Cria a turma direto no banco e importa nela; `submissions=` troca o repositório
 
     def run(raw_dir: Path, classroom_name: str, main_table: Path, *, submissions=None):
-        classroom_id = SqliteClassroomRepository(tmp_db).add(
-            Classroom(id=None, name=classroom_name, created_at="t0")
-        )
+        classroom_id = add_classroom(tmp_db, name=classroom_name)
         use_case = ImportClassroomDatasetUseCase(
             classrooms=SqliteClassroomRepository(tmp_db),
             assignments=SqliteAssignmentRepository(tmp_db),

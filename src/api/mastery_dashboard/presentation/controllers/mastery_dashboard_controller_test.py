@@ -5,35 +5,11 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from api.classrooms.infrastructure.repositories.sqlite_classroom_repository import (
-    SqliteClassroomRepository,
-)
 from api.assignments.infrastructure.repositories.sqlite_assignment_repository import (
     SqliteAssignmentRepository,
 )
-from api.classrooms.domain.entities.classroom_entity import Classroom
-from api.assignments.domain.entities.assignment_entity import Assignment
-
-_NOW = "2026-06-21T00:00:00Z"
-
-
-def _seed_assignment(
-    conn, status: str = "kc_approved", name: str = "Assignment 439", progsnap_id: int = 439
-) -> int:
-    classroom_id = SqliteClassroomRepository(conn).add(
-        Classroom(id=None, name="Turma X", created_at=_NOW)
-    )
-    return SqliteAssignmentRepository(conn).add(
-        Assignment(
-            id=None,
-            classroom_id=classroom_id,
-            name=name,
-            published_model_id=None,
-            created_at=_NOW,
-            status=status,
-            progsnap_assignment_id=progsnap_id,
-        )
-    )
+from tests.fixtures.assignments import add_assignment
+from tests.fixtures.classrooms import add_classroom
 
 
 # O que aconteceu, desde a importação
@@ -42,7 +18,7 @@ def _seed_assignment(
 def test_submission_statistics_without_data_are_empty_not_an_error(api_client):
     # o bloco "o que aconteceu" existe desde a importação, sem modelo; sem dado, listas vazias.
     client, conn = api_client
-    aid = _seed_assignment(conn, status="statistics_only")
+    aid = add_assignment(conn, add_classroom(conn), status="statistics_only")
 
     resp = client.get(f"/mastery-dashboard/{aid}/submission-statistics")
 
@@ -94,7 +70,7 @@ def test_submission_statistics_hide_concepts_until_they_are_approved(
 
 def test_without_a_published_model_the_mastery_is_empty_and_says_so(api_client):
     client, conn = api_client
-    aid = _seed_assignment(conn)
+    aid = add_assignment(conn, add_classroom(conn), status="kc_approved")
 
     mastery = client.get(f"/mastery-dashboard/{aid}/mastery")
     students = client.get(f"/mastery-dashboard/{aid}/students")

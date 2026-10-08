@@ -2,37 +2,19 @@
 
 from __future__ import annotations
 
-from api.assignments.domain.entities.assignment_entity import Assignment
-from api.assignments.domain.value_objects.assignment_status import AssignmentStatus
-from api.classrooms.domain.entities.classroom_entity import Classroom
-from api.assignments.infrastructure.repositories.sqlite_assignment_repository import (
-    SqliteAssignmentRepository,
-)
-from api.classrooms.infrastructure.repositories.sqlite_classroom_repository import (
-    SqliteClassroomRepository,
-)
-
-
-def _seed(conn, published_model_id=None) -> int:
-    classroom_id = SqliteClassroomRepository(conn).add(
-        Classroom(id=None, name="Turma X", created_at="t0")
-    )
-    return SqliteAssignmentRepository(conn).add(
-        Assignment(
-            id=None,
-            classroom_id=classroom_id,
-            name="Lista de laços",
-            created_at="t0",
-            status=AssignmentStatus.KC_APPROVED,
-            progsnap_assignment_id=439,
-            published_model_id=published_model_id,
-        )
-    )
+from tests.fixtures.assignments import add_assignment
+from tests.fixtures.classrooms import add_classroom
 
 
 def test_lists_every_assignment_with_both_ids(api_client):
     client, conn = api_client
-    assignment_id = _seed(conn)
+    assignment_id = add_assignment(
+        conn,
+        add_classroom(conn),
+        name="Lista de laços",
+        status="kc_approved",
+        progsnap_assignment_id=439,
+    )
 
     response = client.get("/assignments")
 

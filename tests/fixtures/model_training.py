@@ -8,14 +8,9 @@ import pandas as pd
 import pytest
 import torch
 
-from api.assignments.domain.entities.assignment_entity import Assignment
-from api.classrooms.domain.entities.classroom_entity import Classroom
 from api.assignments.domain.value_objects.progsnap_assignment_id import ProgSnapAssignmentId
 from api.assignments.infrastructure.repositories.sqlite_assignment_repository import (
     SqliteAssignmentRepository,
-)
-from api.classrooms.infrastructure.repositories.sqlite_classroom_repository import (
-    SqliteClassroomRepository,
 )
 from api.knowledge_components.domain.entities.knowledge_component_entity import KnowledgeComponent
 from api.knowledge_components.domain.entities.problem_knowledge_component_entity import (
@@ -37,6 +32,8 @@ from api.model_training.infrastructure.repositories.sqlite_trained_model_reposit
 )
 from ml.code_dkt.model import CodeDKTModel
 from ml.reproducibility.random_seed import seed_all_random_generators
+from tests.fixtures.assignments import add_assignment
+from tests.fixtures.classrooms import add_classroom
 from tests.fixtures.sample_data import (
     JAVA_BAD,
     JAVA_EMPTY_CLASS,
@@ -108,21 +105,10 @@ def cache_code_states() -> dict[str, str]:
 def trained_artifact(tmp_db, data_root, tiny_vocab, tiny_config):
     # Code-DKT minúsculo publicado, sem treino, em que o problema 3 exige os 2 KCs
     conn = tmp_db
-    now = "2026-06-21T00:00:00Z"
 
-    classroom_id = SqliteClassroomRepository(conn).add(
-        Classroom(id=None, name="Turma 6", created_at=now)
-    )
-    assignment_id = SqliteAssignmentRepository(conn).add(
-        Assignment(
-            id=None,
-            classroom_id=classroom_id,
-            name="A439",
-            progsnap_assignment_id=439,
-            published_model_id=None,
-            created_at=now,
-            status="kc_approved",
-        )
+    classroom_id = add_classroom(conn)
+    assignment_id = add_assignment(
+        conn, classroom_id, status="kc_approved", progsnap_assignment_id=439
     )
 
     seed_all_random_generators(42, strict=False)

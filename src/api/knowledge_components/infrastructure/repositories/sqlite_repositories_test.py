@@ -20,18 +20,14 @@ from api.knowledge_components.infrastructure.repositories.sqlite_problem_knowled
     SqliteProblemKnowledgeComponentRepository,
 )
 from api.shared.domain.value_objects.job_status import JobStatus
+from tests.fixtures.assignments import add_assignment
+from tests.fixtures.classrooms import add_classroom
 from tests.fixtures.problems import add_problems
 
 
 @pytest.fixture
 def assignment_id(tmp_db) -> int:
-    classroom_id = tmp_db.execute(
-        "INSERT INTO classroom (name, created_at) VALUES ('T', 't0');"
-    ).lastrowid
-    assignment_id = tmp_db.execute(
-        "INSERT INTO assignment (classroom_id, name, created_at) VALUES (?, 'A', 't0');",
-        (classroom_id,),
-    ).lastrowid
+    assignment_id = add_assignment(tmp_db, add_classroom(tmp_db))
     add_problems(tmp_db, assignment_id, [1, 2])  # os problemas que os testes ligam aos KCs
     return assignment_id
 

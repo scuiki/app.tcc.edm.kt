@@ -6,16 +6,12 @@ from api.mastery_dashboard.domain.entities.student_mastery_entity import Student
 from api.mastery_dashboard.infrastructure.repositories.sqlite_student_mastery_repository import (
     SqliteStudentMasteryRepository,
 )
+from tests.fixtures.assignments import add_assignment
+from tests.fixtures.classrooms import add_classroom
 
 
 def test_masteries_round_trip_per_model(tmp_db):
-    classroom_id = tmp_db.execute(
-        "INSERT INTO classroom (name, created_at) VALUES ('T', 't0');"
-    ).lastrowid
-    assignment_id = tmp_db.execute(
-        "INSERT INTO assignment (classroom_id, name, created_at) VALUES (?, 'A', 't0');",
-        (classroom_id,),
-    ).lastrowid
+    assignment_id = add_assignment(tmp_db, add_classroom(tmp_db))
     model_id = tmp_db.execute(
         "INSERT INTO model_artifact (assignment_id, version_number, content_hash, artifact_dir, "
         "created_at) VALUES (?, 1, 'h', 'v1', 't0');",

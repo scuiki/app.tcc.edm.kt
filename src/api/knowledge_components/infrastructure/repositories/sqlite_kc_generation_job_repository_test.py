@@ -1,14 +1,6 @@
 # O progresso do job de KCs, gravado a cada item e zerado quando o estágio muda
 from __future__ import annotations
 
-from api.assignments.domain.entities.assignment_entity import Assignment
-from api.assignments.infrastructure.repositories.sqlite_assignment_repository import (
-    SqliteAssignmentRepository,
-)
-from api.classrooms.domain.entities.classroom_entity import Classroom
-from api.classrooms.infrastructure.repositories.sqlite_classroom_repository import (
-    SqliteClassroomRepository,
-)
 from api.knowledge_components.domain.entities.kc_generation_job_entity import (
     KnowledgeComponentGenerationJob,
 )
@@ -16,25 +8,14 @@ from api.knowledge_components.infrastructure.repositories.sqlite_kc_generation_j
     SqliteKnowledgeComponentGenerationJobRepository,
 )
 from api.shared.domain.value_objects.job_status import JobStatus
+from tests.fixtures.assignments import add_assignment
+from tests.fixtures.classrooms import add_classroom
 
 CREATED = "2026-09-25T00:00:00Z"
 
 
 def _job(conn) -> tuple[SqliteKnowledgeComponentGenerationJobRepository, int]:
-    classroom_id = SqliteClassroomRepository(conn).add(
-        Classroom(id=None, name="Turma X", created_at=CREATED)
-    )
-    assignment_id = SqliteAssignmentRepository(conn).add(
-        Assignment(
-            id=None,
-            classroom_id=classroom_id,
-            name="Assignment 439",
-            progsnap_assignment_id=439,
-            published_model_id=None,
-            created_at=CREATED,
-            status="ready_for_kc_generation",
-        )
-    )
+    assignment_id = add_assignment(conn, add_classroom(conn))
     jobs = SqliteKnowledgeComponentGenerationJobRepository(conn)
     job_id = jobs.add(
         KnowledgeComponentGenerationJob(

@@ -9,12 +9,12 @@ from api.assignments.domain.value_objects.assignment_status import AssignmentSta
 from api.assignments.infrastructure.repositories.sqlite_assignment_repository import (
     SqliteAssignmentRepository,
 )
+from tests.fixtures.classrooms import add_classroom
 
 
 @pytest.fixture
 def classroom_id(tmp_db) -> int:
-    # SQL direto porque o repositório da turma é infraestrutura de outra funcionalidade
-    return tmp_db.execute("INSERT INTO classroom (name, created_at) VALUES ('T', 't0');").lastrowid
+    return add_classroom(tmp_db)
 
 
 def _assignment(classroom_id: int, **fields) -> Assignment:

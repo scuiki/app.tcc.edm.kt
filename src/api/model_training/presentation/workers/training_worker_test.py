@@ -8,13 +8,8 @@ import pandas as pd
 import pytest
 import torch
 
-from api.assignments.domain.entities.assignment_entity import Assignment
-from api.classrooms.domain.entities.classroom_entity import Classroom
 from api.assignments.infrastructure.repositories.sqlite_assignment_repository import (
     SqliteAssignmentRepository,
-)
-from api.classrooms.infrastructure.repositories.sqlite_classroom_repository import (
-    SqliteClassroomRepository,
 )
 from api.classroom_import.infrastructure.repositories.sqlite_submission_repository import (
     SqliteSubmissionRepository,
@@ -33,6 +28,8 @@ from api.model_training.infrastructure.repositories.sqlite_training_job_reposito
 from api.model_training.presentation.workers.training_worker import run_training
 from api.shared.domain.value_objects.job_status import JobStatus
 from ml.reproducibility.code_dkt_hyperparameters import CODE_DKT_HYPERPARAMETERS
+from tests.fixtures.assignments import add_assignment
+from tests.fixtures.classrooms import add_classroom
 from tests.fixtures.job_lock import lock_holder_pid
 from tests.fixtures.problems import add_problems
 
@@ -123,19 +120,8 @@ def _canonical_df_with_compile_errors() -> pd.DataFrame:
 def _seed_approved(conn, data_root, df: pd.DataFrame | None = None) -> tuple[int, int]:
     # Turma + assignment com os KCs aprovados + dado limpo + job pending. Devolve (aid, job).
     created = "2019-03-01T00:00:00+00:00"
-    classroom_id = SqliteClassroomRepository(conn).add(
-        Classroom(id=None, name="Turma X", created_at=created)
-    )
-    assignment_id = SqliteAssignmentRepository(conn).add(
-        Assignment(
-            id=None,
-            classroom_id=classroom_id,
-            name=f"Assignment {ASSIGNMENT_ID}",
-            progsnap_assignment_id=ASSIGNMENT_ID,
-            published_model_id=None,
-            created_at=created,
-            status="kc_approved",
-        )
+    assignment_id = add_assignment(
+        conn, add_classroom(conn), status="kc_approved", progsnap_assignment_id=ASSIGNMENT_ID
     )
     events = _canonical_df() if df is None else df
     add_problems(conn, assignment_id, events["problem_id"].dropna().unique())

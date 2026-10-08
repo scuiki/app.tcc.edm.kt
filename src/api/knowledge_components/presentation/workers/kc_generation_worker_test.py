@@ -8,13 +8,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from api.assignments.domain.entities.assignment_entity import Assignment
-from api.classrooms.domain.entities.classroom_entity import Classroom
 from api.assignments.infrastructure.repositories.sqlite_assignment_repository import (
     SqliteAssignmentRepository,
-)
-from api.classrooms.infrastructure.repositories.sqlite_classroom_repository import (
-    SqliteClassroomRepository,
 )
 from api.classroom_import.infrastructure.repositories.sqlite_submission_repository import (
     SqliteSubmissionRepository,
@@ -38,6 +33,8 @@ from api.knowledge_components.presentation.workers import kc_generation_worker
 from api.knowledge_components.presentation.workers.kc_generation_worker import run_kc_generation
 from api.shared.domain.value_objects.job_status import JobStatus
 from api.shared.infrastructure import settings
+from tests.fixtures.assignments import add_assignment
+from tests.fixtures.classrooms import add_classroom
 from tests.fixtures.job_lock import lock_holder_pid
 from tests.fixtures.knowledge_components import (
     FOR_MARK,
@@ -148,19 +145,11 @@ def _canonical_df() -> pd.DataFrame:
 def _seed_kc_ready(conn, data_root) -> tuple[int, int]:
     # Turma + assignment ready_for_kc_generation + dado limpo + kc_job pending. Devolve (aid, job).
     created = "2026-06-21T00:00:00Z"
-    classroom_id = SqliteClassroomRepository(conn).add(
-        Classroom(id=None, name="Turma X", created_at=created)
-    )
-    assignment_id = SqliteAssignmentRepository(conn).add(
-        Assignment(
-            id=None,
-            classroom_id=classroom_id,
-            name=f"Assignment {ASSIGNMENT_ID}",
-            progsnap_assignment_id=ASSIGNMENT_ID,
-            published_model_id=None,
-            created_at=created,
-            status="ready_for_kc_generation",
-        )
+    assignment_id = add_assignment(
+        conn,
+        add_classroom(conn),
+        status="ready_for_kc_generation",
+        progsnap_assignment_id=ASSIGNMENT_ID,
     )
     add_problems(conn, assignment_id, _canonical_df()["problem_id"].unique())
     SqliteSubmissionRepository(conn).add_many(assignment_id, _canonical_df())

@@ -17,17 +17,13 @@ from api.model_training.infrastructure.repositories.sqlite_training_job_reposito
     SqliteTrainingJobRepository,
 )
 from api.shared.domain.value_objects.job_status import JobStatus
+from tests.fixtures.assignments import add_assignment
+from tests.fixtures.classrooms import add_classroom
 
 
 @pytest.fixture
 def assignment_id(tmp_db) -> int:
-    classroom_id = tmp_db.execute(
-        "INSERT INTO classroom (name, created_at) VALUES ('T', 't0');"
-    ).lastrowid
-    return tmp_db.execute(
-        "INSERT INTO assignment (classroom_id, name, created_at) VALUES (?, 'A', 't0');",
-        (classroom_id,),
-    ).lastrowid
+    return add_assignment(tmp_db, add_classroom(tmp_db))
 
 
 def test_a_training_job_moves_through_its_states(tmp_db, assignment_id):

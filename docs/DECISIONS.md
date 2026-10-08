@@ -439,6 +439,18 @@ turma. O slug não vira mais caminho; o nome do zip de cada envio passa pela mes
 **`ProgSnapAssignmentId` é um tipo próprio.** O assignment tem dois ids inteiros, o do banco e o do
 dataset, e eles já foram trocados um pelo outro.
 
+## Testes
+
+**Turma e assignment de teste nascem em SQL direto, pelo `add_classroom` e pelo `add_assignment`.**
+Antes, cada teste criava os dois do seu jeito, com `INSERT` repetido, helpers locais de nomes
+diferentes ou os repositórios de `classrooms` e `assignments`. Um teste de infraestrutura de outra
+funcionalidade não pode importar esses repositórios, e um deles importava, o que reprovava o
+`import-linter`. O helper em SQL segue o `add_problems`, depende só do schema e não esconde dentro
+de `tests/fixtures/`, que o linter não enxerga, a dependência que os contratos proíbem. A chamada
+diz os valores que o teste confere, e o resto fica no padrão (`'T'`, `'A'`, `'t0'`). O teste de
+migration fica de fora, porque grava o SQL de cada versão do schema, e um helper que acompanha o
+schema atual mudaria o que ele testa.
+
 ## Frontend
 
 **A rota mora no hash da URL, sem biblioteca de rotas.** Um hook de poucas linhas lê o
