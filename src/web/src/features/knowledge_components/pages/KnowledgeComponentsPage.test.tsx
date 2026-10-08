@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor, within } from '@testing-library/react'
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { jsonResponse, renderWithClient } from '../../../test/renderWithClient'
@@ -32,15 +32,17 @@ function assignment(id: number, progsnapId: number, status: AssignmentStatus): A
 
 const LOOPS = { id: 1, name: 'Laços', is_generated_by_llm: true }
 const IFS = { id: 2, name: 'Condicionais', is_generated_by_llm: true }
-const RECURSION = { id: 3, name: 'Recursão', is_generated_by_llm: true }
+// A Recursão foi criada pelo professor, e o nome dela não leva as estrelas
+const RECURSION = { id: 3, name: 'Recursão', is_generated_by_llm: false }
 const EXTRACTED_AT = '2026-10-07T12:00:00+00:00'
+const STATEMENT = 'Escreva um método que devolve a soma de dois inteiros.'
 
-// O problema 12 só tem Laços, e a Recursão só marca o problema 20
+// O problema 12 só tem Laços, a Recursão só marca o problema 20, e só o 5 tem enunciado
 function draftProblems(): ProblemKnowledgeComponents[] {
   return [
     {
       problem_id: 5,
-      statement: null,
+      statement: STATEMENT,
       correct_run_count: 12,
       knowledge_components: [LOOPS, IFS],
     },
@@ -63,9 +65,11 @@ interface FakeApiOptions {
   classrooms?: ClassroomSummary[]
   job?: GenerationJob
   refuseStart?: boolean
-  // Os problemas e a data da extração do rascunho, o exercício 1
+  // Os problemas, a data da extração e a situação do rascunho, o exercício 1
   draft?: ProblemKnowledgeComponents[]
   draftExtractedAt?: string | null
+  draftStatus?: AssignmentStatus
+  refuseApprove?: boolean
   // A rota da tela fica sem resposta, como uma carga que ainda não voltou
   problemsPending?: boolean
 }
@@ -77,10 +81,12 @@ function fakeApi({
   refuseStart = false,
   draft = draftProblems(),
   draftExtractedAt = EXTRACTED_AT,
+  draftStatus = 'kc_draft',
+  refuseApprove = false,
   problemsPending = false,
 }: FakeApiOptions = {}) {
   const assignments = [
-    assignment(1, 439, 'kc_draft'),
+    assignment(1, 439, draftStatus),
     assignment(2, 487, 'ready_for_kc_generation'),
     assignment(3, 492, 'statistics_only'),
     assignment(4, 502, 'trained'),
@@ -137,8 +143,27 @@ function fakeApi({
       return jsonResponse(job)
     }
     if (path === '/knowledge-components/approve') {
+      if (refuseApprove) return jsonResponse({ detail: 'o problema 31 está sem conceito' }, 409)
       assignments[0] = { ...assignments[0], status: 'kc_approved' }
       return jsonResponse({ assignment_id: 1, status: 'kc_approved' })
+    }
+    // Ligar e desligar mudam o rascunho, e a recarga seguinte já traz a matriz nova
+    const linkMatch = path.match(/^\/knowledge-components\/(\d+)\/problems\/(\d+)$/)
+    if (linkMatch && (method === 'POST' || method === 'DELETE')) {
+      const [kcId, problemId] = [Number(linkMatch[1]), Number(linkMatch[2])]
+      const kc = problems[1].flatMap((p) => p.knowledge_components).find((k) => k.id === kcId)!
+      problems[1] = problems[1].map((p) =>
+        p.problem_id !== problemId
+          ? p
+          : {
+              ...p,
+              knowledge_components:
+                method === 'POST'
+                  ? [...p.knowledge_components, kc]
+                  : p.knowledge_components.filter((k) => k.id !== kcId),
+            },
+      )
+      return jsonResponse({ kc_id: kcId, problem_id: problemId })
     }
     if (method !== 'GET') return jsonResponse({}, 200)
     throw new Error(`fetch inesperado ${method} ${path}`)
@@ -153,6 +178,26 @@ afterEach(() => {
 
 function calls(spy: ReturnType<typeof fakeApi>, method: string, path: string) {
   return spy.mock.calls.filter(([url, init]) => url === path && (init?.method ?? 'GET') === method)
+}
+
+// Os nomes das linhas da matriz, de cima para baixo, sem o cabeçalho e sem a linha das contagens
+function rowNames() {
+  const matrix = screen.getByRole('table', { name: 'Conceitos por problema' })
+  const rows = within(matrix).getAllByRole('row').slice(1, -1)
+  return rows.map((row) => within(row).getAllByRole('cell')[0].textContent)
+}
+
+function rowOf(name: string) {
+  const matrix = screen.getByRole('table', { name: 'Conceitos por problema' })
+  return within(matrix)
+    .getAllByRole('row')
+    .find((row) => within(row).queryAllByRole('cell')[0]?.textContent === name)!
+}
+
+// O número do problema no cabeçalho da matriz, que leva o balão
+function problemNumber(problemId: number) {
+  const header = screen.getByRole('columnheader', { name: String(problemId) })
+  return within(header).getByText(String(problemId))
 }
 
 // A linha de fatos é o parágrafo do cabeçalho que começa pela contagem dos problemas
@@ -192,12 +237,27 @@ describe('KnowledgeComponentsPage, the exercise in the address', () => {
   it('shows a trained exercise for reference only, with no edit and no approval', async () => {
     fakeApi()
     renderWithClient(<KnowledgeComponentsPage classroomId={1} assignmentId={4} />)
-    expect(await screen.findByText(/já tem modelo treinado/)).toBeInTheDocument()
-    expect(screen.getAllByText('Laços').length).toBeGreaterThan(0)
+    const cell = await screen.findByRole('button', { name: 'Laços no problema 5' })
+    expect(cell).toBeDisabled()
+    expect(cell).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByRole('button', { name: 'Recursão no problema 5' })).toBeDisabled()
+    expect(
+      screen.getByText(
+        'Exercício treinado. Os conceitos ficam só para consulta, para não divergirem do modelo.',
+      ),
+    ).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Editar o nome/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /^Remover / })).not.toBeInTheDocument()
+    expect(screen.queryByRole('columnheader', { name: 'Ações' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Aprovar/ })).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('tab', { name: 'Problemas' }))
     expect(screen.queryByRole('button', { name: /^Tirar / })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /Adicionar conceito/ })).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /Editar o nome/ })).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /Aprovar/ })).not.toBeInTheDocument()
+    // A frase de consulta vale nas duas abas
+    expect(
+      screen.getByText(/Exercício treinado. Os conceitos ficam só para consulta/),
+    ).toBeVisible()
   })
 })
 
@@ -313,9 +373,10 @@ describe('KnowledgeComponentsPage, extracting', () => {
     expect(await within(dialog).findByText('problemas cobertos')).toBeInTheDocument()
     fireEvent.click(within(dialog).getByRole('button', { name: 'Revisar conceitos' }))
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
-    expect(
-      await screen.findByRole('button', { name: 'Tirar Laços do problema 17' }),
-    ).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: 'Laços no problema 17' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
   })
 
   it('shows the technical detail of a failed job and tries again', async () => {
@@ -351,26 +412,209 @@ describe('KnowledgeComponentsPage, extracting', () => {
   })
 })
 
+describe('KnowledgeComponentsPage, the matrix', () => {
+  async function openDraft(options: FakeApiOptions = {}) {
+    const spy = fakeApi(options)
+    renderWithClient(<KnowledgeComponentsPage classroomId={1} assignmentId={1} />)
+    await screen.findByRole('button', { name: 'Laços no problema 5' })
+    return spy
+  }
+
+  it('lists the concepts by recurrence, then by name, with the recurrence on the right', async () => {
+    await openDraft()
+    expect(rowNames()).toEqual(['Condicionais', 'Laços', 'Recursão'])
+    expect(within(rowOf('Laços')).getByText('de 3').closest('td')).toHaveTextContent('2 de 3')
+    expect(within(rowOf('Recursão')).getByText('de 3').closest('td')).toHaveTextContent('1 de 3')
+  })
+
+  it('shows each link as a pressed cell named by the concept and the problem', async () => {
+    await openDraft()
+    expect(screen.getByRole('button', { name: 'Laços no problema 12' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    expect(screen.getByRole('button', { name: 'Recursão no problema 12' })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    )
+    expect(screen.getByRole('button', { name: 'Recursão no problema 12' })).toBeEnabled()
+  })
+
+  it('marks the stars only on the names the model gave', async () => {
+    await openDraft()
+    expect(
+      within(rowOf('Laços')).getByRole('img', { name: 'Gerado pelo modelo de linguagem' }),
+    ).toBeInTheDocument()
+    expect(within(rowOf('Recursão')).queryByRole('img')).not.toBeInTheDocument()
+  })
+
+  it('shows the whole name of the concept in the balloon', async () => {
+    await openDraft()
+    fireEvent.mouseEnter(within(rowOf('Condicionais')).getByText('Condicionais'))
+    expect(screen.getByRole('tooltip')).toHaveTextContent('Condicionais')
+  })
+
+  it('shows the statement of the problem in the balloon of its number, also by keyboard', async () => {
+    await openDraft()
+    const number = problemNumber(5)
+    expect(number).toHaveAttribute('tabindex', '0')
+    act(() => number.focus())
+    const tooltip = screen.getByRole('tooltip')
+    expect(tooltip.firstElementChild).toHaveTextContent('Problema 5')
+    expect(tooltip).toHaveTextContent(STATEMENT)
+    act(() => number.blur())
+
+    fireEvent.mouseEnter(problemNumber(12))
+    expect(screen.getByRole('tooltip')).toHaveTextContent('Problema 12Sem enunciado.')
+  })
+
+  it('counts the concepts of each problem in the last row, the foot of the table', async () => {
+    await openDraft()
+    const totals = within(screen.getByRole('table', { name: 'Conceitos por problema' }))
+      .getAllByRole('row')
+      .at(-1)!
+    expect(totals.parentElement?.tagName).toBe('TFOOT')
+    expect(
+      within(totals)
+        .getAllByRole('cell')
+        .map((cell) => cell.textContent),
+    ).toEqual(['Conceitos por problema', '2', '1', '2', '', ''])
+  })
+
+  it('marks a problem nobody solved in red, with why it is empty and its statement', async () => {
+    await openDraft({
+      draft: [
+        ...draftProblems(),
+        {
+          problem_id: 31,
+          statement: 'Escreva um método recursivo.',
+          correct_run_count: 0,
+          knowledge_components: [],
+        },
+      ],
+    })
+    const number = problemNumber(31)
+    expect(number).toHaveClass('kc-matrix__problem--empty')
+    fireEvent.mouseEnter(number)
+    const tooltip = screen.getByRole('tooltip')
+    expect(tooltip.firstElementChild).toHaveTextContent('Problema 31 sem conceito')
+    expect(tooltip).toHaveTextContent(
+      'Problema 31 sem conceito' +
+        'Ninguém acertou este problema ainda. O modelo de linguagem precisa de execuções corretas para extrair conceitos. Ligue um conceito clicando nas células.' +
+        '\n\nEscreva um método recursivo.',
+      { normalizeWhitespace: false },
+    )
+
+    const totals = within(screen.getByRole('table', { name: 'Conceitos por problema' }))
+      .getAllByRole('row')
+      .at(-1)!
+    const zero = within(totals).getAllByRole('cell')[4]
+    expect(zero).toHaveTextContent('0')
+    expect(zero.querySelector('.kc-matrix__zero svg')).not.toBeNull()
+  })
+
+  it('says only that the problem is empty when it has correct runs and no statement', async () => {
+    await openDraft({
+      draft: [
+        ...draftProblems(),
+        { problem_id: 31, statement: null, correct_run_count: 4, knowledge_components: [] },
+      ],
+    })
+    fireEvent.mouseEnter(problemNumber(31))
+    expect(screen.getByRole('tooltip')).toHaveTextContent(
+      'Problema 31 sem conceito' +
+        'Este problema está sem conceito. Ligue um conceito clicando nas células.',
+      { normalizeWhitespace: false },
+    )
+  })
+
+  it('shows the help sentence in the footer of the draft, only on the matrix tab', async () => {
+    await openDraft()
+    const help = /Clique numa célula para ligar ou desligar o conceito do problema/
+    expect(screen.getByText(help)).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('tab', { name: 'Problemas' }))
+    expect(screen.queryByText(help)).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Aprovar conceitos' })).not.toBeInTheDocument()
+  })
+})
+
 describe('KnowledgeComponentsPage, editing a draft', () => {
   async function openDraft() {
     const spy = fakeApi()
     renderWithClient(<KnowledgeComponentsPage classroomId={1} assignmentId={1} />)
-    await screen.findByRole('button', { name: 'Tirar Laços do problema 5' })
+    await screen.findByRole('button', { name: 'Laços no problema 5' })
     return spy
   }
 
+  it('links a concept by clicking an empty cell', async () => {
+    const spy = await openDraft()
+    fireEvent.click(screen.getByRole('button', { name: 'Recursão no problema 5' }))
+    await waitFor(() =>
+      expect(calls(spy, 'POST', '/knowledge-components/3/problems/5')).toHaveLength(1),
+    )
+    expect(
+      await screen.findByRole('button', { name: 'Recursão no problema 5', pressed: true }),
+    ).toBeInTheDocument()
+  })
+
+  it('sends a single request for a double click on the same cell', async () => {
+    const spy = await openDraft()
+    const cell = screen.getByRole('button', { name: 'Recursão no problema 5' })
+    act(() => {
+      fireEvent.click(cell)
+      fireEvent.click(cell)
+    })
+    expect(
+      await screen.findByRole('button', { name: 'Recursão no problema 5', pressed: true }),
+    ).toBeEnabled()
+    expect(calls(spy, 'POST', '/knowledge-components/3/problems/5')).toHaveLength(1)
+  })
+
+  it('does not hold the other cells while one request is on the way', async () => {
+    const spy = await openDraft()
+    act(() => {
+      fireEvent.click(screen.getByRole('button', { name: 'Recursão no problema 5' }))
+      fireEvent.click(screen.getByRole('button', { name: 'Recursão no problema 12' }))
+    })
+    await waitFor(() => {
+      expect(calls(spy, 'POST', '/knowledge-components/3/problems/5')).toHaveLength(1)
+      expect(calls(spy, 'POST', '/knowledge-components/3/problems/12')).toHaveLength(1)
+    })
+  })
+
   it('takes a concept off a problem right away when nothing is lost', async () => {
     const spy = await openDraft()
-    fireEvent.click(screen.getByRole('button', { name: 'Tirar Laços do problema 5' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Laços no problema 5' }))
     await waitFor(() =>
       expect(calls(spy, 'DELETE', '/knowledge-components/1/problems/5')).toHaveLength(1),
     )
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
   })
 
+  it('keeps every row in place after linking and unlinking', async () => {
+    await openDraft()
+    // Sem a ordem fixa, Condicionais desceria ao marcar um problema só, e a Recursão subiria
+    fireEvent.click(screen.getByRole('button', { name: 'Condicionais no problema 5' }))
+    expect(
+      await screen.findByRole('button', { name: 'Condicionais no problema 5', pressed: false }),
+    ).toBeInTheDocument()
+    expect(rowNames()).toEqual(['Condicionais', 'Laços', 'Recursão'])
+
+    fireEvent.click(screen.getByRole('button', { name: 'Recursão no problema 5' }))
+    expect(
+      await screen.findByRole('button', { name: 'Recursão no problema 5', pressed: true }),
+    ).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Recursão no problema 12' }))
+    expect(
+      await screen.findByRole('button', { name: 'Recursão no problema 12', pressed: true }),
+    ).toBeInTheDocument()
+    expect(within(rowOf('Recursão')).getByText('de 3').closest('td')).toHaveTextContent('3 de 3')
+    expect(rowNames()).toEqual(['Condicionais', 'Laços', 'Recursão'])
+  })
+
   it('refuses to leave a problem without concepts, without calling the api', async () => {
     const spy = await openDraft()
-    fireEvent.click(screen.getByRole('button', { name: 'Tirar Laços do problema 12' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Laços no problema 12' }))
     const dialog = screen.getByRole('alertdialog', { name: 'Não dá para tirar este conceito' })
     expect(dialog).toHaveTextContent('O problema 12 ficaria sem nenhum conceito')
     expect(calls(spy, 'DELETE', '/knowledge-components/1/problems/12')).toHaveLength(0)
@@ -378,7 +622,7 @@ describe('KnowledgeComponentsPage, editing a draft', () => {
 
   it('confirms before taking a concept off its last problem', async () => {
     const spy = await openDraft()
-    fireEvent.click(screen.getByRole('button', { name: 'Tirar Recursão do problema 20' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Recursão no problema 20' }))
     const dialog = screen.getByRole('alertdialog', { name: 'Tirar Recursão do problema 20?' })
     expect(dialog).toHaveTextContent('sai do exercício junto')
     fireEvent.click(within(dialog).getByRole('button', { name: 'Tirar conceito' }))
@@ -389,6 +633,7 @@ describe('KnowledgeComponentsPage, editing a draft', () => {
 
   it('adds an existing concept found by the search', async () => {
     const spy = await openDraft()
+    fireEvent.click(screen.getByRole('tab', { name: 'Problemas' }))
     fireEvent.click(screen.getByRole('button', { name: 'Adicionar conceito ao problema 12' }))
     const dialog = screen.getByRole('dialog', { name: 'Adicionar conceito' })
     expect(within(dialog).queryByRole('radio', { name: /Laços/ })).not.toBeInTheDocument()
@@ -404,6 +649,7 @@ describe('KnowledgeComponentsPage, editing a draft', () => {
 
   it('creates a new concept with the typed name', async () => {
     const spy = await openDraft()
+    fireEvent.click(screen.getByRole('tab', { name: 'Problemas' }))
     fireEvent.click(screen.getByRole('button', { name: 'Adicionar conceito ao problema 12' }))
     const dialog = screen.getByRole('dialog', { name: 'Adicionar conceito' })
     fireEvent.change(within(dialog).getByLabelText(/Buscar um conceito/), {
@@ -445,15 +691,59 @@ describe('KnowledgeComponentsPage, editing a draft', () => {
     fireEvent.click(within(dialog).getByRole('button', { name: 'Remover conceito' }))
     await waitFor(() => expect(calls(spy, 'DELETE', '/knowledge-components/2')).toHaveLength(1))
   })
+})
 
-  it('approves this exercise only', async () => {
-    const spy = await openDraft()
-    expect(screen.getByText(/1 de 4 exercícios aprovados/)).toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: 'Aprovar este exercício' }))
-    expect(await screen.findByRole('button', { name: 'Exercício aprovado' })).toBeDisabled()
-    expect(calls(spy, 'POST', '/knowledge-components/approve')).toHaveLength(1)
+describe('KnowledgeComponentsPage, approving', () => {
+  it('approves the draft and leaves the button disabled, with the notice of today', async () => {
+    const spy = fakeApi()
+    renderWithClient(<KnowledgeComponentsPage classroomId={1} assignmentId={1} />)
+    const approve = await screen.findByRole('button', { name: 'Aprovar conceitos' })
+    expect(approve).toBeEnabled()
+    fireEvent.click(approve)
+    await waitFor(() => expect(calls(spy, 'POST', '/knowledge-components/approve')).toHaveLength(1))
     expect(
       await screen.findByText(/Conceitos aprovados. Mexer em qualquer conceito/),
     ).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Aprovar conceitos' })).toBeDisabled()
+  })
+
+  it('disables the approval while a problem has no concept, with no reason attached', async () => {
+    const spy = fakeApi({
+      draft: [
+        ...draftProblems(),
+        { problem_id: 31, statement: null, correct_run_count: 0, knowledge_components: [] },
+      ],
+    })
+    renderWithClient(<KnowledgeComponentsPage classroomId={1} assignmentId={1} />)
+    const approve = await screen.findByRole('button', { name: 'Aprovar conceitos' })
+    expect(approve).toBeDisabled()
+    expect(approve).not.toHaveAttribute('title')
+    expect(approve).not.toHaveAttribute('aria-describedby')
+    // O botão mora direto nas ações das abas, sem o invólucro de um balão em volta
+    expect(approve.parentElement).toHaveClass('tabs__actions')
+    fireEvent.click(approve)
+    expect(calls(spy, 'POST', '/knowledge-components/approve')).toHaveLength(0)
+  })
+
+  it('keeps the approved matrix editable, with the approval disabled and no footer sentence', async () => {
+    fakeApi({ draftStatus: 'kc_approved' })
+    renderWithClient(<KnowledgeComponentsPage classroomId={1} assignmentId={1} />)
+    expect(await screen.findByRole('button', { name: 'Aprovar conceitos' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Laços no problema 5' })).toBeEnabled()
+    expect(screen.getByRole('button', { name: 'Editar o nome de Laços' })).toBeInTheDocument()
+    expect(screen.getByText(/Conceitos aprovados. Mexer em qualquer conceito/)).toBeInTheDocument()
+    expect(screen.queryByText(/Clique numa célula/)).not.toBeInTheDocument()
+  })
+
+  it('shows why the approval was refused inside the card', async () => {
+    fakeApi({ refuseApprove: true })
+    renderWithClient(<KnowledgeComponentsPage classroomId={1} assignmentId={1} />)
+    fireEvent.click(await screen.findByRole('button', { name: 'Aprovar conceitos' }))
+    const alert = await screen.findByRole('alert')
+    expect(alert).toHaveTextContent('Não foi possível aprovar os conceitos')
+    expect(alert).toHaveTextContent('A mudança foi recusada. o problema 31 está sem conceito')
+    expect(alert.closest('.card')).toContainElement(
+      screen.getByRole('table', { name: 'Conceitos por problema' }),
+    )
   })
 })

@@ -1,5 +1,7 @@
 /* A rolagem lateral e o espaço em volta da tabela ficam no invólucro, dentro do cartão */
 .data-table__scroll {
+  /* O texto escondido, que é absoluto, fica preso no invólucro e não alarga a página */
+  position: relative;
   overflow-x: auto;
   padding: 14px 16px;
 }
@@ -59,6 +61,18 @@
   position: sticky;
   left: 0;
   z-index: 2;
+  background: var(--color-surface);
+}
+
+/* O recuo de 16px do invólucro, por onde as colunas roladas passariam, ganha o fundo do cartão */
+.data-table--sticky th:first-child::before,
+.data-table--sticky td:first-child::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  bottom: -1px;
+  left: -16px;
+  width: 16px;
   background: var(--color-surface);
 }
 

@@ -1,13 +1,15 @@
 import { Button } from '../../../components/ui/Button'
 import { Dialog, DialogBody, DialogFooter } from '../../../components/ui/Dialog'
-import { useUnlinkKnowledgeComponent, type KnowledgeComponent } from '../api/knowledgeComponents'
+import { useUnlinkKnowledgeComponent } from '../api/knowledgeComponents'
 import { editErrorText } from '../knowledgeComponents'
 import { LeavesProblemEmpty } from './LeavesProblemEmpty'
 import './KnowledgeComponentDialogs.css'
 
-// Só abre nos dois casos que pedem atenção, e nos outros o botão de remover tira direto
+// Só abre nos dois casos que pedem atenção, e nos outros o clique na célula desliga direto
 export type UnlinkTarget = {
-  kc: KnowledgeComponent
+  kcId: number
+  // O nome fica guardado porque o conceito some da resposta quando sai do exercício
+  kcName: string
   problemId: number
   // refused quando o problema ficaria vazio, confirm quando é o último problema do conceito
   kind: 'refused' | 'confirm'
@@ -28,7 +30,7 @@ export function UnlinkKnowledgeComponentDialog({
     ? ''
     : target.kind === 'refused'
       ? 'Não dá para tirar este conceito'
-      : `Tirar ${target.kc.name} do problema ${target.problemId}?`
+      : `Tirar ${target.kcName} do problema ${target.problemId}?`
   return (
     <Dialog open={target != null} onClose={onClose} title={title} tone="danger">
       {target?.kind === 'refused' ? (
@@ -72,10 +74,7 @@ function UnlinkConfirmation({
           variant="destructive"
           disabled={unlink.isPending}
           onClick={() =>
-            unlink.mutate(
-              { kcId: target.kc.id, problemId: target.problemId },
-              { onSuccess: onDone },
-            )
+            unlink.mutate({ kcId: target.kcId, problemId: target.problemId }, { onSuccess: onDone })
           }
         >
           Tirar conceito

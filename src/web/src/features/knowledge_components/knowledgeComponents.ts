@@ -1,28 +1,66 @@
 import type { StageState } from '../../components/ui/StageList'
 import { ApiError } from '../../http/client'
 import type { AssignmentStatus } from '../assignments/api/useAssignments'
-import type { GenerationJob, ProblemKnowledgeComponents } from './api/knowledgeComponents'
+import type {
+  GenerationJob,
+  KnowledgeComponent,
+  ProblemKnowledgeComponents,
+} from './api/knowledgeComponents'
 
 // Um conceito do exercício com os problemas que ele marca
-export interface KnowledgeComponentUsage {
-  id: number
-  name: string
+export interface KnowledgeComponentUsage extends KnowledgeComponent {
   problemIds: number[]
 }
 
-// A lista de conceitos sai invertendo a de problemas, sem pedir outra rota à api
+// A lista de conceitos sai invertendo a de problemas, na ordem da recorrência, do nome e do id
 export function knowledgeComponentsOf(
   problems: ProblemKnowledgeComponents[],
 ): KnowledgeComponentUsage[] {
   const byId = new Map<number, KnowledgeComponentUsage>()
   for (const problem of problems) {
     for (const kc of problem.knowledge_components) {
-      const usage = byId.get(kc.id) ?? { id: kc.id, name: kc.name, problemIds: [] }
+      const usage = byId.get(kc.id) ?? { ...kc, problemIds: [] }
       usage.problemIds.push(problem.problem_id)
       byId.set(kc.id, usage)
     }
   }
-  return [...byId.values()].sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'))
+  return [...byId.values()].sort(
+    (a, b) =>
+      b.problemIds.length - a.problemIds.length ||
+      a.name.localeCompare(b.name, 'pt-BR') ||
+      a.id - b.id,
+  )
+}
+
+// Quem já estava fica no lugar, o novo entra no fim e o removido sai, sem trocar a lista à toa
+export function stableKnowledgeComponentOrder(
+  previousIds: number[],
+  knowledgeComponents: KnowledgeComponentUsage[],
+): number[] {
+  const currentIds = new Set(knowledgeComponents.map((kc) => kc.id))
+  const keptIds = previousIds.filter((id) => currentIds.has(id))
+  const kept = new Set(keptIds)
+  const addedIds = knowledgeComponents.map((kc) => kc.id).filter((id) => !kept.has(id))
+  if (addedIds.length === 0 && keptIds.length === previousIds.length) return previousIds
+  return [...keptIds, ...addedIds]
+}
+
+// A célula vazia liga, e a ligada desliga direto, pede confirmação ou é recusada
+export type CellClickOutcome = 'link' | 'unlink' | 'confirm' | 'refused'
+
+// A recusa vem antes da confirmação, porque o problema vazio barra até o conceito que sairia junto
+export function cellClickOutcomeOf(
+  kcId: number,
+  problemId: number,
+  problems: ProblemKnowledgeComponents[],
+): CellClickOutcome {
+  const marks = (problem: ProblemKnowledgeComponents) =>
+    problem.knowledge_components.some((kc) => kc.id === kcId)
+  const problem = problems.find((candidate) => candidate.problem_id === problemId)
+  if (!problem || !marks(problem)) return 'link'
+  if (problem.knowledge_components.length === 1) return 'refused'
+  if (problems.filter(marks).length === 1) return 'confirm'
+  return 'unlink'
 }
 
 export function problemsWithoutKnowledgeComponent(

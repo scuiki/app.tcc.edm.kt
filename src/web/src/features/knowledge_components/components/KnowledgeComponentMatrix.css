@@ -1,0 +1,72 @@
+/* O nome corta com reticências e as estrelas ficam sempre à vista depois dele */
+.kc-matrix__name {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  font-weight: 700;
+}
+
+/* O sublinhado pontilhado avisa que o número tem o enunciado no balão */
+.kc-matrix__problem {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+  cursor: help;
+}
+
+.kc-matrix__problem--empty {
+  color: var(--color-danger-text);
+}
+
+.kc-matrix__problem--empty svg,
+.kc-matrix__zero svg {
+  flex-shrink: 0;
+  color: var(--color-danger);
+}
+
+.data-table td.kc-matrix__link {
+  padding: 0;
+  text-align: center;
+}
+
+/* A célula de 20px, preenchida quando o conceito está ligado ao problema */
+.kc-matrix__toggle {
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 1px solid var(--color-control-border);
+  background: var(--color-surface);
+  vertical-align: middle;
+  cursor: pointer;
+}
+
+.kc-matrix__toggle[aria-pressed='true'] {
+  border-color: var(--color-text);
+  background: var(--color-text);
+}
+
+.kc-matrix__toggle:disabled {
+  border-color: var(--color-rule);
+  cursor: default;
+}
+
+/* No treinado a célula ligada fica na cor do que aconteceu e não responde */
+.kc-matrix__toggle[aria-pressed='true']:disabled {
+  border-color: var(--color-observed);
+  background: var(--color-observed);
+}
+
+/* A última linha conta os conceitos de cada problema, separada pelo traço escuro */
+.kc-matrix__totals td {
+  border-top: 1px solid var(--color-text);
+  font-weight: 700;
+}
+
+.kc-matrix__zero {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--color-danger-text);
+}
