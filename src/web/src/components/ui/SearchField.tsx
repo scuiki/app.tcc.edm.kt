@@ -1,4 +1,3 @@
-import { useId } from 'react'
 import { Search } from 'lucide-react'
 
 import './Field.css'
@@ -9,23 +8,19 @@ interface SearchFieldProps {
   onChange: (value: string) => void
 }
 
-// A busca compacta de 32px, com o rótulo só para o leitor de tela
+// A busca compacta de 32px, e a caixa inteira é o rótulo, para o clique na lupa focar o campo
 export function SearchField({ label, value, onChange }: SearchFieldProps) {
-  const id = useId()
   return (
-    <div className="search-field">
+    <label className="search-field">
       <Search className="search-field__icon" size={15} aria-hidden="true" />
-      <label htmlFor={id} className="visually-hidden">
-        {label}
-      </label>
+      <span className="visually-hidden">{label}</span>
       <input
-        id={id}
         type="search"
         className="search-field__input"
         placeholder={label}
         value={value}
         onChange={(event) => onChange(event.target.value)}
       />
-    </div>
+    </label>
   )
 }

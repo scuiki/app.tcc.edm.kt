@@ -242,4 +242,5 @@ som só toca se houver problema.
 | 8 | Concluída, commit `628e153` |
 | 9 | Concluída, commit `a96ccb5` |
 | 10 | Concluída, commit `46237dc` |
-| 11 | Concluída |
+| 11 | Concluída, commit `abe83c1` |
+| Revisão independente da base | Concluída, com as correções no commit seguinte ao da etapa 11 |

@@ -74,7 +74,7 @@
   flex-grow: 1;
 }
 
-/* O mais e o menos fazem parte da linha e só engrossam no hover; a área de clique é folgada */
+/* O mais e o menos fazem parte da linha e só escurecem no hover; a área de clique é folgada */
 .side-menu__sign {
   flex-shrink: 0;
   display: inline-flex;

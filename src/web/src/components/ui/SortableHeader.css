@@ -1,10 +1,11 @@
-/* O botão ocupa só o rótulo e a seta, e a altura é a da linha do cabeçalho */
+/* O botão ocupa o rótulo e a seta, com a altura da linha do cabeçalho como área de clique */
 .sortable-header__button {
   display: inline-flex;
   align-items: center;
   gap: 2px;
   min-width: 0;
-  padding: 0;
+  min-height: var(--table-row-height);
+  padding: 0 2px;
   border: 0;
   background: transparent;
   color: inherit;
