@@ -23,3 +23,7 @@ class ISubmissionRepository(Protocol):
     def list_correct_runs(self, assignment_id: int) -> pd.DataFrame:
         # As execuções corretas, com `submission_id`, `student_id`, `problem_id`, o código e a hora.
         ...
+
+    def count_correct_runs_by_problem(self, assignment_id: int) -> dict[int, int]:
+        # Quantas execuções corretas cada problema tem, e o problema sem acerto não volta
+        ...

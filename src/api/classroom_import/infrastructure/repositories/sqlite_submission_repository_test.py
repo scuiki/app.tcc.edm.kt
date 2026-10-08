@@ -15,6 +15,7 @@ from api.classroom_import.infrastructure.repositories.sqlite_submission_reposito
 from tests.fixtures.assignments import add_assignment
 from tests.fixtures.classrooms import add_classroom
 from tests.fixtures.problems import add_problems
+from tests.fixtures.sample_data import cleaned_row, with_cleaned_dtypes
 
 
 def _cleaned(student_ids, snapshot_ids) -> pd.DataFrame:
@@ -37,6 +38,18 @@ def _cleaned(student_ids, snapshot_ids) -> pd.DataFrame:
         }
     )
     return df[CLEANED_COLUMNS]
+
+
+def _runs(plan) -> pd.DataFrame:
+    # Uma execução por (problema, evento, nota), com o acerto pela regra da limpeza
+    return with_cleaned_dtypes(
+        pd.DataFrame(
+            [
+                cleaned_row(f"S{i}", problem, "2019-03-01T08:00:00Z", event, score, "", f"c{i}")
+                for i, (problem, event, score) in enumerate(plan)
+            ]
+        )
+    )
 
 
 @pytest.mark.parametrize(
@@ -150,3 +163,57 @@ def test_an_assignment_without_a_correct_run_reads_as_empty_with_the_same_column
 
     assert runs.empty
     assert list(runs.columns) == CORRECT_RUN_COLUMNS
+
+
+def test_only_the_correct_runs_are_counted_by_problem(tmp_db):
+    # A nota 1.0 no Compile.Error mostra que o filtro é o acerto, e não a nota
+    repo = SqliteSubmissionRepository(tmp_db)
+    assignment_id = add_assignment(tmp_db, add_classroom(tmp_db))
+    add_problems(tmp_db, assignment_id, [1, 2, 3])
+    repo.add_many(
+        assignment_id,
+        _runs(
+            [
+                (1, "Run.Program", 1.0),
+                (1, "Run.Program", 0.5),
+                (1, "Run.Program", 1.0),
+                (2, "Run.Program", 1.0),
+                (2, "Compile.Error", 1.0),
+                (3, "Run.Program", 0.0),
+                (3, "Compile.Error", float("nan")),
+            ]
+        ),
+    )
+
+    # O problema 3 não tem acerto e não volta
+    assert repo.count_correct_runs_by_problem(assignment_id) == {1: 2, 2: 1}
+
+
+def test_a_correct_run_without_a_problem_is_not_counted(tmp_db):
+    repo = SqliteSubmissionRepository(tmp_db)
+    assignment_id = add_assignment(tmp_db, add_classroom(tmp_db))
+    add_problems(tmp_db, assignment_id, [1])
+    repo.add_many(assignment_id, _runs([(1, "Run.Program", 1.0), (None, "Run.Program", 1.0)]))
+
+    assert repo.count_correct_runs_by_problem(assignment_id) == {1: 1}
+
+
+def test_each_assignment_counts_only_its_own_correct_runs(tmp_db):
+    # O mesmo problema existe nos dois exercícios, e só o filtro do exercício separa as execuções
+    repo = SqliteSubmissionRepository(tmp_db)
+    classroom_id = add_classroom(tmp_db)
+    first = add_assignment(tmp_db, classroom_id, progsnap_assignment_id=439)
+    second = add_assignment(tmp_db, classroom_id, progsnap_assignment_id=487)
+    add_problems(tmp_db, first, [1])
+    add_problems(tmp_db, second, [1, 2])
+    repo.add_many(first, _runs([(1, "Run.Program", 1.0)]))
+    repo.add_many(second, _runs([(1, "Run.Program", 1.0)] * 3 + [(2, "Run.Program", 1.0)]))
+
+    assert repo.count_correct_runs_by_problem(first) == {1: 1}
+    assert repo.count_correct_runs_by_problem(second) == {1: 3, 2: 1}
+
+
+def test_an_assignment_without_a_correct_run_counts_nothing(tmp_db):
+    assignment_id = add_assignment(tmp_db, add_classroom(tmp_db))
+
+    assert SqliteSubmissionRepository(tmp_db).count_correct_runs_by_problem(assignment_id) == {}

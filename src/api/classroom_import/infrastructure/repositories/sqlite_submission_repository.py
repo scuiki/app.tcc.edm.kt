@@ -86,3 +86,13 @@ class SqliteSubmissionRepository:
         return df.astype({"submission_id": "int64", "problem_id": "Int64"}).assign(
             submitted_at=pd.to_datetime(df["submitted_at"], utc=True)
         )
+
+    def count_correct_runs_by_problem(self, assignment_id: int) -> dict[int, int]:
+        # A coluna aceita nulo, e o GROUP BY devolveria uma chave nula
+        rows = self._conn.execute(
+            "SELECT problem_id, COUNT(*) FROM submission "
+            "WHERE assignment_id = ? AND is_correct = 1 AND problem_id IS NOT NULL "
+            "GROUP BY problem_id;",
+            (assignment_id,),
+        ).fetchall()
+        return {int(problem_id): count for problem_id, count in rows}

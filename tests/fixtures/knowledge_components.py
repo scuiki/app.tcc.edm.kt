@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import re
+import sqlite3
 
 import numpy as np
 import pandas as pd
@@ -142,6 +143,36 @@ class MarkedCodeLLM:
             snippet = "\n".join(line.strip() for line in lines[first : first + 2])
             answer[f"KC {i}"] = {"solution": position, "snippet": snippet}
         return answer
+
+
+def add_extraction(
+    conn: sqlite3.Connection,
+    assignment_id: int,
+    *,
+    correct_runs: dict[int, int],
+    incorrect_runs: dict[int, int],
+    extracted_at: str,
+) -> None:
+    # Quantas execuções corretas e incorretas cada problema tem, e o kc_job concluído na data dada
+    runs = []
+    for problem_id, count in correct_runs.items():
+        runs += [(problem_id, 1)] * count
+    for problem_id, count in incorrect_runs.items():
+        runs += [(problem_id, 0)] * count
+    conn.executemany(
+        "INSERT INTO submission (assignment_id, student_id, problem_id, code_snapshot_id, code, "
+        "score, submitted_at, event_type, is_correct) "
+        "VALUES (?, ?, ?, ?, '', ?, '2019-03-01T08:00:00Z', 'Run.Program', ?);",
+        [
+            (assignment_id, f"S{n}", problem_id, f"c{n}", float(is_correct), is_correct)
+            for n, (problem_id, is_correct) in enumerate(runs)
+        ],
+    )
+    conn.execute(
+        "INSERT INTO kc_job (assignment_id, status, created_at, updated_at) "
+        "VALUES (?, 'done', ?, ?);",
+        (assignment_id, extracted_at, extracted_at),
+    )
 
 
 @pytest.fixture

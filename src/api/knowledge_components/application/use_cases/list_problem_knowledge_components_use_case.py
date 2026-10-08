@@ -5,12 +5,16 @@ from __future__ import annotations
 from api.assignments.domain.interfaces.assignment_repository import IAssignmentRepository
 from api.assignments.domain.services.existing_assignment import get_existing_assignment
 from api.assignments.problems.domain.interfaces.problem_repository import IProblemRepository
+from api.classroom_import.domain.interfaces.submission_repository import ISubmissionRepository
 from api.knowledge_components.application.dtos.edit_knowledge_components_dto import (
     KnowledgeComponentDTO,
 )
 from api.knowledge_components.application.dtos.list_problem_knowledge_components_dto import (
     ProblemKnowledgeComponentsDTO,
     ListProblemKnowledgeComponentsResponseDTO,
+)
+from api.knowledge_components.domain.interfaces.kc_generation_job_repository import (
+    IKnowledgeComponentGenerationJobRepository,
 )
 from api.knowledge_components.domain.interfaces.knowledge_component_repository import (
     IKnowledgeComponentRepository,
@@ -28,11 +32,15 @@ class ListProblemKnowledgeComponentsUseCase:
         problems: IProblemRepository,
         knowledge_components: IKnowledgeComponentRepository,
         problem_kcs: IProblemKnowledgeComponentRepository,
+        submissions: ISubmissionRepository,
+        jobs: IKnowledgeComponentGenerationJobRepository,
     ) -> None:
         self._assignments = assignments
         self._problems = problems
         self._knowledge_components = knowledge_components
         self._problem_kcs = problem_kcs
+        self._submissions = submissions
+        self._jobs = jobs
 
     def execute(self, assignment_id: int) -> ListProblemKnowledgeComponentsResponseDTO:
         assignment = get_existing_assignment(self._assignments, assignment_id)
@@ -40,13 +48,18 @@ class ListProblemKnowledgeComponentsUseCase:
         kcs_of: dict[int, list[int]] = {}
         for binding in self._problem_kcs.list_by_assignment(assignment_id):
             kcs_of.setdefault(binding.problem_id, []).append(binding.kc_id)
+        correct_runs_of = self._submissions.count_correct_runs_by_problem(assignment_id)
+        latest_extraction = self._jobs.find_latest_done(assignment_id)
         return ListProblemKnowledgeComponentsResponseDTO(
             assignment_id=assignment_id,
             status=assignment.status,
+            extracted_at=None if latest_extraction is None else latest_extraction.updated_at,
             problems=[
                 ProblemKnowledgeComponentsDTO(
                     problem_id=problem.problem_id,
                     description=problem.description,
+                    statement=problem.statement,
+                    correct_run_count=correct_runs_of.get(problem.problem_id, 0),
                     knowledge_components=[
                         KnowledgeComponentDTO(
                             id=kc_id,

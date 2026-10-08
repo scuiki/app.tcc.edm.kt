@@ -15,8 +15,14 @@ from api.assignments.problems.application.use_cases.list_problems_use_case impor
 from api.assignments.problems.infrastructure.repositories.sqlite_problem_repository import (
     SqliteProblemRepository,
 )
+from api.classroom_import.infrastructure.repositories.sqlite_submission_repository import (
+    SqliteSubmissionRepository,
+)
 from api.knowledge_components.application.use_cases.list_problem_knowledge_components_use_case import (
     ListProblemKnowledgeComponentsUseCase,
+)
+from api.knowledge_components.infrastructure.repositories.sqlite_kc_generation_job_repository import (
+    SqliteKnowledgeComponentGenerationJobRepository,
 )
 from api.knowledge_components.infrastructure.repositories.sqlite_knowledge_component_repository import (
     SqliteKnowledgeComponentRepository,
@@ -41,4 +47,6 @@ def list_problem_knowledge_components_use_case(
         SqliteProblemRepository(conn),
         SqliteKnowledgeComponentRepository(conn),
         SqliteProblemKnowledgeComponentRepository(conn),
+        SqliteSubmissionRepository(conn),
+        SqliteKnowledgeComponentGenerationJobRepository(conn),
     )

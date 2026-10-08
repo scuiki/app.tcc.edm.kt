@@ -4,7 +4,11 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { jsonResponse, renderWithClient } from '../../../test/renderWithClient'
 import type { AssignmentStatus, AssignmentSummary } from '../../assignments/api/useAssignments'
 import type { ClassroomSummary } from '../../classrooms/api/classrooms'
-import type { GenerationJob, ProblemKnowledgeComponents } from '../api/knowledgeComponents'
+import type {
+  AssignmentProblems,
+  GenerationJob,
+  ProblemKnowledgeComponents,
+} from '../api/knowledgeComponents'
 import { KnowledgeComponentsPage } from './KnowledgeComponentsPage'
 
 const CLASSROOM: ClassroomSummary = {
@@ -29,13 +33,32 @@ function assignment(id: number, progsnapId: number, status: AssignmentStatus): A
 const LOOPS = { id: 1, name: 'Laços', is_generated_by_llm: true }
 const IFS = { id: 2, name: 'Condicionais', is_generated_by_llm: true }
 const RECURSION = { id: 3, name: 'Recursão', is_generated_by_llm: true }
+const EXTRACTED_AT = '2026-10-07T12:00:00+00:00'
 
 // O problema 12 só tem Laços, e a Recursão só marca o problema 20
 function draftProblems(): ProblemKnowledgeComponents[] {
   return [
-    { problem_id: 5, description: null, knowledge_components: [LOOPS, IFS] },
-    { problem_id: 12, description: null, knowledge_components: [LOOPS] },
-    { problem_id: 20, description: null, knowledge_components: [IFS, RECURSION] },
+    {
+      problem_id: 5,
+      description: null,
+      statement: null,
+      correct_run_count: 12,
+      knowledge_components: [LOOPS, IFS],
+    },
+    {
+      problem_id: 12,
+      description: null,
+      statement: null,
+      correct_run_count: 9,
+      knowledge_components: [LOOPS],
+    },
+    {
+      problem_id: 20,
+      description: null,
+      statement: null,
+      correct_run_count: 7,
+      knowledge_components: [IFS, RECURSION],
+    },
   ]
 }
 
@@ -55,9 +78,24 @@ function fakeApi({ classrooms = [CLASSROOM], job, refuseStart = false }: FakeApi
   ]
   const problems: Record<number, ProblemKnowledgeComponents[]> = {
     1: draftProblems(),
-    2: [{ problem_id: 17, description: null, knowledge_components: [] }],
+    2: [
+      {
+        problem_id: 17,
+        description: null,
+        statement: null,
+        correct_run_count: 4,
+        knowledge_components: [],
+      },
+    ],
     3: [],
     4: draftProblems(),
+  }
+  // Só os exercícios que já passaram pela extração têm a data dela
+  const extractedAt: Record<number, string | null> = {
+    1: EXTRACTED_AT,
+    2: null,
+    3: null,
+    4: EXTRACTED_AT,
   }
   const statusOf = (id: number) => assignments.find((a) => a.id === id)!.status
 
@@ -69,7 +107,12 @@ function fakeApi({ classrooms = [CLASSROOM], job, refuseStart = false }: FakeApi
     const problemsMatch = path.match(/^\/assignments\/(\d+)\/problems\/knowledge-components$/)
     if (problemsMatch) {
       const id = Number(problemsMatch[1])
-      return jsonResponse({ assignment_id: id, status: statusOf(id), problems: problems[id] })
+      return jsonResponse({
+        assignment_id: id,
+        status: statusOf(id),
+        extracted_at: extractedAt[id],
+        problems: problems[id],
+      } satisfies AssignmentProblems)
     }
     if (path === '/knowledge-components/generation-jobs' && method === 'POST') {
       if (refuseStart) return jsonResponse({ detail: 'já existe um job em andamento' }, 409)
@@ -79,7 +122,8 @@ function fakeApi({ classrooms = [CLASSROOM], job, refuseStart = false }: FakeApi
       // Quando o job termina, o exercício 2 ganha conceitos e vira rascunho
       if (job?.status === 'done') {
         assignments[1] = { ...assignments[1], status: 'kc_draft' }
-        problems[2] = [{ problem_id: 17, description: null, knowledge_components: [LOOPS] }]
+        problems[2] = [{ ...problems[2][0], knowledge_components: [LOOPS] }]
+        extractedAt[2] = EXTRACTED_AT
       }
       return jsonResponse(job)
     }

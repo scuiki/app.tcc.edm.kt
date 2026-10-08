@@ -601,6 +601,8 @@ export interface components {
             /** Assignment Id */
             assignment_id: number;
             status: components["schemas"]["AssignmentStatus"] | null;
+            /** Extracted At */
+            extracted_at: string | null;
             /** Problems */
             problems: components["schemas"]["ProblemKnowledgeComponentsDTO"][];
         };
@@ -648,6 +650,10 @@ export interface components {
             problem_id: number;
             /** Description */
             description: string | null;
+            /** Statement */
+            statement: string | null;
+            /** Correct Run Count */
+            correct_run_count: number;
             /** Knowledge Components */
             knowledge_components: components["schemas"]["KnowledgeComponentDTO"][];
         };

@@ -19,9 +19,27 @@ const IFS = { id: 2, name: 'Condicionais', is_generated_by_llm: true }
 describe('knowledgeComponentsOf', () => {
   it('inverts problems into concepts with the problems each one marks, by name', () => {
     const usages = knowledgeComponentsOf([
-      { problem_id: 5, description: null, knowledge_components: [LOOPS, IFS] },
-      { problem_id: 12, description: null, knowledge_components: [LOOPS] },
-      { problem_id: 20, description: null, knowledge_components: [] },
+      {
+        problem_id: 5,
+        description: null,
+        statement: null,
+        correct_run_count: 12,
+        knowledge_components: [LOOPS, IFS],
+      },
+      {
+        problem_id: 12,
+        description: null,
+        statement: null,
+        correct_run_count: 9,
+        knowledge_components: [LOOPS],
+      },
+      {
+        problem_id: 20,
+        description: null,
+        statement: null,
+        correct_run_count: 0,
+        knowledge_components: [],
+      },
     ])
     expect(usages).toEqual([
       { id: 2, name: 'Condicionais', problemIds: [5] },
@@ -109,9 +127,27 @@ describe('stageStateOf', () => {
 describe('problemsOnlyMarkedBy', () => {
   it('finds the problems left without a concept if this one goes away', () => {
     const problems = [
-      { problem_id: 5, description: null, knowledge_components: [LOOPS] },
-      { problem_id: 12, description: null, knowledge_components: [LOOPS, IFS] },
-      { problem_id: 20, description: null, knowledge_components: [IFS] },
+      {
+        problem_id: 5,
+        description: null,
+        statement: null,
+        correct_run_count: 12,
+        knowledge_components: [LOOPS],
+      },
+      {
+        problem_id: 12,
+        description: null,
+        statement: null,
+        correct_run_count: 9,
+        knowledge_components: [LOOPS, IFS],
+      },
+      {
+        problem_id: 20,
+        description: null,
+        statement: null,
+        correct_run_count: 7,
+        knowledge_components: [IFS],
+      },
     ]
     expect(problemsOnlyMarkedBy(1, problems)).toEqual([5])
     expect(problemsOnlyMarkedBy(2, problems)).toEqual([20])
