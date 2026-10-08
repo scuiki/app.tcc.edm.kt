@@ -74,11 +74,12 @@ docker run --rm --security-opt label=disable -v "$PWD":/app -w /app \
   edmkt-core:dev python -m pytest -q
 ```
 
-A regra de dependência entre camadas é verificada pelo `import-linter` (também no container):
+A regra de dependência entre camadas é verificada pelo `import-linter`, que roda dentro da suíte
+rápida (`src/api/import_contracts_test.py`). O relatório completo dos contratos sai do comando
+solto, também no container:
 
 ```bash
-docker run --rm --security-opt label=disable -v "$PWD":/app -w /app edmkt-core:dev \
-  sh -c "pip install -q import-linter==2.15 && PYTHONPATH=/app/src lint-imports"
+docker run --rm --security-opt label=disable -v "$PWD":/app -w /app edmkt-core:dev lint-imports
 ```
 
 O `addopts = -m 'not regression and not literature'` (em `pyproject.toml`) desmarca os testes de

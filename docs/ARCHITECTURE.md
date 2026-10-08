@@ -89,9 +89,11 @@ presentation → application → domain ← infrastructure
 - **Uma sub-funcionalidade** (como `assignments/problems/`) é uma pasta com as quatro camadas
   próprias dentro de uma funcionalidade. Para as regras, ela conta como uma funcionalidade à parte.
 
-Essas regras são verificadas pelo `import-linter` (contratos em `pyproject.toml`). Uma violação
-reprova a verificação, então a regra não depende de lembrar dela. As convenções de pasta e de
-nome das interfaces são verificadas por `src/api/architecture_test.py`, que roda com a suíte:
+Essas regras são verificadas pelo `import-linter` (contratos em `pyproject.toml`), que roda dentro
+da suíte por `src/api/import_contracts_test.py`. Uma violação reprova o pytest, então a regra não
+depende de lembrar dela. As convenções de pasta e de nome das interfaces são verificadas por
+`src/api/architecture_test.py`, que também roda com a suíte. O relatório completo dos contratos
+sai do comando solto:
 
 ```bash
 docker run --rm --security-opt label=disable -v "$PWD":/app -w /app edmkt-core:dev lint-imports
