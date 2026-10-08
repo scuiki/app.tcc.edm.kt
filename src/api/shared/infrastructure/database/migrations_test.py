@@ -591,3 +591,21 @@ def test_the_evidence_table_refuses_what_makes_no_sense(tmp_path):
     ):
         with pytest.raises(sqlite3.IntegrityError):
             insert(**kwargs)
+
+
+# 0021 sobre um banco em user_version=20, o conceito ganha a data da última edição.
+def test_migration_0021_adds_the_updated_at_to_the_kc(tmp_path):
+    conn = connect(str(tmp_path / "app.db"))
+    run_migrations(conn, migrations_dir=_migrations_up_to(tmp_path, 20))
+    assignment_id = _seed_assignment(conn)
+    conn.execute(
+        "INSERT INTO kc (assignment_id, name, generated_name) VALUES (?, 'Laços', 'loops');",
+        (assignment_id,),
+    )
+
+    run_migrations(conn, migrations_dir=_migrations_up_to(tmp_path, 21))
+
+    assert _user_version(conn) == 21
+    # O conceito que já existia fica sem edição, então continua gerado
+    row = conn.execute("SELECT name, generated_name, updated_at FROM kc;").fetchone()
+    assert row[:] == ("Laços", "loops", None)

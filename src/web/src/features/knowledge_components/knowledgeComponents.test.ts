@@ -13,8 +13,8 @@ import {
   GENERATION_STAGES,
 } from './knowledgeComponents'
 
-const LOOPS = { id: 1, name: 'Laços' }
-const IFS = { id: 2, name: 'Condicionais' }
+const LOOPS = { id: 1, name: 'Laços', is_generated_by_llm: true }
+const IFS = { id: 2, name: 'Condicionais', is_generated_by_llm: true }
 
 describe('knowledgeComponentsOf', () => {
   it('inverts problems into concepts with the problems each one marks, by name', () => {

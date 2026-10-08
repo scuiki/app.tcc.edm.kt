@@ -28,9 +28,15 @@ from tests.fixtures.problems import add_problems
 _NOW = "2026-06-21T00:00:00Z"
 
 
-def _seed_kc(conn, assignment_id, name, kc_index=None) -> int:
+def _seed_kc(conn, assignment_id, name, kc_index=None, generated_name=None) -> int:
     return SqliteKnowledgeComponentRepository(conn).add(
-        KnowledgeComponent(id=None, assignment_id=assignment_id, name=name, group_index=kc_index)
+        KnowledgeComponent(
+            id=None,
+            assignment_id=assignment_id,
+            name=name,
+            group_index=kc_index,
+            generated_name=generated_name,
+        )
     )
 
 
@@ -39,6 +45,20 @@ def _bind(conn, assignment_id, kc_id, problem_id) -> None:
     SqliteProblemKnowledgeComponentRepository(conn).add(
         ProblemKnowledgeComponent(id=None, assignment_id=assignment_id, kc_id=kc_id, problem_id=problem_id)
     )
+
+
+def _updated_at(conn, kc_id) -> str | None:
+    return conn.execute("SELECT updated_at FROM kc WHERE id = ?;", (kc_id,)).fetchone()[0]
+
+
+def _markers(client, assignment_id) -> dict[str, bool]:
+    # O marcador de gerado de cada conceito, como a rota da tela Conceitos o entrega
+    body = client.get(f"/assignments/{assignment_id}/problems/knowledge-components").json()
+    return {
+        kc["name"]: kc["is_generated_by_llm"]
+        for problem in body["problems"]
+        for kc in problem["knowledge_components"]
+    }
 
 
 # Captura os args do dispatch sem spawnar processo, KC-gen real nunca roda.
@@ -105,16 +125,64 @@ def test_poll_missing_job_404(api_client):
 # Edição dos KCs
 
 
-def test_rename_kc_updates_name(api_client, monkeypatch):
+def test_renaming_a_generated_concept_records_the_edit_and_drops_the_marker(api_client):
     client, conn = api_client
     aid = add_assignment(conn, add_classroom(conn), status="kc_draft")
-    kc_id = _seed_kc(conn, aid, "nome antigo")
+    kc_id = _seed_kc(conn, aid, "nome antigo", generated_name="old name")
     _bind(conn, aid, kc_id, problem_id=1)
+    assert _markers(client, aid) == {"nome antigo": True}
 
     resp = client.put(f"/knowledge-components/{kc_id}", json={"name": "nome novo"})
-    assert resp.status_code == 200
 
+    assert resp.status_code == 200
+    assert resp.json() == {"id": kc_id, "name": "nome novo", "is_generated_by_llm": False}
     assert SqliteKnowledgeComponentRepository(conn).get(kc_id).name == "nome novo"
+    assert _updated_at(conn, kc_id) is not None
+    assert _markers(client, aid) == {"nome novo": False}
+
+
+def test_renaming_to_the_same_name_writes_nothing(api_client):
+    # O mesmo nome não é edição, então não tira as estrelas nem reabre a aprovação
+    client, conn = api_client
+    aid = add_assignment(conn, add_classroom(conn), status="kc_approved")
+    kc_id = _seed_kc(conn, aid, "Laços", generated_name="loops")
+    _bind(conn, aid, kc_id, problem_id=1)
+
+    resp = client.put(f"/knowledge-components/{kc_id}", json={"name": "Laços"})
+
+    assert resp.status_code == 200
+    assert resp.json() == {"id": kc_id, "name": "Laços", "is_generated_by_llm": True}
+    assert _updated_at(conn, kc_id) is None
+    assert SqliteAssignmentRepository(conn).get(aid).status == "kc_approved"
+
+
+def test_renaming_to_the_same_name_after_training_is_still_refused(api_client):
+    client, conn = api_client
+    aid = add_assignment(conn, add_classroom(conn), status="trained")
+    kc_id = _seed_kc(conn, aid, "Laços", generated_name="loops")
+    _bind(conn, aid, kc_id, problem_id=1)
+
+    resp = client.put(f"/knowledge-components/{kc_id}", json={"name": "Laços"})
+
+    assert resp.status_code == 409
+    assert resp.json()["detail"] == "os conceitos de um exercício treinado não mudam"
+
+
+def test_the_screen_route_marks_only_the_generated_concepts_nobody_renamed(api_client):
+    client, conn = api_client
+    aid = add_assignment(conn, add_classroom(conn), status="kc_draft")
+    generated = _seed_kc(conn, aid, "Laços", generated_name="loops")
+    renamed = _seed_kc(conn, aid, "Condicionais", generated_name="conditionals")
+    for kc_id in (generated, renamed):
+        _bind(conn, aid, kc_id, problem_id=1)
+    renamed_response = client.put(f"/knowledge-components/{renamed}", json={"name": "Desvios"})
+    assert renamed_response.status_code == 200
+    created = client.post(
+        "/knowledge-components", json={"assignment_id": aid, "name": "Vetores", "problem_ids": [1]}
+    )
+    assert created.status_code == 201
+
+    assert _markers(client, aid) == {"Laços": True, "Desvios": False, "Vetores": False}
 
 
 def test_remove_that_empties_a_problem_is_blocked(api_client):
@@ -165,6 +233,33 @@ def test_approve_rejects_draft_without_kcs(api_client):
     resp = client.post("/knowledge-components/approve", json={"assignment_id": aid})
     assert resp.status_code == 409
     assert SqliteAssignmentRepository(conn).get(aid).status == "kc_draft"
+
+
+def test_approve_rejects_a_problem_without_a_concept_and_names_it(api_client):
+    client, conn = api_client
+    aid = add_assignment(conn, add_classroom(conn), status="kc_draft")
+    kc_id = _seed_kc(conn, aid, "Laços")
+    _bind(conn, aid, kc_id, problem_id=1)
+    add_problems(conn, aid, [2, 3])
+
+    resp = client.post("/knowledge-components/approve", json={"assignment_id": aid})
+
+    assert resp.status_code == 409
+    assert resp.json()["detail"] == "problemas sem nenhum KC [2, 3]"
+    assert SqliteAssignmentRepository(conn).get(aid).status == "kc_draft"
+
+
+def test_approve_of_a_draft_with_problems_and_no_concept_gives_only_the_empty_draft_refusal(
+    api_client,
+):
+    client, conn = api_client
+    aid = add_assignment(conn, add_classroom(conn), status="kc_draft")
+    add_problems(conn, aid, [1, 2])
+
+    resp = client.post("/knowledge-components/approve", json={"assignment_id": aid})
+
+    assert resp.status_code == 409
+    assert resp.json()["detail"] == "assignment não tem nenhum KC para aprovar"
 
 
 def test_editing_after_approval_reverts_status(api_client):
@@ -315,7 +410,6 @@ def test_linking_is_refused_for_a_repeated_link_or_a_problem_of_another_assignme
     assert client.post("/knowledge-components/999/problems/1").status_code == 404
 
 
-
 def test_a_kc_of_a_removed_assignment_is_404_on_every_route_by_kc_id(api_client):
     client, conn = api_client
     aid = add_assignment(conn, add_classroom(conn), status="kc_draft")
@@ -327,3 +421,78 @@ def test_a_kc_of_a_removed_assignment_is_404_on_every_route_by_kc_id(api_client)
     assert client.delete(f"/knowledge-components/{kc_id}").status_code == 404
     assert client.post(f"/knowledge-components/{kc_id}/problems/1").status_code == 404
     assert client.delete(f"/knowledge-components/{kc_id}/problems/1").status_code == 404
+
+
+# Criar um conceito, sempre ligado a ao menos um problema
+
+
+def _create(client, assignment_id, problem_ids):
+    return client.post(
+        "/knowledge-components",
+        json={"assignment_id": assignment_id, "name": "Vetores", "problem_ids": problem_ids},
+    )
+
+
+def test_creating_a_concept_binds_it_to_the_chosen_problems(api_client):
+    client, conn = api_client
+    aid = add_assignment(conn, add_classroom(conn), status="kc_draft")
+    add_problems(conn, aid, [1, 2, 3])
+
+    resp = _create(client, aid, [1, 3])
+
+    assert resp.status_code == 201
+    kc_id = resp.json()["id"]
+    assert resp.json() == {"id": kc_id, "name": "Vetores", "is_generated_by_llm": False}
+    assert _active_links(conn, kc_id) == [1, 3]
+    created = SqliteKnowledgeComponentRepository(conn).get(kc_id)
+    # O conceito do professor nasce sem grupo, sem nome gerado e sem edição
+    assert (created.group_index, created.generated_name, created.updated_at) == (None, None, None)
+
+
+def test_creating_a_concept_needs_at_least_one_problem(api_client):
+    client, conn = api_client
+    aid = add_assignment(conn, add_classroom(conn), status="kc_draft")
+    add_problems(conn, aid, [1])
+
+    empty = _create(client, aid, [])
+    missing = client.post("/knowledge-components", json={"assignment_id": aid, "name": "Vetores"})
+
+    assert (empty.status_code, missing.status_code) == (422, 422)
+    assert SqliteKnowledgeComponentRepository(conn).list_by_assignment(aid) == []
+
+
+def test_creating_a_concept_sends_approved_concepts_back_to_draft(api_client):
+    client, conn = api_client
+    aid = add_assignment(conn, add_classroom(conn), status="kc_approved")
+    add_problems(conn, aid, [1])
+
+    assert _create(client, aid, [1]).status_code == 201
+
+    assert SqliteAssignmentRepository(conn).get(aid).status == "kc_draft"
+
+
+def test_creating_a_concept_after_training_is_refused_and_nothing_changes(api_client):
+    client, conn = api_client
+    aid = add_assignment(conn, add_classroom(conn), status="trained")
+    add_problems(conn, aid, [1])
+
+    resp = _create(client, aid, [1])
+
+    assert resp.status_code == 409
+    assert SqliteKnowledgeComponentRepository(conn).list_by_assignment(aid) == []
+    assert SqliteAssignmentRepository(conn).get(aid).status == "trained"
+
+
+def test_creating_a_concept_with_a_problem_of_another_assignment_is_refused(api_client):
+    client, conn = api_client
+    classroom_id = add_classroom(conn)
+    aid = add_assignment(conn, classroom_id, status="kc_draft")
+    other = add_assignment(conn, classroom_id, name="B", status="kc_draft")
+    add_problems(conn, aid, [1])
+    add_problems(conn, other, [9])
+
+    resp = _create(client, aid, [1, 9])
+
+    assert resp.status_code == 409
+    assert resp.json()["detail"] == "problemas que não existem no assignment [9]"
+    assert SqliteKnowledgeComponentRepository(conn).list_by_assignment(aid) == []

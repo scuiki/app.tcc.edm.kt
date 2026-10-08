@@ -51,15 +51,21 @@ def test_a_kc_round_trips_with_its_group_index_and_generated_name(tmp_db, assign
 def test_rename_and_remove_keeps_the_row_as_history(tmp_db, assignment_id):
     repository = SqliteKnowledgeComponentRepository(tmp_db)
     kc_id = repository.add(KnowledgeComponent(id=None, assignment_id=assignment_id, name="a"))
+    assert repository.get(kc_id).updated_at is None
 
-    repository.rename(kc_id, "b")
-    assert repository.get(kc_id).name == "b"
-    repository.remove(kc_id, "t1")
+    repository.rename(kc_id, "b", "t1")
+    renamed = repository.get(kc_id)
+    assert (renamed.name, renamed.updated_at) == ("b", "t1")
+    assert repository.list_by_assignment(assignment_id)[0].updated_at == "t1"
+    repository.remove(kc_id, "t2")
 
     assert repository.get(kc_id) is None
     assert repository.list_by_assignment(assignment_id) == []
-    row = tmp_db.execute("SELECT name, deleted_at FROM kc WHERE id = ?;", (kc_id,)).fetchone()
-    assert tuple(row) == ("b", "t1")  # a linha fica, só marcada como removida
+    row = tmp_db.execute(
+        "SELECT name, updated_at, deleted_at FROM kc WHERE id = ?;", (kc_id,)
+    ).fetchone()
+    # A linha fica, só marcada como removida, e a remoção não conta como edição do nome
+    assert tuple(row) == ("b", "t1", "t2")
 
 
 def test_binding_the_same_problem_twice_keeps_one_active_link(tmp_db, assignment_id):
@@ -127,7 +133,7 @@ def test_renaming_a_concept_keeps_its_generated_name(tmp_db, assignment_id):
         )
     )
 
-    repository.rename(kc_id, "Laços")
+    repository.rename(kc_id, "Laços", "t1")
 
     renamed = repository.get(kc_id)
-    assert (renamed.name, renamed.generated_name) == ("Laços", "for loop")
+    assert (renamed.name, renamed.generated_name, renamed.updated_at) == ("Laços", "for loop", "t1")

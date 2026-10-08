@@ -13,6 +13,12 @@ from api.knowledge_components.domain.rules.assignment_is_kc_draft_rule import (
     AssignmentIsKcDraftRule,
 )
 from api.knowledge_components.domain.entities.knowledge_component_entity import KnowledgeComponent
+from api.knowledge_components.domain.entities.problem_knowledge_component_entity import (
+    ProblemKnowledgeComponent,
+)
+from api.knowledge_components.domain.rules.every_problem_has_a_knowledge_component_rule import (
+    EveryProblemHasAKnowledgeComponentRule,
+)
 from api.knowledge_components.domain.rules.problems_belong_to_assignment_rule import (
     ProblemsBelongToAssignmentRule,
 )
@@ -79,3 +85,39 @@ def test_a_new_kc_can_only_bind_problems_of_its_assignment():
     assert rule.check(SimpleNamespace(assignment_id=7, problem_ids=[2, 3, 9])) == (
         "problemas que não existem no assignment [3, 9]"
     )
+
+
+class _InMemoryProblemKnowledgeComponents:
+    def __init__(self, *bindings: ProblemKnowledgeComponent) -> None:
+        self._bindings = bindings
+
+    def list_by_assignment(self, assignment_id: int) -> list[ProblemKnowledgeComponent]:
+        return [b for b in self._bindings if b.assignment_id == assignment_id]
+
+
+def _binding(assignment_id: int, kc_id: int, problem_id: int) -> ProblemKnowledgeComponent:
+    return ProblemKnowledgeComponent(
+        id=None, assignment_id=assignment_id, kc_id=kc_id, problem_id=problem_id
+    )
+
+
+def test_approval_needs_a_concept_on_every_problem_and_the_refusal_lists_them():
+    rule = EveryProblemHasAKnowledgeComponentRule(
+        _InMemoryProblems(Problem(7, 1), Problem(7, 2), Problem(7, 3), Problem(8, 1)),
+        _InMemoryKnowledgeComponents(_kc(1, 7), _kc(2, 8)),
+        _InMemoryProblemKnowledgeComponents(_binding(7, 1, 2), _binding(8, 2, 1)),
+    )
+
+    assert rule.check(SimpleNamespace(assignment_id=7)) == "problemas sem nenhum KC [1, 3]"
+    assert rule.check(SimpleNamespace(assignment_id=8)) is None
+
+
+def test_the_rule_of_every_problem_is_silent_without_any_concept():
+    # Sem conceito fica só a recusa do rascunho vazio, e o exercício que não existe já é o 404
+    rule = EveryProblemHasAKnowledgeComponentRule(
+        _InMemoryProblems(Problem(7, 1), Problem(7, 2), Problem(8, 1)),
+        _InMemoryKnowledgeComponents(_kc(1, 8)),
+        _InMemoryProblemKnowledgeComponents(_binding(8, 1, 1)),
+    )
+
+    assert rule.check(SimpleNamespace(assignment_id=7)) is None

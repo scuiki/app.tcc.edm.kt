@@ -26,9 +26,9 @@ function assignment(id: number, progsnapId: number, status: AssignmentStatus): A
   }
 }
 
-const LOOPS = { id: 1, name: 'Laços' }
-const IFS = { id: 2, name: 'Condicionais' }
-const RECURSION = { id: 3, name: 'Recursão' }
+const LOOPS = { id: 1, name: 'Laços', is_generated_by_llm: true }
+const IFS = { id: 2, name: 'Condicionais', is_generated_by_llm: true }
+const RECURSION = { id: 3, name: 'Recursão', is_generated_by_llm: true }
 
 // O problema 12 só tem Laços, e a Recursão só marca o problema 20
 function draftProblems(): ProblemKnowledgeComponents[] {

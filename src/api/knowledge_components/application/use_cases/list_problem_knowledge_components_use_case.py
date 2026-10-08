@@ -36,9 +36,7 @@ class ListProblemKnowledgeComponentsUseCase:
 
     def execute(self, assignment_id: int) -> ListProblemKnowledgeComponentsResponseDTO:
         assignment = get_existing_assignment(self._assignments, assignment_id)
-        name_of = {
-            kc.id: kc.name for kc in self._knowledge_components.list_by_assignment(assignment_id)
-        }
+        kc_of = {kc.id: kc for kc in self._knowledge_components.list_by_assignment(assignment_id)}
         kcs_of: dict[int, list[int]] = {}
         for binding in self._problem_kcs.list_by_assignment(assignment_id):
             kcs_of.setdefault(binding.problem_id, []).append(binding.kc_id)
@@ -50,7 +48,11 @@ class ListProblemKnowledgeComponentsUseCase:
                     problem_id=problem.problem_id,
                     description=problem.description,
                     knowledge_components=[
-                        KnowledgeComponentDTO(id=kc_id, name=name_of[kc_id])
+                        KnowledgeComponentDTO(
+                            id=kc_id,
+                            name=kc_of[kc_id].name,
+                            is_generated_by_llm=kc_of[kc_id].is_generated_by_llm,
+                        )
                         for kc_id in sorted(kcs_of.get(problem.problem_id, []))
                     ],
                 )

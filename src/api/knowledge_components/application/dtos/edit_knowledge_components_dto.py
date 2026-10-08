@@ -1,7 +1,7 @@
 # Pedidos e respostas das edições que o professor faz nos KCs.
 from __future__ import annotations
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from api.assignments.domain.value_objects.assignment_status import AssignmentStatus
 
@@ -9,7 +9,8 @@ from api.assignments.domain.value_objects.assignment_status import AssignmentSta
 class AddKnowledgeComponentDTO(BaseModel):
     assignment_id: int
     name: str
-    problem_ids: list[int] = []  # os problemas que o novo KC já liga (opcional)
+    # Um KC sem problema não entra em nenhuma conta, e a lista vazia ou ausente é recusada com 422
+    problem_ids: list[int] = Field(min_length=1)
 
 
 # O corpo do PUT; o kc_id vem do caminho e é juntado no controller.
@@ -33,6 +34,7 @@ class ApproveKnowledgeComponentsDTO(BaseModel):
 class KnowledgeComponentDTO(BaseModel):
     id: int
     name: str
+    is_generated_by_llm: bool  # a regra fica na entidade, e o DTO só copia
 
 
 class RemovedKnowledgeComponentDTO(BaseModel):

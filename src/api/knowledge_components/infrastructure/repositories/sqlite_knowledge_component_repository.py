@@ -13,6 +13,7 @@ def _to_entity(row: sqlite3.Row) -> KnowledgeComponent:
         name=row["name"],
         group_index=row["kc_index"],
         generated_name=row["generated_name"],
+        updated_at=row["updated_at"],
     )
 
 
@@ -34,7 +35,7 @@ class SqliteKnowledgeComponentRepository:
 
     def get(self, kc_id: int) -> KnowledgeComponent | None:
         row = self._conn.execute(
-            "SELECT id, assignment_id, name, kc_index, generated_name FROM kc "
+            "SELECT id, assignment_id, name, kc_index, generated_name, updated_at FROM kc "
             "WHERE id = ? AND deleted_at IS NULL;",
             (kc_id,),
         ).fetchone()
@@ -42,16 +43,17 @@ class SqliteKnowledgeComponentRepository:
 
     def list_by_assignment(self, assignment_id: int) -> list[KnowledgeComponent]:
         rows = self._conn.execute(
-            "SELECT id, assignment_id, name, kc_index, generated_name FROM kc "
+            "SELECT id, assignment_id, name, kc_index, generated_name, updated_at FROM kc "
             "WHERE assignment_id = ? AND deleted_at IS NULL ORDER BY id;",
             (assignment_id,),
         ).fetchall()
         return [_to_entity(r) for r in rows]
 
-    def rename(self, kc_id: int, name: str) -> None:
+    def rename(self, kc_id: int, name: str, updated_at: str) -> None:
         # Nome vem do professor, parametrizado, nunca interpolado.
         self._conn.execute(
-            "UPDATE kc SET name = ? WHERE id = ? AND deleted_at IS NULL;", (name, kc_id)
+            "UPDATE kc SET name = ?, updated_at = ? WHERE id = ? AND deleted_at IS NULL;",
+            (name, updated_at, kc_id),
         )
 
     def remove(self, kc_id: int, removed_at: str) -> None:

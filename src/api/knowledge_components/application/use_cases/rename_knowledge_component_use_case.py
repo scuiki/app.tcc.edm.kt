@@ -17,6 +17,7 @@ from api.knowledge_components.domain.services.knowledge_component_edit import (
     revert_approval_after_edit,
 )
 from api.shared.application.interfaces.unit_of_work import IUnitOfWork
+from api.shared.application.services.clock import utc_now_iso
 from api.shared.application.use_cases.write_use_case import WriteUseCase
 
 
@@ -37,6 +38,16 @@ class RenameKnowledgeComponentUseCase(WriteUseCase):
         )
         with self._unit_of_work:
             refuse_edit_after_training(self._assignments, knowledge_component.assignment_id)
-            self._knowledge_components.rename(dto.kc_id, dto.name)
-            revert_approval_after_edit(self._assignments, knowledge_component.assignment_id)
-        return KnowledgeComponentDTO(id=dto.kc_id, name=dto.name)
+            # O mesmo nome não é edição, então não tira as estrelas nem reabre a aprovação
+            if dto.name != knowledge_component.name:
+                knowledge_component.name = dto.name
+                knowledge_component.updated_at = utc_now_iso()
+                self._knowledge_components.rename(
+                    dto.kc_id, knowledge_component.name, knowledge_component.updated_at
+                )
+                revert_approval_after_edit(self._assignments, knowledge_component.assignment_id)
+        return KnowledgeComponentDTO(
+            id=dto.kc_id,
+            name=knowledge_component.name,
+            is_generated_by_llm=knowledge_component.is_generated_by_llm,
+        )

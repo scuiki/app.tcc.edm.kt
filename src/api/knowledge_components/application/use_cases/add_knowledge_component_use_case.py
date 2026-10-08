@@ -48,10 +48,13 @@ class AddKnowledgeComponentUseCase(WriteUseCase):
         with self._unit_of_work:
             refuse_edit_after_training(self._assignments, dto.assignment_id)
             # Um KC do professor não veio de um grupo do KCGen-KT, group_index fica vazio.
-            kc_id = self._knowledge_components.add(
-                KnowledgeComponent(id=None, assignment_id=dto.assignment_id, name=dto.name)
+            knowledge_component = KnowledgeComponent(
+                id=None, assignment_id=dto.assignment_id, name=dto.name
             )
+            kc_id = self._knowledge_components.add(knowledge_component)
             self._problem_kcs.bind_problems(dto.assignment_id, kc_id, dto.problem_ids)
             # Toda edição volta os KCs aprovados para rascunho, mesmo esta que só cobre mais.
             revert_approval_after_edit(self._assignments, dto.assignment_id)
-        return KnowledgeComponentDTO(id=kc_id, name=dto.name)
+        return KnowledgeComponentDTO(
+            id=kc_id, name=dto.name, is_generated_by_llm=knowledge_component.is_generated_by_llm
+        )

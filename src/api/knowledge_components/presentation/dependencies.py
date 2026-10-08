@@ -169,7 +169,9 @@ def approve_knowledge_components_use_case(
 ) -> ApproveKnowledgeComponentsUseCase:
     return ApproveKnowledgeComponentsUseCase(
         SqliteAssignmentRepository(conn),
+        SqliteProblemRepository(conn),
         SqliteKnowledgeComponentRepository(conn),
+        SqliteProblemKnowledgeComponentRepository(conn),
         SqliteUnitOfWork(conn),
     )
 
