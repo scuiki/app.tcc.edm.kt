@@ -7,12 +7,10 @@ interface HistogramProps {
   // O que está sendo contado, como "alunos", para o texto de cada barra
   unit: string
   label: string
-  // Sem o eixo, numa tabela em que o cabeçalho já diz a escala
-  axis?: boolean
 }
 
-// Dez barras num tom só, sem corte nem rótulo; a forma é o dado e a leitura é de quem olha
-export function Histogram({ bins, unit, label, axis = true }: HistogramProps) {
+// Dez barras num tom só, sem eixo, porque a escala está na dica do cabeçalho da coluna
+export function Histogram({ bins, unit, label }: HistogramProps) {
   const max = Math.max(1, ...bins)
   const width = Math.round(100 / bins.length)
   return (
@@ -21,22 +19,16 @@ export function Histogram({ bins, unit, label, axis = true }: HistogramProps) {
         {bins.map((count, index) => (
           <Tooltip
             key={index}
-            text={`${count} ${unit} entre ${index * width}% e ${(index + 1) * width}%`}
+            text={`${index * width} a ${(index + 1) * width}%, ${count} ${unit}`}
           >
-            <span
-              className="histogram__bar"
-              style={{ height: `${Math.max(2, (count / max) * 100)}%` }}
-            />
+            {count === 0 ? (
+              <span className="histogram__bar is-zero" />
+            ) : (
+              <span className="histogram__bar" style={{ height: `${(count / max) * 100}%` }} />
+            )}
           </Tooltip>
         ))}
       </div>
-      {axis ? (
-        <div className="histogram__axis" aria-hidden="true">
-          <span>0%</span>
-          <span>50%</span>
-          <span>100%</span>
-        </div>
-      ) : null}
       <div className="visually-hidden">
         <table>
           <tbody>

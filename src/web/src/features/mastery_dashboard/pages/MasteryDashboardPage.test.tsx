@@ -319,7 +319,9 @@ describe('MasteryDashboardPage, what the model estimates', () => {
     renderAssignment(1)
     const table = await screen.findByRole('table', { name: 'Problemas' })
     const header = within(table).getByRole('columnheader', { name: /Domínio/ })
-    expect(within(header).getByRole('img', { name: 'Dado estimado' })).toBeInTheDocument()
+    expect(
+      within(header).getByRole('img', { name: 'Dado estimado por aprendizado de máquina' }),
+    ).toBeInTheDocument()
     const hard = within(table).getByRole('button', { name: 'Problema 13' }).closest('tr')!
     expect(
       await within(hard).findByRole('img', { name: 'Domínio estimado no problema 13 41%' }),

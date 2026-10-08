@@ -1,12 +1,13 @@
+import { GeneratedByML } from '../../../components/GeneratedByML'
 import { QueryStates } from '../../../components/states/states'
 import { Button } from '../../../components/ui/Button'
 import { Dialog, DialogBody, DialogFooter } from '../../../components/ui/Dialog'
 import { InfoHint } from '../../../components/ui/InfoHint'
 import { RatioBar } from '../../../components/ui/RatioBar'
+import { Tooltip } from '../../../components/ui/Tooltip'
 import { formatCount, formatPercent } from '../../../lib/format'
 import { useStudent } from '../api/masteryDashboard'
 import { MASTERY_HINT } from '../dashboard'
-import { EstimatedMark } from './EstimatedMark'
 import './StudentDialog.css'
 
 interface StudentDialogProps {
@@ -59,7 +60,7 @@ function StudentDetail({
             <dl className="student-dialog__tiles">
               <div>
                 <dt>
-                  <EstimatedMark />
+                  <GeneratedByML />
                   Domínio
                   <InfoHint text={MASTERY_HINT} />
                 </dt>
@@ -88,15 +89,15 @@ function StudentDetail({
             </dl>
             <section className="student-dialog__section" aria-label="Domínio por conceito">
               <h3 className="student-dialog__title">
-                <EstimatedMark />
+                <GeneratedByML />
                 Domínio por conceito
               </h3>
               <ul className="student-dialog__list">
                 {student.knowledge_components.map((kc) => (
                   <li key={kc.kc_id} className="student-dialog__row">
-                    <span className="student-dialog__label" title={kc.kc_name}>
-                      {kc.kc_name}
-                    </span>
+                    <Tooltip text={kc.kc_name}>
+                      <span className="student-dialog__label">{kc.kc_name}</span>
+                    </Tooltip>
                     <RatioBar value={kc.mastery} tone="predicted" label={kc.kc_name} />
                   </li>
                 ))}
@@ -104,7 +105,7 @@ function StudentDetail({
             </section>
             <section className="student-dialog__section" aria-label="Domínio por problema">
               <h3 className="student-dialog__title">
-                <EstimatedMark />
+                <GeneratedByML />
                 Domínio por problema
               </h3>
               <ul className="student-dialog__list">

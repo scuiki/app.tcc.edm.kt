@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react'
 import { Blocks, ChevronRight } from 'lucide-react'
 
+import { GeneratedByML } from '../../../components/GeneratedByML'
 import { ColumnHeader, DataTable } from '../../../components/ui/DataTable'
 import { Histogram } from '../../../components/ui/Histogram'
 import { InfoHint } from '../../../components/ui/InfoHint'
@@ -17,7 +18,6 @@ import {
 } from '../dashboard'
 import { sortRows, toggleSort, type SortState } from '../sorting'
 import { ConceptChips } from './ConceptChips'
-import { EstimatedMark } from './EstimatedMark'
 import './AnalysisTable.css'
 
 type SortKey =
@@ -73,11 +73,11 @@ export function ProblemsTable({ problems, withModel }: ProblemsTableProps) {
           )}
           {header('students_completed', 'Alunos que completaram')}
           {header('compile_errors_per_run', 'Erros de compilação por execução')}
-          {withModel ? header('mean_mastery', 'Domínio', <EstimatedMark />, MASTERY_HINT) : null}
+          {withModel ? header('mean_mastery', 'Domínio', <GeneratedByML />, MASTERY_HINT) : null}
           {withModel ? (
             <ColumnHeader
               label="Distribuição"
-              leading={<EstimatedMark />}
+              leading={<GeneratedByML />}
               hint={<InfoHint text={DISTRIBUTION_HINT} />}
             />
           ) : null}
@@ -99,7 +99,7 @@ export function ProblemsTable({ problems, withModel }: ProblemsTableProps) {
                   Problema {problem.problem_id}
                 </button>
               </td>
-              <td className="analysis-table__bar">
+              <td>
                 <RatioBar
                   value={problem.success_rate}
                   tone="observed"
@@ -121,7 +121,7 @@ export function ProblemsTable({ problems, withModel }: ProblemsTableProps) {
               </td>
               <td className="data-table__num">{formatNumber(problem.compile_errors_per_run)}</td>
               {withModel ? (
-                <td className="analysis-table__bar">
+                <td>
                   {problem.mean_mastery == null ? (
                     <span className="data-table__missing">—</span>
                   ) : (
@@ -134,12 +134,11 @@ export function ProblemsTable({ problems, withModel }: ProblemsTableProps) {
                 </td>
               ) : null}
               {withModel ? (
-                <td className="analysis-table__hist">
+                <td>
                   {problem.histogram ? (
                     <Histogram
                       bins={problem.histogram}
                       unit="alunos"
-                      axis={false}
                       label={`Distribuição dos alunos no problema ${problem.problem_id}`}
                     />
                   ) : (

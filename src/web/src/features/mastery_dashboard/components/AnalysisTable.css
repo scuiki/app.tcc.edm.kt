@@ -1,12 +1,3 @@
-/* As peças próprias das tabelas da Análise, por cima da tabela comum */
-.analysis-table__bar {
-  min-width: 150px;
-}
-
-.analysis-table__hist {
-  min-width: 150px;
-}
-
 /* A seta ao lado do nome do problema abre a linha com os conceitos dele */
 .analysis-table__expand {
   display: inline-flex;
@@ -56,7 +47,7 @@
   margin: 0;
 }
 
-.analysis-note .estimated-mark {
+.analysis-note .generated-by-ml {
   margin: 0 2px;
 }
 

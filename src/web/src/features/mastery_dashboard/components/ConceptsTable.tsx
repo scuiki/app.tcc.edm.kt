@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from 'react'
 
+import { GeneratedByML } from '../../../components/GeneratedByML'
 import { ColumnHeader, DataTable } from '../../../components/ui/DataTable'
 import { Histogram } from '../../../components/ui/Histogram'
 import { InfoHint } from '../../../components/ui/InfoHint'
@@ -9,7 +10,6 @@ import { formatCount } from '../../../lib/format'
 import { ANALYSIS_MIN_WIDTH, DISTRIBUTION_HINT, MASTERY_HINT, type ConceptRow } from '../dashboard'
 import { sortRows, toggleSort, type SortState } from '../sorting'
 import { ConceptRecurrence } from './ConceptRecurrence'
-import { EstimatedMark } from './EstimatedMark'
 import './AnalysisTable.css'
 
 type SortKey = 'kc_name' | 'success_rate' | 'runs' | 'recurrence' | 'mean_mastery'
@@ -41,12 +41,12 @@ export function ConceptsTable({ concepts, withModel }: ConceptsTableProps) {
           {header('runs', 'Execuções')}
           {header('recurrence', 'Recorrência')}
           {withModel
-            ? header('mean_mastery', 'Domínio', <EstimatedMark />, <InfoHint text={MASTERY_HINT} />)
+            ? header('mean_mastery', 'Domínio', <GeneratedByML />, <InfoHint text={MASTERY_HINT} />)
             : null}
           {withModel ? (
             <ColumnHeader
               label="Distribuição"
-              leading={<EstimatedMark />}
+              leading={<GeneratedByML />}
               hint={<InfoHint text={DISTRIBUTION_HINT} />}
             />
           ) : null}
@@ -56,7 +56,7 @@ export function ConceptsTable({ concepts, withModel }: ConceptsTableProps) {
         {rows.map((kc) => (
           <tr key={kc.kc_id}>
             <td className="data-table__name">{kc.kc_name}</td>
-            <td className="analysis-table__bar">
+            <td>
               <RatioBar
                 value={kc.success_rate}
                 tone="observed"
@@ -68,7 +68,7 @@ export function ConceptsTable({ concepts, withModel }: ConceptsTableProps) {
               <ConceptRecurrence problemIds={kc.problem_ids} />
             </td>
             {withModel ? (
-              <td className="analysis-table__bar">
+              <td>
                 {kc.mean_mastery == null ? (
                   <span className="data-table__missing">—</span>
                 ) : (
@@ -81,12 +81,11 @@ export function ConceptsTable({ concepts, withModel }: ConceptsTableProps) {
               </td>
             ) : null}
             {withModel ? (
-              <td className="analysis-table__hist">
+              <td>
                 {kc.histogram ? (
                   <Histogram
                     bins={kc.histogram}
                     unit="alunos"
-                    axis={false}
                     label={`Distribuição dos alunos em ${kc.kc_name}`}
                   />
                 ) : (

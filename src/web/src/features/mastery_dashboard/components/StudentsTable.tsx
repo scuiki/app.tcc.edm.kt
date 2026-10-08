@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from 'react'
 
+import { GeneratedByML } from '../../../components/GeneratedByML'
 import { ColumnHeader, DataTable } from '../../../components/ui/DataTable'
 import { InfoHint } from '../../../components/ui/InfoHint'
 import { RatioBar } from '../../../components/ui/RatioBar'
@@ -8,7 +9,6 @@ import { formatPercent } from '../../../lib/format'
 import type { StudentSummary } from '../api/masteryDashboard'
 import { ANALYSIS_MIN_WIDTH, MASTERY_HINT } from '../dashboard'
 import { sortRows, toggleSort, type SortState } from '../sorting'
-import { EstimatedMark } from './EstimatedMark'
 import './AnalysisTable.css'
 
 type SortKey = 'student_id' | 'mean_mastery' | 'completed' | 'attempted'
@@ -37,10 +37,10 @@ export function StudentsTable({ students, problemCount, onOpen }: StudentsTableP
       <thead>
         <tr>
           {header('student_id', 'Aluno')}
-          {header('mean_mastery', 'Domínio', <EstimatedMark />, <InfoHint text={MASTERY_HINT} />)}
+          {header('mean_mastery', 'Domínio', <GeneratedByML />, <InfoHint text={MASTERY_HINT} />)}
           {header('completed', 'Completou')}
           {header('attempted', 'Tentou')}
-          <ColumnHeader label="Conceitos mais fracos" leading={<EstimatedMark />} />
+          <ColumnHeader label="Conceitos mais fracos" leading={<GeneratedByML />} />
         </tr>
       </thead>
       <tbody>
@@ -58,7 +58,7 @@ export function StudentsTable({ students, problemCount, onOpen }: StudentsTableP
             }}
           >
             <td className="data-table__name">{student.student_id}</td>
-            <td className="analysis-table__bar">
+            <td>
               <RatioBar
                 value={student.mean_mastery}
                 tone="predicted"

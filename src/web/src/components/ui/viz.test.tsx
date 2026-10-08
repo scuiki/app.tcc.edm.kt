@@ -27,8 +27,11 @@ describe('Histogram', () => {
     const bars = figure.querySelectorAll('.histogram__bar')
     expect(bars).toHaveLength(10)
     expect(bars[3]).toHaveStyle({ height: '100%' })
+    // A faixa sem aluno é um traço, sem altura calculada
+    expect(bars[9]).toHaveClass('is-zero')
+    expect(bars[9]).not.toHaveAttribute('style')
     fireEvent.mouseEnter(bars[1])
-    expect(screen.getByRole('tooltip')).toHaveTextContent('83 alunos entre 10% e 20%')
+    expect(screen.getByRole('tooltip')).toHaveTextContent('10 a 20%, 83 alunos')
     expect(screen.getByRole('row', { name: /90% a 100%/ })).toHaveTextContent('0')
   })
 })

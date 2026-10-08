@@ -236,6 +236,6 @@ som só toca se houver problema.
 | 6 | Concluída, commit `94b2a85` |
 | 7 | Concluída, commit `f420730` |
 | 8 | Concluída, commit `628e153` |
-| 9 | Concluída |
-| 10 | Pendente |
+| 9 | Concluída, commit `a96ccb5` |
+| 10 | Concluída |
 | 11 | Pendente |

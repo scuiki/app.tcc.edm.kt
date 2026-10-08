@@ -1,7 +1,7 @@
 .histogram {
   margin: 0;
   display: grid;
-  gap: 3px;
+  gap: 2px;
   min-width: 140px;
 }
 
@@ -9,7 +9,7 @@
   display: flex;
   align-items: flex-end;
   gap: 2px;
-  height: 22px;
+  height: 20px;
 }
 
 .histogram__bar {
@@ -21,10 +21,8 @@
   background: var(--color-model-strong);
 }
 
-.histogram__axis {
-  display: flex;
-  justify-content: space-between;
-  font-size: 10px;
-  color: var(--color-text-muted);
-  font-variant-numeric: tabular-nums;
+/* A faixa sem aluno é um traço, para a forma não sumir */
+.histogram__bar.is-zero {
+  height: 1px;
+  background: var(--color-control-border);
 }

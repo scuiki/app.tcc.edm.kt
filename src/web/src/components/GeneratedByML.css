@@ -1,4 +1,4 @@
-.estimated-mark {
+.generated-by-ml {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -9,5 +9,4 @@
   color: var(--color-model-strong);
   background: var(--color-model-soft);
   vertical-align: middle;
-  cursor: help;
 }

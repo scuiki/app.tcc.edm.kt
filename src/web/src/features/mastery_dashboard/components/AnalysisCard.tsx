@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Blocks, FileCode, Users } from 'lucide-react'
 
+import { GeneratedByML } from '../../../components/GeneratedByML'
 import { EmptyState, QueryStates } from '../../../components/states/states'
 import { Card } from '../../../components/ui/Card'
 import { Tabs, type TabItem } from '../../../components/ui/Tabs'
@@ -13,7 +14,6 @@ import {
   type DashboardState,
 } from '../dashboard'
 import { ConceptsTable } from './ConceptsTable'
-import { EstimatedMark } from './EstimatedMark'
 import { ProblemsTable } from './ProblemsTable'
 import { StudentDialog } from './StudentDialog'
 import { StudentsTable } from './StudentsTable'
@@ -42,7 +42,7 @@ export function AnalysisCard({ assignmentId, state }: AnalysisCardProps) {
   // A nota só faz sentido quando há colunas com o marcador, ou seja, com modelo treinado
   const note = withModel ? (
     <p className="analysis-note">
-      O marcador <EstimatedMark /> representa dados estimados pelo modelo de aprendizado de máquina.
+      O marcador <GeneratedByML /> representa dados estimados pelo modelo de aprendizado de máquina.
     </p>
   ) : null
   return (

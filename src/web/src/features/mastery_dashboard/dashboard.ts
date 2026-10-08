@@ -81,8 +81,6 @@ export function mergeConcepts(
 export const ANALYSIS_MIN_WIDTH = 900
 
 // Os textos que acompanham os números, os mesmos em toda a tela
-export const ESTIMATED_HINT = 'Dado estimado'
-
 export const MASTERY_HINT =
   'Domínio é a chance estimada pelo modelo de o aluno acertar, se tentasse agora, os problemas deste exercício. Não é a fração do conceito que ele já aprendeu, e o modelo não conhece problemas de outros exercícios.'
 
