@@ -7,7 +7,7 @@ import { Badge } from '../../../components/ui/Badge'
 import { Card } from '../../../components/ui/Card'
 import { classroomPath } from '../../../lib/paths'
 import {
-  ASSIGNMENT_STATUS_LABEL,
+  assignmentStatusBadge,
   useAssignmentContext,
 } from '../../assignments/api/useAssignmentContext'
 import { AssignmentDashboard } from '../components/AssignmentDashboard'
@@ -36,6 +36,7 @@ export function MasteryDashboardPage({ classroomId, assignmentId }: MasteryDashb
       </Card>
     )
   }
+  const badge = assignment.status ? assignmentStatusBadge(assignment.status) : null
   return (
     <>
       <Breadcrumb
@@ -46,9 +47,9 @@ export function MasteryDashboardPage({ classroomId, assignmentId }: MasteryDashb
           { label: 'Análise' },
         ]}
         aside={
-          assignment.status ? (
-            <Badge tone={assignment.status === 'trained' ? 'accent' : 'neutral'}>
-              {ASSIGNMENT_STATUS_LABEL[assignment.status]}
+          badge ? (
+            <Badge tone={badge.tone} icon={badge.icon}>
+              {badge.label}
             </Badge>
           ) : null
         }

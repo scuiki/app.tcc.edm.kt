@@ -1,7 +1,7 @@
 import { useClassrooms } from '../../classrooms/api/classrooms'
 import { useAssignments } from './useAssignments'
 
-export { ASSIGNMENT_STATUS_LABEL, type AssignmentSummary } from './useAssignments'
+export { assignmentStatusBadge, type AssignmentSummary } from './useAssignments'
 
 // A turma e o exercício que o endereço nomeia, resolvidos pelas listas que o app já carrega
 export function useAssignmentContext(classroomId?: number, assignmentId?: number) {

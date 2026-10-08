@@ -82,7 +82,8 @@ Todo `Protocol` da `api/` começa com `I` e fica numa pasta `interfaces/` (ver
 | `trained` | Existe um modelo publicado. Sem re-treino, os KCs ficam como estão; qualquer edição é recusada por `refuse_edit_after_training()` (`services/knowledge_component_edit.py`) | treino |
 
 Na tela, cada situação aparece numa etiqueta de situação, com o rótulo (`ASSIGNMENT_STATUS_LABEL`)
-e o ícone da etapa (`ASSIGNMENT_STATUS_ICON`). Os blocos marcam as três situações de conceitos, o
+e o ícone da etapa (`ASSIGNMENT_STATUS_ICON`), que o `assignmentStatusBadge()` junta com o tom, azul
+só em `trained`. Os blocos marcam as três situações de conceitos, o
 cérebro marca `trained`, com o rótulo "Treinado", e `statistics_only` fica sem ícone. No menu, o
 exercício leva o ponto de situação no lugar do ícone, com três modificadores. O `awaiting`, vazio e
 com a dica "Aguardando conceitos", vale para `ready_for_kc_generation` e `kc_draft`. O

@@ -84,7 +84,8 @@ describe('ClassroomsPage, the table', () => {
     expect(within(csedm).getByText('50')).toBeInTheDocument()
     expect(within(csedm).getByText('1.413')).toBeInTheDocument()
     expect(within(csedm).getByText('21/06/2026')).toBeInTheDocument()
-    expect(within(csedm).getByText('Modelo treinado')).toBeInTheDocument()
+    // A etiqueta Treinado leva o cérebro, e as outras situações ficam sem ícone
+    expect(within(csedm).getByText('Treinado').querySelector('svg')).not.toBeNull()
     expect(screen.getByText('2 turmas')).toBeInTheDocument()
   })
 

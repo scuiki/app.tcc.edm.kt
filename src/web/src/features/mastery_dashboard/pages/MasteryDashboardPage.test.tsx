@@ -221,7 +221,7 @@ describe('MasteryDashboardPage, the exercise in the address', () => {
     renderAssignment(1)
     const path = await screen.findByRole('navigation', { name: 'Caminho' })
     expect(path).toHaveTextContent('Turmas›CSEDM Spring 2019›Assignment 439›Análise')
-    expect(path).toHaveTextContent('Modelo treinado')
+    expect(path).toHaveTextContent('Treinado')
   })
 
   it('says the exercise was not found for an unknown id', async () => {

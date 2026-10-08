@@ -56,7 +56,7 @@ describe('ClassroomPage', () => {
       screen.getByText(/413 alunos · 50 problemas · criada em 21\/06\/2026/),
     ).toBeInTheDocument()
     const card = screen.getByText('Assignment 439').closest('li')!
-    expect(within(card).getByText('Modelo treinado')).toBeInTheDocument()
+    expect(within(card).getByText('Treinado')).toBeInTheDocument()
     expect(within(card).getByRole('link', { name: 'Análise' })).toHaveAttribute(
       'href',
       '#/classrooms/1/assignments/1/analysis',

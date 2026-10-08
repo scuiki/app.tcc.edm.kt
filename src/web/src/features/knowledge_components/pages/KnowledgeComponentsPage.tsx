@@ -5,7 +5,7 @@ import { Badge } from '../../../components/ui/Badge'
 import { Card } from '../../../components/ui/Card'
 import { classroomPath } from '../../../lib/paths'
 import {
-  ASSIGNMENT_STATUS_LABEL,
+  assignmentStatusBadge,
   useAssignmentContext,
 } from '../../assignments/api/useAssignmentContext'
 import { ApprovalBar } from '../components/ApprovalBar'
@@ -42,6 +42,7 @@ export function KnowledgeComponentsPage({
   const approvedCount = assignments.filter(
     (candidate) => candidate.status === 'kc_approved' || candidate.status === 'trained',
   ).length
+  const badge = assignment.status ? assignmentStatusBadge(assignment.status) : null
   return (
     <>
       <Breadcrumb
@@ -52,9 +53,9 @@ export function KnowledgeComponentsPage({
           { label: 'Conceitos' },
         ]}
         aside={
-          assignment.status ? (
-            <Badge tone={assignment.status === 'trained' ? 'accent' : 'neutral'}>
-              {ASSIGNMENT_STATUS_LABEL[assignment.status]}
+          badge ? (
+            <Badge tone={badge.tone} icon={badge.icon}>
+              {badge.label}
             </Badge>
           ) : null
         }

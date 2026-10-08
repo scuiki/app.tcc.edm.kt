@@ -80,7 +80,7 @@ describe('SideMenu', () => {
     expect(classroom).toHaveAttribute('aria-expanded', 'false')
     fireEvent.click(classroom.querySelector('.side-menu__sign')!)
     const exercise = (await screen.findByText('Assignment 439')).closest('button')!
-    expect(within(exercise).getByLabelText('Modelo treinado')).toBeInTheDocument()
+    expect(within(exercise).getByLabelText('Treinado')).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: 'Análise' })).not.toBeInTheDocument()
 
     fireEvent.click(exercise)

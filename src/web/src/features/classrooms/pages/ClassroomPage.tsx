@@ -8,7 +8,7 @@ import { Card } from '../../../components/ui/Card'
 import { formatCount, formatDate } from '../../../lib/format'
 import { assignmentPath, classroomImportPath } from '../../../lib/paths'
 import {
-  ASSIGNMENT_STATUS_LABEL,
+  assignmentStatusBadge,
   useAssignmentContext,
   type AssignmentSummary,
 } from '../../assignments/api/useAssignmentContext'
@@ -73,12 +73,12 @@ function AssignmentCard({
   classroomId: number
   assignment: AssignmentSummary
 }) {
-  const status = assignment.status
+  const badge = assignment.status ? assignmentStatusBadge(assignment.status) : null
   return (
     <li className="assignment-card">
-      {status ? (
-        <Badge tone={status === 'trained' ? 'accent' : 'neutral'}>
-          {ASSIGNMENT_STATUS_LABEL[status]}
+      {badge ? (
+        <Badge tone={badge.tone} icon={badge.icon}>
+          {badge.label}
         </Badge>
       ) : null}
       <span className="assignment-card__name">{assignment.name}</span>
