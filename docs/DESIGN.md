@@ -4,13 +4,12 @@ As regras visuais do app docente. O porquê de cada decisão fica em `DECISIONS.
 Frontend. Os valores (hex, sombras, medidas) ficam no `src/web/src/styles/tokens.css`, e aqui cada
 papel é citado pelo nome do token.
 
-**Versão 5, 30/09/2026, revista em 08/10/2026.** Referência visual em [`design/design-system-v5.html`](design/design-system-v5.html),
-que abre direto no navegador.
+**Versão 5, 30/09/2026, revista em 08/10/2026.** Referência visual em
+[`design/design-system-v5.html`](design/design-system-v5.html), que abre direto no navegador.
 
-**Estado.** Este documento é a especificação. A migração para ela segue o `FRONTEND_BASE_PLAN.md`.
-As cores, as sombras, o raio e a tipografia do `tokens.css` já são os da v5, e os componentes
-ainda seguem a linguagem anterior. As cinco telas ainda têm a
-organização antiga e mudam uma a uma depois da base.
+**Estado.** Este documento é a especificação. A base da migração está feita pelo
+`FRONTEND_BASE_PLAN.md`, com os tokens, os componentes que já existiam e as tabelas na v5. As cinco
+telas ainda têm a organização antiga e mudam uma a uma.
 
 ## Princípios
 
@@ -182,8 +181,8 @@ sucesso é neutro, com o ícone em `--color-text`.
 
 **Marcadores de modelo.** Um ícone em `--color-model-strong` sobre um círculo `--color-model-soft`
 de 18px, com a dica de onde o dado veio.
-- `GeneratedByML`, o cérebro, "Dado estimado por aprendizado de máquina", para o que o Code-DKT produziu. Fica antes do
-  rótulo de toda coluna que vem do modelo.
+- `GeneratedByML`, o cérebro, "Dado estimado por aprendizado de máquina", para o que o Code-DKT
+  produziu. Fica antes do rótulo de toda coluna que vem do modelo.
 - `GeneratedByLLM`, as estrelas, "Gerado pelo modelo de linguagem", para o que o LLM escreveu, como
   o nome do conceito e a descrição do problema. Fica no fim do texto (20px, e 24px num título) ou
   antes do rótulo de coluna. Some do nome do conceito quando o professor o renomeia, porque o nome
@@ -191,8 +190,8 @@ de 18px, com a dica de onde o dado veio.
 
 **Dica, alerta e balão.** A dica é o ícone de ? (`circle-question-mark`) em `--color-text-muted`. O
 ícone de ! (`circle-alert`) fica só para alerta e erro, em `--color-danger`, como um problema sem
-conceito. O balão é `--color-text` com texto em `--color-text-inverse`, sem raio, e aparece no hover ou no foco pelo
-`Tooltip`, nunca pelo `title` nativo.
+conceito. O balão é `--color-text` com texto em `--color-text-inverse`, sem raio, e aparece no hover
+ou no foco pelo `Tooltip`, nunca pelo `title` nativo.
 
 **Bloco de código.** Em `--font-code`, sobre `--color-surface-subtle`, com a numeração de linha à
 esquerda em `--color-text-disabled`. Quando há mais de um arquivo, abas presas ao topo do bloco
@@ -253,8 +252,8 @@ situação no lugar do ícone de etapa, para a lista longa ficar discreta.
 - A tabela inteira usa `--font-data`.
 - Sem fio vertical. Traço `--color-text` sob o cabeçalho e no fim da tabela, fio `--color-rule`
   entre as linhas, em todas as tabelas.
-- Linha e cabeçalho com a mesma altura, 32px. Um rótulo longo trunca com reticências e mostra o
-  texto inteiro no hover, e em tela larga aparece inteiro.
+- Linha e cabeçalho com a mesma altura, 32px. Um rótulo longo trunca com reticências em 150px e
+  mostra o texto inteiro no hover.
 - O histograma da tabela não tem eixo. A escala fica na dica do cabeçalho, e a faixa sem aluno é um
   traço de 1px em `--color-control-border`.
 - Em todas as tabelas, o nome fica à esquerda, os números e as etiquetas ficam centralizados sob

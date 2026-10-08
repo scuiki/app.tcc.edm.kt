@@ -772,11 +772,11 @@ título e detalhe, registra o que o sistema corrigiu sozinho, e o vermelho fica 
 do texto, e os rótulos dos campos logo abaixo ficam sem ícone, para o mesmo sinal não aparecer duas
 vezes seguidas. A pasta é a simples, e a pasta compactada foi testada e descartada.
 
-**Entre o `DESIGN.md` e a página de referência, vale o que foi atualizado por último.** As versões do
-design saíram em sequência, e algumas regras escritas na versão 1 não acompanharam as maquetes das
-versões seguintes. A regra de alinhamento das tabelas é o caso que levou ao critério. O `DESIGN.md`
-mandava tudo à esquerda fora da Análise, e as tabelas de Turmas, Turma e Conceitos, desenhadas
-depois, centralizavam os números. O documento foi corrigido na revisão de 08/10/2026.
+**Entre o `DESIGN.md` e a página de referência, vale o que foi atualizado por último.** As versões
+do design saíram em sequência, e algumas regras escritas na versão 1 não acompanharam as maquetes
+das versões seguintes. A regra de alinhamento das tabelas é o caso que levou ao critério. O
+`DESIGN.md` mandava tudo à esquerda fora da Análise, e as tabelas de Turmas, Turma e Conceitos,
+desenhadas depois, centralizavam os números. O documento foi corrigido na revisão de 08/10/2026.
 
 **Todas as tabelas centralizam os números.** O nome fica à esquerda, os números e as etiquetas
 ficam centralizados sob rótulos centralizados e só os botões ficam à direita, como na Análise. Com
@@ -790,11 +790,11 @@ marcadores de modelo declaram o círculo.
 balão escreviam branco em `#ffffff` ou com `--color-surface`, que é cor de fundo. O
 `--color-text-inverse` dá a esses usos um nome com a sua situação de uso.
 
-**A tabela comum é a `DataTable`, em `components/ui`.** Cada tela tinha a sua folha de estilo de tabela, e a
-da Análise morava numa funcionalidade, que as outras não podem importar. A `DataTable` traz a
-rolagem lateral, os fios, as alturas, as fontes e as classes de célula, e a largura mínima fica com
-quem precisa dela, porque a Análise pede 900px e a tabela de Turmas, ao lado da atividade recente,
-não cabe com mínimo nenhum.
+**A tabela comum é a `DataTable`, em `components/ui`.** Cada tela tinha a sua folha de estilo de
+tabela, e a da Análise morava numa funcionalidade, que as outras não podem importar. A `DataTable`
+traz a rolagem lateral, os fios, as alturas, as fontes e as classes de célula, e a largura mínima
+fica com quem precisa dela, porque a Análise pede 900px e a tabela de Turmas, ao lado da atividade
+recente, não cabe com mínimo nenhum.
 
 **O menu mostra o ícone de cada tela, uma exceção consciente ao critério do atualizado por último.**
 A maquete do menu na página de referência não tem ícones, mas a tabela de ícones os põe no menu, e

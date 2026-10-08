@@ -4,7 +4,7 @@ Documento para retomar o trabalho. Ele junta o contexto das iterações de desig
 hoje e a separação inicial do trabalho em blocos de backend e de frontend. O plano de cada bloco
 ainda vai ser discutido, e este arquivo é o ponto de partida dessa discussão, não o plano fechado.
 
-Estado em 30/09/2026, com a base em andamento desde 08/10/2026 pelo `FRONTEND_BASE_PLAN.md`. A
+Estado em 30/09/2026, com a base concluída em 08/10/2026 pelo `FRONTEND_BASE_PLAN.md`. A
 seção 9 registra as decisões da discussão de 30/09 e 01/10/2026 e a ordem nova, que põe a fidelidade
 à literatura antes da base.
 
@@ -38,16 +38,19 @@ Várias opções delas foram descartadas depois, então elas não servem de refe
 
 ### Frontend
 
-O `tokens.css` já tem as cores, as sombras, o raio 0 e a tipografia da v5, com a Public Sans
-carregada do Google Fonts no `index.html` e o Arial em `--font-data`. As telas têm a organização anterior ao design, e
-a importação e os conceitos usam o `PageActionBar`, a barra fixa no rodapé.
+A base do design v5 está feita pelo `FRONTEND_BASE_PLAN.md`, concluído em 08/10/2026. O
+`tokens.css` tem as cores, as sombras, o raio 0 e a tipografia da v5, os componentes que já existiam
+seguem a linguagem nova, e as tabelas da Análise e de Turmas usam a `DataTable`. As telas ainda têm
+a organização anterior ao design, e a importação e os conceitos usam o `PageActionBar`, a barra fixa
+no rodapé.
 
-Componentes que existem e mudam na migração estão em `src/web/src/components/` (`Breadcrumb`,
-`FileDropZone`, `OutcomeMessage`, `PageActionBar`, `PageHeader`, `states`) e em
-`src/web/src/components/ui/` (`Badge`, `Button`, `Card`, `Dialog`, `Histogram`, `InfoHint`,
-`RatioBar`, `SearchField`, `SelectField`, `SortableHeader`, `StageList`, `Tabs`, `TextField`,
-`Tooltip`). O menu e a barra superior estão em `src/web/src/app/`. As dependências relevantes são
-Chart.js 4.5.1 com react-chartjs-2 5.3.1 e lucide-react 1.21.0, que já têm tudo o que o design pede.
+Os componentes compartilhados estão em `src/web/src/components/` (`Breadcrumb`, `FileDropZone`,
+`GeneratedByML`, `OutcomeMessage`, `PageActionBar`, `PageHeader`, `states`) e em
+`src/web/src/components/ui/` (`Badge`, `Button`, `Card`, `DataTable`, `Dialog`, `Histogram`,
+`InfoHint`, `RatioBar`, `SearchField`, `SelectField`, `SortableHeader`, `StageList`, `Tabs`,
+`TextField`, `Tooltip`). O menu e a barra superior estão em `src/web/src/app/`. As dependências
+relevantes são Chart.js 4.5.1 com react-chartjs-2 5.3.1 e lucide-react 1.21.0, que já têm tudo o que
+o design pede.
 
 ### Backend
 
@@ -134,6 +137,12 @@ antes de enviar. Depende disso a tela Importar dados.
 
 ## 4. Blocos de frontend
 
+**Estado em 08/10/2026.** O F1, a migração dos componentes que já existiam e o F3 estão feitos pelo
+`FRONTEND_BASE_PLAN.md`, e o `GeneratedByML` já existe. Do F2 ficam com as telas os componentes
+novos (`GeneratedByLLM`, indicador de passos, paginação, bloco de código e lista de requisitos), o
+cartão com título com ícone e rodapé com ações, as ações na faixa das abas e a linha de fatos. O
+menu que recolhe abaixo de 900px fica para depois da tela Conceitos.
+
 **F1. Tokens e fundamentos.**
 O `tokens.css` passa aos tokens planejados no `DESIGN.md` (`--color-primary`, os tokens de modelo,
 `--color-observed`, `--font-data`, `--font-code`, raio 0, as três sombras), e saem
@@ -146,7 +155,7 @@ botão, etiqueta com ícone, cartão com título com ícone e rodapé com açõe
 ações, busca e vista, campo, dica com ?, balão com ícone, os estágios em azul nos dois diálogos, o
 estado vazio, a mensagem de resultado, o menu com os pontos e recolhível abaixo de 900px, a barra
 superior com o capelo preto, o caminho e o cabeçalho com a etiqueta e a linha de fatos. Novos são o
-`GeneratedByML` (hoje `EstimatedMark`), o `GeneratedByLLM`, o indicador de passos (hoje
+`GeneratedByML` (feito na base), o `GeneratedByLLM`, o indicador de passos (hoje
 `ImportSteps`, dentro da importação), a paginação, o bloco de código com abas e a lista de
 requisitos. O `PageActionBar` sai. Não depende de backend.
 
@@ -163,15 +172,15 @@ curva de perda do treino passa às cores e à fonte novas. Dependem de B3 e de B
 
 | Tela | O que muda | Blocos de backend |
 |---|---|---|
-| Análise | Linha de fatos, etiqueta ao lado do título, abas com Conceitos primeiro, vista Tabela e Curva de aprendizagem, sem cabeçalho agrupado | B3, B8 |
-| Turmas | Linha de fatos, Nova turma como primário, tabela em Arial, atividade recente | B7 |
+| Análise | Linha de fatos, abas com Conceitos primeiro, vista Tabela e Curva de aprendizagem, sem cabeçalho agrupado | B3, B8 |
+| Turmas | Linha de fatos, Nova turma como primário, atividade recente | B7 |
 | Turma | Cabeçalho com Importar dados, figura de execuções por dia, abas Exercícios e Alunos | B4, B5, B6, B8 |
 | Conceitos | Título do exercício, linha de fatos, abas com a matriz e os problemas, origem do conceito, sem mesclar | B1, B2, B8 |
 | Importar dados | Requisitos do pacote, caixa do pacote de altura fixa, ações no rodapé do cartão, resultado com a tabela de exercícios da Turma | B4, B9 |
 
 ## 5. Dependências entre os blocos
 
-F1, F2 e F3 não dependem de backend e podem andar primeiro, em paralelo com o backend. Cada tela
+F1, F2 e F3 não dependem de backend e andaram primeiro, na base concluída em 08/10/2026. Cada tela
 de F5 espera os blocos de backend da tabela acima, e F4 espera B3 e B6. B4 serve a duas telas. B1 é
 o único bloco com consequência científica e custo de cota, e a nova extração pede cuidado com o
 A439.
@@ -226,8 +235,8 @@ A439.
   terminaram na etapa 7.
 - **O glossário antes do código.** Um nome novo entra no `GLOSSARY.md` antes de entrar no código, e
   os nomes da seção 1 já estão lá.
-- **Comentários só com `#` ou `//`**, de uma linha, sem travessão nem dois-pontos, verificados por
-  `src/api/code_comments_test.py`. O porquê longo vai para o `DECISIONS.md`.
+- **Comentários só com `#`, `//` ou o `/* */` do CSS**, de uma linha, sem travessão nem dois-pontos,
+  verificados por `src/api/code_comments_test.py`. O porquê longo vai para o `DECISIONS.md`.
 - **O KCGen-KT segue as decisões do `DEVELOPMENT.md`**, e o código cumpre as linhas 1 a 28 desde a
   etapa 8 do `KCGEN_KT_PLAN.md`. A linha 29, a comparação do KCGen-KT com o paper, espera a
   anotação do A439. O teste de regressão dele refaz a extração de referência do A439 a partir do
@@ -267,5 +276,5 @@ A ordem nova é esta.
    saem pela aplicação, e o treino vem depois da aprovação dos conceitos, uma vez só, com os dois
    métodos prontos.
 4. A base (F1, a migração dos componentes que já existem e F3), pelo `FRONTEND_BASE_PLAN.md`,
-   aprovado em 08/10/2026, e depois as telas, uma por vez (Conceitos, Análise, Turma, Importar
-   dados e Turmas), cada uma com o seu backend.
+   aprovado e concluído em 08/10/2026, e depois as telas, uma por vez (Conceitos, Análise, Turma,
+   Importar dados e Turmas), cada uma com o seu backend.

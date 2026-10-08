@@ -14,10 +14,10 @@ etiqueta ao lado do título, o menu com os pontos de situação e os ícones, a 
 da Análise e de Turmas, o histograma, a barra e o marcador `GeneratedByML`.
 
 Ficam de fora, cada um com a tela que o usa.
-- Conceitos. A linha de fatos, as ações na faixa das abas, o diálogo largo, `GeneratedByLLM`, o bloco
-  de código, a matriz e a saída do PageActionBar (ApprovalBar).
-- Análise. O triângulo e a lista da recorrência, o ConceptChips e a linha expandida da aba Problemas,
-  os blocos do diálogo do aluno e a curva de perda além da troca do token (F4).
+- Conceitos. A linha de fatos, as ações na faixa das abas, o diálogo largo, `GeneratedByLLM`, o
+  bloco de código, a matriz e a saída do PageActionBar (ApprovalBar).
+- Análise. O triângulo e a lista da recorrência, o ConceptChips e a linha expandida da aba
+  Problemas, os blocos do diálogo do aluno e a curva de perda além da troca do token (F4).
 - Turma e Turmas. A coluna Exercícios da tabela de Turmas (pede backend) e a atividade recente (B7).
 - Importar dados. A área de soltar vertical, o indicador de passos, o arquivo enviado, a tabela do
   resultado (muda com o B4), o título de cartão com ícones, o rodapé com ações, o sucesso com
@@ -48,8 +48,8 @@ Ficam de fora, cada um com a tela que o usa.
 - O link global ganha a cor do texto e o sublinhado de 1px, e o `a:hover` só engrossa o sublinhado,
   para não sublinhar os itens do menu.
 - Ícones. Conceitos é `Blocks` em todo lugar (menu, aba e linha expandida), a aba Problemas é
-  `FileCode`, e Importar dados no menu é `Upload`, o mesmo do futuro botão da Turma. Todo ícone volta
-  ao traço de 2px nas peças da base.
+  `FileCode`, e Importar dados no menu é `Upload`, o mesmo do futuro botão da Turma. Todo ícone
+  volta ao traço de 2px nas peças da base.
 - A etiqueta de situação recebe só um `LucideIcon`. O mapa situação para ícone mora em
   `features/assignments/api`, ao lado do `ASSIGNMENT_STATUS_LABEL`, por ser o único lugar que as
   funcionalidades e o `app/` podem importar. O mapa dos pontos fica no SideMenu, o único que o usa.
@@ -57,8 +57,8 @@ Ficam de fora, cada um com a tela que o usa.
   texto dentro dele. O `ESTIMATED_HINT` sai, e a frase longa do domínio (`MASTERY_HINT`) fica no
   dashboard.
 - A tabela comum é a `DataTable` em `components/ui`, com o `ColumnHeader` (cabeçalho simples) e o
-  `SortableHeader` com a mesma estrutura. Não tem variante (o alinhamento é um só) nem largura mínima,
-  que fica com quem precisa (900px na Análise, nenhuma em Turmas).
+  `SortableHeader` com a mesma estrutura. Não tem variante (o alinhamento é um só) nem largura
+  mínima, que fica com quem precisa (900px na Análise, nenhuma em Turmas).
 - O diálogo mantém o ! vermelho no tom danger (é alertdialog) e a largura de 440px.
 - O asterisco do campo obrigatório fica, em `--color-text-muted`.
 - O corpo do cartão segue sem espaçamento próprio, e o invólucro da tabela traz o seu (14px 16px).
@@ -86,14 +86,14 @@ eixo, aside).
   (três modificadores, "Aguardando conceitos", statistics_only sem ponto) na seção Estados do
   assignment. O `GeneratedByML` ganha o texto novo, e a entrada domínio troca `EstimatedMark` por
   `GeneratedByML`.
-- `DECISIONS.md`, seção Frontend. Raio 0 sem token, alinhamento e o critério do atualizado por último
-  (com o menu com ícones como exceção consciente), `--color-text-inverse`, a `DataTable` comum, os
-  pontos de situação, "Treinado", o texto do marcador, o `GeneratedByML` subindo antes da segunda
-  funcionalidade, o mapa de ícones no `api/`, os ícones Blocks, FileCode e Upload e o menu recolhível
-  adiado.
-- `DESIGN.md`. A regra de alinhamento, o `--radius` fora da tabela Forma, o `--color-text-inverse` na
-  tabela Cor e no balão, o texto do marcador, os ícones do menu (ícones de tela e o ponto, sem os de
-  etapa), o `upload` também no menu, statistics_only sem ponto, os estágios em azul nos dois
+- `DECISIONS.md`, seção Frontend. Raio 0 sem token, alinhamento e o critério do atualizado por
+  último (com o menu com ícones como exceção consciente), `--color-text-inverse`, a `DataTable`
+  comum, os pontos de situação, "Treinado", o texto do marcador, o `GeneratedByML` subindo antes da
+  segunda funcionalidade, o mapa de ícones no `api/`, os ícones Blocks, FileCode e Upload e o menu
+  recolhível adiado.
+- `DESIGN.md`. A regra de alinhamento, o `--radius` fora da tabela Forma, o `--color-text-inverse`
+  na tabela Cor e no balão, o texto do marcador, os ícones do menu (ícones de tela e o ponto, sem os
+  de etapa), o `upload` também no menu, statistics_only sem ponto, os estágios em azul nos dois
   diálogos, e uma linha de revisão da v5 em 08/10 na tabela de Versões, sem renomear o HTML.
   `design-system-v5.html`, o texto do marcador.
 
@@ -155,9 +155,9 @@ eixo, aside).
 
 ### 6. Estados, estágios, mensagem e caminho
 - `state--loading` em linha. O estado vazio centralizado, com gap de 6px, padding de 18px, a frase
-  em 12px muted e o ícone num quadrado `--color-hover`. StageList com margem 0. Mensagem de resultado
-  com ícone só no danger (TSX). Caminho com 13px, gap de 6px, `--color-text-secondary`, links e item
-  atual em 400 e o separador muted.
+  em 12px muted e o ícone num quadrado `--color-hover`. StageList com margem 0. Mensagem de
+  resultado com ícone só no danger (TSX). Caminho com 13px, gap de 6px, `--color-text-secondary`,
+  links e item atual em 400 e o separador muted.
 - Teste novo no OutcomeMessage.test, o neutro sem svg e o danger com.
 
 ### 7. Menu e ícones
@@ -174,8 +174,8 @@ eixo, aside).
   perde a prop `icon` (um uso). A `description` fica até cada tela. A Análise e a Conceitos passam a
   etiqueta ao PageHeader.
 - Os testes ajustados são o Breadcrumb.test, o KnowledgeComponentsPage.test e o
-  MasteryDashboardPage.test. Entram testes para a etiqueta no PageHeader com o h1 intacto, o item do meio sem `aria-current` e a
-  etiqueta fora da nav.
+  MasteryDashboardPage.test. Entram testes para a etiqueta no PageHeader com o h1 intacto, o item do
+  meio sem `aria-current` e a etiqueta fora da nav.
 
 ### 9. F3, a tabela comum (Análise e Turmas)
 - `DataTable.tsx` e `.css`. Invólucro com rolagem lateral e padding 14px 16px. Tabela em
@@ -185,8 +185,8 @@ eixo, aside).
   `--color-surface-subtle`, sem fio vertical. Classes de célula para nome (700, nowrap), número e
   etiqueta (centralizados, nowrap, tabular-nums), apoio, sem valor e botões (à direita, 4px).
 - `ColumnHeader` e `SortableHeader` com a prop `leading` para o marcador fora do botão, o rótulo
-  truncado em 150px com o texto inteiro no Tooltip, chevron de 14px e a seta ativa em `--color-text`.
-  O alinhamento padrão vira center, e os quatro `'start'` das colunas de barra saem.
+  truncado em 150px com o texto inteiro no Tooltip, chevron de 14px e a seta ativa em
+  `--color-text`. O alinhamento padrão vira center, e os quatro `'start'` das colunas de barra saem.
 - ConceptsTable, ProblemsTable, StudentsTable e ClassroomTable passam à DataTable. Na de Turmas,
   Problemas, Alunos, Criada em e Situação usam a classe de número. Saem a quebra do rótulo e o
   modificador `--ruled`. A Análise mantém 900px de largura mínima. A recorrência fica centralizada,
@@ -212,10 +212,14 @@ eixo, aside).
 
 ## Verificação
 
-Em toda etapa, o gate web no container
-(`docker compose run --rm --no-deps web sh -c "npx tsc -b && npx eslint . && npx prettier --check . && npx vitest run"`),
-o `code_comments_test` na edmkt-core, a captura em 1500px e 1100px contra a linha de base e a revisão
-independente do diff. Nada grava no `app.db`, e nenhuma etapa usa a GPU nem a cota.
+Em toda etapa, o gate web no container,
+
+```bash
+docker compose run --rm --no-deps web sh -c "npx tsc -b && npx eslint . && npx prettier --check . && npx vitest run"
+```
+
+o `code_comments_test` na edmkt-core, a captura em 1500px e 1100px contra a linha de base e a
+revisão independente do diff. Nada grava no `app.db`, e nenhuma etapa usa a GPU nem a cota.
 
 ## Execução
 
@@ -237,5 +241,5 @@ som só toca se houver problema.
 | 7 | Concluída, commit `f420730` |
 | 8 | Concluída, commit `628e153` |
 | 9 | Concluída, commit `a96ccb5` |
-| 10 | Concluída |
-| 11 | Pendente |
+| 10 | Concluída, commit `46237dc` |
+| 11 | Concluída |

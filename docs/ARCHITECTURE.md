@@ -228,9 +228,9 @@ camadas de componente e uma fronteira de conhecimento entre elas.
 ```
 app/          o app shell: barra superior, menu em árvore, a tabela de rotas e o ErrorBoundary
 components/
-  ui/         primitivas sem domínio (Button, Card, Dialog, Tabs, Tooltip, StageList, RatioBar…)
+  ui/         primitivas sem domínio (Button, Card, DataTable, Dialog, Tabs, Tooltip, RatioBar…)
   states/     os quatro estados de toda tela (carregando, erro, vazio, conteúdo)
-  …           outros componentes de produto, como o PageHeader e o Breadcrumb
+  …           outros componentes de produto, como o PageHeader, o Breadcrumb e o GeneratedByML
 features/
   <funcionalidade>/
     api/        os hooks de dados (TanStack Query) e os tipos do DTO
@@ -258,7 +258,8 @@ tela mostra o mesmo caminho.
   `children` e a política de quem o usa (o texto do vazio, o que conta como vazio), nunca a decide.
 - `lib/` e `http/` dependem só de `lib/` e `http/`.
 - Uma funcionalidade nunca importa o `app/`.
-- **Entre funcionalidades, só se importa o `api/` da outra** (os hooks e os tipos), nunca os
+- **Entre funcionalidades, só se importa o `api/` da outra** (os hooks, os tipos e os rótulos e
+  ícones de situação), nunca os
   componentes. É o espelho da regra do backend, em que se importa só o `domain/` da outra.
 
 As quatro regras são verificadas por `src/web/architecture.test.ts`, que resolve cada import para o
@@ -287,7 +288,8 @@ Aqui fica só como o CSS é escrito.
 CSS puro, com os tokens de `styles/tokens.css` e um `.css` ao lado de cada componente. Nenhuma cor
 é escrita no ponto de uso. Cada variante tem a sua situação de uso, escolhida por uma prop
 `variant` que troca a classe, e uma variante sem uso não nasce. Barras e histogramas são CSS, e o
-Chart.js desenha só a curva de perda do treino, lendo a cor do token na hora. As dicas de hover
+Chart.js desenha só a curva de perda do treino, lendo a cor do token na hora. As tabelas usam a
+`DataTable`, e a largura mínima fica com quem a usa. As dicas de hover
 usam o `Tooltip`, nunca o `title` nativo. A janela não rola, só o conteúdo, então a barra superior
 e o menu ficam parados.
 
@@ -296,9 +298,11 @@ e o menu ficam parados.
 Tudo roda no container `web`.
 
 ```bash
-docker compose run --rm web sh -c "npx tsc -b && npx eslint . && npx prettier --check . && npx vitest run"
+docker compose run --rm --no-deps web sh -c "npx tsc -b && npx eslint . && npx prettier --check . && npx vitest run"
 ```
 
 Os tipos da api saem do OpenAPI com `npm run types`, com a api no ar, e o `schema.d.ts` nunca é
-editado à mão. A regra dos comentários vale também aqui (só `//`, uma linha), verificada pelo mesmo
-`src/api/code_comments_test.py`.
+editado à mão. A regra dos comentários vale também aqui (só `//` de uma linha, e o `/* */` de uma
+linha no CSS), verificada pelo mesmo `src/api/code_comments_test.py`. O `tokens.test.ts`, ao lado
+do `architecture.test.ts`, confere que todo token lido está declarado no `tokens.css` e que nenhuma
+cor literal mora fora dele.
