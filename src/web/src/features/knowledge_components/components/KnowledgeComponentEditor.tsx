@@ -26,6 +26,7 @@ import { NewKnowledgeComponentDialog } from './NewKnowledgeComponentDialog'
 import { ProblemStatementsTable } from './ProblemStatementsTable'
 import { RemoveKnowledgeComponentDialog } from './RemoveKnowledgeComponentDialog'
 import { RenameKnowledgeComponentDialog } from './RenameKnowledgeComponentDialog'
+import { ReopenApprovalDialog, type PendingCellEdit } from './ReopenApprovalDialog'
 import { UnlinkKnowledgeComponentDialog, type UnlinkTarget } from './UnlinkKnowledgeComponentDialog'
 import './KnowledgeComponentEditor.css'
 
@@ -42,8 +43,11 @@ type EditorDialog =
   | { kind: 'new' }
   | { kind: 'rename' | 'remove'; kcId: number }
   | { kind: 'unlink'; target: UnlinkTarget }
+  | { kind: 'reopen'; edit: PendingCellEdit; isSending: boolean }
 
 const CLOSED: EditorDialog = { kind: 'closed' }
+
+const cellOf = (kcId: number, problemId: number) => `${kcId}:${problemId}`
 
 interface KnowledgeComponentEditorProps {
   assignmentId: number
@@ -64,6 +68,8 @@ export function KnowledgeComponentEditor({
   // As células com um pedido no ar, para o clique duplo não mandar o mesmo pedido duas vezes
   const pendingCells = useRef(new Set<string>())
   const editable = isEditable(status)
+  // A primeira edição dos aprovados volta o exercício a rascunho, e a recarga traz a situação nova
+  const reopensApproval = status === 'kc_approved'
   const knowledgeComponents = knowledgeComponentsOf(problems)
 
   // A ordem da primeira carga fica nas recargas, porque a linha que pula sob o mouse desorienta
@@ -86,25 +92,43 @@ export function KnowledgeComponentEditor({
     approve.reset()
   }
 
-  async function handleCellClick(kcId: number, problemId: number) {
-    const cell = `${kcId}:${problemId}`
+  // O clique direto e o que passou pelo aviso de reabrir chegam aqui, e a trava vale para os dois
+  async function editCell({ action, kcId, problemId }: PendingCellEdit) {
+    const cell = cellOf(kcId, problemId)
     if (pendingCells.current.has(cell)) return
+    clearErrors()
+    const mutation = action === 'link' ? link : unlink
+    pendingCells.current.add(cell)
+    try {
+      await mutation.mutateAsync({ kcId, problemId })
+    } catch {
+      // O erro fica no estado da mutação, que a mensagem do cartão já mostra
+    } finally {
+      pendingCells.current.delete(cell)
+    }
+  }
+
+  function handleCellClick(kcId: number, problemId: number) {
+    if (pendingCells.current.has(cellOf(kcId, problemId))) return
     const outcome = cellClickOutcomeOf(kcId, problemId, problems)
     if (outcome === 'link' || outcome === 'unlink') {
-      clearErrors()
-      const mutation = outcome === 'link' ? link : unlink
-      pendingCells.current.add(cell)
-      try {
-        await mutation.mutateAsync({ kcId, problemId })
-      } catch {
-        // O erro fica no estado da mutação, que a mensagem do cartão já mostra
-      } finally {
-        pendingCells.current.delete(cell)
-      }
+      const edit = { action: outcome, kcId, problemId }
+      if (reopensApproval) setDialog({ kind: 'reopen', edit, isSending: false })
+      else editCell(edit)
       return
     }
+    // A recusa não muda nada, então não leva o aviso de reabrir
     const kcName = byId.get(kcId)?.name ?? ''
     setDialog({ kind: 'unlink', target: { kcId, kcName, problemId, kind: outcome } })
+  }
+
+  // O aviso fica aberto até o pedido voltar, e um erro vai para a mensagem do cartão
+  async function handleReopenConfirm(edit: PendingCellEdit) {
+    // O segundo clique de um clique duplo não manda outro pedido nem fecha o aviso antes da hora
+    if (pendingCells.current.has(cellOf(edit.kcId, edit.problemId))) return
+    setDialog({ kind: 'reopen', edit, isSending: true })
+    await editCell(edit)
+    close()
   }
 
   function handleApprove() {
@@ -122,12 +146,6 @@ export function KnowledgeComponentEditor({
 
   return (
     <>
-      {status === 'kc_approved' ? (
-        <p className="kc-editor__notice kc-editor__notice--approved">
-          Conceitos aprovados. Mexer em qualquer conceito agora devolve o exercício para rascunho e
-          pede nova aprovação.
-        </p>
-      ) : null}
       <Card footer={footerOf(status, tab)}>
         <Tabs
           items={TABS}
@@ -182,11 +200,13 @@ export function KnowledgeComponentEditor({
         open={dialog.kind === 'new'}
         problems={problems}
         knowledgeComponents={knowledgeComponents}
+        reopensApproval={reopensApproval}
         onClose={close}
       />
       <RenameKnowledgeComponentDialog
         assignmentId={assignmentId}
         knowledgeComponent={dialog.kind === 'rename' ? kcOfDialog : undefined}
+        reopensApproval={reopensApproval}
         onClose={close}
       />
       <RemoveKnowledgeComponentDialog
@@ -195,11 +215,19 @@ export function KnowledgeComponentEditor({
         blockingProblemIds={
           dialog.kind === 'remove' ? problemsOnlyMarkedBy(dialog.kcId, problems) : []
         }
+        reopensApproval={reopensApproval}
         onClose={close}
       />
       <UnlinkKnowledgeComponentDialog
         assignmentId={assignmentId}
         target={dialog.kind === 'unlink' ? dialog.target : undefined}
+        reopensApproval={reopensApproval}
+        onClose={close}
+      />
+      <ReopenApprovalDialog
+        edit={dialog.kind === 'reopen' ? dialog.edit : undefined}
+        isSending={dialog.kind === 'reopen' && dialog.isSending}
+        onConfirm={handleReopenConfirm}
         onClose={close}
       />
     </>

@@ -135,6 +135,10 @@ export function hasKnowledgeComponents(status: AssignmentStatus | null | undefin
   return isEditable(status) || status === 'trained'
 }
 
+// O aviso da primeira edição dos conceitos aprovados, no diálogo da célula e nos outros diálogos
+export const REOPEN_APPROVAL_NOTICE =
+  'Editar a matriz agora reabre todos os conceitos para aprovação.'
+
 // Os cinco estágios que o job informa, na ordem em que roda
 export const GENERATION_STAGES = [
   { stage: 'generate', label: 'Identificando os conceitos de cada problema' },

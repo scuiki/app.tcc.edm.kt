@@ -8,6 +8,7 @@ import {
   type KnowledgeComponentUsage,
 } from '../knowledgeComponents'
 import { LeavesProblemEmpty } from './LeavesProblemEmpty'
+import { ReopenApprovalNotice } from './ReopenApprovalNotice'
 import './KnowledgeComponentDialogs.css'
 
 interface RemoveKnowledgeComponentDialogProps {
@@ -15,6 +16,8 @@ interface RemoveKnowledgeComponentDialogProps {
   knowledgeComponent?: KnowledgeComponentUsage
   // Os problemas em que ele é o único conceito, e que por isso barram a remoção
   blockingProblemIds: number[]
+  // Nos conceitos aprovados a confirmação leva a linha do aviso de reabrir
+  reopensApproval: boolean
   onClose: () => void
 }
 
@@ -22,6 +25,7 @@ export function RemoveKnowledgeComponentDialog({
   assignmentId,
   knowledgeComponent,
   blockingProblemIds,
+  reopensApproval,
   onClose,
 }: RemoveKnowledgeComponentDialogProps) {
   const isBlocked = blockingProblemIds.length > 0
@@ -36,7 +40,12 @@ export function RemoveKnowledgeComponentDialog({
         <LeavesProblemEmpty problemIds={blockingProblemIds} action="remover" onClose={onClose} />
       ) : null}
       {knowledgeComponent && !isBlocked ? (
-        <RemoveConfirmation assignmentId={assignmentId} kc={knowledgeComponent} onDone={onClose} />
+        <RemoveConfirmation
+          assignmentId={assignmentId}
+          kc={knowledgeComponent}
+          reopensApproval={reopensApproval}
+          onDone={onClose}
+        />
       ) : null}
     </Dialog>
   )
@@ -45,10 +54,12 @@ export function RemoveKnowledgeComponentDialog({
 function RemoveConfirmation({
   assignmentId,
   kc,
+  reopensApproval,
   onDone,
 }: {
   assignmentId: number
   kc: KnowledgeComponentUsage
+  reopensApproval: boolean
   onDone: () => void
 }) {
   const remove = useRemoveKnowledgeComponent(assignmentId)
@@ -59,6 +70,7 @@ function RemoveConfirmation({
           Ele marca {problemCount(kc.problemIds.length)}: {listProblemIds(kc.problemIds)}. A remoção
           vale para o exercício inteiro e não pode ser desfeita.
         </p>
+        <ReopenApprovalNotice reopensApproval={reopensApproval} />
         {remove.isError ? (
           <p role="alert" className="kc-dialog__error">
             {editErrorText(remove.error)}

@@ -36,6 +36,7 @@ const IFS = { id: 2, name: 'Condicionais', is_generated_by_llm: true }
 const RECURSION = { id: 3, name: 'Recursão', is_generated_by_llm: false }
 const EXTRACTED_AT = '2026-10-07T12:00:00+00:00'
 const STATEMENT = 'Escreva um método que devolve a soma de dois inteiros.'
+const REOPEN_NOTICE = 'Editar a matriz agora reabre todos os conceitos para aprovação.'
 
 // O problema 12 só tem Laços, a Recursão só marca o problema 20, e só o 5 tem enunciado
 function draftProblems(): ProblemKnowledgeComponents[] {
@@ -72,6 +73,9 @@ interface FakeApiOptions {
   refuseApprove?: boolean
   // A rota da tela fica sem resposta, como uma carga que ainda não voltou
   problemsPending?: boolean
+  // Ligar e desligar só respondem quando a promessa resolve, como um pedido ainda a caminho
+  linkGate?: Promise<void>
+  refuseLink?: boolean
 }
 
 // Uma api em memória, com os exercícios de uma turma e os conceitos de cada um
@@ -84,6 +88,8 @@ function fakeApi({
   draftStatus = 'kc_draft',
   refuseApprove = false,
   problemsPending = false,
+  linkGate,
+  refuseLink = false,
 }: FakeApiOptions = {}) {
   const assignments = [
     assignment(1, 439, draftStatus),
@@ -116,6 +122,15 @@ function fakeApi({
   const spy = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
     const path = String(input)
     const method = init?.method ?? 'GET'
+    if (refuseLink && method === 'POST' && /\/problems\/\d+$/.test(path)) {
+      return jsonResponse({ detail: 'o conceito já marca este problema' }, 409)
+    }
+    // Toda edição de um conceito devolve o exercício aprovado a rascunho, como o backend faz
+    const isEdit =
+      method !== 'GET' && /^\/knowledge-components(\/\d+)?(\/problems\/\d+)?$/.test(path)
+    if (isEdit && assignments[0].status === 'kc_approved') {
+      assignments[0] = { ...assignments[0], status: 'kc_draft' }
+    }
     if (path === '/classrooms') return jsonResponse({ classrooms })
     if (path.startsWith('/assignments?classroom_id=')) return jsonResponse({ assignments })
     const problemsMatch = path.match(/^\/assignments\/(\d+)\/problems\/knowledge-components$/)
@@ -150,6 +165,7 @@ function fakeApi({
     // Ligar e desligar mudam o rascunho, e a recarga seguinte já traz a matriz nova
     const linkMatch = path.match(/^\/knowledge-components\/(\d+)\/problems\/(\d+)$/)
     if (linkMatch && (method === 'POST' || method === 'DELETE')) {
+      await linkGate
       const [kcId, problemId] = [Number(linkMatch[1]), Number(linkMatch[2])]
       const kc = problems[1].flatMap((p) => p.knowledge_components).find((k) => k.id === kcId)!
       problems[1] = problems[1].map((p) =>
@@ -775,6 +791,234 @@ describe('KnowledgeComponentsPage, editing a draft', () => {
     fireEvent.click(within(dialog).getByRole('button', { name: 'Remover conceito' }))
     await waitFor(() => expect(calls(spy, 'DELETE', '/knowledge-components/2')).toHaveLength(1))
   })
+
+  it('says nothing about reopening the approval in a draft', async () => {
+    const spy = await openDraft()
+    const dialogs = [
+      () => fireEvent.click(screen.getByRole('button', { name: 'Recursão no problema 20' })),
+      () =>
+        fireEvent.click(screen.getByRole('button', { name: 'Remover Condicionais do exercício' })),
+      () => fireEvent.click(screen.getByRole('button', { name: 'Editar o nome de Laços' })),
+      () => fireEvent.click(screen.getByRole('button', { name: 'Novo conceito' })),
+    ]
+    for (const open of dialogs) {
+      open()
+      const dialog = document.querySelector<HTMLElement>('dialog[open]')!
+      expect(dialog).not.toHaveTextContent(REOPEN_NOTICE)
+      fireEvent.click(within(dialog).getByRole('button', { name: 'Cancelar' }))
+      expect(document.querySelector('dialog[open]')).toBeNull()
+    }
+
+    fireEvent.click(screen.getByRole('button', { name: 'Recursão no problema 5' }))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    await waitFor(() =>
+      expect(calls(spy, 'POST', '/knowledge-components/3/problems/5')).toHaveLength(1),
+    )
+  })
+})
+
+describe('KnowledgeComponentsPage, editing approved concepts', () => {
+  async function openApproved(options: FakeApiOptions = {}) {
+    const spy = fakeApi({ ...options, draftStatus: 'kc_approved' })
+    renderWithClient(<KnowledgeComponentsPage classroomId={1} assignmentId={1} />)
+    await screen.findByRole('button', { name: 'Laços no problema 5' })
+    return spy
+  }
+
+  function reopenDialog() {
+    return screen.getByRole('dialog', { name: 'Editar os conceitos aprovados?' })
+  }
+
+  it('keeps the approval in sight and disabled, with no notice above the card', async () => {
+    await openApproved()
+    expect(screen.getByRole('button', { name: 'Aprovar conceitos' })).toBeDisabled()
+    expect(screen.queryByText(/Mexer em qualquer conceito/)).not.toBeInTheDocument()
+    expect(screen.queryByText(REOPEN_NOTICE)).not.toBeInTheDocument()
+  })
+
+  it('warns before linking a cell, in a neutral dialog, and cancelling calls nothing', async () => {
+    const spy = await openApproved()
+    fireEvent.click(screen.getByRole('button', { name: 'Recursão no problema 5' }))
+    const dialog = reopenDialog()
+    expect(dialog).toHaveTextContent(
+      `${REOPEN_NOTICE}O exercício volta a rascunho, e você aprova de novo quando terminar.`,
+    )
+    // O primeiro focável do aviso é o Cancelar, e o foco nele não abre balão
+    const cancel = within(dialog).getAllByRole('button')[0]
+    act(() => cancel.focus())
+    expect(cancel).toHaveTextContent('Cancelar')
+    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument()
+    const follow = within(dialog).getByRole('button', { name: 'Ligar conceito' })
+    expect(follow).toHaveClass('btn--primary')
+    expect(
+      within(dialog)
+        .getAllByRole('button')
+        .map((button) => button.textContent),
+    ).toEqual(['Cancelar', 'Ligar conceito'])
+
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Cancelar' }))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(spy.mock.calls.filter(([, init]) => (init?.method ?? 'GET') !== 'GET')).toHaveLength(0)
+    expect(screen.getByRole('button', { name: 'Recursão no problema 5' })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    )
+  })
+
+  it('links after the warning, and the reload brings back the draft and the approval', async () => {
+    const spy = await openApproved()
+    fireEvent.click(screen.getByRole('button', { name: 'Recursão no problema 5' }))
+    fireEvent.click(within(reopenDialog()).getByRole('button', { name: 'Ligar conceito' }))
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+    expect(calls(spy, 'POST', '/knowledge-components/3/problems/5')).toHaveLength(1)
+    expect(
+      await screen.findByRole('button', { name: 'Recursão no problema 5', pressed: true }),
+    ).toBeInTheDocument()
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Aprovar conceitos' })).toBeEnabled(),
+    )
+
+    // Sem estado de já avisei, a recarga trouxe o rascunho e o clique seguinte liga direto
+    fireEvent.click(screen.getByRole('button', { name: 'Recursão no problema 12' }))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    await waitFor(() =>
+      expect(calls(spy, 'POST', '/knowledge-components/3/problems/12')).toHaveLength(1),
+    )
+  })
+
+  it('warns before unlinking a cell, and following sends the DELETE', async () => {
+    const spy = await openApproved()
+    fireEvent.click(screen.getByRole('button', { name: 'Laços no problema 5' }))
+    const follow = within(reopenDialog()).getByRole('button', { name: 'Tirar conceito' })
+    expect(follow).toHaveClass('btn--primary')
+    expect(calls(spy, 'DELETE', '/knowledge-components/1/problems/5')).toHaveLength(0)
+    fireEvent.click(follow)
+    await waitFor(() =>
+      expect(calls(spy, 'DELETE', '/knowledge-components/1/problems/5')).toHaveLength(1),
+    )
+    expect(
+      await screen.findByRole('button', { name: 'Laços no problema 5', pressed: false }),
+    ).toBeInTheDocument()
+  })
+
+  it('keeps the warning open and without clicks while the request is on the way', async () => {
+    let release!: () => void
+    const linkGate = new Promise<void>((resolve) => {
+      release = resolve
+    })
+    const spy = await openApproved({ linkGate })
+    fireEvent.click(screen.getByRole('button', { name: 'Recursão no problema 5' }))
+    fireEvent.click(within(reopenDialog()).getByRole('button', { name: 'Ligar conceito' }))
+    await waitFor(() =>
+      expect(calls(spy, 'POST', '/knowledge-components/3/problems/5')).toHaveLength(1),
+    )
+    const buttons = within(reopenDialog()).getAllByRole('button')
+    expect(buttons.map((button) => button.textContent)).toEqual(['Cancelar', 'Ligar conceito'])
+    buttons.forEach((button) => expect(button).toBeDisabled())
+    // Com o pedido no ar o Esc não larga o aviso
+    const cancel = new Event('cancel', { cancelable: true })
+    fireEvent(reopenDialog(), cancel)
+    expect(cancel.defaultPrevented).toBe(true)
+
+    act(() => release())
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+    expect(screen.getByRole('button', { name: 'Recursão no problema 5' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+  })
+
+  it('closes the warning and shows the error in the card when the request fails', async () => {
+    await openApproved({ refuseLink: true })
+    fireEvent.click(screen.getByRole('button', { name: 'Recursão no problema 5' }))
+    fireEvent.click(within(reopenDialog()).getByRole('button', { name: 'Ligar conceito' }))
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+    const alert = screen.getByRole('alert')
+    expect(alert).toHaveTextContent('Não foi possível ligar o conceito')
+    expect(alert).toHaveTextContent('A mudança foi recusada. o conceito já marca este problema')
+    expect(alert.closest('.card')).not.toBeNull()
+  })
+
+  it('sends a single request for a double click on the follow button', async () => {
+    const spy = await openApproved()
+    const cell = screen.getByRole('button', { name: 'Recursão no problema 5' })
+    fireEvent.click(cell)
+    const follow = within(reopenDialog()).getByRole('button', { name: 'Ligar conceito' })
+    act(() => {
+      fireEvent.click(follow)
+      fireEvent.click(follow)
+      // Com o pedido no ar, um clique na mesma célula não troca o aviso que está enviando
+      fireEvent.click(cell)
+    })
+    expect(within(reopenDialog()).getByRole('button', { name: 'Ligar conceito' })).toBeDisabled()
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+    expect(
+      screen.getByRole('button', { name: 'Recursão no problema 5', pressed: true }),
+    ).toBeEnabled()
+    expect(calls(spy, 'POST', '/knowledge-components/3/problems/5')).toHaveLength(1)
+  })
+
+  it('refuses to leave a problem empty with no warning, because nothing changes', async () => {
+    await openApproved()
+    fireEvent.click(screen.getByRole('button', { name: 'Laços no problema 12' }))
+    const dialog = screen.getByRole('alertdialog', { name: 'Não dá para tirar este conceito' })
+    expect(dialog).not.toHaveTextContent(REOPEN_NOTICE)
+    expect(
+      screen.queryByRole('dialog', { name: 'Editar os conceitos aprovados?' }),
+    ).not.toBeInTheDocument()
+  })
+
+  it('puts the warning as a line in the confirmation of taking off the last problem', async () => {
+    const spy = await openApproved()
+    fireEvent.click(screen.getByRole('button', { name: 'Recursão no problema 20' }))
+    expect(
+      screen.queryByRole('dialog', { name: 'Editar os conceitos aprovados?' }),
+    ).not.toBeInTheDocument()
+    const dialog = screen.getByRole('alertdialog', { name: 'Tirar Recursão do problema 20?' })
+    const line = within(dialog).getByText(REOPEN_NOTICE)
+    expect(line).toHaveClass('kc-dialog__note')
+    expect(line.parentElement?.lastElementChild).toBe(line)
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Tirar conceito' }))
+    await waitFor(() =>
+      expect(calls(spy, 'DELETE', '/knowledge-components/3/problems/20')).toHaveLength(1),
+    )
+  })
+
+  it('puts the warning as a line in the confirmation of removing, not in the refusal', async () => {
+    await openApproved()
+    fireEvent.click(screen.getByRole('button', { name: 'Remover Condicionais do exercício' }))
+    const dialog = screen.getByRole('alertdialog', { name: 'Remover Condicionais?' })
+    const line = within(dialog).getByText(REOPEN_NOTICE)
+    expect(line).toHaveClass('kc-dialog__note')
+    expect(line.parentElement?.lastElementChild).toBe(line)
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Cancelar' }))
+
+    fireEvent.click(screen.getByRole('button', { name: 'Remover Laços do exercício' }))
+    expect(
+      screen.getByRole('alertdialog', { name: 'Não dá para remover este conceito' }),
+    ).not.toHaveTextContent(REOPEN_NOTICE)
+  })
+
+  it('puts the warning as a line above the buttons of the rename form', async () => {
+    const spy = await openApproved()
+    fireEvent.click(screen.getByRole('button', { name: 'Editar o nome de Laços' }))
+    const dialog = screen.getByRole('dialog', { name: 'Editar conceito' })
+    const line = within(dialog).getByText(REOPEN_NOTICE)
+    expect(line).toHaveClass('kc-dialog__note')
+    expect(line.parentElement?.lastElementChild).toBe(line)
+    fireEvent.change(within(dialog).getByLabelText(/Nome/), { target: { value: 'Repetição' } })
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Salvar' }))
+    await waitFor(() => expect(calls(spy, 'PUT', '/knowledge-components/1')).toHaveLength(1))
+  })
+
+  it('puts the warning as a line above the buttons of the new concept form', async () => {
+    await openApproved()
+    fireEvent.click(screen.getByRole('button', { name: 'Novo conceito' }))
+    const dialog = screen.getByRole('dialog', { name: 'Novo conceito' })
+    const line = within(dialog).getByText(REOPEN_NOTICE)
+    expect(line).toHaveClass('kc-dialog__note')
+    expect(line.parentElement?.lastElementChild).toBe(line)
+  })
 })
 
 describe('KnowledgeComponentsPage, a new concept', () => {
@@ -885,17 +1129,17 @@ describe('KnowledgeComponentsPage, a new concept', () => {
 })
 
 describe('KnowledgeComponentsPage, approving', () => {
-  it('approves the draft and leaves the button disabled, with the notice of today', async () => {
+  it('approves the draft and disables the button, with no notice above the card', async () => {
     const spy = fakeApi()
     renderWithClient(<KnowledgeComponentsPage classroomId={1} assignmentId={1} />)
     const approve = await screen.findByRole('button', { name: 'Aprovar conceitos' })
     expect(approve).toBeEnabled()
     fireEvent.click(approve)
     await waitFor(() => expect(calls(spy, 'POST', '/knowledge-components/approve')).toHaveLength(1))
-    expect(
-      await screen.findByText(/Conceitos aprovados. Mexer em qualquer conceito/),
-    ).toBeInTheDocument()
+    // A etiqueta ao lado do título é o único lugar que diz que os conceitos estão aprovados
+    expect(await screen.findByText('Conceitos aprovados')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Aprovar conceitos' })).toBeDisabled()
+    expect(screen.queryByText(/Mexer em qualquer conceito/)).not.toBeInTheDocument()
   })
 
   it('disables the approval while a problem has no concept, with no reason attached', async () => {
@@ -923,7 +1167,7 @@ describe('KnowledgeComponentsPage, approving', () => {
     expect(screen.getByRole('button', { name: 'Laços no problema 5' })).toBeEnabled()
     expect(screen.getByRole('button', { name: 'Editar o nome de Laços' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Novo conceito' })).toBeEnabled()
-    expect(screen.getByText(/Conceitos aprovados. Mexer em qualquer conceito/)).toBeInTheDocument()
+    expect(screen.queryByText(/Mexer em qualquer conceito/)).not.toBeInTheDocument()
     expect(screen.queryByText(/Clique numa célula/)).not.toBeInTheDocument()
   })
 

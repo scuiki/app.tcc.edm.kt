@@ -3,9 +3,10 @@ import { Dialog, DialogBody, DialogFooter } from '../../../components/ui/Dialog'
 import { useUnlinkKnowledgeComponent } from '../api/knowledgeComponents'
 import { editErrorText } from '../knowledgeComponents'
 import { LeavesProblemEmpty } from './LeavesProblemEmpty'
+import { ReopenApprovalNotice } from './ReopenApprovalNotice'
 import './KnowledgeComponentDialogs.css'
 
-// Só abre nos dois casos que pedem atenção, e nos outros o clique na célula desliga direto
+// Só abre nos dois casos que pedem atenção, e nos outros a célula desliga direto ou pelo aviso
 export type UnlinkTarget = {
   kcId: number
   // O nome fica guardado porque o conceito some da resposta quando sai do exercício
@@ -18,12 +19,15 @@ export type UnlinkTarget = {
 interface UnlinkKnowledgeComponentDialogProps {
   assignmentId: number
   target?: UnlinkTarget
+  // Nos conceitos aprovados a confirmação leva a linha do aviso de reabrir, e a recusa não
+  reopensApproval: boolean
   onClose: () => void
 }
 
 export function UnlinkKnowledgeComponentDialog({
   assignmentId,
   target,
+  reopensApproval,
   onClose,
 }: UnlinkKnowledgeComponentDialogProps) {
   const title = !target
@@ -37,7 +41,12 @@ export function UnlinkKnowledgeComponentDialog({
         <LeavesProblemEmpty problemIds={[target.problemId]} action="tirar" onClose={onClose} />
       ) : null}
       {target?.kind === 'confirm' ? (
-        <UnlinkConfirmation assignmentId={assignmentId} target={target} onDone={onClose} />
+        <UnlinkConfirmation
+          assignmentId={assignmentId}
+          target={target}
+          reopensApproval={reopensApproval}
+          onDone={onClose}
+        />
       ) : null}
     </Dialog>
   )
@@ -46,10 +55,12 @@ export function UnlinkKnowledgeComponentDialog({
 function UnlinkConfirmation({
   assignmentId,
   target,
+  reopensApproval,
   onDone,
 }: {
   assignmentId: number
   target: UnlinkTarget
+  reopensApproval: boolean
   onDone: () => void
 }) {
   const unlink = useUnlinkKnowledgeComponent(assignmentId)
@@ -60,6 +71,7 @@ function UnlinkConfirmation({
           O problema {target.problemId} é o único que este conceito marca, então ele sai do
           exercício junto. Não dá para desfazer.
         </p>
+        <ReopenApprovalNotice reopensApproval={reopensApproval} />
         {unlink.isError ? (
           <p role="alert" className="kc-dialog__error">
             {editErrorText(unlink.error)}

@@ -10,23 +10,32 @@ import {
   problemCount,
   type KnowledgeComponentUsage,
 } from '../knowledgeComponents'
+import { ReopenApprovalNotice } from './ReopenApprovalNotice'
 import './KnowledgeComponentDialogs.css'
 
 interface RenameKnowledgeComponentDialogProps {
   assignmentId: number
   knowledgeComponent?: KnowledgeComponentUsage
+  // Nos conceitos aprovados o formulário leva a linha do aviso de reabrir, acima dos botões
+  reopensApproval: boolean
   onClose: () => void
 }
 
 export function RenameKnowledgeComponentDialog({
   assignmentId,
   knowledgeComponent,
+  reopensApproval,
   onClose,
 }: RenameKnowledgeComponentDialogProps) {
   return (
     <Dialog open={knowledgeComponent != null} onClose={onClose} title="Editar conceito">
       {knowledgeComponent ? (
-        <RenameForm assignmentId={assignmentId} kc={knowledgeComponent} onDone={onClose} />
+        <RenameForm
+          assignmentId={assignmentId}
+          kc={knowledgeComponent}
+          reopensApproval={reopensApproval}
+          onDone={onClose}
+        />
       ) : null}
     </Dialog>
   )
@@ -35,10 +44,12 @@ export function RenameKnowledgeComponentDialog({
 function RenameForm({
   assignmentId,
   kc,
+  reopensApproval,
   onDone,
 }: {
   assignmentId: number
   kc: KnowledgeComponentUsage
+  reopensApproval: boolean
   onDone: () => void
 }) {
   const [name, setName] = useState(kc.name)
@@ -71,6 +82,7 @@ function RenameForm({
             estrelas saem.
           </p>
         ) : null}
+        <ReopenApprovalNotice reopensApproval={reopensApproval} />
       </DialogBody>
       <DialogFooter>
         <Button variant="secondary" onClick={onDone}>
