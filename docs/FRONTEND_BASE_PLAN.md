@@ -234,8 +234,8 @@ som só toca se houver problema.
 | 4 | Concluída, commit `1a83ebf` |
 | 5 | Concluída, commit `cfd03d0` |
 | 6 | Concluída, commit `94b2a85` |
-| 7 | Concluída |
-| 8 | Pendente |
+| 7 | Concluída, commit `f420730` |
+| 8 | Concluída |
 | 9 | Pendente |
 | 10 | Pendente |
 | 11 | Pendente |

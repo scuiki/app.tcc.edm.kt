@@ -217,11 +217,13 @@ function calls(spy: ReturnType<typeof fakeApi>, method: string, path: string) {
 }
 
 describe('MasteryDashboardPage, the exercise in the address', () => {
-  it('shows the path with the status of the exercise named in the address', async () => {
+  it('shows the path and, beside the title, the status of the exercise in the address', async () => {
     renderAssignment(1)
     const path = await screen.findByRole('navigation', { name: 'Caminho' })
     expect(path).toHaveTextContent('Turmas›CSEDM Spring 2019›Assignment 439›Análise')
-    expect(path).toHaveTextContent('Treinado')
+    expect(path).not.toHaveTextContent('Treinado')
+    expect(screen.getByRole('heading', { level: 1, name: 'Assignment 439' })).toBeInTheDocument()
+    expect(screen.getByText('Treinado')).toBeInTheDocument()
   })
 
   it('says the exercise was not found for an unknown id', async () => {

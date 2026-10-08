@@ -108,7 +108,9 @@ describe('KnowledgeComponentsPage, the exercise in the address', () => {
     renderWithClient(<KnowledgeComponentsPage classroomId={1} assignmentId={1} />)
     const path = await screen.findByRole('navigation', { name: 'Caminho' })
     expect(path).toHaveTextContent('Turmas›CSEDM Spring 2019›Assignment 439›Conceitos')
-    expect(path).toHaveTextContent('Rascunho de conceitos')
+    // A etiqueta saiu do caminho, que só navega, e fica ao lado do título
+    expect(path).not.toHaveTextContent('Rascunho de conceitos')
+    expect(screen.getByText('Rascunho de conceitos')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'CSEDM Spring 2019' })).toHaveAttribute(
       'href',
       '#/classrooms/1',

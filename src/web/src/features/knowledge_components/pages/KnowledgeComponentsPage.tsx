@@ -52,15 +52,18 @@ export function KnowledgeComponentsPage({
           { label: assignment.name },
           { label: 'Conceitos' },
         ]}
-        aside={
+      />
+      <PageHeader
+        title="Conceitos"
+        badge={
           badge ? (
             <Badge tone={badge.tone} icon={badge.icon}>
               {badge.label}
             </Badge>
           ) : null
         }
+        description={DESCRIPTION}
       />
-      <PageHeader title="Conceitos" description={DESCRIPTION} />
       <AssignmentWorkspace key={assignment.id} assignment={assignment} />
       {assignment.status && isEditable(assignment.status) ? (
         <ApprovalBar

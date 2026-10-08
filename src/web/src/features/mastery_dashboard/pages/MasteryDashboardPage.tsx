@@ -1,5 +1,3 @@
-import { ChartColumn } from 'lucide-react'
-
 import { Breadcrumb } from '../../../components/Breadcrumb'
 import { PageHeader } from '../../../components/PageHeader'
 import { EmptyState, ErrorState, LoadingState } from '../../../components/states/states'
@@ -46,15 +44,18 @@ export function MasteryDashboardPage({ classroomId, assignmentId }: MasteryDashb
           { label: assignment.name },
           { label: 'Análise' },
         ]}
-        aside={
+      />
+      <PageHeader
+        title={assignment.name}
+        badge={
           badge ? (
             <Badge tone={badge.tone} icon={badge.icon}>
               {badge.label}
             </Badge>
           ) : null
         }
+        description={DESCRIPTION}
       />
-      <PageHeader title={assignment.name} icon={ChartColumn} description={DESCRIPTION} />
       <AssignmentDashboard key={assignment.id} assignment={assignment} classroomId={classroom.id} />
     </>
   )

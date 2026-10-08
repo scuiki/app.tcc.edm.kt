@@ -4,15 +4,15 @@ import { describe, expect, it } from 'vitest'
 import { Breadcrumb } from './Breadcrumb'
 
 describe('Breadcrumb', () => {
-  it('links every step but the current one, and shows the aside after the path', () => {
+  it('links the steps that have an address and marks only the last one as the current place', () => {
     render(
       <Breadcrumb
         items={[
           { label: 'Turmas', href: '/classrooms' },
           { label: 'CSEDM Spring 2019', href: '/classrooms/1' },
+          { label: 'Assignment 439' },
           { label: 'Análise' },
         ]}
-        aside={<span>Modelo treinado</span>}
       />,
     )
     const path = screen.getByRole('navigation', { name: 'Caminho' })
@@ -21,8 +21,10 @@ describe('Breadcrumb', () => {
       'href',
       '#/classrooms/1',
     )
-    expect(screen.queryByRole('link', { name: 'Análise' })).not.toBeInTheDocument()
+    // O exercício não tem tela própria, então é texto, e não o lugar atual
+    expect(screen.queryByRole('link', { name: 'Assignment 439' })).not.toBeInTheDocument()
+    expect(screen.getByText('Assignment 439')).not.toHaveAttribute('aria-current')
     expect(screen.getByText('Análise')).toHaveAttribute('aria-current', 'page')
-    expect(path).toHaveTextContent('Modelo treinado')
+    expect(path).toHaveTextContent('Turmas›CSEDM Spring 2019›Assignment 439›Análise')
   })
 })
