@@ -202,9 +202,29 @@ com a linha zerada, e quem recusa isso é a validação da geração. Na aplica�
 assignment para `kc_draft` e com a gravação dos conceitos, das soluções amostradas, dos KCs
 candidatos e dos trechos, e uma falha desfaz tudo.
 
+**A data da extração é o `updated_at` do `kc_job` concluído mais recente.** O `mark_done()` grava
+essa data na mesma transação que grava os conceitos, então ela é a hora em que os conceitos do
+exercício nasceram. O banco guarda a hora em UTC, e a tela a mostra no fuso do navegador, porque o
+dia que importa é o do professor. Uma extração às 2h30 UTC de 07/10 aparece como 06/10/2026 em
+Brasília.
+
 **O conceito guarda o nome gerado e o nome mostrado.** O nome gerado, em inglês e em minúsculas, é o
-resultado do método e fica como registro. O nome mostrado, em português, sai de uma tradução depois
-da extração, e é o que o professor lê e renomeia. Renomear muda só o nome mostrado.
+resultado do método e fica como registro, sem aparecer em lugar nenhum da tela, nem na origem do
+conceito. O nome mostrado, em português, sai de uma tradução depois da extração, e é o que o
+professor lê e renomeia. Renomear muda só o nome mostrado e grava o `updated_at` do conceito.
+
+**As estrelas do nome dependem do `updated_at` do `kc`.** O conceito leva as estrelas enquanto tem o
+`generated_name` e o `updated_at` vazio, uma propriedade da entidade que o DTO só copia. A coluna
+segue o padrão `updated_at`, e outra entidade que precisar dele ganha o mesmo nome. O marcador lê o
+`updated_at` porque hoje o renomear é a única edição do `kc`, já que o soft delete grava só o
+`deleted_at` e ligar e desligar mexem na `problem_kc`. Uma edição nova do `kc` que não seja do nome
+precisa rever o marcador. O conceito criado pelo professor não tem `generated_name` e nasce sem
+estrelas.
+
+**Renomear para o mesmo nome não grava nada.** O backend devolve o conceito como está, sem gravar
+o `updated_at` e sem voltar o exercício aprovado a rascunho. Um pedido que não muda o nome não pode
+tirar as estrelas nem reabrir a aprovação. A recusa do exercício treinado vem antes, e o 409
+continua.
 
 **A extração grava as soluções amostradas, os KCs candidatos e os trechos.** A solução amostrada
 aponta para a execução escolhida, que já tem o aluno, o horário e o código, e para o problema, que
@@ -213,6 +233,14 @@ cada KC, em inglês e em português, e o conceito em que caiu. O trecho aponta p
 amostrada. É o que a origem do conceito mostra e o que os testes de regressão da extração usam. A
 extração lê só as execuções corretas, por uma consulta própria (`list_correct_runs()`) que traz o id
 de cada execução, e o contrato de colunas do dado limpo, que o treino usa, fica como está.
+
+**A tela Conceitos lê as execuções pelo `ISubmissionRepository`.** A contagem de execuções corretas
+de cada problema e o código das soluções da origem do conceito são consultas novas desse
+repositório, e não de `knowledge_components`, porque a `classroom_import` é a dona da tabela
+`submission`, e `knowledge_components` já importa a interface dela para a extração. As duas
+consultas usam SQL direto, sem montar o DataFrame do dado limpo, com o mesmo filtro do
+`list_correct_runs()`. A contagem deixa de fora a execução sem problema, porque a coluna aceita nulo
+e o agrupamento devolveria uma chave nula, que não é o número de nenhum problema.
 
 **O trecho é procurado na solução sem contar os espaços.** O LLM devolve o trecho como texto, e o
 app o procura na solução que ele apontou, com qualquer quantidade de espaço, tabulação ou quebra de
@@ -225,6 +253,12 @@ do modelo e não parte do método.
 do exercício vão juntos, para que o mesmo termo saia igual em todos. Uma justificativa repetida vai
 uma vez só, e a tradução volta para todas as cópias. Os termos de Java ficam como estão, e o nome
 traduzido tem só a primeira letra maiúscula, fora o código.
+
+**Os nomes traduzidos ficam como a tradução os deu, mesmo quando soam estranhos.** No A439, "Valor
+absoluto com math.abs" leva o `math.abs` em minúsculas, como o nome gerado, e "Operadores lógicos
+(e, ou)" traduz o "and, or" do nome gerado no lugar de `&&` e `||`. Os dois são fiéis ao Duan e à
+tradução. Corrigi-los pede mudar o prompt da tradução, o que invalida o cache da regressão do A439,
+e o professor pode renomear qualquer conceito.
 
 **A regressão do KCGen-KT fica no A439 e lê o cache gravado.** A extração de referência, feita em
 06/10/2026 numa turma nova da CSEDM, gravou em `tests/data/kc` as respostas do LLM e o que a
@@ -302,11 +336,20 @@ fica só no `ml/` e nas etapas do KCGen-KT.
 aceito em silêncio. Com ela, viraria um erro do banco (500). A regra recusa o pedido antes, com a
 lista dos problemas que não existem.
 
+**Um KC novo liga ao menos um problema.** Um KC sem problema não entra em nenhuma conta por conceito
+da Análise, e a tela Conceitos nem o mostraria, porque monta a lista de conceitos a partir da de
+problemas. A lista vazia ou ausente é recusada com o 422 da validação do DTO
+(`Field(min_length=1)`), como o nome em branco da turma, porque é a forma do pedido, e não uma regra
+sobre o estado do exercício. O 422 fica só como defesa da api. O Criar do Novo conceito só habilita
+com um problema marcado, e o `detail` do 422 é uma lista, que a tela não sabe ler como mensagem.
+
 **A descrição deduzida pelo LLM deixa de ser gravada.** Ela era uma etapa do TCC 1 que o paper não
 tem, e o enunciado, quando o pacote o traz, toma o lugar dela (a descrição e o enunciado, nas linhas
-11 e 14 do KCGen-KT no `DEVELOPMENT.md`).
-A coluna `description` e as rotas que a devolvem continuam até a tela Conceitos, que as troca pelo
-enunciado. As descrições já gravadas das turmas antigas ficam como estão.
+11 e 14 do KCGen-KT no `DEVELOPMENT.md`). Com a tela Conceitos, a coluna `description` sai do banco,
+da entidade `Problem` e das duas rotas que a devolviam, e a tela mostra o enunciado no lugar dela.
+É uma coluna que nenhuma extração grava, que nenhuma tela mostra e que só tem valor em duas turmas
+antigas. Os 20 textos já gravados, 10 da turma 3, já removida, e 10 da turma 5, saem junto, como o
+Leo decidiu em 08/10/2026.
 
 ## Remoção
 
@@ -318,11 +361,8 @@ desfazer um vínculo é ligar de novo.
 removido esbarraria na linha antiga. Com o índice parcial, a linha antiga fica como histórico e
 nasce uma nova, então cada remoção e cada religação ficam registradas.
 
-**A fusão também guarda o histórico.** Antes ela reescrevia o `kc_id` dos vínculos do KC descartado.
-Agora ela cria os vínculos que faltam no KC que fica e marca os do descartado como removidos.
-
-**Um KC que perde o último problema sai junto.** Um KC sem problema não entra no treino nem no
-dashboard, e com soft delete isso é reversível.
+**Um KC que perde o último problema sai junto.** Um KC sem problema não entra em nenhuma conta por
+conceito da Análise, e com soft delete isso é reversível.
 
 **Depois do treino não há remoção de KC.** Um modelo publicado prevê os conceitos que conheceu, e
 a edição é recusada em `trained` (ver Dashboard), então o dashboard nunca precisa do nome de um KC
@@ -469,12 +509,13 @@ situação de uso) vale do mesmo jeito com tokens e uma prop `variant` que escol
 jeito de escrever CSS no meio do caminho custaria mais do que rende.
 
 **O `<dialog>` nativo no lugar do Radix.** Ele já prende o foco, fecha no Esc e escurece o fundo.
-Abrir como modal exige chamar `showModal()`, e esse é o único effect das primitivas, porque
-sincroniza com uma API do DOM. O conteúdo só existe com o diálogo aberto, então o formulário nasce
-limpo a cada abertura, por remontagem, sem precisar do Radix.
+Abrir como modal exige chamar `showModal()`, num effect, porque sincroniza com uma API do DOM. O
+conteúdo só existe com o diálogo aberto, então o formulário nasce limpo a cada abertura, por
+remontagem, sem precisar do Radix.
 
-**Sem react-hook-form nem zod.** Os formulários das telas planejadas têm um campo cada, e o backend
-já valida (tamanho do nome e nome único, com o 409). O `useState` resolve.
+**Sem react-hook-form nem zod.** Os formulários das telas planejadas são pequenos, um campo cada ou,
+no Novo conceito, o nome e uma caixa por problema, e o backend já valida o que importa (o tamanho do
+nome, o nome único da turma, com o 409, e o conceito sem problema, com o 422). O `useState` resolve.
 
 **`eslint-plugin-react` com o ESLint 10.** A versão 7.37.5 declara suporte só até o 9, mas as duas
 regras que interessam (`no-unstable-nested-components` e `jsx-key`) foram testadas no 10 e
@@ -508,20 +549,25 @@ substituir, e a tela avisa isso antes de processar, sem impedir.
 
 **A lista de conceitos do exercício sai invertendo a de problemas.** A tela de conceitos pede só
 `GET /assignments/{id}/problems/knowledge-components` e calcula quais problemas cada conceito
-marca. Pedir também `GET /knowledge-components` seria guardar o mesmo dado duas vezes, e as duas
-cópias poderiam discordar entre uma edição e a recarga.
+marca, e dessa lista sai a ordem das linhas da matriz na primeira carga, por recorrência
+decrescente, com empate pelo nome em pt-BR e depois pelo id. Pedir também
+`GET /knowledge-components` seria guardar o mesmo dado duas vezes, e as duas cópias poderiam
+discordar entre uma edição e a recarga. Só a origem do conceito vem de outra rota, porque é outro
+dado.
 
 **O exercício treinado mostra os conceitos só para consulta.** Os conceitos de um exercício
 treinado ficam congelados, e o backend também recusa a edição, porque passariam a divergir dos que
-o modelo publicado usa.
+o modelo publicado usa. A matriz fica em `--color-observed`, sem clique, sem Novo conceito e sem
+Aprovar, e só a lupa continua, porque ver a origem do conceito não muda nada.
 
 **A tela recusa deixar um problema sem conceito antes de chamar a api.** Os problemas e os conceitos
 de cada um já estão na tela, então ela sabe qual problema ficaria vazio e diz o número dele. O
 backend continua barrando, e se barrar mesmo assim, a mensagem dele aparece.
 
-**O xis só confirma quando o conceito sairia do exercício junto.** Tirar um conceito de um problema
-que continua marcado por ele em outros é rápido e fácil de refazer. Tirar do último problema remove
-o conceito, e sem restaurar.
+**Desligar na célula só confirma quando o conceito sairia do exercício junto.** Tirar um conceito de
+um problema que continua marcado por ele em outros é rápido e fácil de refazer, com um clique na
+mesma célula. Tirar do último problema remove o conceito, e sem restaurar. O xis das etiquetas, que
+fazia o mesmo, saiu com a matriz.
 
 **O diálogo de extração não fecha enquanto o job roda.** Como reencontrar uma extração em andamento
 ficou fora do escopo, fechar perderia o acompanhamento. O Esc é bloqueado, o `Dialog` reabre se o
@@ -530,8 +576,8 @@ sair. A tela mostra os estágios que o job informa, com a contagem do estágio a
 
 **A barra de ação e o `OutcomeMessage` subiram para `components/`.** Uma funcionalidade não importa
 os componentes de outra, e a importação e os conceitos precisavam dos dois. Na versão 5 do design
-(`DESIGN.md`), a barra de ação sai do app, e a migração para esse design (`IMPLEMENTATION_PLAN.md`)
-remove o `PageActionBar`.
+(`DESIGN.md`), a barra de ação sai do app. A tela Conceitos refeita deixa de usá-la, com o Aprovar
+na faixa das abas, e o `PageActionBar` sai com a tela Importar dados, a última que o usa.
 
 **Uma recarga que falha mantém o que já estava na tela.** O `QueryStates` só mostra o erro quando
 ainda não há dado; uma falha transitória numa recarga em segundo plano não apaga uma lista que
@@ -592,6 +638,18 @@ mais alunos sem rolar. O cabeçalho com a mesma altura das linhas deixa a tabela
 um rótulo longo trunca com o texto inteiro no hover, em vez de quebrar em duas linhas. O histograma
 da tabela perdeu o eixo para caber nos 32px, e a escala de 0 a 100% está na dica do cabeçalho.
 
+**A linha de 32px tem duas exceções.** A linha com botões de ícone mede uns 41px, porque o botão tem
+32px e a célula tem folga em cima e embaixo. Já era assim na tabela de Turmas, e o Leo aceitou o
+mesmo na matriz de conceitos. A célula do enunciado, na aba Problemas da tela Conceitos, quebra
+linha, porque o enunciado cortado não diz o que o problema pede, e é por ele que o professor
+escolhe os conceitos.
+
+**A primeira coluna da matriz fica presa, e o fio dela só aparece com rolagem.** Em janela estreita
+a matriz rola de lado dentro do cartão, e sem a coluna presa o nome do conceito sairia de vista.
+Presa, ela cobre as colunas que passam por baixo, e o fio à direita marca essa borda. Sem nada
+rolado, o fio seria só um fio vertical, que as tabelas não têm, então ele aparece quando o
+invólucro rola e some quando volta ao início.
+
 **Os estágios da extração e do treino são azuis.** A lista de estágios serve a dois diálogos, e os
 dois são trabalho de modelo, o modelo de linguagem na extração de conceitos e o Code-DKT no treino.
 Até a versão 3 do design a extração ficava preta, porque o azul era só do Code-DKT. Com as estrelas
@@ -603,7 +661,13 @@ fala do modelo, então não pode ser azul pela regra.
 **As dicas de hover são um componente, e não o `title` nativo.** O navegador espera perto de um
 segundo antes de mostrar o `title`, e isso não se configura. O `Tooltip` aparece no hover ou no
 foco, fixo na janela para não ser cortado pela rolagem da tabela, e o leitor de tela continua lendo
-o `aria-label`.
+o `aria-label`. O balão pode ter um título e respeita as quebras de linha do texto, e a variante
+larga comporta o enunciado do problema, que o balão do número mostra na matriz.
+
+**O balão nasce dentro do diálogo aberto.** O `<dialog>` modal fica na camada de cima do navegador,
+acima de tudo o que está no `body`, então um balão posto no `body` nasceria por baixo do diálogo,
+como as dicas da origem do conceito. O balão vai para o `dialog[open]` mais próximo do elemento, e
+para o `body` fora de diálogo, o que vale também para o diálogo do aluno da Análise.
 
 **A janela não rola, só o conteúdo.** A barra superior e o menu ficam parados sem `sticky`, que
 pediria a barra sticky também. A tabela oculta do histograma, que dá os números ao leitor de tela,
@@ -706,10 +770,17 @@ desenho de alguns caracteres. Capturas feitas no nitro saem nela.
 
 **A tela Conceitos é uma matriz problema × conceito.** As duas vistas que a tela tinha, os conceitos
 de cada problema e a lista de conceitos, eram a mesma informação desenhada duas vezes, numa página
-longa de etiquetas com xis. A matriz é a Q-matrix da literatura, cabe numa tela com 15 conceitos e
-10 problemas e mostra nas margens a recorrência de cada conceito e quantos conceitos cada problema
-tem. No código ela continua sendo os vínculos problema × conceito. A lista de problemas, com o
-enunciado quando o pacote o traz, fica numa segunda aba, como as abas da Análise.
+longa de etiquetas com xis. A matriz é a Q-matrix da literatura e mostra nas margens a recorrência
+de cada conceito e quantos conceitos cada problema tem. Ela foi desenhada para 15 conceitos, e o
+A439 da extração nova tem 25, então a coluna do nome ocupa a sobra do cartão e corta com
+reticências, com o nome inteiro no balão. No código ela continua sendo os vínculos problema ×
+conceito. A lista de problemas, com o enunciado quando o pacote o traz, fica numa segunda aba, como
+as abas da Análise.
+
+**A ordem das linhas da matriz fica fixa enquanto o professor edita.** Ela é calculada ao abrir a
+tela, por recorrência decrescente, e não muda nas recargas depois de cada edição, porque a linha
+que pula de lugar debaixo do mouse desorienta. O conceito novo entra no fim, o removido sai, e a
+ordem só é refeita quando o professor sai da tela e volta. A matriz não tem ordenação clicável.
 
 **Mesclar conceitos saiu.** Com dois conceitos duplicados, o professor remove um e o outro fica, e
 isso é mais simples de entender do que um diálogo de mescla.
@@ -719,10 +790,28 @@ nelas.** O professor precisa ver de onde o conceito veio para validá-lo, e a ev
 Não há como medir a influência de cada linha num modelo acessado pela CLI, então os trechos vêm de
 uma chamada separada, depois do agrupamento e na mesma extração, com o prompt do Duan intacto, e a
 tela os mostra como o lugar onde o conceito aparece, e não como a causa dele (O que o app acrescenta
-ao KCGen-KT, no `DEVELOPMENT.md`). As frases candidatas do modelo, as justificativas de cada KC,
-foram desenhadas antes e saíram, porque repetiam o nome do conceito com outras palavras. Elas passam
-a ser guardadas e traduzidas, e a tela Conceitos decide como mostrá-las, tendo em conta que o
-desenho anterior as achou repetitivas.
+ao KCGen-KT, no `DEVELOPMENT.md`). Cada problema empilha o enunciado, a justificativa e as
+soluções, que é a ordem em que o professor valida, o que o problema pede, por que o modelo ligou o
+conceito e onde ele aparece. As justificativas de cada KC, desenhadas antes e tiradas porque
+repetiam o nome do conceito, voltam traduzidas sob o rótulo "Justificativa do modelo de linguagem",
+uma ou duas frases por problema, e o rótulo as separa do trecho. A tentativa em que cada aluno
+acertou saiu da dica da aba, porque a amostragem do Duan escolhe uma solução por grupo do CodeBERT
+e não olha a tentativa. O vínculo feito pelo professor, que não tem KC candidato, e o trecho
+descartado na extração ganham cada um uma frase no lugar do que falta.
+
+**A origem do conceito pede uma chamada por conceito.** A rota da tela é recarregada a cada edição
+da matriz, e o código das soluções de todos os conceitos iria junto toda vez. A origem só é pedida
+quando o professor abre a lupa e traz só os problemas daquele conceito, com o enunciado, as
+justificativas, o trecho e até cinco soluções de cada um. O vínculo do professor se reconhece pela
+falta de KC candidato no par, e o trecho fica depois de desligar e religar, porque os KCs candidatos
+e os trechos não têm soft delete.
+
+**O diálogo da origem tem 760px, e os outros, 440px.** O código Java das soluções pede largura. No
+A439, em 440px, 34 das 50 soluções teriam ao menos uma linha rolando de lado, e em 760px, 3. A
+linha mais longa tem 136 colunas. Os 760px são os que a página de referência já dava à origem, e
+neles cabem os três blocos empilhados e a fileira dos problemas, com o rótulo "Problema" uma vez e
+só o identificador em cada aba, como o cabeçalho das colunas da matriz. O código ao lado dos outros
+blocos pediria uns 1.040px e empilharia de novo em janela menor.
 
 **A fonte mono volta, só em bloco de código.** O sistema tem duas fontes com papéis fixos, e o código
 é a exceção, porque a indentação e o alinhamento dependem da largura fixa. Fora do bloco de código,
@@ -735,14 +824,36 @@ problema em vermelho, e o professor não tinha como saber qual dos dois estava v
 vertical foi testado e pesou demais. A vírgula lê como frase.
 
 **O que o modelo de linguagem escreveu leva as estrelas, e não o texto em azul.** O nome do conceito
-vem do modelo. Pintar o texto de azul encheria as telas, porque o nome do conceito aparece em toda
-parte, e cansaria a leitura em tabela densa. O marcador no fim do texto diz a origem sem esses
-custos. Quando o professor renomeia um conceito, o nome passa a ser dele e o marcador some, o que
-pede o app registrar se o nome foi editado.
+e a justificativa traduzida vêm do modelo. Pintar o texto de azul encheria as telas, porque o nome
+do conceito aparece em toda parte, e cansaria a leitura em tabela densa. O marcador no fim do texto
+diz a origem sem esses custos. O enunciado vem do pacote do professor e não leva as estrelas.
+Quando o professor renomeia um conceito, o nome passa a ser dele e o marcador some, o que o app
+registra pelo `updated_at` do conceito, e o conceito que ele cria nasce sem estrelas.
 
 **Aprovar conceitos fica na faixa das abas.** A barra fixa no rodapé era o único lugar do app com uma
 ação presa à janela. Ao lado de Novo conceito, na aba da matriz, o Aprovar fica junto do que ele
-aprova, e desabilitado enquanto houver problema sem conceito.
+aprova. Ele fica desabilitado enquanto houver problema sem conceito e com os conceitos já
+aprovados, sem balão com o motivo, porque o problema sem conceito já aparece em vermelho no número,
+na contagem da matriz e na linha de fatos, e a etiqueta de situação diz que os conceitos estão
+aprovados.
+
+**O problema sem conceito bloqueia a aprovação, na tela e no backend.** Aprovar diz que os
+conceitos estão prontos para o treino, e um problema sem conceito ficaria fora de toda conta por
+conceito da Análise. A tela desabilita o Aprovar, e o backend recusa também, porque a regra é do
+exercício e a tela pode estar com um dado velho. A recusa do backend lista os problemas e fica
+calada quando o exercício não tem nenhum conceito, que já tem a recusa própria, para o professor
+não receber duas mensagens. A rota da tela entrega a contagem de execuções corretas de cada
+problema, e o balão do número do problema sem conceito escolhe o motivo por ela. Com 0, o motivo
+diz que ninguém acertou o problema ainda e que o modelo de linguagem precisa de execuções corretas.
+Abaixo do motivo vem o enunciado, porque é por ele que o professor escolhe o conceito.
+
+**A primeira edição depois da aprovação avisa que reabre os conceitos.** Qualquer edição de um
+exercício em `kc_approved` o devolve ao rascunho no backend, e o professor perde a aprovação sem
+ter pedido. A matriz continua editável, e a primeira edição mostra o aviso, com Cancelar e a ação
+de seguir. Quando a edição já tem confirmação própria, como remover e tirar o último problema do
+conceito, ou é um formulário, como renomear e o Novo conceito, o aviso é uma linha dentro dele,
+para não abrir dois diálogos seguidos. Depois da edição o exercício está em rascunho, o Aprovar
+volta a habilitar e não há mais o que avisar, então a tela não guarda se já avisou.
 
 **O app não tem barra fixa presa à janela.** A barra de ação no rodapé existia na importação e nos
 conceitos. Ela separava os botões do que eles enviam e ficava sobre o conteúdo. As ações de um

@@ -27,14 +27,14 @@ Regras gerais:
 | `ClassroomStatus` (`awaiting_data` / `in_progress` / `trained`) | A situação da turma na tela: sem problemas importados, com dados e sem modelo, com ao menos um modelo publicado. Calculado, nunca gravado | — |
 | `Assignment` | O "exercício" da UI, uma lista de problemas (ex.: A439). Unidade de treino: um modelo por assignment | — |
 | `progsnap_assignment_id` | O ID do assignment **no dataset** (439). Distinto de `Assignment.id`, o ID do banco | derivado do nome por regex |
-| `Problem` / `problem_id` | Um "problema" na UI, um item dentro do assignment, com o enunciado (`statement`), opcional, quando o pacote traz o arquivo de enunciados. A `description` que o LLM deduzia das soluções deixa de ser gravada e sai com a tela Conceitos. A chave é (`assignment_id`, `problem_id`), porque o `ProblemID` do dataset só é único dentro do assignment | `ProblemID` |
+| `Problem` / `problem_id` | Um "problema" na UI, um item dentro do assignment, com o enunciado (`statement`), opcional, quando o pacote traz o arquivo de enunciados. A tela Conceitos mostra o enunciado na aba Problemas, no balão do número do problema e na origem do conceito, sem as estrelas, porque vem do pacote do professor. A `description` que o LLM deduzia das soluções não é mais gravada e sai da entidade, do banco e das rotas com a tela Conceitos. A chave é (`assignment_id`, `problem_id`), porque o `ProblemID` do dataset só é único dentro do assignment | `ProblemID` |
 | `Student` / `student_id` | O aluno | `SubjectID` |
 | `CodeSnapshot` / `code_snapshot_id` | O código Java que o aluno enviou numa tentativa | `CodeStateID` |
 | `Submission` | Uma tentativa: aluno + problema + snapshot + nota | — |
 | `is_correct` | A tentativa acertou (`score == 1.0`). É o rótulo que o modelo aprende | `correct` |
 | `SubmissionEvent` | Se o código rodou (`Run.Program`) ou nem compilou (`Compile.Error`). Os **valores** seguem os do ProgSnap2 | `EventType` |
-| `KnowledgeComponent` | Um conceito de programação que um problema exige (ex.: "laço com acumulador"). O `name` é o nome em português, que a tela mostra e o professor renomeia, e o `generated_name` é o nome que a extração gerou, em inglês e em minúsculas, vazio no conceito que o professor cria | `KC` |
-| `CandidateKnowledgeComponent` | Um KC que o LLM listou para um problema na extração, com o nome e a justificativa (`reasoning`) em inglês, a justificativa em português (`translated_reasoning`) e o conceito em que caiu. Tabela `candidate_kc` | `kc_raw` (TCC 1) |
+| `KnowledgeComponent` | Um conceito de programação que um problema exige (ex.: "laço com acumulador"). O `name` é o nome em português, que a tela mostra e o professor renomeia, e o `generated_name` é o nome que a extração gerou, em inglês e em minúsculas, vazio no conceito que o professor cria. O nome gerado não aparece na tela. O `updated_at` é a data da última edição do conceito, e a propriedade `is_generated_by_llm` diz se ele leva as estrelas | `KC` |
+| `CandidateKnowledgeComponent` | Um KC que o LLM listou para um problema na extração, com o nome e a justificativa (`reasoning`) em inglês, a justificativa em português (`translated_reasoning`) e o conceito em que caiu. A origem do conceito mostra só a justificativa em português, sob o rótulo "Justificativa do modelo de linguagem". Tabela `candidate_kc` | `kc_raw` (TCC 1) |
 | `ProblemKnowledgeComponent` | O vínculo "o problema P exige o KC K". O conjunto dos vínculos de um assignment é o que a literatura chama de Q-matrix. Tabela `problem_kc` | `QMatrixBinding`, tabela `qmatrix` |
 | `TrainedModel` | Uma versão treinada do Code-DKT: arquivos em disco + métricas no banco | `ModelArtifact` |
 | `published_model_id` | A versão de modelo que o dashboard usa | `current_version_id` |
@@ -77,8 +77,8 @@ Todo `Protocol` da `api/` começa com `I` e fica numa pasta `interfaces/` (ver
 |---|---|---|
 | `statistics_only` | Os first-attempts têm uma classe só, então o AUC é indefinido e não dá para treinar. Só o bloco "o que aconteceu" fica disponível | importação (antes `eda_only`) |
 | `ready_for_kc_generation` | Tem as duas classes; pode gerar KCs | importação (antes `trainable`) |
-| `kc_draft` | KCs gerados pelo LLM, aguardando o professor | geração de KCs; ou editar KCs já aprovados |
-| `kc_approved` | O professor aprovou os KCs; pode treinar | aprovação |
+| `kc_draft` | KCs gerados pelo LLM, aguardando o professor. A aprovação só passa com todo problema ligado a ao menos um KC | geração de KCs; ou editar KCs já aprovados |
+| `kc_approved` | O professor aprovou os KCs; pode treinar. Os KCs continuam editáveis, e a primeira edição, depois do aviso de reabrir, devolve o assignment a `kc_draft` | aprovação |
 | `trained` | Existe um modelo publicado. Sem re-treino, os KCs ficam como estão; qualquer edição é recusada por `refuse_edit_after_training()` (`services/knowledge_component_edit.py`) | treino |
 
 Na tela, cada situação aparece numa etiqueta de situação, com o rótulo (`ASSIGNMENT_STATUS_LABEL`) e
@@ -90,7 +90,10 @@ rótulo "Treinado", e `statistics_only` fica sem ícone. No menu, o exercício l
 preenchido, e o `trained` é azul. `statistics_only` fica sem ponto.
 
 Os jobs (`TrainingJob`, `KnowledgeComponentGenerationJob`) têm os estados `pending`,
-`running`, `done` e `failed`.
+`running`, `done` e `failed`. O `updated_at` de um job não é a data de uma edição, como no `kc`. No
+`kc_job` ele é o batimento do progresso, regravado a cada estágio e a cada item e no fim, e no
+`training_job` é só a hora em que o treino terminou, porque o progresso por época fica no
+`TrainingEpochMetric`.
 
 Os estágios do `KnowledgeComponentGenerationJob` são `generate`, `cluster`, `qmatrix`, `evidence` e
 `translate`, nessa ordem. Ele informa também o progresso dentro do estágio atual, em
@@ -122,9 +125,9 @@ prevê" (só com modelo publicado). Sem níveis, faixas, recomendações ou cort
 | oportunidade (`opportunity`) | Cada execução de um aluno num problema que exige o conceito, contada em ordem por aluno e conceito. A 1ª oportunidade é a primeira execução dele num desses problemas | — |
 | completar (`completed`) | Ter ao menos uma execução correta no problema | "fechar" |
 | dado estimado (`GeneratedByML`) | O marcador de cérebro antes do rótulo de toda coluna que vem do Code-DKT, com a dica "Dado estimado por aprendizado de máquina" | `EstimatedMark`, badge "previsto" |
-| gerado pelo modelo de linguagem (`GeneratedByLLM`) | O marcador de estrelas no que o LLM escreveu, como o nome do conceito. Some do nome quando o professor o renomeia | — |
-| linha de fatos | A linha de números abaixo do título de uma tela, com os itens separados por vírgula. Na Análise traz alunos, problemas, conceitos, execuções e a versão do modelo com a data do treino, no lugar da descrição fixa | — |
-| recorrência (`recurrence`) | Em quantos problemas do exercício um conceito aparece. Com um só, o valor do conceito é o desse problema, evidência fraca | cobertura |
+| gerado pelo modelo de linguagem (`GeneratedByLLM`) | O marcador de estrelas no que o LLM escreveu, com a dica "Gerado pelo modelo de linguagem". Fica no fim do nome do conceito, antes do rótulo da justificativa traduzida e na aba da solução com o trecho. No nome, aparece só com `is_generated_by_llm`, então some quando o professor renomeia o conceito e não aparece no que ele cria. O enunciado não leva | — |
+| linha de fatos (`FactsLine`) | A linha de números abaixo do título de uma tela, com os itens separados por vírgula. Na Análise traz alunos, problemas, conceitos, execuções e a versão do modelo com a data do treino, no lugar da descrição fixa. Na Conceitos traz problemas, conceitos, a data da extração e quantos problemas estão sem conceito, em vermelho quando há algum. No diálogo da origem do conceito diz em quantos problemas o conceito aparece | — |
+| recorrência (`recurrence`) | Em quantos problemas do exercício um conceito aparece. Com um só, o valor do conceito é o desse problema, evidência fraca. Na matriz da tela Conceitos fica à direita, como "N de M", e dá a ordem das linhas | cobertura |
 | `compute_problem_statistics()` / `compute_knowledge_component_statistics()` / `compute_student_activity()` | Calculam as três contagens acima do dado limpo, sem modelo (`services/submission_statistics_calculation.py`) | `compute_pre_training_statistics()` |
 | `first_attempt_auc` | A métrica primária: AUC só sobre as primeiras tentativas. Fica no banco e no teste de regressão; não vai para a tela | `first_auc` |
 
@@ -147,8 +150,16 @@ modelo, exceto o domínio médio dos exercícios treinados.
 |---|---|---|
 | `SampledSolution` | Uma das até cinco soluções corretas que a extração escolheu para o LLM ler num problema, uma por grupo dos vetores do CodeBERT. Gravada na extração, com a execução escolhida (`submission_id`), que traz o aluno, o horário e o código, e a posição no prompt. Tabela `sampled_solution` | — |
 | `KnowledgeComponentEvidence` | Um trecho de uma solução amostrada em que o conceito aparece, com a primeira e a última linha. O LLM o aponta depois do agrupamento, na mesma extração, e o app confere que ele existe na solução. É a justificativa que o modelo escreve, e não a causa da extração. Tabela `kc_evidence` | — |
-| origem do conceito | O diálogo com as soluções amostradas de cada problema em que o conceito aparece, com os trechos | — |
-| problema sem conceito | Um problema que a extração deixou sem conceito por não ter nenhuma execução correta. A extração segue com os outros, e a tela Conceitos o lista com o motivo | — |
+| origem do conceito (`KnowledgeComponentOrigin`) | O diálogo aberto pela lupa do conceito, no front o `KnowledgeComponentOriginDialog`, com uma aba por problema ligado. Cada aba tem o enunciado, as justificativas traduzidas dos KCs candidatos do par e as soluções amostradas, com o trecho destacado. O par sem KC candidato é o vínculo que o professor fez, e o par com candidato e sem trecho teve o trecho descartado. Sai da rota `GET /knowledge-components/{kc_id}/origin`, uma chamada por conceito | — |
+| problema sem conceito | Um problema sem nenhum conceito ligado. Na extração, é o que não tem nenhuma execução correta, e a extração segue com os outros. A tela Conceitos o marca em vermelho na matriz e na linha de fatos, com o motivo no balão do número, e a aprovação é recusada, na tela e no backend, até ele ganhar um conceito | — |
+| `updated_at` do conceito | A data da última edição do conceito pelo professor. Hoje só o renomear grava, e não grava nada quando o nome é o mesmo. Vazia no conceito que ninguém editou. O soft delete grava só o `deleted_at`, e ligar e desligar mexem na `problem_kc`, e não no `kc`. Nos jobs, o `updated_at` tem outro sentido (ver Estados do assignment) | — |
+| `is_generated_by_llm` | Se o nome do conceito é o que o modelo gerou e leva as estrelas, com o `generated_name` preenchido e o `updated_at` vazio. Propriedade da entidade `KnowledgeComponent`, calculada e nunca gravada. Uma edição nova do `kc` que não seja do nome pede rever a regra | — |
+| `correct_run_count` | Quantas execuções corretas um problema tem, as que a extração lê, na rota da tela Conceitos. Com 0, o balão do problema sem conceito diz que ninguém acertou o problema ainda | — |
+| `extracted_at` / `find_latest_done()` | A data da extração do exercício, o `updated_at` do `kc_job` concluído mais recente, que o `find_latest_done()` acha. Nula sem extração concluída. A tela a mostra no fuso do navegador | — |
+| matriz (`KnowledgeComponentMatrix`) | A aba Conceitos por problema da tela Conceitos, com os conceitos nas linhas, os problemas nas colunas e uma célula por par, que liga e desliga o vínculo no clique. A ordem das linhas é calculada ao abrir a tela e fica fixa enquanto o professor edita (`stableKnowledgeComponentOrder()`). No código, cada célula ligada continua sendo um `ProblemKnowledgeComponent` | `KnowledgeComponentsCard`, as etiquetas com xis do `ProblemsCard` |
+| aba Problemas (`ProblemStatementsTable`) | A segunda aba da tela Conceitos, com o número, o enunciado e quantos conceitos cada problema tem | `ProblemsCard` |
+| Novo conceito (`NewKnowledgeComponentDialog`) | O diálogo que cria um conceito do professor, com o nome e ao menos um problema. O conceito nasce sem `generated_name`, logo sem as estrelas | `AddKnowledgeComponentDialog` |
+| aviso de reabrir (`ReopenApprovalDialog`) | O aviso da primeira edição de um exercício em `kc_approved`, de que editar reabre todos os conceitos para aprovação. É o diálogo do clique na célula, e uma linha dentro da confirmação de remover e da de tirar o último problema e dentro dos formulários de renomear e do Novo conceito | `kc-editor__notice--approved` |
 
 ## Importação
 
@@ -167,6 +178,8 @@ modelo, exceto o domínio médio dos exercícios treinados.
 | `check_assignment_trainability()` | Decide, por assignment, entre `ready_for_kc_generation` e `statistics_only` | `viability` |
 | tabela `submission` | O dado limpo de onde tudo lê (`ISubmissionRepository.list_by_assignment()`), com o código Java | Parquet por assignment (`cleaned_submissions.parquet`) |
 | `list_correct_runs()` | As execuções corretas de um exercício, com o `submission_id` de cada uma, que a extração de KCs lê para escolher as soluções | — |
+| `count_correct_runs_by_problem()` | Quantas execuções corretas cada problema de um exercício tem, com o mesmo filtro do `list_correct_runs()`, para o `correct_run_count`. O problema sem acerto não volta, e quem chama completa com 0 | — |
+| `get_codes()` | O código de cada execução pedida pelo `submission_id`, com o `\r\n` e as tabulações intactos, para as soluções da origem do conceito. O id que não existe é ignorado | — |
 | `TrainingDataset` | O recorte que treino e inferência consomem: só eventos `Run.Program` | `ModelingFrame` |
 | `load_training_dataset()` | Monta o `TrainingDataset` de um assignment (`services/training_dataset_loading.py`) | `load_modeling_frame` |
 | `TrainingOutcome` | O que um treino devolve: o modelo, o vocabulário, os hiperparâmetros, o first-attempt AUC e o `java_parse_rate` | — |
@@ -238,14 +251,16 @@ As peças de `src/web/src/components/` que levam um nome próprio do desenho.
 | Nome no código | O que é | Nome antigo |
 |---|---|---|
 | tabela de dados (`DataTable`) | A tabela comum do app, com rolagem lateral no próprio invólucro, nome à esquerda, números e etiquetas centralizados e botões à direita. O cabeçalho simples é o `ColumnHeader`, e o ordenável é o `SortableHeader`, com a mesma estrutura de marcador, rótulo truncado (`ColumnLabel`, com o texto inteiro no balão) e dica | `.analysis-table`, `.classroom-table` |
+| bloco de código (`CodeBlock`) | O código com abas presas ao topo, uma por arquivo, a numeração das linhas e as linhas destacadas, que rola por dentro até o destaque. Na origem do conceito, as abas são as soluções que o modelo leu, e o destaque é o trecho | — |
+| largo (`size="wide"`) | A variante larga do `Dialog`, de 760px no lugar de 440px, para a origem do conceito, e a do `Tooltip`, de 360px no lugar de 260px, para o balão com o enunciado do problema | — |
 
 ## Rotas HTTP
 
 | Rota | O que faz | Rota antiga |
 |---|---|---|
 | `GET /assignments` | Lista os assignments ativos; com `?classroom_id=…`, só os da turma | igual |
-| `GET /assignments/{assignment_id}/problems` | Os problemas do assignment, com a descrição | — |
-| `GET /assignments/{assignment_id}/problems/knowledge-components` | Cada problema com a descrição e os KCs que exige (a lógica é de `knowledge_components`) | — |
+| `GET /assignments/{assignment_id}/problems` | Os problemas do assignment pelo `problem_id`. A descrição sai da resposta com a tela Conceitos, e o front não usa a rota | — |
+| `GET /assignments/{assignment_id}/problems/knowledge-components` | Cada problema com o enunciado (`statement`), as execuções corretas (`correct_run_count`) e os KCs que exige, cada um com `is_generated_by_llm`, e a data da extração (`extracted_at`). É o que a tela Conceitos lê para a matriz e a aba Problemas, e a descrição sai da resposta com ela (a lógica é de `knowledge_components`) | — |
 | `GET /knowledge-components?assignment_id=…` | Os KCs do assignment, cada um com os `problem_ids` a que se liga | — |
 | `POST /knowledge-components/{kc_id}/problems/{problem_id}` | Liga um KC que já existe a mais um problema | — |
 | `DELETE /knowledge-components/{kc_id}/problems/{problem_id}` | Tira o KC de um problema só; se ele perder o último, sai junto | — |
@@ -257,11 +272,11 @@ As peças de `src/web/src/components/` que levam um nome próprio do desenho.
 | `POST /classroom-imports/process` | Importa a variante escolhida na turma (`classroom_id`) | `POST /ingest/process` |
 | `POST /knowledge-components/generation-jobs` | Dispara a geração de KCs | `POST /kc/generate` |
 | `GET /knowledge-components/generation-jobs/{job_id}` | Progresso da geração | `GET /kc/jobs/{job_id}` |
-| `POST /knowledge-components` | O professor adiciona um KC | `POST /kc` |
-| `PUT /knowledge-components/{kc_id}` | Renomeia um KC | `PATCH /knowledge-components/{kc_id}` |
+| `POST /knowledge-components` | O professor cria um KC, com o nome e ao menos um problema (`problem_ids`); a lista vazia ou ausente dá 422 | `POST /kc` |
+| `PUT /knowledge-components/{kc_id}` | Renomeia um KC e grava o `updated_at`; o mesmo nome devolve o KC sem gravar | `PATCH /knowledge-components/{kc_id}` |
 | `DELETE /knowledge-components/{kc_id}` | Remove um KC | `DELETE /kc/{kc_id}` |
-| `POST /knowledge-components/merge` | Funde dois KCs | `POST /kc/merge` |
-| `POST /knowledge-components/approve` | Aprova os KCs do assignment | `POST /knowledge-components/approve-qmatrix` |
+| `GET /knowledge-components/{kc_id}/origin` | A origem do conceito. Por problema ligado, o enunciado, as justificativas traduzidas, o trecho e as soluções amostradas | — |
+| `POST /knowledge-components/approve` | Aprova os KCs do assignment, recusada com 409 enquanto houver problema sem KC | `POST /knowledge-components/approve-qmatrix` |
 | `POST /training-jobs` | Dispara o treino | `POST /training` |
 | `GET /training-jobs/{job_id}` | Progresso do treino | `GET /training/{job_id}` |
 | `GET /training-jobs/{job_id}/loss-history` | A curva de loss por época | `GET /training/{job_id}/metrics` |

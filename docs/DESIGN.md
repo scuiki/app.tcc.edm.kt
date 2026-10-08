@@ -9,7 +9,9 @@ papel é citado pelo nome do token.
 
 **Estado.** Este documento é a especificação. A base da migração está feita pelo
 `FRONTEND_BASE_PLAN.md`, com os tokens, os componentes que já existiam e as tabelas na v5. As cinco
-telas ainda têm a organização antiga e mudam uma a uma.
+telas ainda têm a organização antiga e mudam uma a uma. A tela Conceitos está em obra pelo
+`CONCEPTS_SCREEN_PLAN.md`, as seções dela aqui já descrevem a tela nova, e a página de referência
+passa a mostrá-la na etapa 2 do plano.
 
 ## Princípios
 
@@ -51,7 +53,7 @@ de uso.
 | | `--color-text-inverse` | Texto sobre o preenchido, no botão primário e no destrutivo, no passo atual e no balão |
 | Modelo | `--color-model` | Domínio, distribuição, curva de perda, ponto de treinado, estágios da extração e do treino |
 | | `--color-model-strong` | Hover das marcas do modelo, texto sobre o azul claro |
-| | `--color-model-soft` e `--color-model-soft-border` | Etiqueta Treinado, fundo dos marcadores de modelo |
+| | `--color-model-soft` e `--color-model-soft-border` | Etiqueta Treinado, fundo dos marcadores de modelo, linhas do trecho no bloco de código |
 | Observado | `--color-observed` | Taxa de acerto e toda barra do que aconteceu |
 | | `--color-bar-track` | Trilho das barras |
 | Erro | `--color-danger` | Ícone de erro, contorno de campo com erro, botão destrutivo |
@@ -106,7 +108,8 @@ Cada variante existe porque tem uma situação de uso. Uma variante sem uso não
 **Botões.** O primário é preto, e há um por tela ou diálogo. O secundário é branco com contorno, a
 alternativa neutra ao lado do primário. O destrutivo é vermelho preenchido e só aparece no diálogo
 que confirma uma exclusão. O botão de ícone (32px, com contorno) é a ação de linha em tabela. O
-compacto (28px) é a ação secundária dentro de um cartão.
+compacto (28px) é a ação dentro de um cartão, em geral secundária. Na faixa das abas o compacto
+pode ser primário, como o Aprovar conceitos, à direita do Novo conceito secundário.
 
 **Foco e link.** O foco é um anel de 2px em `--color-focus` com 2px de folga, nunca removido sem
 substituto. O link é sublinhado na cor do texto e engrossa no hover.
@@ -135,7 +138,12 @@ fica sem ponto, porque não chega a treinar. Cada item de tela leva o ícone da 
 dele. O rodapé opcional tem 44px e texto de apoio.
 
 **Diálogo.** O `<dialog>` nativo, com `--shadow-dialog` sobre o fundo escurecido. O rodapé é
-`--color-surface-subtle`, com as ações à direita e a principal por último.
+`--color-surface-subtle`, com as ações à direita e a principal por último. A largura é de 440px, e
+a origem do conceito usa a larga, de 760px, por causa do código das soluções. Nas duas larguras, a
+altura vai até `calc(100vh - 48px)`, com o cabeçalho e o rodapé presos e o corpo rolando por
+dentro. O aviso, como o de reabrir a aprovação, é neutro, com Cancelar e a ação de seguir, e o
+destrutivo fica para a exclusão. Quando a ação já tem confirmação ou formulário próprio, o aviso
+entra como uma linha dentro dele, acima dos botões, para não abrir dois diálogos seguidos.
 
 **Área de soltar arquivo.** Contorno tracejado em `--color-control-border`. Com o arquivo por cima,
 o contorno fica sólido em `--color-text` e o fundo `--color-hover`. Importar dados vem antes de
@@ -179,33 +187,69 @@ tem o ícone num quadrado `--color-hover`, um título e uma frase de apoio.
 **Mensagem de resultado.** O erro tem ícone `--color-danger` e título `--color-danger-text`. O
 sucesso é neutro, com o ícone em `--color-text`.
 
-**Marcadores de modelo.** Um ícone em `--color-model-strong` sobre um círculo `--color-model-soft`
-de 18px, com a dica de onde o dado veio.
-- `GeneratedByML`, o cérebro, "Dado estimado por aprendizado de máquina", para o que o Code-DKT
-  produziu. Fica antes do rótulo de toda coluna que vem do modelo.
-- `GeneratedByLLM`, as estrelas, "Gerado pelo modelo de linguagem", para o que o LLM escreveu, como
-  o nome do conceito e a descrição do problema. Fica no fim do texto (20px, e 24px num título) ou
-  antes do rótulo de coluna. Some do nome do conceito quando o professor o renomeia, porque o nome
-  passa a ser dele.
+**Marcadores de modelo.** Um ícone em `--color-model-strong` sobre um círculo `--color-model-soft`,
+com a dica de onde o dado veio.
+- `GeneratedByML`, o cérebro, de 18px, "Dado estimado por aprendizado de máquina", para o que o
+  Code-DKT produziu. Fica antes do rótulo de toda coluna que vem do modelo.
+- `GeneratedByLLM`, as estrelas, "Gerado pelo modelo de linguagem", para o que o LLM escreveu, o
+  nome do conceito e a justificativa traduzida. Fica no fim do texto (20px, e 24px num título),
+  antes do rótulo de seção (18px) e na aba da solução que tem o trecho (16px). No nome do conceito,
+  aparece só enquanto o nome é o que o modelo gerou. Some quando o professor o renomeia, porque o
+  nome passa a ser dele, e o conceito que ele cria nasce sem. O enunciado vem do pacote do professor
+  e não leva.
 
 **Dica, alerta e balão.** A dica é o ícone de ? (`circle-question-mark`) em `--color-text-muted`. O
 ícone de ! (`circle-alert`) fica só para alerta e erro, em `--color-danger`, como um problema sem
 conceito. O balão é `--color-text` com texto em `--color-text-inverse`, sem raio, e aparece no hover
-ou no foco pelo `Tooltip`, nunca pelo `title` nativo.
+ou no foco pelo `Tooltip`, nunca pelo `title` nativo. Ele tem até 260px de largura, e o largo, até
+360px, leva o enunciado do problema. Um título opcional vem em 600, numa linha própria, e o texto
+mantém as quebras de linha, como no balão do número do problema na matriz, com "Problema N" no
+título e o motivo separado do enunciado por uma linha em branco. Dentro de um diálogo, o balão
+nasce no próprio diálogo, para não ficar por baixo dele.
 
 **Bloco de código.** Em `--font-code`, sobre `--color-surface-subtle`, com a numeração de linha à
 esquerda em `--color-text-disabled`. Quando há mais de um arquivo, abas presas ao topo do bloco
-trocam o código, e a aba ativa tem o traço de 2px em `--color-text`.
+trocam o código, e a aba ativa tem o traço de 2px em `--color-text`. O código mantém as tabulações,
+com tab-size 4, e não quebra linha. O bloco tem altura máxima e rola nos dois sentidos por dentro.
+As linhas destacadas ficam em `--color-model-soft`, com o número em `--color-model-strong` 600, e ao
+mostrar uma aba com destaque o bloco rola por dentro até a primeira linha destacada, sem mexer na
+página.
 
-**Matriz de conceitos.** A célula é um quadrado de 20px, preenchido em `--color-text` quando o
-conceito está ligado ao problema, que liga e desliga no clique. No exercício treinado a célula fica
-em `--color-observed` e não responde. As ações da linha do conceito são lupa, lápis e lixeira, nessa
-ordem. Mesclar não existe, porque um conceito duplicado é removido e o outro fica.
+**Matriz de conceitos.** Os conceitos nas linhas e os problemas nas colunas, em ordem numérica. A
+célula é um quadrado de 20px, preenchido em `--color-text` quando o conceito está ligado ao
+problema, que liga e desliga no clique. Desligar é direto, pede confirmação quando o conceito
+sairia do exercício e é recusado quando o problema ficaria sem conceito. No exercício treinado a
+célula fica em `--color-observed` e não responde. A coluna do nome ocupa a sobra do cartão, corta o
+nome com reticências, com o nome inteiro no balão e as estrelas sempre à vista depois dele, e fica
+presa na rolagem lateral. O número do problema no cabeçalho tem sublinhado pontilhado e mostra o
+balão largo com o título "Problema N" e o enunciado, ou a frase "Sem enunciado." A recorrência fica
+à direita, como "N de M", a última linha traz quantos conceitos cada problema tem, e as ações da
+linha do conceito são lupa, lápis e lixeira, nessa ordem. O problema sem conceito fica em
+`--color-danger-text` com o `circle-alert`, no número e no 0 da última linha. As linhas seguem a
+recorrência decrescente, com empate pelo nome e depois pelo id, numa ordem calculada ao abrir a
+tela e fixa enquanto o professor edita. O conceito novo entra no fim, o removido sai, e não há
+ordenação clicável.
 
-**Origem do conceito.** Um diálogo aberto pela lupa, com o nome do conceito e o marcador de gerado,
-a linha de fatos, os problemas em que ele aparece em abas e, para cada um, a descrição e as até cinco
-soluções corretas que o modelo de linguagem leu, num bloco de código com abas. A tentativa em que
-cada aluno acertou fica na dica da aba.
+**Origem do conceito.** Um diálogo largo aberto pela lupa, também no exercício treinado. O título é
+o nome do conceito, com as estrelas de 24px quando o nome é o que o modelo gerou, e a linha de
+fatos diz "aparece em N de M problemas". Abaixo, a fileira dos problemas, com o rótulo "Problema" e
+o `file-code` uma vez e só o identificador em cada aba, com qualquer número de problemas. Cada aba
+empilha três blocos, nesta ordem.
+- "Enunciado do problema N", o texto do pacote, sem estrelas, ou "sem enunciado" em cinza.
+- "Justificativa do modelo de linguagem", com as estrelas antes do rótulo e a dica, uma ou duas
+  frases traduzidas do porquê de o problema exigir o conceito. No vínculo feito pelo professor, a
+  frase "O professor ligou este conceito a este problema. Não há justificativa nem trecho do
+  modelo."
+- "Soluções que o modelo leu", com a dica e o bloco de código com as abas "Solução 1" a "Solução
+  5", com o `file-check`, na ordem em que o modelo as recebeu. O bloco abre na solução do trecho,
+  com as linhas destacadas e as estrelas na aba. Quando o trecho foi descartado na extração, a frase
+  "O modelo apontou um trecho que não está nas soluções, e o app o descartou." vem antes do bloco,
+  que abre na Solução 1. Sem solução amostrada, o bloco dá lugar à frase em cinza "Ninguém acertou
+  este problema, então o modelo não leu nenhuma solução dele."
+
+A dica das soluções diz que elas são as que o modelo leu e que as linhas destacadas mostram onde ele
+aponta o conceito, e não a causa da extração, sem chamar o trecho de justificativa. O nome gerado em
+inglês e a tentativa de cada aluno não aparecem. O rodapé tem Fechar.
 
 **Cabeçalho ordenável.** A seta da ordenação ativa é `--color-text`, e o rótulo ordenado também.
 
@@ -233,9 +277,9 @@ situação no lugar do ícone de etapa, para a lista longa ficar discreta.
 | Ícone (lucide) | Representa | Onde |
 |---|---|---|
 | `blocks` | Conceitos | Menu, aba, botões e etiquetas das etapas de conceitos |
-| `file-code` | Problemas | Aba Problemas da Análise |
+| `file-code` | Problemas | Aba Problemas da Análise e da Conceitos, rótulo dos problemas na origem do conceito |
 | `brain` | O Code-DKT | Marcador `GeneratedByML`, etiqueta Treinado, evento de treino |
-| `sparkles` | O modelo de linguagem | Marcador `GeneratedByLLM`, no nome do conceito e na descrição do problema |
+| `sparkles` | O modelo de linguagem | Marcador `GeneratedByLLM`, no nome do conceito, na justificativa traduzida e na aba da solução com o trecho |
 | `chart-column` | Análise | Menu e botão "Ver análise" |
 | `clipboard-pen` | Exercício | Menu e aba Exercícios |
 | `users` | Turmas e alunos | Menu, aba Alunos, evento de turma criada |
@@ -251,13 +295,19 @@ situação no lugar do ícone de etapa, para a lista longa ficar discreta.
 
 - A tabela inteira usa `--font-data`.
 - Sem fio vertical. Traço `--color-text` sob o cabeçalho e no fim da tabela, fio `--color-rule`
-  entre as linhas, em todas as tabelas.
+  entre as linhas, em todas as tabelas. A primeira coluna presa da matriz de conceitos ganha um fio
+  à direita só quando há coluna rolada por baixo dela.
 - Linha e cabeçalho com a mesma altura, 32px. Um rótulo longo trunca com reticências em 150px e
-  mostra o texto inteiro no hover.
+  mostra o texto inteiro no hover. O nome do conceito na matriz não tem o teto de 150px, porque a
+  coluna dele ocupa a sobra do cartão.
+- Duas exceções aos 32px. A linha com botões de ícone mede uns 41px, como na matriz de conceitos e
+  na tabela de Turmas, e a célula que quebra linha cresce com o texto, como o enunciado na aba
+  Problemas da tela Conceitos.
 - O histograma da tabela não tem eixo. A escala fica na dica do cabeçalho, e a faixa sem aluno é um
   traço de 1px em `--color-control-border`.
 - Em todas as tabelas, o nome fica à esquerda, os números e as etiquetas ficam centralizados sob
-  rótulos centralizados e só a coluna de botões fica à direita.
+  rótulos centralizados e só a coluna de botões fica à direita. O texto longo, como o enunciado,
+  também fica à esquerda.
 - A taxa de acerto usa a barra em `--color-observed`. Domínio e distribuição usam `--color-model`
   e levam o marcador `GeneratedByML` no rótulo.
 - As barras e os histogramas das tabelas são CSS, com canto vivo.
@@ -344,21 +394,46 @@ depois.
 
 1. **Caminho.** Turmas › turma › exercício › Conceitos.
 2. **Cabeçalho.** O nome do exercício, a etiqueta de situação ao lado e a linha de fatos com
-   problemas, conceitos, a data da extração e quantos problemas estão sem conceito, este último como
-   alerta em vermelho quando houver.
-3. **Cartão dos conceitos**, com as abas Conceitos por problema e Problemas.
-   - **Conceitos por problema.** A matriz, com os conceitos nas linhas e os problemas nas colunas, a
-     recorrência de cada conceito à direita, quantos conceitos cada problema tem na última linha e as
-     ações lupa, lápis e lixeira. A dica do número do problema traz a descrição com as estrelas. Novo
-     conceito e Aprovar conceitos ficam à direita das abas, e o Aprovar fica desabilitado enquanto
-     houver problema sem conceito.
-   - **Problemas.** A tabela com problema, descrição e quantos conceitos cada um tem, com as estrelas
-     antes do rótulo Descrição. Sem descrição, como no exercício extraído antes de a descrição
-     existir, a célula mostra "sem descrição" em cinza.
-4. **Origem do conceito**, o diálogo aberto pela lupa.
+   problemas, conceitos, "extraídos em" com a data da extração, no fuso do navegador, e quantos
+   problemas estão sem conceito, em vermelho com o `circle-alert` quando houver, ou "nenhum problema
+   sem conceito". Sem conceitos, a linha traz só os problemas.
+3. **Cartão dos conceitos**, com as abas Conceitos por problema (`blocks`) e Problemas
+   (`file-code`).
+   - **Conceitos por problema.** A matriz de conceitos. Novo conceito (secundário compacto) e
+     Aprovar conceitos (primário compacto) ficam à direita das abas, só nesta aba. O Aprovar fica
+     desabilitado, sem balão, enquanto houver problema sem conceito e com os conceitos aprovados. O
+     balão do número do problema sem conceito tem o título "Problema N sem conceito", o motivo e,
+     depois de uma linha em branco, o enunciado. Sem nenhuma execução correta no problema, o
+     motivo é "Ninguém acertou este problema ainda. O modelo de linguagem precisa de execuções
+     corretas para extrair conceitos. Ligue um conceito clicando nas células." Nos outros casos, é
+     "Este problema está sem conceito. Ligue um conceito clicando nas células."
+   - **Problemas.** A tabela com problema, enunciado e quantos conceitos cada um tem. O problema
+     mostra só o número, o enunciado fica à esquerda, quebra linha e não leva estrelas, e sem ele a
+     célula diz "sem enunciado" em cinza. O 0 de conceitos fica em vermelho.
+   - **Rodapé.** No rascunho, na aba da matriz, a frase de apoio "Clique numa célula para ligar ou
+     desligar o conceito do problema. Passe o mouse no número para ver o enunciado." No treinado,
+     "Exercício treinado. Os conceitos ficam só para consulta, para não divergirem do modelo." Com
+     os conceitos aprovados, nada.
+4. **Novo conceito**, o diálogo com o campo Nome e uma caixa de marcar por problema, com o número, o
+   começo do enunciado em duas linhas e quantos conceitos ele tem, ou "sem conceito" em vermelho. A
+   lista rola por dentro acima de 260px. Criar fica desabilitado até ter nome e um problema, e o
+   nome repetido é recusado no campo, com "Já existe um conceito com este nome." A nota diz "O
+   conceito novo nasce sem estrelas, porque o nome é seu."
+5. **Renomear**, o diálogo com o campo Nome. Quando o nome é o que o modelo gerou, a nota diz "O
+   nome atual veio do modelo de linguagem. Ao salvar, o nome passa a ser seu e as estrelas saem."
+6. **Aviso de reabrir.** Com os conceitos aprovados, a primeira edição, seja ligar, desligar,
+   renomear, remover ou criar, avisa que "Editar a matriz agora reabre todos os conceitos para
+   aprovação". No clique na célula é um diálogo neutro, com Cancelar e a ação de seguir. Na
+   confirmação de remover, na de tirar o último problema do conceito, no renomear e no Novo conceito
+   é uma linha dentro do próprio diálogo, acima dos botões. Depois da edição o exercício volta a
+   rascunho, e o Aprovar volta a habilitar.
+7. **Origem do conceito**, o diálogo aberto pela lupa.
 
-No exercício treinado a matriz é só consulta, com a lupa e sem lápis e lixeira. Pronto para
-conceitos, o cartão é o estado vazio com os blocos e um único "Extrair conceitos".
+No exercício treinado a matriz é só consulta, com as células em `--color-observed`, só a lupa e sem
+Novo conceito nem Aprovar. Pronto para conceitos, o cartão é o estado vazio com os blocos e um único
+"Extrair conceitos", que abre o diálogo da extração com os cinco estágios. O exercício só com
+estatísticas mostra o estado vazio "Não há conceitos para extrair", sem ação. O nome gerado em
+inglês não aparece em lugar nenhum.
 
 ### Importar dados
 

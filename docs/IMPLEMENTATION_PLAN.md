@@ -90,13 +90,15 @@ das soluções corretas e amostra uma por grupo, e o prompt do app não é o do 
 depender da etapa de fidelidade do KCGen-KT. Em 04/10/2026, o B1 foi substituído pelo
 `KCGEN_KT_PLAN.md`, que leva ao código as decisões do KCGen-KT do `DEVELOPMENT.md`, inclusive as
 soluções amostradas gravadas na extração. A rota e o diálogo da origem do conceito ficam com a tela
-Conceitos.
+Conceitos, pelo `CONCEPTS_SCREEN_PLAN.md`.
 
 **B2. Conceito editado pelo professor.**
 O marcador `GeneratedByLLM` some do nome do conceito quando o professor o renomeia, e um conceito
-criado em "Novo conceito" também não é do modelo. A tabela `kc` não registra isso hoje, então entra
-uma coluna, o que pede uma migração do banco. A rota de mesclar (`POST /knowledge-components/merge`)
-sai, porque o design tirou o mesclar. Depende disso a tela Conceitos.
+criado em "Novo conceito" também não é do modelo. A tabela `kc` não registra o renomear hoje,
+então entra uma coluna, o que pede uma migração do banco. A rota de mesclar
+(`POST /knowledge-components/merge`) sai, porque o design tirou o mesclar. Depende disso a tela
+Conceitos. Em 08/10/2026, o B2 passou ao `CONCEPTS_SCREEN_PLAN.md`, com a coluna `updated_at` do
+`kc` e a saída do mesclar inteiro.
 
 **B3. Curva de aprendizagem.**
 Rota nova com a taxa de erro por oportunidade de cada conceito e os alunos que chegaram a cada uma,
@@ -127,7 +129,8 @@ exercícios ou de um registro novo. Depende disso a tela Turmas.
 **B8. Números das linhas de fatos.**
 A linha de fatos de cada tela pede números que ainda não saem da API. A Análise pede o total de
 execuções do exercício, a Turma pede o total de exercícios e de execuções, e Conceitos pede a data
-da extração. O que já existe (alunos, problemas, conceitos, versão e data do modelo) continua.
+da extração. O que já existe (alunos, problemas, conceitos, versão e data do modelo) continua. A
+parte da Conceitos, a data da extração, entra pelo `CONCEPTS_SCREEN_PLAN.md`.
 
 **B9. Requisitos do pacote.**
 O envio devolve as tabelas encontradas, mas o formato ProgSnap2 v6 (as colunas obrigatórias) só é
@@ -190,17 +193,23 @@ A439.
 - **A amostragem do KCGen-KT** (B1), que mandava uma solução por problema ao LLM em vez de cinco,
   corrigida pelo `KCGEN_KT_PLAN.md`. A descrição deduzida pelo LLM deixou de ser gravada, e a tela
   Conceitos troca a descrição pelo enunciado, que é opcional.
-- **O desenho da tela Conceitos ainda traz a descrição do problema e a tentativa de cada solução**,
-  que saíram do KCGen-KT. Está no `DESIGN.md` e na página `docs/design/design-system-v5.html`, na
-  origem do conceito, na dica do número do problema, na aba Problemas e nos exemplos do marcador
-  `GeneratedByLLM`. Quando a tela for refeita, entram no lugar o enunciado, os trechos de cada
-  conceito e as justificativas traduzidas. A matriz problema × conceito foi pensada para 15
-  conceitos, e o A439 agora tem 25.
-- **O contrato do import-linter quebrado.** Conferido em 30/09/2026, o teste
-  `sqlite_kc_generation_job_repository_test` importa as infraestruturas de `assignments` e de
-  `classrooms`, o que o contrato de `knowledge_components` não permite. O comando que funciona é o
-  do `README.md`. O do `ARCHITECTURE.md` está desatualizado, porque a imagem não traz o
-  `lint-imports`.
+- **O desenho da tela Conceitos** passou ao `CONCEPTS_SCREEN_PLAN.md`. Ele trazia a descrição do
+  problema e a tentativa de cada solução, que saíram do KCGen-KT, e uma matriz pensada para 15
+  conceitos, quando o A439 agora tem 25. O `DESIGN.md` já descreve a tela nova, com o enunciado, os
+  trechos de cada conceito e as justificativas traduzidas, e a página
+  `docs/design/design-system-v5.html` passa a mostrá-la na etapa 2 do plano.
+- **O 409 de modelo antigo na Análise.** A rota do domínio responde 409 quando precisa carregar um
+  modelo de formato antigo (`IncompatibleTrainedModelError`), e a Análise ignora o erro
+  (`AnalysisCard.tsx:39`, `:60`, `:74`). As colunas do modelo ficam vazias, sem aviso. Fica para a
+  tela Análise.
+- **As extrações das turmas antigas.** As da turma CSEDM Spring 2019 e da turma 5, de 21/06 e
+  25/09, não têm o nome gerado nem as soluções amostradas, os KCs candidatos e os trechos. Na tela
+  Conceitos refeita, os conceitos delas ficam sem as estrelas, e a origem do conceito mostra todo
+  vínculo como feito pelo professor. Sem solução amostrada, ela mostra também, em todo problema, a
+  frase do problema sem solução ("Ninguém acertou este problema, então o modelo não leu nenhuma
+  solução dele."), mesmo nos problemas com acertos. Nenhum código trata o caso, e o dado errado
+  nessas turmas é aceito de propósito pela decisão X do `CONCEPTS_SCREEN_PLAN.md`. O Leo decidiu
+  apagar as duas turmas e fazer uma nova extração pela aplicação (seção 9).
 - **O detalhe do aluno lento.** Cerca de 1,3 s por chamada, porque recarrega o recorte do exercício a
   cada GET.
 - **O treino pela tela** nunca foi testado de ponta a ponta com um treino real, porque o treino
@@ -254,7 +263,10 @@ A discussão das perguntas da seção 7 fechou estes pontos.
 
 - **A reimportação da CSEDM.** A CSEDM é importada de novo, numa turma separada da
   CSEDM Spring 2019, em vez de descongelar os conceitos do A439. A turma CSEDM Spring 2019 fica até
-  a reimportação estar pronta.
+  a reimportação estar pronta. Em 08/10/2026, com a tela Conceitos, o Leo decidiu apagar a turma
+  CSEDM Spring 2019 e a turma 5. A CSEDM Spring 2019 tem o único exercício treinado do banco, então
+  sai só depois do treino do A439 da turma nova (seção "Depois do plano, com o Leo" do
+  `CONCEPTS_SCREEN_PLAN.md`).
 - **Uma tela por vez.** As telas saem uma a uma, cada uma com o seu backend, revisada pelo Leo antes
   da próxima.
 - **A figura de execuções por dia e o `ServerTimezone`** ficam para a segunda leva. O
@@ -277,4 +289,5 @@ A ordem nova é esta.
    métodos prontos.
 4. A base (F1, a migração dos componentes que já existem e F3), pelo `FRONTEND_BASE_PLAN.md`,
    aprovado e concluído em 08/10/2026, e depois as telas, uma por vez (Conceitos, Análise, Turma,
-   Importar dados e Turmas), cada uma com o seu backend.
+   Importar dados e Turmas), cada uma com o seu backend. A Conceitos segue o
+   `CONCEPTS_SCREEN_PLAN.md`, aprovado em 08/10/2026.
