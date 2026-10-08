@@ -7,7 +7,6 @@ from pydantic import BaseModel
 
 class ProblemDTO(BaseModel):
     problem_id: int  # o ProblemID do dataset
-    description: str | None  # só nas turmas extraídas antes de a extração parar de gravá-la
 
 
 class ListProblemsResponseDTO(BaseModel):

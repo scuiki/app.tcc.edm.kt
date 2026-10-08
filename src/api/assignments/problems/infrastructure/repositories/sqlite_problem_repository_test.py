@@ -14,7 +14,7 @@ from tests.fixtures.assignments import add_assignment
 from tests.fixtures.classrooms import add_classroom
 
 
-def test_the_problems_come_back_ordered_and_without_description(tmp_db):
+def test_the_problems_come_back_ordered_by_problem(tmp_db):
     repo = SqliteProblemRepository(tmp_db)
     assignment_id = add_assignment(tmp_db, add_classroom(tmp_db))
 

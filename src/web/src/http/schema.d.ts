@@ -81,7 +81,7 @@ export interface paths {
         };
         /**
          * List Problems
-         * @description Os problemas do assignment, com a descrição de cada um.
+         * @description Os problemas do assignment, só com o identificador de cada um.
          */
         get: operations["list_problems_assignments__assignment_id__problems_get"];
         put?: never;
@@ -101,7 +101,7 @@ export interface paths {
         };
         /**
          * List Problem Knowledge Components
-         * @description Cada problema do assignment com a descrição e os KCs que ele exige.
+         * @description Por problema do assignment, o enunciado, a contagem de execuções corretas e os KCs que ele exige, mais a data da extração.
          */
         get: operations["list_problem_knowledge_components_assignments__assignment_id__problems_knowledge_components_get"];
         put?: never;
@@ -634,8 +634,6 @@ export interface components {
         ProblemDTO: {
             /** Problem Id */
             problem_id: number;
-            /** Description */
-            description: string | null;
         };
         /** ProblemKnowledgeComponentDTO */
         ProblemKnowledgeComponentDTO: {
@@ -648,8 +646,6 @@ export interface components {
         ProblemKnowledgeComponentsDTO: {
             /** Problem Id */
             problem_id: number;
-            /** Description */
-            description: string | null;
             /** Statement */
             statement: string | null;
             /** Correct Run Count */

@@ -1,4 +1,4 @@
-# Os problemas de um assignment, cada um com a descrição e os KCs que exige.
+# Os problemas de um assignment com o enunciado, as execuções corretas e os KCs de cada um.
 
 from __future__ import annotations
 
@@ -57,7 +57,6 @@ class ListProblemKnowledgeComponentsUseCase:
             problems=[
                 ProblemKnowledgeComponentsDTO(
                     problem_id=problem.problem_id,
-                    description=problem.description,
                     statement=problem.statement,
                     correct_run_count=correct_runs_of.get(problem.problem_id, 0),
                     knowledge_components=[

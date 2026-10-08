@@ -40,21 +40,18 @@ function draftProblems(): ProblemKnowledgeComponents[] {
   return [
     {
       problem_id: 5,
-      description: null,
       statement: null,
       correct_run_count: 12,
       knowledge_components: [LOOPS, IFS],
     },
     {
       problem_id: 12,
-      description: null,
       statement: null,
       correct_run_count: 9,
       knowledge_components: [LOOPS],
     },
     {
       problem_id: 20,
-      description: null,
       statement: null,
       correct_run_count: 7,
       knowledge_components: [IFS, RECURSION],
@@ -81,7 +78,6 @@ function fakeApi({ classrooms = [CLASSROOM], job, refuseStart = false }: FakeApi
     2: [
       {
         problem_id: 17,
-        description: null,
         statement: null,
         correct_run_count: 4,
         knowledge_components: [],

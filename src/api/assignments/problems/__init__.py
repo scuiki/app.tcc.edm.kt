@@ -1,1 +1,1 @@
-# Os problemas de cada assignment e a descrição que o LLM deduz de cada um.
+# Os problemas de cada assignment e o enunciado de cada um, quando o pacote o traz.

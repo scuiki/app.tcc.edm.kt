@@ -609,3 +609,54 @@ def test_migration_0021_adds_the_updated_at_to_the_kc(tmp_path):
     # O conceito que já existia fica sem edição, então continua gerado
     row = conn.execute("SELECT name, generated_name, updated_at FROM kc;").fetchone()
     assert row[:] == ("Laços", "loops", None)
+
+
+# 0022 sobre um banco em user_version=21, o problema perde a descrição e o que aponta para ele fica.
+def test_migration_0022_drops_the_problem_description_and_keeps_its_children(tmp_path):
+    conn = connect(str(tmp_path / "app.db"))
+    run_migrations(conn, migrations_dir=_migrations_up_to(tmp_path, 21))
+    assert conn.execute("PRAGMA foreign_keys;").fetchone()[0] == 1
+    assignment_id = _seed_assignment(conn)
+    conn.execute(
+        "INSERT INTO problem (assignment_id, problem_id, description, statement) "
+        "VALUES (?, 1, 'Soma os elementos', 'Devolva a soma dos elementos do vetor.');",
+        (assignment_id,),
+    )
+    submission_id = conn.execute(
+        "INSERT INTO submission (assignment_id, student_id, problem_id, code_snapshot_id, code, "
+        "submitted_at, event_type, is_correct) "
+        "VALUES (?, 'S', 1, 'c', 'x', 't0', 'Run.Program', 1);",
+        (assignment_id,),
+    ).lastrowid
+    kc_id = conn.execute(
+        "INSERT INTO kc (assignment_id, name) VALUES (?, 'Laços');", (assignment_id,)
+    ).lastrowid
+    conn.execute(
+        "INSERT INTO problem_kc (assignment_id, kc_id, problem_id) VALUES (?, ?, 1);",
+        (assignment_id, kc_id),
+    )
+    conn.execute(
+        "INSERT INTO sampled_solution (assignment_id, problem_id, position, submission_id) "
+        "VALUES (?, 1, 1, ?);",
+        (assignment_id, submission_id),
+    )
+    conn.execute(
+        "INSERT INTO candidate_kc (assignment_id, problem_id, position, name, reasoning, kc_id) "
+        "VALUES (?, 1, 1, 'Loop', 'loops', ?);",
+        (assignment_id, kc_id),
+    )
+    conn.execute(
+        "INSERT INTO kc_evidence (assignment_id, problem_id, kc_id, position, first_line, "
+        "last_line) VALUES (?, 1, ?, 1, 3, 4);",
+        (assignment_id, kc_id),
+    )
+
+    run_migrations(conn, migrations_dir=_migrations_up_to(tmp_path, 22))
+
+    assert _user_version(conn) == 22
+    assert "description" not in _column_names(conn, "problem")
+    statement = conn.execute("SELECT statement FROM problem;").fetchone()[0]
+    assert statement == "Devolva a soma dos elementos do vetor."
+    for table in ("submission", "problem_kc", "sampled_solution", "candidate_kc", "kc_evidence"):
+        assert conn.execute(f"SELECT COUNT(*) FROM {table};").fetchone()[0] == 1
+    assert conn.execute("PRAGMA foreign_key_check;").fetchall() == []

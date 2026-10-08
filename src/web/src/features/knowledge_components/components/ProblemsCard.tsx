@@ -21,8 +21,8 @@ export function ProblemsCard({ problems, onUnlink, onAdd, isBusy }: ProblemsCard
           <li key={problem.problem_id} className="problem-list__item">
             <div className="problem-list__header">
               <span className="problem-list__title">Problema {problem.problem_id}</span>
-              {problem.description ? (
-                <span className="problem-list__description">{problem.description}</span>
+              {problem.statement ? (
+                <span className="problem-list__statement">{problem.statement}</span>
               ) : null}
             </div>
             <div className="problem-list__chips">

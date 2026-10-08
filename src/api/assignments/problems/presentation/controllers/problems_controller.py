@@ -22,7 +22,7 @@ router = APIRouter(prefix="/assignments/{assignment_id}", tags=["problems"])
 @router.get(
     "/problems",
     response_model=ListProblemsResponseDTO,
-    description="Os problemas do assignment, com a descrição de cada um.",
+    description="Os problemas do assignment, só com o identificador de cada um.",
 )
 def list_problems(
     assignment_id: int,
@@ -34,7 +34,10 @@ def list_problems(
 @router.get(
     "/problems/knowledge-components",
     response_model=ListProblemKnowledgeComponentsResponseDTO,
-    description="Cada problema do assignment com a descrição e os KCs que ele exige.",
+    description=(
+        "Por problema do assignment, o enunciado, a contagem de execuções corretas e os KCs "
+        "que ele exige, mais a data da extração."
+    ),
 )
 def list_problem_knowledge_components(
     assignment_id: int,

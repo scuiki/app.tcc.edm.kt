@@ -21,21 +21,18 @@ describe('knowledgeComponentsOf', () => {
     const usages = knowledgeComponentsOf([
       {
         problem_id: 5,
-        description: null,
         statement: null,
         correct_run_count: 12,
         knowledge_components: [LOOPS, IFS],
       },
       {
         problem_id: 12,
-        description: null,
         statement: null,
         correct_run_count: 9,
         knowledge_components: [LOOPS],
       },
       {
         problem_id: 20,
-        description: null,
         statement: null,
         correct_run_count: 0,
         knowledge_components: [],
@@ -129,21 +126,18 @@ describe('problemsOnlyMarkedBy', () => {
     const problems = [
       {
         problem_id: 5,
-        description: null,
         statement: null,
         correct_run_count: 12,
         knowledge_components: [LOOPS],
       },
       {
         problem_id: 12,
-        description: null,
         statement: null,
         correct_run_count: 9,
         knowledge_components: [LOOPS, IFS],
       },
       {
         problem_id: 20,
-        description: null,
         statement: null,
         correct_run_count: 7,
         knowledge_components: [IFS],

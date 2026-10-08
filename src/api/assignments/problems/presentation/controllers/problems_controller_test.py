@@ -10,15 +10,14 @@ def _seed(trained_artifact):
     # O trained_artifact liga Laços aos problemas 1 e 3 e Condicionais aos 2 e 3; o 4 fica sem KC
     add_problems(trained_artifact.conn, trained_artifact.assignment_id, [4])
     trained_artifact.conn.execute(
-        "UPDATE problem SET description = 'Soma os elementos', "
-        "statement = 'Devolva a soma dos elementos do vetor.' "
+        "UPDATE problem SET statement = 'Devolva a soma dos elementos do vetor.' "
         "WHERE assignment_id = ? AND problem_id = 1;",
         (trained_artifact.assignment_id,),
     )
     return trained_artifact.assignment_id
 
 
-def test_the_problems_route_lists_every_problem_with_its_description(api_client, trained_artifact):
+def test_the_problems_route_lists_every_problem(api_client, trained_artifact):
     client, _ = api_client
     assignment_id = _seed(trained_artifact)
 
@@ -27,10 +26,10 @@ def test_the_problems_route_lists_every_problem_with_its_description(api_client,
     assert body == {
         "assignment_id": assignment_id,
         "problems": [
-            {"problem_id": 1, "description": "Soma os elementos"},
-            {"problem_id": 2, "description": None},
-            {"problem_id": 3, "description": None},
-            {"problem_id": 4, "description": None},
+            {"problem_id": 1},
+            {"problem_id": 2},
+            {"problem_id": 3},
+            {"problem_id": 4},
         ],
     }
 
@@ -70,17 +69,16 @@ def test_problem_kcs_route_joins_problems_and_kcs_including_problems_without_kc(
     assert [
         (
             p["problem_id"],
-            p["description"],
             p["statement"],
             p["correct_run_count"],
             [kc["name"] for kc in p["knowledge_components"]],
         )
         for p in body["problems"]
     ] == [
-        (1, "Soma os elementos", "Devolva a soma dos elementos do vetor.", 3, ["Laços"]),
-        (2, None, None, 1, ["Condicionais"]),
-        (3, None, None, 2, ["Laços", "Condicionais"]),
-        (4, None, None, 0, []),
+        (1, "Devolva a soma dos elementos do vetor.", 3, ["Laços"]),
+        (2, None, 1, ["Condicionais"]),
+        (3, None, 2, ["Laços", "Condicionais"]),
+        (4, None, 0, []),
     ]
 
 
