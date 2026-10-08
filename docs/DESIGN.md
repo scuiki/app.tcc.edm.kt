@@ -4,14 +4,14 @@ As regras visuais do app docente. O porquê de cada decisão fica em `DECISIONS.
 Frontend. Os valores (hex, sombras, medidas) ficam no `src/web/src/styles/tokens.css`, e aqui cada
 papel é citado pelo nome do token.
 
-**Versão 5, 30/09/2026, revista em 08/10/2026.** Referência visual em
-[`design/design-system-v5.html`](design/design-system-v5.html), que abre direto no navegador.
+**Versão 6, 08/10/2026.** Referência visual em
+[`design/design-system-v6.html`](design/design-system-v6.html), que abre direto no navegador.
 
 **Estado.** Este documento é a especificação. A base da migração está feita pelo
 `FRONTEND_BASE_PLAN.md`, com os tokens, os componentes que já existiam e as tabelas na v5. As cinco
 telas ainda têm a organização antiga e mudam uma a uma. A tela Conceitos está em obra pelo
 `CONCEPTS_SCREEN_PLAN.md`, as seções dela aqui já descrevem a tela nova, e a página de referência
-passa a mostrá-la na etapa 2 do plano.
+já a mostra.
 
 ## Princípios
 
@@ -459,6 +459,7 @@ fazer.
 
 | Versão | Data | O que mudou |
 |---|---|---|
+| 6 | 08/10/2026 | Conceitos refeita. Cabeçalho com a linha de fatos e a data da extração, cartão com as abas Conceitos por problema e Problemas, matriz em ordem de recorrência com a coluna do nome presa, o nome cortado e o enunciado do problema no balão, Aprovar na faixa das abas e bloqueado pelo problema sem conceito, aviso de reabrir a aprovação, Novo conceito com a escolha dos problemas e origem do conceito empilhada, com as soluções que o modelo leu e o trecho destacado. A maquete publicada tem as outras duas organizações da origem do conceito (o código ao lado do texto e o trecho primeiro) e o Aprovar que some, superados pelas decisões, então ela não serve de referência para esses pontos |
 | 5, revista | 08/10/2026 | Correções antes da migração. Alinhamento igual em todas as tabelas, raio 0 sem token, `--color-text-inverse`, o texto do marcador do Code-DKT, os ícones de tela no menu com o `upload` em Importar dados e o exercício só com estatísticas sem ponto. A página de referência mantém o nome |
 | 5 | 30/09/2026 | Importar dados. Requisitos do pacote no lugar das caixas vazias, caixa do pacote de altura fixa, ações no rodapé do cartão e o fim da barra fixa, passos em preto e cinza, resultado com a tabela de exercícios da Turma e os ajustes numa lista neutra |
 | 4 | 30/09/2026 | Conceitos. Matriz problema × conceito com abas, origem do conceito com as soluções em abas de código, marcador `GeneratedByLLM` com as estrelas, dica com ?, vírgula na linha de fatos, estágios da extração em azul e a fonte mono só em bloco de código |
@@ -474,4 +475,7 @@ anteriores. As iterações de design que levaram à versão 1 estão nos artifac
 [organização da Análise](https://claude.ai/artifact/VZeKyWCQVGZDrcsmDyqYUX), e a da versão 3 em
 [Turmas e Turma](https://claude.ai/artifact/2AsBMzpMUcaQQPEcfwdU8q), e a da versão 4 em
 [Conceitos](https://claude.ai/artifact/TskaC5xtKnyTjKiq3FwtGo), e a da versão 5 em
-[Importar dados](https://claude.ai/artifact/Aeka6LFAfDiisWLk56Axjs).
+[Importar dados](https://claude.ai/artifact/Aeka6LFAfDiisWLk56Axjs), e a da versão 6 em
+[Tela Conceitos](https://claude.ai/artifact/PNNMqut5upVnbYG6vSWxkf), em que as outras duas
+organizações da origem do conceito (o código ao lado e o trecho primeiro) e o Aprovar que some foram
+superados.

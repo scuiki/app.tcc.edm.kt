@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>EDM·KT Design System v5</title>
+<title>EDM·KT Design System v6</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700&display=swap">
 <style>
-/* A referência visual da versão 1, com os nomes de token planejados para o tokens.css */
+/* Os tokens do design, com os mesmos nomes do tokens.css do app */
 :root {
   --color-page: #f4f4f4;
   --color-surface: #ffffff;
@@ -145,7 +145,7 @@ body { margin: 0; background: var(--doc-bg); color: var(--doc-ink); font-family:
 .dialog-scene__ghost { position: absolute; inset: 16px; display: grid; gap: 12px; align-content: start; }
 .dialog-scene__ghost .card { height: 90px; }
 .dialog-scene__veil { position: absolute; inset: 0; background: var(--backdrop); }
-.dialog { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(400px, calc(100% - 32px)); background: var(--color-surface); box-shadow: var(--shadow-dialog); }
+.dialog { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(440px, calc(100% - 32px)); background: var(--color-surface); box-shadow: var(--shadow-dialog); }
 .dialog__head { padding: 16px 20px 6px; }
 .dialog__head h4 { margin: 0; font-size: 16px; font-weight: 600; }
 .dialog__body { padding: 4px 20px 18px; color: var(--color-text-body); }
@@ -273,7 +273,7 @@ body { margin: 0; background: var(--doc-bg); color: var(--doc-ink); font-family:
 .daily-figure svg .hit { fill: transparent; }
 @media (max-width: 1000px) { .split { grid-template-columns: minmax(0, 1fr); } }
 
-/* As peças da versão 4, marcadores de modelo, código, matriz e origem do conceito */
+/* As peças da versão 4, marcadores de modelo, código, matriz e diálogo da origem do conceito */
 :root { --font-code: ui-monospace, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace; }
 .llm-mark { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; margin-left: 6px; border-radius: 50%; color: var(--color-model-strong); background: var(--color-model-soft); vertical-align: middle; }
 .llm-mark--sm { width: 18px; height: 18px; margin: 0 4px 0 0; }
@@ -289,21 +289,15 @@ body { margin: 0; background: var(--doc-bg); color: var(--doc-ink); font-family:
 .qm-dot.is-on { background: var(--color-text); border-color: var(--color-text); }
 .qm-dot:disabled { cursor: default; border-color: var(--color-rule); }
 .qm-dot.is-on:disabled { background: var(--color-observed); border-color: var(--color-observed); }
-.qm-table th.qm-col { width: 48px; }
-.qm-table th.qm-col span { text-decoration: underline dotted; text-underline-offset: 3px; cursor: help; }
 .qm-table td.qm-cell { text-align: center; padding: 0; }
-.qm-table td.qm-name { max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; }
+.qm-table td.qm-name { font-weight: 700; }
 .qm-table tr.qm-foot td { font-weight: 700; border-top: 1px solid var(--color-text); }
 .tab-actions { display: inline-flex; gap: 8px; align-self: center; margin-bottom: 6px; }
 .tabs__tab svg { flex-shrink: 0; }
 .dlg-static { background: var(--color-surface); box-shadow: var(--shadow-dialog); max-width: 760px; }
 .dlg-static__head { padding: 18px 20px 10px; }
-.dlg-static__head > div { display: grid; gap: 4px; }
-.dlg-static__kicker { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: var(--color-text-secondary); }
-.dlg-static__title { margin: 0; font-size: 18px; font-weight: 600; display: flex; align-items: center; }
-.dlg-static__body { padding: 16px 20px 20px; display: grid; gap: 10px; }
+.dlg-static__title { margin: 0; font-size: 18px; font-weight: 600; }
 .dlg-static__h { margin: 0; font-weight: 600; display: flex; align-items: center; gap: 2px; }
-.analysis-table td.desc { color: var(--color-text-body); line-height: 1.45; }
 
 /* As peças da versão 5, passos, requisitos, caixa do pacote e rodapé com as ações */
 .steps { list-style: none; margin: 0; padding: 0; display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--color-text-muted); flex-wrap: wrap; }
@@ -357,6 +351,84 @@ body { margin: 0; background: var(--doc-bg); color: var(--doc-ink); font-family:
 .success > div { display: grid; gap: 2px; }
 .success .facts { margin: 0; }
 @media (max-width: 1000px) { .split--imp { grid-template-columns: minmax(0, 1fr); } }
+
+/* As peças da versão 6, Conceitos com a matriz de coluna presa, o balão largo, o enunciado e a origem empilhada */
+.llm-mark--tab { width: 16px; height: 16px; margin: 0 0 0 1px; }
+.tooltip { white-space: pre-line; }
+.tooltip--wide { max-width: 360px; }
+.tooltip__title { display: block; margin-bottom: 2px; font-weight: 600; }
+#tip { white-space: pre-line; }
+#tip.tooltip--wide { max-width: 360px; }
+.balloons { display: grid; gap: 14px; justify-items: start; }
+.balloons > div { display: grid; gap: 4px; justify-items: start; max-width: 100%; }
+.dialog--flat { position: static; transform: none; width: 440px; max-width: 100%; }
+.dialog--danger .dialog__head { display: flex; align-items: center; gap: 12px; }
+.dialog--danger .dialog__head svg { flex-shrink: 0; color: var(--color-danger); }
+.dialog--danger .dialog__body { padding-left: 52px; }
+.dialog__body p { margin: 0; }
+.dlg-stack { display: grid; gap: 12px; }
+.dlg-note { margin: 0; padding: 10px 12px; background: var(--color-surface-subtle); font-size: 12px; line-height: 1.5; color: var(--color-text-secondary); }
+.field__required { color: var(--color-text-muted); }
+.pick { min-width: 0; margin: 0; padding: 0; border: 0; display: grid; gap: 4px; }
+.pick legend { padding: 0; margin-bottom: 4px; font-size: 12px; font-weight: 600; color: var(--color-text-body); }
+.pick__hint { font-size: 12px; color: var(--color-text-muted); }
+.pick__items { position: relative; display: grid; gap: 6px; max-height: 260px; margin-top: 4px; overflow-y: auto; }
+.pick__item { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: start; gap: 10px; padding: 8px 10px; border: 1px solid var(--color-rule); cursor: pointer; }
+.pick__item:hover { background: var(--color-hover); }
+.pick__item:has(input:checked) { border-color: var(--color-text); background: var(--color-surface-subtle); }
+.pick__item input { margin: 2px 0 0; accent-color: var(--color-text); }
+.pick__text { min-width: 0; display: grid; gap: 1px; }
+.pick__name { font-weight: 600; color: var(--color-text); }
+.pick__stmt { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; font-size: 12px; line-height: 1.45; color: var(--color-text-secondary); }
+.pick__count { margin-top: 1px; font-size: 12px; color: var(--color-text-muted); white-space: nowrap; }
+
+/* A matriz com 25 conceitos, o nome ocupa a sobra e corta, e a primeira coluna fica presa na rolagem */
+.qm-table { table-layout: fixed; min-width: 904px; }
+.qm-table .qm-col-p { width: 48px; }
+.qm-table .qm-col-rec { width: 96px; }
+.qm-table .qm-col-act { width: 120px; }
+.qm-table .qm-sticky { position: sticky; left: 0; z-index: 2; background: var(--color-surface); }
+.qm-table th.qm-sticky { z-index: 3; }
+.qm-scroll.is-scrolled .qm-sticky { box-shadow: inset -1px 0 0 var(--color-rule); }
+.qm-name__box { display: flex; align-items: center; min-width: 0; }
+.qm-name__text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: help; }
+.qm-name__box .llm-mark { flex-shrink: 0; }
+.qm-pnum { text-decoration: underline dotted; text-underline-offset: 3px; cursor: help; }
+.qm-pnum--empty { display: inline-flex; align-items: center; gap: 3px; color: var(--color-danger-text); }
+.qm-pnum--empty svg, .qm-zero svg { flex-shrink: 0; color: var(--color-danger); }
+.qm-zero { display: inline-flex; align-items: center; gap: 4px; color: var(--color-danger-text); font-weight: 700; }
+.qm-matrix-wide { display: grid; grid-template-columns: 700px minmax(0, 1fr); gap: 16px; align-items: start; }
+.pt-table { table-layout: fixed; }
+.pt-table .pt-col-id { width: 120px; }
+.pt-table .pt-col-count { width: 110px; }
+.analysis-table td.cell-wrap { white-space: normal; text-align: left; line-height: 1.45; color: var(--color-text-body); }
+
+/* A origem do conceito, o diálogo largo com as abas dos problemas e três blocos empilhados */
+.dlg-static--wide { width: 760px; max-width: 100%; }
+.dlg-static__head { display: grid; gap: 4px; }
+.dlg-static__title { display: block; }
+.name-tail { white-space: nowrap; }
+.tabs--origin { gap: 6px; padding: 8px 20px 0; }
+.tabs--origin .tabs__list { display: flex; gap: 2px; min-width: 0; overflow-x: auto; overflow-y: hidden; margin-bottom: -1px; }
+.tabs--origin .tabs__tab { flex-shrink: 0; margin-bottom: 0; }
+.tabs__label { display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0; align-self: center; height: 20px; margin: 0 6px 6px 0; padding-right: 12px; border-right: 1px solid var(--color-rule); font-size: 12px; color: var(--color-text-muted); white-space: nowrap; }
+.tabs__tab--id { min-width: 40px; justify-content: center; }
+.origin-panel { padding: 16px 20px 20px; display: grid; gap: 18px; align-content: start; min-width: 0; }
+.origin-block { display: grid; gap: 6px; min-width: 0; }
+.origin-block .t-body { margin: 0; }
+.origin-where { margin: 0; font-size: 12px; color: var(--color-text-secondary); }
+.origin-gray { margin: 0; font-size: 12.5px; color: var(--color-text-muted); }
+.origin-teacher { margin: 0; color: var(--color-text-secondary); }
+.specimen > .code-sample { min-width: 0; }
+.code-block { min-width: 0; max-width: 100%; }
+.code-tabs__mark { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; margin-left: 1px; border-radius: 50%; color: var(--color-model-strong); background: var(--color-model-soft); }
+.code { position: relative; align-content: start; grid-template-columns: auto minmax(max-content, 1fr); tab-size: 4; -moz-tab-size: 4; }
+.code__ln { position: sticky; left: 0; z-index: 1; background: var(--color-surface-subtle); font-variant-numeric: tabular-nums; }
+.code__ln.is-hl, .code__tx.is-hl { background: var(--color-model-soft); }
+.code__ln.is-hl { color: var(--color-model-strong); font-weight: 600; }
+.origin-row { display: grid; grid-template-columns: 760px minmax(0, 1fr); gap: 16px; align-items: start; }
+.origin-side { display: grid; gap: 10px; align-content: start; min-width: 0; }
+@media (max-width: 1000px) { .qm-matrix-wide, .origin-row { grid-template-columns: minmax(0, 1fr); } }
 
 .histogram__bar.is-zero { background: var(--color-control-border); height: 1px; }
 /* O rótulo longo do cabeçalho trunca, e o texto inteiro aparece no hover */
@@ -439,9 +511,9 @@ body { margin: 0; background: var(--doc-bg); color: var(--doc-ink); font-family:
 <div class="wrap">
   <header class="doc-head">
     <span class="eyebrow">EDM·KT · referência visual</span>
-    <h1>Design System v5</h1>
-    <div class="doc-meta"><span class="badge badge--neutral">Versão 5</span><span class="badge badge--neutral">29/09/2026</span><span class="badge badge--neutral">Especificação</span></div>
-    <p>O desenho que o app deve seguir. As regras e o porquê estão em <code>docs/DESIGN.md</code> e <code>docs/DECISIONS.md</code>. Esta página mostra como cada peça fica. Os nomes de token são os planejados para o <code>tokens.css</code>, que ainda não foi migrado. Os números são da turma CSEDM Spring 2019, Assignment 439, modelo versão 5.</p>
+    <h1>Design System v6</h1>
+    <div class="doc-meta"><span class="badge badge--neutral">Versão 6</span><span class="badge badge--neutral">08/10/2026</span><span class="badge badge--neutral">Especificação</span></div>
+    <p>O desenho que o app deve seguir. As regras e o porquê estão em <code>docs/DESIGN.md</code> e <code>docs/DECISIONS.md</code>. Esta página mostra como cada peça fica. Os nomes de token são os do <code>src/web/src/styles/tokens.css</code>. Os números da tela Conceitos são do Assignment 439 da turma CSEDM CodeWorkout, extraído em 06/10/2026, e os das outras telas são da turma CSEDM Spring 2019, Assignment 439, modelo versão 5.</p>
     <nav class="toc" aria-label="Seções">
       <a href="#principios">Princípios</a><a href="#cor">Cor</a><a href="#tipografia">Tipografia</a><a href="#forma">Forma e espaço</a>
       <a href="#componentes">Componentes</a><a href="#tabelas">Tabelas</a><a href="#icones">Ícones</a><a href="#graficos">Gráficos</a><a href="#paginas">Páginas</a><a href="#versoes">Versões</a>
@@ -509,9 +581,9 @@ body { margin: 0; background: var(--doc-bg); color: var(--doc-ink); font-family:
       <div class="specimen">
         <span class="specimen-title">Botões</span>
         <div class="row"><button class="btn btn--primary" type="button"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"/></svg>Treinar modelo</button><button class="btn btn--primary is-hover" type="button">Hover</button><button class="btn btn--primary" type="button" disabled>Desabilitado</button></div>
-        <div class="row"><button class="btn btn--secondary" type="button">Cancelar</button><button class="btn btn--secondary is-hover" type="button">Hover</button><button class="btn btn--secondary btn--compact" type="button">Compacto</button></div>
+        <div class="row"><button class="btn btn--secondary" type="button">Cancelar</button><button class="btn btn--secondary is-hover" type="button">Hover</button><button class="btn btn--secondary btn--compact" type="button">Compacto</button><button class="btn btn--primary btn--compact" type="button">Compacto primário</button></div>
         <div class="row"><button class="btn btn--destructive" type="button">Remover</button><button class="icon-btn" type="button" aria-label="Editar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg></button><button class="icon-btn" type="button" aria-label="Remover"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 11v6"/><path d="M14 11v6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button><button class="btn btn--secondary is-focus" type="button">Foco do teclado</button></div>
-        <p class="rule-text">Primário é a ação principal, um por tela ou diálogo. Secundário é a alternativa neutra. Destrutivo só no diálogo que confirma uma exclusão. O botão de ícone é a ação de linha em tabela. O foco é um anel preto de 2px com 2px de folga, nunca removido.</p>
+        <p class="rule-text">Primário é a ação principal, um por tela ou diálogo. Secundário é a alternativa neutra. Destrutivo só no diálogo que confirma uma exclusão. O botão de ícone é a ação de linha em tabela. Na faixa das abas o compacto pode ser primário, como o Aprovar conceitos. O foco é um anel preto de 2px com 2px de folga, nunca removido.</p>
       </div>
       <div class="specimen">
         <span class="specimen-title">Campo, link e etiquetas</span>
@@ -574,7 +646,7 @@ body { margin: 0; background: var(--doc-bg); color: var(--doc-ink); font-family:
             <div class="dialog__footer"><button class="btn btn--secondary" type="button">Cancelar</button><button class="btn btn--destructive" type="button">Remover</button></div>
           </div>
         </div>
-        <p class="rule-text">O diálogo usa a sombra longa sobre o fundo escurecido. O rodapé cinza carrega as ações à direita, e a principal fica por último.</p>
+        <p class="rule-text">O diálogo usa a sombra longa sobre o fundo escurecido. O rodapé cinza carrega as ações à direita, e a principal fica por último. A largura é de 440px, e a origem do conceito usa a larga, de 760px. A altura vai até a altura da janela menos 48px, com o cabeçalho e o rodapé presos e o corpo rolando por dentro.</p>
       </div>
     </div>
 
@@ -658,16 +730,16 @@ body { margin: 0; background: var(--doc-bg); color: var(--doc-ink); font-family:
       <div class="specimen">
         <span class="specimen-title">Marcadores de modelo, dica e alerta</span>
         <div class="row"><span class="t-body">Domínio</span><span class="estimated-mark" title="Dado estimado por aprendizado de máquina"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 18V5"/><path d="M15 13a4.17 4.17 0 0 1-3-4 4.17 4.17 0 0 1-3 4"/><path d="M17.598 6.5A3 3 0 1 0 12 5a3 3 0 1 0-5.598 1.5"/><path d="M17.997 5.125a4 4 0 0 1 2.526 5.77"/><path d="M18 18a4 4 0 0 0 2-7.464"/><path d="M19.967 17.483A4 4 0 1 1 12 18a4 4 0 1 1-7.967-.517"/><path d="M6 18a4 4 0 0 1-2-7.464"/><path d="M6.003 5.125a4 4 0 0 0-2.526 5.77"/></svg></span><span class="t-support">GeneratedByML, o Code-DKT</span></div>
-        <div class="row"><span class="t-body">Index-based array iteration and modification</span><span class="llm-mark" title="Gerado pelo modelo de linguagem"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/><path d="M20 2v4"/><path d="M22 4h-4"/><circle cx="4" cy="20" r="2"/></svg></span><span class="t-support">GeneratedByLLM, o modelo de linguagem</span></div>
+        <div class="row"><span class="t-body">Operador lógico de negação</span><span class="llm-mark" data-tip="Gerado pelo modelo de linguagem"><i data-icon="sparkles" data-size="14"></i></span><span class="t-support">GeneratedByLLM, o modelo de linguagem</span></div>
+        <div class="row"><span class="llm-mark llm-mark--lg" data-tip="Gerado pelo modelo de linguagem"><i data-icon="sparkles" data-size="16"></i></span><span class="t-support">24px, no título</span><span class="llm-mark llm-mark--sm" data-tip="Gerado pelo modelo de linguagem"><i data-icon="sparkles" data-size="12"></i></span><span class="t-support">18px, antes do rótulo</span><span class="llm-mark llm-mark--tab" data-tip="Gerado pelo modelo de linguagem"><i data-icon="sparkles" data-size="10"></i></span><span class="t-support">16px, na aba da solução</span></div>
         <div class="row"><span class="t-body">Recorrência</span><span class="info-hint"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg></span><span class="t-support">dica, sempre com o ?</span></div>
         <div class="row"><span class="facts__alert"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>1 problema sem conceito</span><span class="t-support">alerta, o ! em vermelho</span></div>
-        <p class="rule-text">O azul marca o que um modelo produziu, e o ícone diz qual. O cérebro é o Code-DKT e as estrelas são o modelo de linguagem, os dois no círculo azul claro. O marcador vem antes do rótulo de coluna e no fim de um texto corrido. O ? é a dica, e o ! em vermelho fica só para alerta e erro.</p>
+        <p class="rule-text">O azul marca o que um modelo produziu, e o ícone diz qual. O cérebro é o Code-DKT e as estrelas são o modelo de linguagem, os dois no círculo azul claro. O marcador vem antes do rótulo de coluna e no fim de um texto corrido, e as estrelas têm uma variante por lugar. No nome do conceito elas somem quando o professor o renomeia, porque o nome passa a ser dele. O ? é a dica, e o ! em vermelho fica só para alerta e erro.</p>
       </div>
       <div class="specimen">
         <span class="specimen-title">Bloco de código com abas</span>
-        <div class="code-tabs" role="tablist"><button type="button" role="tab" aria-selected="true" title="Acertou de primeira"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="m9 15 2 2 4-4"/></svg>Solução 1</button><button type="button" role="tab" aria-selected="false" title="Acertou na 2ª tentativa"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="m9 15 2 2 4-4"/></svg>Solução 2</button><button type="button" role="tab" aria-selected="false" title="Acertou na 6ª tentativa"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="m9 15 2 2 4-4"/></svg>Solução 3</button></div>
-        <pre class="code code--tabbed" id="code-sample" aria-label="Código da solução 1"></pre>
-        <p class="rule-text">O código usa <code>--font-code</code>, a única exceção de fonte, só em bloco de código. A numeração de linha fica à esquerda, e as abas presas ao topo trocam de arquivo. A tentativa de cada solução fica na dica do hover da aba.</p>
+        <div class="code-sample" id="code-sample"></div>
+        <p class="rule-text">O código usa <code>--font-code</code>, a única exceção de fonte, só em bloco de código, com a numeração de linha à esquerda e tab-size 4. As abas presas ao topo trocam de solução, e a ativa leva o traço de 2px. O bloco tem altura máxima e rola nos dois sentidos por dentro. As linhas do trecho ficam em <code>--color-model-soft</code>, com o número em <code>--color-model-strong</code>, e a aba que tem o trecho leva as estrelas de 16px. Ao mostrar uma aba com destaque, o bloco rola por dentro até a primeira linha destacada, sem mexer na página.</p>
       </div>
     </div>
 
@@ -676,7 +748,7 @@ body { margin: 0; background: var(--doc-bg); color: var(--doc-ink); font-family:
         <span class="specimen-title">Célula da matriz e ações do conceito</span>
         <div class="row"><button class="qm-dot is-on" type="button" aria-pressed="true" aria-label="Ligado"></button><span class="t-support">ligado</span><button class="qm-dot" type="button" aria-pressed="false" aria-label="Desligado"></button><span class="t-support">desligado</span><button class="qm-dot is-on" type="button" disabled aria-label="Só consulta"></button><span class="t-support">só consulta</span></div>
         <div class="row"><button class="icon-btn" type="button" aria-label="Ver a origem"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg></button><button class="icon-btn" type="button" aria-label="Renomear"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg></button><button class="icon-btn" type="button" aria-label="Remover"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 11v6"/><path d="M14 11v6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button><span class="t-support">lupa, lápis e lixeira, nessa ordem</span></div>
-        <p class="rule-text">A célula de 20px liga ou desliga o conceito do problema, preenchida em preto quando ligada. No exercício treinado ela fica em cinza e não responde. Mesclar não existe, porque um conceito duplicado é removido e o outro fica.</p>
+        <p class="rule-text">A célula de 20px liga ou desliga o conceito do problema, preenchida em preto quando ligada. No exercício treinado ela fica em cinza, não responde e só a lupa continua. Mesclar não existe, porque um conceito duplicado é removido e o outro fica.</p>
       </div>
       <div class="specimen">
         <span class="specimen-title">Estágios da extração</span>
@@ -731,18 +803,18 @@ body { margin: 0; background: var(--doc-bg); color: var(--doc-ink); font-family:
       <thead><tr><th>Ícone</th><th>Nome no lucide</th><th>Representa</th><th>Onde</th></tr></thead>
       <tbody>
         <tr><td><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 22V7a1 1 0 0 0-1-1H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5a1 1 0 0 0-1-1H2"/><rect x="14" y="2" width="8" height="8" rx="1"/></svg></td><td><code>blocks</code></td><td>Conceitos</td><td>Menu, aba, botões e etiquetas das etapas de conceitos</td></tr>
-        <tr><td><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="M10 12.5 8 15l2 2.5"/><path d="m14 12.5 2 2.5-2 2.5"/></svg></td><td><code>file-code</code></td><td>Problemas</td><td>Aba Problemas da Análise</td></tr>
+        <tr><td><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="M10 12.5 8 15l2 2.5"/><path d="m14 12.5 2 2.5-2 2.5"/></svg></td><td><code>file-code</code></td><td>Problemas</td><td>Aba Problemas da Análise e da Conceitos, rótulo dos problemas na origem do conceito</td></tr>
         <tr><td><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 18V5"/><path d="M15 13a4.17 4.17 0 0 1-3-4 4.17 4.17 0 0 1-3 4"/><path d="M17.598 6.5A3 3 0 1 0 12 5a3 3 0 1 0-5.598 1.5"/><path d="M17.997 5.125a4 4 0 0 1 2.526 5.77"/><path d="M18 18a4 4 0 0 0 2-7.464"/><path d="M19.967 17.483A4 4 0 1 1 12 18a4 4 0 1 1-7.967-.517"/><path d="M6 18a4 4 0 0 1-2-7.464"/><path d="M6.003 5.125a4 4 0 0 0-2.526 5.77"/></svg></td><td><code>brain</code></td><td>O Code-DKT</td><td>Marcador GeneratedByML, etiqueta Treinado, evento de treino</td></tr>
         <tr><td><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg></td><td><code>chart-column</code></td><td>Análise</td><td>Menu e botão Ver análise</td></tr>
         <tr><td><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 4h2a2 2 0 0 1 2 2v2"/><path d="M21.34 15.664a1 1 0 1 0-3.004-3.004l-5.01 5.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/><path d="M8 22H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></td><td><code>clipboard-pen</code></td><td>Exercício</td><td>Menu e aba Exercícios</td></tr>
         <tr><td><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><path d="M16 3.128a4 4 0 0 1 0 7.744"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/></svg></td><td><code>users</code></td><td>Turmas e alunos</td><td>Menu, aba Alunos, evento de turma criada</td></tr>
         <tr><td><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m17 8-5-5-5 5"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/></svg></td><td><code>upload</code></td><td>Importar dados</td><td>Menu e botão do cabeçalho da turma</td></tr>
-      <tr><td><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/><path d="M20 2v4"/><path d="M22 4h-4"/><circle cx="4" cy="20" r="2"/></svg></td><td><code>sparkles</code></td><td>O modelo de linguagem</td><td>Marcador GeneratedByLLM, no nome do conceito e na descrição do problema</td></tr><tr><td><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="m9 15 2 2 4-4"/></svg></td><td><code>file-check</code></td><td>Solução correta</td><td>Abas das soluções no diálogo da origem do conceito</td></tr><tr><td><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg></td><td><code>search</code></td><td>Inspecionar</td><td>Lupa da linha do conceito e campo de busca</td></tr><tr><td><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg></td><td><code>circle-question-mark</code></td><td>Dica</td><td>Todo ícone de dica, com o texto no hover</td></tr><tr><td><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg></td><td><code>circle-alert</code></td><td>Alerta</td><td>Só em vermelho, em alerta e erro</td></tr><tr><td><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 5h8"/><path d="M13 12h8"/><path d="M13 19h8"/><path d="m3 17 2 2 4-4"/><path d="m3 7 2 2 4-4"/></svg></td><td><code>list-checks</code></td><td>Requisitos</td><td>Título do cartão O que o pacote precisa ter</td></tr><tr><td><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg></td><td><code>folder</code></td><td>Pacote e arquivo</td><td>Título do cartão Turma e arquivo, arquivo enviado</td></tr></tbody>
+      <tr><td><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/><path d="M20 2v4"/><path d="M22 4h-4"/><circle cx="4" cy="20" r="2"/></svg></td><td><code>sparkles</code></td><td>O modelo de linguagem</td><td>Marcador GeneratedByLLM, no nome do conceito, na justificativa traduzida e na aba da solução com o trecho</td></tr><tr><td><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="m9 15 2 2 4-4"/></svg></td><td><code>file-check</code></td><td>Solução correta</td><td>Abas das soluções na origem do conceito</td></tr><tr><td><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg></td><td><code>search</code></td><td>Inspecionar</td><td>Lupa da linha do conceito e campo de busca</td></tr><tr><td><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg></td><td><code>circle-question-mark</code></td><td>Dica</td><td>Todo ícone de dica, com o texto no hover</td></tr><tr><td><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg></td><td><code>circle-alert</code></td><td>Alerta</td><td>Só em vermelho, em alerta e erro</td></tr><tr><td><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 5h8"/><path d="M13 12h8"/><path d="M13 19h8"/><path d="m3 17 2 2 4-4"/><path d="m3 7 2 2 4-4"/></svg></td><td><code>list-checks</code></td><td>Requisitos</td><td>Título do cartão O que o pacote precisa ter</td></tr><tr><td><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg></td><td><code>folder</code></td><td>Pacote e arquivo</td><td>Título do cartão Turma e arquivo, arquivo enviado</td></tr></tbody>
     </table>
   </section>
 
   <section class="section" id="tabelas">
-    <header><h2>Tabelas</h2><p>A tabela inteira usa <code>--font-data</code>, cabeçalho incluído. Sem fio vertical, traço escuro sob o cabeçalho e no fim, fio claro entre as linhas. Cabeçalho e linhas têm a mesma altura, 32px. Um rótulo longo trunca com reticências e mostra o texto inteiro no hover. O histograma da tabela não tem eixo, e a escala está na dica do cabeçalho. Em todas as tabelas, o nome fica à esquerda, os números e as etiquetas ficam centralizados sob rótulos centralizados e só a coluna de botões fica à direita. O observado é cinza 80 e o que vem do modelo é azul.</p></header>
+    <header><h2>Tabelas</h2><p>A tabela inteira usa <code>--font-data</code>, cabeçalho incluído. Sem fio vertical, traço escuro sob o cabeçalho e no fim, fio claro entre as linhas. A primeira coluna presa da matriz de conceitos ganha um fio à direita só quando há coluna rolada por baixo dela. Cabeçalho e linhas têm a mesma altura, 32px, com duas exceções. A linha com botões de ícone mede uns 41px, como na matriz de conceitos e em Turmas, e a célula que quebra linha cresce com o texto, como o enunciado na aba Problemas. Um rótulo longo trunca com reticências em 150px e mostra o texto inteiro no hover, e o nome do conceito na matriz não tem esse teto, porque a coluna dele ocupa a sobra do cartão. O histograma da tabela não tem eixo, e a escala está na dica do cabeçalho. Em todas as tabelas, o nome fica à esquerda, os números e as etiquetas ficam centralizados sob rótulos centralizados e só a coluna de botões fica à direita. O texto longo, como o enunciado, também fica à esquerda. O observado é cinza 80 e o que vem do modelo é azul.</p></header>
     <div class="specimen">
       <article class="card">
         <header class="card__header"><h4 class="card__title">Problemas</h4><span class="badge badge--neutral">10 problemas</span></header>
@@ -833,43 +905,178 @@ body { margin: 0; background: var(--doc-bg); color: var(--doc-ink); font-family:
     </div>
 
     <div class="specimen">
-      <span class="specimen-title">Conceitos</span>
-      <nav class="crumbs" aria-label="Caminho"><a href="#paginas">Turmas</a><i>›</i><a href="#paginas">Turma teste</a><i>›</i><span>Assignment 502</span><i>›</i><span aria-current="page">Conceitos</span></nav>
-      <div class="page-head"><div class="page-head__row"><p class="t-page-title">Assignment 502</p><span class="badge badge--neutral"><span class="badge__icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 22V7a1 1 0 0 0-1-1H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5a1 1 0 0 0-1-1H2"/><rect x="14" y="2" width="8" height="8" rx="1"/></svg></span>Rascunho de conceitos</span></div>
-        <p class="facts"><span><span class="num">10</span> problemas</span><span><span class="num">15</span> conceitos</span><span>extraídos em <span class="num">25/09/2026</span></span><span>nenhum problema sem conceito</span></p></div>
+      <span class="specimen-title">Conceitos, rascunho</span>
+      <nav class="crumbs" aria-label="Caminho"><a href="#paginas">Turmas</a><i>›</i><a href="#paginas">CSEDM CodeWorkout, referência do KCGen-KT</a><i>›</i><span>Assignment 439</span><i>›</i><span aria-current="page">Conceitos</span></nav>
+      <div class="page-head"><div class="page-head__row"><p class="t-page-title">Assignment 439</p><span class="badge badge--neutral"><span class="badge__icon"><i data-icon="blocks" data-size="13"></i></span>Rascunho de conceitos</span></div>
+        <p class="facts"><span><span class="num">10</span> problemas</span><span><span class="num">25</span> conceitos</span><span>extraídos em <span class="num">06/10/2026</span></span><span>nenhum problema sem conceito</span></p></div>
       <article class="card">
-        <div class="tabs" role="tablist"><button class="tabs__tab" role="tab" aria-selected="true" type="button"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 22V7a1 1 0 0 0-1-1H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5a1 1 0 0 0-1-1H2"/><rect x="14" y="2" width="8" height="8" rx="1"/></svg>Conceitos por problema</button><button class="tabs__tab" role="tab" aria-selected="false" type="button"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="M10 12.5 8 15l2 2.5"/><path d="m14 12.5 2 2.5-2 2.5"/></svg>Problemas</button><span class="tabs__spacer"></span><span class="tab-actions"><button class="btn btn--secondary btn--compact" type="button"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg>Novo conceito</button><button class="btn btn--primary btn--compact" type="button"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Aprovar conceitos</button></span></div>
-        <div class="card__body"><div class="table-scroll"><table class="analysis-table qm-table" id="qmatrix"></table></div></div>
-        <footer class="card__footer">Clique numa célula para ligar ou desligar o conceito do problema. Passe o mouse no número para ver o problema.</footer>
+        <div class="tabs" role="tablist"><button class="tabs__tab" role="tab" aria-selected="true" type="button"><i data-icon="blocks" data-size="15"></i>Conceitos por problema</button><button class="tabs__tab" role="tab" aria-selected="false" type="button"><i data-icon="file-code" data-size="15"></i>Problemas</button><span class="tabs__spacer"></span><span class="tab-actions"><button class="btn btn--secondary btn--compact" type="button"><i data-icon="plus" data-size="14"></i>Novo conceito</button><button class="btn btn--primary btn--compact" type="button"><i data-icon="check" data-size="15"></i>Aprovar conceitos</button></span></div>
+        <div class="card__body"><div class="table-scroll qm-scroll"><table class="analysis-table qm-table" data-matrix="real"></table></div></div>
+        <footer class="card__footer">Clique numa célula para ligar ou desligar o conceito do problema. Passe o mouse no número para ver o enunciado.</footer>
       </article>
       <article class="card">
-        <div class="tabs" role="tablist"><button class="tabs__tab" role="tab" aria-selected="false" type="button"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 22V7a1 1 0 0 0-1-1H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5a1 1 0 0 0-1-1H2"/><rect x="14" y="2" width="8" height="8" rx="1"/></svg>Conceitos por problema</button><button class="tabs__tab" role="tab" aria-selected="true" type="button"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="M10 12.5 8 15l2 2.5"/><path d="m14 12.5 2 2.5-2 2.5"/></svg>Problemas</button></div>
-        <div class="card__body"><div class="table-scroll"><table class="analysis-table"><thead><tr><th class="th-start"><span class="th"><span class="th__label">Problema</span></span></th><th class="th-start"><span class="th"><span class="llm-mark llm-mark--sm"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/><path d="M20 2v4"/><path d="M22 4h-4"/><circle cx="4" cy="20" r="2"/></svg></span><span class="th__label">Descrição</span></span></th><th><span class="th"><span class="th__label">Conceitos</span></span></th></tr></thead><tbody id="kc-problems"></tbody></table></div></div>
+        <div class="tabs" role="tablist"><button class="tabs__tab" role="tab" aria-selected="false" type="button"><i data-icon="blocks" data-size="15"></i>Conceitos por problema</button><button class="tabs__tab" role="tab" aria-selected="true" type="button"><i data-icon="file-code" data-size="15"></i>Problemas</button></div>
+        <div class="card__body"><div class="table-scroll"><table class="analysis-table pt-table" data-problems="real"></table></div></div>
       </article>
       <ul class="page-rules">
-        <li>O título é o exercício, com a etiqueta de situação ao lado, e a linha de fatos traz problemas, conceitos, a data da extração e quantos problemas estão sem conceito.</li>
-        <li>Um cartão com as abas Conceitos por problema, a matriz, e Problemas, as descrições. Novo conceito e Aprovar conceitos ficam à direita das abas, só na matriz, e a barra fixa no rodapé saiu.</li>
-        <li>Um problema sem conceito fica com o número e a contagem em vermelho, a linha de fatos avisa e o Aprovar fica desabilitado. No exercício treinado a matriz é só consulta, com a lupa e sem lápis e lixeira.</li>
-        <li>A descrição do problema é gerada pelo modelo de linguagem, porque o ProgSnap2 não traz enunciado. Sem descrição, a célula mostra "sem descrição" em cinza. O marcador de gerado some do nome do conceito quando o professor o renomeia.</li>
+        <li>O título é o exercício, com a etiqueta de situação ao lado, e a linha de fatos traz problemas, conceitos, a data da extração no fuso do navegador e quantos problemas estão sem conceito.</li>
+        <li>Um cartão com as abas Conceitos por problema, a matriz, e Problemas, os enunciados. Novo conceito e Aprovar conceitos ficam à direita das abas, só na matriz, e a barra fixa no rodapé saiu.</li>
+        <li>A matriz segue a recorrência decrescente, com empate pelo nome e depois pelo id, numa ordem calculada ao abrir a tela e fixa enquanto o professor edita. O conceito novo entra no fim, e não há ordenação clicável.</li>
+        <li>O nome ocupa a sobra do cartão, corta com reticências e mostra o nome inteiro no balão, com as estrelas sempre à vista depois dele. A linha mede uns 41px por causa dos botões de ícone.</li>
+        <li>O enunciado vem do pacote do professor e não leva estrelas. Ele quebra linha na aba Problemas, e sem ele a célula diz "sem enunciado" em cinza. O marcador de gerado some do nome do conceito quando o professor o renomeia.</li>
       </ul>
     </div>
 
     <div class="specimen">
+      <span class="specimen-title">Coluna presa, nome cortado e balões</span>
+      <div class="qm-matrix-wide">
+        <article class="card">
+          <div class="tabs" role="tablist"><button class="tabs__tab" role="tab" aria-selected="true" type="button"><i data-icon="blocks" data-size="15"></i>Conceitos por problema</button><button class="tabs__tab" role="tab" aria-selected="false" type="button"><i data-icon="file-code" data-size="15"></i>Problemas</button><span class="tabs__spacer"></span><span class="tab-actions"><button class="btn btn--secondary btn--compact" type="button"><i data-icon="plus" data-size="14"></i>Novo conceito</button><button class="btn btn--primary btn--compact" type="button"><i data-icon="check" data-size="15"></i>Aprovar conceitos</button></span></div>
+          <div class="card__body"><div class="table-scroll qm-scroll" data-scroll-left="150"><table class="analysis-table qm-table" data-matrix="real" data-limit="6"></table></div></div>
+        </article>
+        <div class="balloons" id="balloons"></div>
+      </div>
+      <p class="rule-text">A matriz tem no mínimo 904px, então numa tela estreita ela rola de lado dentro do cartão e a primeira coluna fica presa. O fio à direita dela só aparece quando há coluna rolada por baixo, como aqui. O cartão está cortado nas seis primeiras linhas, e a última linha continua contando todos os conceitos.</p>
+      <p class="rule-text">O balão do nome mostra o nome inteiro. O do número do problema traz o título "Problema N" e o enunciado, com até 360px. No problema sem conceito, o título diz "sem conceito" e o motivo vem antes do enunciado, separado por uma linha em branco.</p>
+    </div>
+
+    <div class="specimen">
+      <span class="specimen-title">Conceitos, problema sem conceito, simulado</span>
+      <p class="rule-text">No A439 todo problema tem conceito, então este estado é simulado. O problema 236 aparece sem execução correta e sem conceito, e o conceito que só existia nele sai do exercício, de modo que ficam 24 conceitos.</p>
+      <div class="page-head"><div class="page-head__row"><p class="t-page-title">Assignment 439</p><span class="badge badge--neutral"><span class="badge__icon"><i data-icon="blocks" data-size="13"></i></span>Rascunho de conceitos</span></div>
+        <p class="facts"><span><span class="num">10</span> problemas</span><span><span class="num">24</span> conceitos</span><span>extraídos em <span class="num">06/10/2026</span></span><span><span class="facts__alert"><i data-icon="circle-alert" data-size="14"></i><span class="num">1</span> problema sem conceito</span></span></p></div>
+      <article class="card">
+        <div class="tabs" role="tablist"><button class="tabs__tab" role="tab" aria-selected="true" type="button"><i data-icon="blocks" data-size="15"></i>Conceitos por problema</button><button class="tabs__tab" role="tab" aria-selected="false" type="button"><i data-icon="file-code" data-size="15"></i>Problemas</button><span class="tabs__spacer"></span><span class="tab-actions"><button class="btn btn--secondary btn--compact" type="button"><i data-icon="plus" data-size="14"></i>Novo conceito</button><button class="btn btn--primary btn--compact" type="button" disabled><i data-icon="check" data-size="15"></i>Aprovar conceitos</button></span></div>
+        <div class="card__body"><div class="table-scroll qm-scroll"><table class="analysis-table qm-table" data-matrix="empty" data-limit="6"></table></div></div>
+        <footer class="card__footer">Clique numa célula para ligar ou desligar o conceito do problema. Passe o mouse no número para ver o enunciado.</footer>
+      </article>
+      <article class="card">
+        <div class="tabs" role="tablist"><button class="tabs__tab" role="tab" aria-selected="false" type="button"><i data-icon="blocks" data-size="15"></i>Conceitos por problema</button><button class="tabs__tab" role="tab" aria-selected="true" type="button"><i data-icon="file-code" data-size="15"></i>Problemas</button></div>
+        <div class="card__body"><div class="table-scroll"><table class="analysis-table pt-table" data-problems="empty"></table></div></div>
+      </article>
+      <ul class="page-rules">
+        <li>O problema sem conceito fica em vermelho com o <code>circle-alert</code> no número do cabeçalho, no 0 da última linha da matriz e no 0 da aba Problemas, e a linha de fatos avisa.</li>
+        <li>O Aprovar fica só desabilitado, sem balão, porque o problema já se vê em vermelho. O backend recusa a aprovação pelo mesmo motivo.</li>
+        <li>A matriz está cortada nas seis primeiras linhas, e a última linha conta todos os conceitos.</li>
+      </ul>
+    </div>
+
+    <div class="specimen">
+      <span class="specimen-title">Conceitos, aprovados, simulado</span>
+      <p class="rule-text">O A439 do banco está em rascunho, então a situação de aprovado é simulada, e os conceitos são os reais.</p>
+      <div class="page-head"><div class="page-head__row"><p class="t-page-title">Assignment 439</p><span class="badge badge--neutral"><span class="badge__icon"><i data-icon="blocks" data-size="13"></i></span>Conceitos aprovados</span></div>
+        <p class="facts"><span><span class="num">10</span> problemas</span><span><span class="num">25</span> conceitos</span><span>extraídos em <span class="num">06/10/2026</span></span><span>nenhum problema sem conceito</span></p></div>
+      <article class="card">
+        <div class="tabs" role="tablist"><button class="tabs__tab" role="tab" aria-selected="true" type="button"><i data-icon="blocks" data-size="15"></i>Conceitos por problema</button><button class="tabs__tab" role="tab" aria-selected="false" type="button"><i data-icon="file-code" data-size="15"></i>Problemas</button><span class="tabs__spacer"></span><span class="tab-actions"><button class="btn btn--secondary btn--compact" type="button"><i data-icon="plus" data-size="14"></i>Novo conceito</button><button class="btn btn--primary btn--compact" type="button" disabled><i data-icon="check" data-size="15"></i>Aprovar conceitos</button></span></div>
+        <div class="card__body"><div class="table-scroll qm-scroll"><table class="analysis-table qm-table" data-matrix="real" data-limit="6"></table></div></div>
+      </article>
+      <ul class="page-rules">
+        <li>A matriz continua editável. O Aprovar fica à vista, apagado e sem clique, e o rodapé do cartão não leva frase.</li>
+        <li>A primeira edição, seja ligar, desligar, renomear, remover ou criar, avisa que reabre todos os conceitos, nos diálogos abaixo. Depois da edição o exercício volta a rascunho, e o Aprovar volta a habilitar.</li>
+        <li>A matriz está cortada nas seis primeiras linhas, e a última linha conta todos os conceitos.</li>
+      </ul>
+    </div>
+
+    <div class="grid-2">
+      <div class="specimen">
+        <span class="specimen-title">Novo conceito, simulado</span>
+        <div class="dialog dialog--flat" role="presentation">
+          <div class="dialog__head"><h4>Novo conceito</h4></div>
+          <div class="dialog__body"><div class="dlg-stack">
+            <div class="field"><label for="nc-name">Nome<span class="field__required" aria-hidden="true"> *</span></label><input id="nc-name" type="text" autocomplete="off"></div>
+            <fieldset class="pick"><legend>Problemas<span class="field__required" aria-hidden="true"> *</span></legend><span class="pick__hint">Marque pelo menos um problema. O conceito entra só nos marcados.</span><div class="pick__items" id="pick-items"></div></fieldset>
+            <p class="dlg-note">O conceito novo nasce sem estrelas, porque o nome é seu.</p>
+          </div></div>
+          <div class="dialog__footer"><button class="btn btn--secondary" type="button">Cancelar</button><button class="btn btn--primary" type="button" disabled>Criar</button></div>
+        </div>
+        <p class="rule-text">Uma caixa de marcar por problema, com o número, o começo do enunciado em duas linhas e quantos conceitos ele tem. A lista rola por dentro acima de 260px. Criar fica desabilitado até ter nome e um problema, e o nome repetido é recusado no campo. Este espécime é simulado, porque parte do estado do problema sem conceito, em que o 236 mostra "sem conceito" em vermelho e vem marcado.</p>
+      </div>
+      <div class="specimen">
+        <span class="specimen-title">Renomear, com o aviso de reabrir, simulado</span>
+        <div class="dialog dialog--flat" role="presentation">
+          <div class="dialog__head"><h4>Editar conceito</h4></div>
+          <div class="dialog__body"><div class="dlg-stack">
+            <div class="field"><label for="rn-name">Nome<span class="field__required" aria-hidden="true"> *</span></label><input id="rn-name" type="text" autocomplete="off" value="Operador condicional ternário"></div>
+            <p class="dlg-note">Este conceito marca 3 problemas: 1, 12 e 13. O nome novo passa a valer em todos eles.</p>
+            <p class="dlg-note">O nome atual veio do modelo de linguagem. Ao salvar, o nome passa a ser seu e as estrelas saem.</p>
+            <p class="dlg-note">Editar a matriz agora reabre todos os conceitos para aprovação.</p>
+          </div></div>
+          <div class="dialog__footer"><button class="btn btn--secondary" type="button">Cancelar</button><button class="btn btn--primary" type="button" disabled>Salvar</button></div>
+        </div>
+        <p class="rule-text">O exercício aprovado é simulado, porque o A439 do banco está em rascunho. O formulário dos conceitos aprovados leva o aviso como uma linha dentro dele, acima dos botões, para não abrir dois diálogos seguidos. O Novo conceito leva a mesma linha. A nota das estrelas só aparece quando o nome atual é o que o modelo gerou.</p>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="specimen">
+        <span class="specimen-title">Aviso de reabrir, no clique da célula, simulado</span>
+        <div class="dialog dialog--flat" role="presentation">
+          <div class="dialog__head"><h4>Editar os conceitos aprovados?</h4></div>
+          <div class="dialog__body"><div class="dlg-stack">
+            <p class="t-body">Editar a matriz agora reabre todos os conceitos para aprovação.</p>
+            <p class="t-body">O exercício volta a rascunho, e você aprova de novo quando terminar.</p>
+          </div></div>
+          <div class="dialog__footer"><button class="btn btn--secondary" type="button">Cancelar</button><button class="btn btn--primary" type="button">Ligar conceito</button></div>
+        </div>
+        <p class="rule-text">O exercício aprovado é simulado, porque o A439 do banco está em rascunho. O aviso é neutro, porque não é exclusão, com Cancelar e a ação de seguir, que diz o que o clique faz, ligar ou tirar o conceito. Ele abre só no clique direto numa célula do exercício aprovado. A recusa do problema que ficaria sem conceito continua sem aviso, porque nada muda.</p>
+      </div>
+      <div class="specimen">
+        <span class="specimen-title">Tirar o último problema do conceito, aprovado, simulado</span>
+        <div class="dialog dialog--flat dialog--danger" role="presentation">
+          <div class="dialog__head"><i data-icon="circle-alert" data-size="20"></i><h4>Tirar Análise de casos e ordem das condições do problema 236?</h4></div>
+          <div class="dialog__body"><div class="dlg-stack">
+            <p>O problema 236 é o único que este conceito marca, então ele sai do exercício junto. Não dá para desfazer.</p>
+            <p class="dlg-note">Editar a matriz agora reabre todos os conceitos para aprovação.</p>
+          </div></div>
+          <div class="dialog__footer"><button class="btn btn--secondary" type="button">Cancelar</button><button class="btn btn--destructive" type="button">Tirar conceito</button></div>
+        </div>
+        <p class="rule-text">Quando a edição já tem confirmação própria, como remover o conceito e tirar o último problema dele, o aviso entra como uma linha dentro dela. No A439 este conceito só marca o problema 236, então a confirmação é real, e a situação de aprovado é simulada.</p>
+      </div>
+    </div>
+
+    <div class="specimen">
       <span class="specimen-title">Origem do conceito</span>
-      <div class="dlg-static">
-        <header class="dlg-static__head"><div><span class="dlg-static__kicker"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 22V7a1 1 0 0 0-1-1H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5a1 1 0 0 0-1-1H2"/><rect x="14" y="2" width="8" height="8" rx="1"/></svg>Origem do conceito</span><p class="dlg-static__title">Index-based array iteration and modification<span class="llm-mark llm-mark--lg"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/><path d="M20 2v4"/><path d="M22 4h-4"/><circle cx="4" cy="20" r="2"/></svg></span></p>
-          <p class="facts"><span>em <span class="num">10</span> de <span class="num">10</span> problemas</span><span>extraído em <span class="num">25/09/2026</span></span></p></div></header>
-        <div class="tabs" role="tablist"><button class="tabs__tab" role="tab" aria-selected="true" type="button"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="M10 12.5 8 15l2 2.5"/><path d="m14 12.5 2 2.5-2 2.5"/></svg>Problema 45</button><button class="tabs__tab" role="tab" aria-selected="false" type="button"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="M10 12.5 8 15l2 2.5"/><path d="m14 12.5 2 2.5-2 2.5"/></svg>Problema 48</button><button class="tabs__tab" role="tab" aria-selected="false" type="button"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="M10 12.5 8 15l2 2.5"/><path d="m14 12.5 2 2.5-2 2.5"/></svg>Problema 51</button></div>
-        <div class="dlg-static__body">
-          <p class="t-body"><b>Problema 45.</b> Sum all array elements while skipping any contiguous sequences from 6 to 7 (inclusive).<span class="llm-mark"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/><path d="M20 2v4"/><path d="M22 4h-4"/><circle cx="4" cy="20" r="2"/></svg></span></p>
-          <p class="dlg-static__h">Soluções que compõem o conceito<span class="info-hint" title="Um conceito é extraído de até cinco soluções corretas de cada problema em que aparece. A quantidade de tentativas até a solução correta varia entre elas."><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg></span></p>
-          <p class="t-support">As abas das soluções e o bloco de código estão em Componentes.</p>
+      <div class="origin-row">
+        <div id="origin-main"></div>
+        <div class="origin-side">
+          <p class="rule-text">O diálogo largo de 760px, aberto pela lupa, com o conceito Comparações numéricas (operadores relacionais) do A439. O título é o nome com as estrelas de 24px, e a linha de fatos diz em quantos problemas ele aparece. A fileira dos problemas leva o rótulo Problema uma vez e só o identificador em cada aba. O trecho está na linha 16 da Solução 2, então o bloco abre nessa aba e já rolado por dentro até ela.</p>
+          <ul class="page-rules">
+            <li>Cada aba empilha o enunciado do problema, a justificativa do modelo de linguagem, com as estrelas antes do rótulo e a dica, e as soluções que o modelo leu, com a dica e o bloco de código.</li>
+            <li>O bloco abre na solução do trecho, com as linhas destacadas e as estrelas na aba, e rola por dentro até a primeira linha destacada. A tentativa de cada aluno e o nome em inglês não aparecem.</li>
+            <li>O corpo rola por dentro, com o cabeçalho, as abas e o rodapé presos. O rodapé tem Fechar.</li>
+          </ul>
         </div>
       </div>
-      <ul class="page-rules">
-        <li>A lupa de cada conceito abre o diálogo, com os problemas em que ele aparece em abas e, para cada um, as até cinco soluções corretas que o modelo de linguagem leu.</li>
-        <li>As frases candidatas do modelo e as linhas destacadas ficaram de fora. As linhas seriam uma explicação feita depois, não o que de fato influenciou o modelo.</li>
-      </ul>
+    </div>
+
+    <div class="specimen">
+      <span class="specimen-title">Origem do conceito, duas justificativas</span>
+      <div class="origin-row">
+        <div id="origin-two"></div>
+        <div class="origin-side">
+          <p class="rule-text">Um conceito em dez problemas, com as dez abas só com o identificador, e duas frases de justificativa no problema 3. O trecho vai da linha 3 à 15, e o bloco fica no topo porque a primeira linha destacada já está à vista.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="specimen">
+      <span class="specimen-title">Origem do conceito, trecho descartado</span>
+      <div class="origin-row">
+        <div id="origin-discarded"></div>
+        <div class="origin-side">
+          <p class="rule-text">O modelo apontou um trecho que não está nas soluções, e o app o descartou. A frase vem antes do bloco, que abre na Solução 1, sem destaque nem estrelas na aba.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="specimen">
+      <span class="specimen-title">Origem do conceito, vínculo do professor e problema sem solução, simulado</span>
+      <div class="origin-row">
+        <div id="origin-teacher"></div>
+        <div class="origin-side">
+          <p class="rule-text">O A439 não tem esses casos, então o espécime é simulado. O professor liga o Operador lógico de negação ao problema 236, que nenhuma execução correta acertou e que veio sem enunciado. O vínculo do professor não tem justificativa nem trecho do modelo, e o problema sem acerto não tem solução que o modelo tenha lido, então as frases ficam em cinza no lugar do texto e do bloco de código.</p>
+        </div>
+      </div>
     </div>
 
     <div class="specimen">
@@ -918,7 +1125,8 @@ body { margin: 0; background: var(--doc-bg); color: var(--doc-ink); font-family:
     <header><h2>Versões</h2></header>
     <table class="spec-table versions">
       <thead><tr><th>Versão</th><th>Data</th><th>O que mudou</th></tr></thead>
-      <tbody><tr><td>5, revista</td><td class="num">08/10/2026</td><td>Correções antes da migração. Alinhamento igual em todas as tabelas, raio 0 sem token, <code>--color-text-inverse</code>, o texto do marcador do Code-DKT, os ícones de tela no menu com o <code>upload</code> em Importar dados e o exercício só com estatísticas sem ponto. A página mantém o nome</td></tr>
+      <tbody><tr><td>6</td><td class="num">08/10/2026</td><td>Conceitos refeita. Cabeçalho com a linha de fatos e a data da extração, cartão com as abas Conceitos por problema e Problemas, matriz em ordem de recorrência com a coluna do nome presa, o nome cortado e o enunciado do problema no balão, Aprovar na faixa das abas e bloqueado pelo problema sem conceito, aviso de reabrir a aprovação, Novo conceito com a escolha dos problemas e origem do conceito empilhada, com as soluções que o modelo leu e o trecho destacado. A <a class="link" href="https://claude.ai/artifact/PNNMqut5upVnbYG6vSWxkf">maquete publicada</a> tem as outras duas organizações da origem do conceito (o código ao lado do texto e o trecho primeiro) e o Aprovar que some, superados pelas decisões, então ela não serve de referência para esses pontos.</td></tr>
+      <tr><td>5, revista</td><td class="num">08/10/2026</td><td>Correções antes da migração. Alinhamento igual em todas as tabelas, raio 0 sem token, <code>--color-text-inverse</code>, o texto do marcador do Code-DKT, os ícones de tela no menu com o <code>upload</code> em Importar dados e o exercício só com estatísticas sem ponto. A página mantém o nome</td></tr>
       <tr><td>5</td><td class="num">30/09/2026</td><td>Importar dados. Requisitos do pacote no lugar das caixas vazias, caixa do pacote de altura fixa, ações no rodapé do cartão e o fim da barra fixa, passos em preto e cinza, resultado com a tabela de exercícios da Turma e ajustes numa lista neutra.</td></tr><tr><td>4</td><td class="num">30/09/2026</td><td>Conceitos. Matriz problema × conceito com abas, origem do conceito com as soluções em abas de código, marcador GeneratedByLLM com as estrelas, dica com ?, vírgula na linha de fatos, estágios da extração em azul e a fonte mono só em bloco de código.</td></tr><tr><td>3</td><td class="num">29/09/2026</td><td>Turmas e Turma. Tabela de exercícios com próximo passo, alunos da turma com busca e paginação de 10, execuções por dia, atividade recente com treinos e extrações, e os ícones de Conceitos, Problemas e Treinado nas etiquetas de situação.</td></tr><tr><td>2</td><td class="num">29/09/2026</td><td>A organização da Análise. Linha de fatos, abas com Conceitos primeiro, curva de aprendizagem com dois eixos, cabeçalho de tabela com 32px e rótulo truncado, histograma da tabela sem eixo, menu que recolhe em tela estreita.</td></tr><tr><td>1</td><td class="num">29/09/2026</td><td>A linguagem formal. Interface em cinza, azul só no modelo, raio 0, Public Sans na interface e Arial nos dados, componentes no estilo Carbon.</td></tr></tbody>
     </table>
   </section>
@@ -1100,31 +1308,6 @@ function curve(kcId) {
     <p class="figure__source">Fonte: execuções importadas e os vínculos entre problemas e conceitos aprovados</p></figure>`;
 }
 curve(8);
-const ICON_SEARCH = "<svg width=\"15\" height=\"15\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m21 21-4.34-4.34\"/><circle cx=\"11\" cy=\"11\" r=\"8\"/></svg>";
-const ICON_PENCIL = "<svg width=\"15\" height=\"15\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z\"/><path d=\"m15 5 4 4\"/></svg>";
-const ICON_TRASH = "<svg width=\"15\" height=\"15\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M10 11v6\"/><path d=\"M14 11v6\"/><path d=\"M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6\"/><path d=\"M3 6h18\"/><path d=\"M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2\"/></svg>";
-
-// A matriz problema × conceito, os problemas com descrição e uma solução real do Assignment 502
-const KC7 = {"assignment_id": 7, "status": "kc_draft", "problems": [{"problem_id": 45, "description": "Sum all array elements while skipping any contiguous sequences from 6 to 7 (inclusive).", "knowledge_components": [{"id": 31, "name": "Conditional logic with boolean expressions"}, {"id": 36, "name": "Accumulator pattern for computing sum"}, {"id": 40, "name": "Index-based array iteration and modification"}]}, {"problem_id": 48, "description": "Filter an array to return a new array containing all non-10 elements compacted at the start.", "knowledge_components": [{"id": 29, "name": "Two-pointer compaction pattern"}, {"id": 31, "name": "Conditional logic with boolean expressions"}, {"id": 38, "name": "Method return statements"}, {"id": 40, "name": "Index-based array iteration and modification"}]}, {"problem_id": 51, "description": "Replace array elements between multiples of 10 with the preceding multiple of 10 value, creating filled runs.", "knowledge_components": [{"id": 31, "name": "Conditional logic with boolean expressions"}, {"id": 32, "name": "Variable state tracking and modification"}, {"id": 35, "name": "Modulo operator for divisibility checking"}, {"id": 40, "name": "Index-based array iteration and modification"}]}, {"problem_id": 56, "description": "Compute the centered average of an array by summing all elements, then dividing by the count after excluding the minimum and maximum values.", "knowledge_components": [{"id": 33, "name": "Conditional branching for selective updates"}, {"id": 35, "name": "Modulo operator for divisibility checking"}, {"id": 36, "name": "Accumulator pattern for computing sum"}, {"id": 38, "name": "Method return statements"}, {"id": 40, "name": "Index-based array iteration and modification"}, {"id": 41, "name": "Finding minimum and maximum array values"}]}, {"problem_id": 57, "description": "Create and return an array of integers with size n, populated with sequential values from 0 to n-1.", "knowledge_components": [{"id": 32, "name": "Variable state tracking and modification"}, {"id": 38, "name": "Method return statements"}, {"id": 40, "name": "Index-based array iteration and modification"}]}, {"problem_id": 64, "description": "Implement FizzBuzz: given a start and end integer, return a string array where numbers divisible by both 3 and 5 map to \"FizzBuzz\", by 3 alone to \"Fizz\", by 5 alone to \"Buzz\", and others to their string representation.", "knowledge_components": [{"id": 31, "name": "Conditional logic with boolean expressions"}, {"id": 35, "name": "Modulo operator for divisibility checking"}, {"id": 39, "name": "Type conversion from integer to string"}, {"id": 40, "name": "Index-based array iteration and modification"}]}, {"problem_id": 70, "description": "Validate that every occurrence of the number 2 in an array has at least one adjacent element that is also 2 (no isolated 2s). Return true if all 2s are properly paired with at least one neighboring 2; return false if any 2 lacks an adjacent 2.", "knowledge_components": [{"id": 30, "name": "Comparing values for equality and inequality"}, {"id": 31, "name": "Conditional logic with boolean expressions"}, {"id": 40, "name": "Index-based array iteration and modification"}]}, {"problem_id": 71, "description": "Determine if an array can be split at a partition point where the sum of elements to the left equals the sum of elements to the right.", "knowledge_components": [{"id": 27, "name": "Dynamic partition pointer techniques"}, {"id": 30, "name": "Comparing values for equality and inequality"}, {"id": 31, "name": "Conditional logic with boolean expressions"}, {"id": 36, "name": "Accumulator pattern for computing sum"}, {"id": 40, "name": "Index-based array iteration and modification"}]}, {"problem_id": 112, "description": "Generate a series where for input n, output contains [1, 1,2, 1,2,3, ..., 1,2,...,n], with total length determined by the triangular number formula n*(n+1)/2.", "knowledge_components": [{"id": 32, "name": "Variable state tracking and modification"}, {"id": 37, "name": "Triangular number formula application"}, {"id": 40, "name": "Index-based array iteration and modification"}]}, {"problem_id": 118, "description": "Rotate an array left by one position, shifting each element leftward and moving the first element to the end. The operation modifies the array in place.", "knowledge_components": [{"id": 28, "name": "Circular shift with wrap-around assignment"}, {"id": 34, "name": "Temporary variable preserves first element"}, {"id": 40, "name": "Index-based array iteration and modification"}]}]};
-const SAMPLE = "public int sum67(int[] nums)\r\n{\r\n    int sum = 0;\r\n    boolean number = false;\r\n    for (int i = 0; i < nums.length; i++)\r\n    {\r\n        if (number)\r\n        {\r\n            if (nums[i] == 7)\r\n                number = false;\r\n        }\r\n        else if (nums[i] == 6)\r\n        {\r\n            number = true;\r\n        }\r\n        else\r\n        {\r\n            sum = sum + nums[i];\r\n        }\r\n    }\r\n    return sum;\r\n}\r\n";
-const escHtml = t => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
-(function conceptsPage() {
-  const problems = KC7.problems.map(p => ({ id: p.problem_id, description: p.description, kcs: p.knowledge_components.map(k => k.id) }));
-  const kcs = [];
-  for (const p of KC7.problems) for (const k of p.knowledge_components) if (!kcs.find(x => x.id === k.id)) kcs.push(k);
-  kcs.sort((a, b) => a.name.localeCompare(b.name));
-  const on = (k, p) => p.kcs.includes(k.id);
-  const head = `<thead><tr><th class="th-start"><span class="th"><span class="th__label">Conceito</span></span></th>${problems.map(p => `<th class="qm-col"><span data-tip="Problema ${p.id}: ${escHtml(p.description)}">${p.id}</span></th>`).join('')}<th><span class="th"><span class="th__label">Recorrência</span></span></th><th></th></tr></thead>`;
-  const rows = kcs.map(k => `<tr><td class="qm-name">${escHtml(k.name)}</td>${problems.map(p => `<td class="qm-cell"><button class="qm-dot ${on(k, p) ? 'is-on' : ''}" type="button" aria-pressed="${on(k, p)}" aria-label="${escHtml(k.name)} no problema ${p.id}"></button></td>`).join('')}
-    <td class="analysis-table__num">${problems.filter(p => on(k, p)).length} <span class="analysis-table__sub">de ${problems.length}</span></td>
-    <td class="cell-actions"><button class="icon-btn" type="button" aria-label="Ver a origem">${ICON_SEARCH}</button> <button class="icon-btn" type="button" aria-label="Renomear">${ICON_PENCIL}</button> <button class="icon-btn" type="button" aria-label="Remover">${ICON_TRASH}</button></td></tr>`).join('');
-  const foot = `<tr class="qm-foot"><td>Conceitos por problema</td>${problems.map(p => `<td class="analysis-table__num">${p.kcs.length}</td>`).join('')}<td></td><td></td></tr>`;
-  document.getElementById('qmatrix').innerHTML = head + `<tbody>${rows}${foot}</tbody>`;
-  document.getElementById('kc-problems').innerHTML = problems.map(p => `<tr><td class="analysis-table__name">Problema ${p.id}</td><td class="desc">${escHtml(p.description)}</td><td class="analysis-table__num">${p.kcs.length}</td></tr>`).join('');
-  const lines = SAMPLE.replace(/\r/g, '').split('\n');
-  document.getElementById('code-sample').innerHTML = lines.map((l, i) => `<span class="code__ln">${i + 1}</span><span class="code__tx">${escHtml(l) || ' '}</span>`).join('');
-})();
-
 
 // Os exercícios, os primeiros alunos e as execuções por dia da turma CSEDM Spring 2019
 const TURMA = {"exercises": [["Assignment 439", "2019-02-20", "2019-02-25", 386, 14614, 0.261, "trained"], ["Assignment 487", "2019-03-04", "2019-03-09", 340, 15879, 0.201, "ready_for_kc_generation"], ["Assignment 492", "2019-03-20", "2019-03-25", 361, 17191, 0.203, "ready_for_kc_generation"], ["Assignment 494", "2019-04-08", "2019-04-13", 315, 12402, 0.247, "ready_for_kc_generation"], ["Assignment 502", "2019-05-01", "2019-05-06", 306, 9541, 0.306, "ready_for_kc_generation"]], "days": [["2019-02-20", 161], ["2019-02-21", 938], ["2019-02-22", 923], ["2019-02-23", 1765], ["2019-02-24", 5620], ["2019-02-25", 5207], ["2019-03-04", 1378], ["2019-03-05", 2665], ["2019-03-06", 3271], ["2019-03-07", 2247], ["2019-03-08", 4137], ["2019-03-09", 2181], ["2019-03-20", 339], ["2019-03-21", 1204], ["2019-03-22", 1614], ["2019-03-23", 2384], ["2019-03-24", 6508], ["2019-03-25", 5142], ["2019-04-08", 1379], ["2019-04-09", 1224], ["2019-04-10", 2151], ["2019-04-11", 1744], ["2019-04-12", 4014], ["2019-04-13", 1890], ["2019-05-01", 1184], ["2019-05-02", 985], ["2019-05-03", 848], ["2019-05-04", 1092], ["2019-05-05", 3390], ["2019-05-06", 2042]], "students": [[106, 2, 19, 20, 46, 0.413, 9, "2019-03-09", 0.527], [263, 5, 40, 40, 86, 0.465, 96, "2019-05-06", 0.316], [714, 3, 26, 29, 45, 0.6, 25, "2019-03-25", 0.568], [1805, 1, 0, 1, 1, 0.0, 0, "2019-03-23", null], [2253, 5, 50, 50, 61, 0.836, 7, "2019-05-05", 0.643], [2411, 4, 40, 40, 108, 0.38, 86, "2019-05-06", 0.256], [2621, 5, 50, 50, 74, 0.743, 25, "2019-05-06", 0.598], [4419, 5, 41, 41, 101, 0.436, 47, "2019-05-06", 0.342], [4564, 4, 37, 39, 43, 0.884, 69, "2019-05-05", 0.635], [4840, 2, 9, 16, 61, 0.164, 50, "2019-05-06", null]], "total": 413};
@@ -1167,16 +1350,192 @@ document.getElementById('class-students').innerHTML = TURMA.students.map(([id, e
     <p class="figure__source">Fonte: execuções importadas, ${total.toLocaleString('pt-BR')} execuções</p></figure>`;
 })();
 
+// O recorte do A439 da turma CSEDM CodeWorkout, extraído em 06/10/2026 e lido do app.db só para consulta
+const A439 = {"problems": [[1, "Write a function in Java that implements the following logic: Given 2 ints, a and b, return their sum. However, sums in the range 10..19 inclusive, are forbidden, so in that case just return 20."], [3, "Write a function in Java that implements the following logic: Given a number n, return true if n is in the range 1..10, inclusive. Unless \"outsideMode\" is true, in which case return true if the number is less or equal to 1, or greater or equal to 10."], [5, "Write a function in Java that implements the following logic: Your cell phone rings. Return true if you should answer it. Normally you answer, except in the morning you only answer if it is your mom calling. In all cases, if you are asleep, you do not answer."], [12, "Write a function in Java that implements the following logic: The squirrels in Palo Alto spend most of the day playing. In particular, they play if the temperature is between 60 and 90 (inclusive). Unless it is summer, then the upper limit is 100 instead of 90. Given an int temperature and a boolean isSummer, return true if the squirrels play and false otherwise."], [13, "Write a function in Java that implements the following logic: You are driving a little too fast, and a police officer stops you. Write code to compute the result, encoded as an int value: 0=no ticket, 1=small ticket, or 2=big ticket. If speed is 60 or less, the result is 0. If speed is between 61 and 80 inclusive, the result is 1. If speed is 81 or more, the result is 2. Unless it is your birthday--on that day, your speed can be 5 higher in all cases."], [232, "Given a day of the week encoded as 0 = Sun, 1 = Mon, 2 = Tue, ... 6 = Sat, and a boolean indicating if we are on vacation, return a string of the form \"7:00\" indicating when the alarm clock should ring. Weekdays, the alarm should be \"7:00\" and on the weekend it should be \"10:00\". Unless we are on vacation--then on weekdays it should be \"10:00\" and weekends it should be \"off\"."], [233, "The number 6 is a truly great number. Given two int values, a and b, return true if either one is 6. Or if their sum or difference is 6. Note: the function Math.abs(num) computes the absolute value of a number."], [234, "When squirrels get together for a party, they like to have cigars. A squirrel party is successful when the number of cigars is between 40 and 60, inclusive. Unless it is the weekend, in which case there is no upper bound on the number of cigars. Return true if the party with the given values is successful, or false otherwise."], [235, "You and your date are trying to get a table at a restaurant. The parameter you is the stylishness of your clothes, in the range 0..10, and date is the stylishness of your date's clothes. Write a method that returns your chances of getting a table, encoded as an int value with 0 = no, 1 = maybe, 2 = yes. If either of you is very stylish, 8 or more, then the result is 2 (yes). With the exception that if either of you has style of 2 or less, then the result is 0 (no). Otherwise the result is 1 (maybe)."], [236, "You have a green lottery ticket, with ints a, b, and c on it. If the numbers are all different from each other, the result is 0. If all of the numbers are the same, the result is 20. If two of the numbers are the same, the result is 10."]], "kcs": [[42, "Tratamento de limites inclusivos e exclusivos"], [43, "Comparação numérica de igualdade e desigualdade"], [44, "Comparações numéricas (operadores relacionais)"], [45, "Operações aritméticas básicas"], [46, "Ordem das condições e precedência das regras"], [47, "Análise de casos e ordem das condições"], [48, "Tratamento de casos simétricos ou independentes da ordem"], [49, "Retorno de valores boolean"], [50, "Variáveis, condições e operações boolean"], [51, "Atribuição de variável boolean e valor padrão"], [52, "Valor padrão com sobrescrita condicional"], [53, "Encadeamento de else if e condicionais de múltiplos ramos"], [54, "Instruções condicionais: if/else, encadeamento de else if e if aninhado"], [55, "Operadores lógicos (e, ou)"], [56, "Operador lógico de negação"], [57, "Operador condicional ternário"], [58, "Precedência de operadores e parênteses"], [59, "Instruções return e retorno antecipado"], [60, "Retorno antecipado e fluxo de controle"], [61, "Definição de método e instruções return"], [62, "Retorno de valores de um método / literais String"], [63, "Declaração e atribuição de variáveis"], [64, "Reatribuição de parâmetros de método"], [65, "Valor absoluto com math.abs"], [66, "Mapeamento de valores inteiros codificados para categorias"]], "links": [[1, 42], [1, 44], [1, 45], [1, 54], [1, 55], [1, 57], [1, 61], [1, 63], [3, 44], [3, 49], [3, 50], [3, 54], [3, 55], [3, 61], [5, 46], [5, 50], [5, 51], [5, 53], [5, 54], [5, 55], [5, 56], [5, 59], [5, 61], [12, 44], [12, 49], [12, 50], [12, 52], [12, 54], [12, 55], [12, 57], [12, 61], [12, 63], [13, 44], [13, 45], [13, 50], [13, 53], [13, 54], [13, 55], [13, 57], [13, 59], [13, 61], [13, 63], [13, 64], [232, 43], [232, 44], [232, 50], [232, 53], [232, 54], [232, 55], [232, 62], [232, 63], [232, 66], [233, 43], [233, 45], [233, 48], [233, 49], [233, 54], [233, 55], [233, 59], [233, 63], [233, 65], [234, 44], [234, 49], [234, 50], [234, 54], [234, 55], [234, 58], [234, 60], [234, 61], [235, 42], [235, 44], [235, 46], [235, 53], [235, 54], [235, 55], [235, 59], [235, 61], [236, 43], [236, 45], [236, 47], [236, 54], [236, 55], [236, 59], [236, 61]], "solutions": {"1": ["public int sortaSum(int a, int b)\r\n{\r\n    if (a + b >= 10 && a + b <= 19)\r\n        return 20;\r\n    else return (a + b);\r\n}\r\n", "public int sortaSum(int a, int b)\r\n{\r\n    int sum = a + b;\r\n    \r\n    if (sum == 10 || sum == 11 || sum == 12 || sum == 13 || sum == 14 || sum == 15 || sum == 16 || sum == 17 || sum == 18 || sum == 19) \r\n    {\r\n        return 20;\r\n    }\r\n    return sum;\r\n}\r\n", "public int sortaSum(int a, int b) {\r\n\r\nint sum = 0;\r\n\r\nsum = a + b;\r\n\r\nif(sum >=10 && sum <=19) {\r\n\r\nsum = 20;\r\n\r\n}\r\n\r\nreturn sum;\r\n\r\n}", "public int sortaSum(int a, int b) {\r\n\t\tint sum = a + b;\t\t\r\n\t\treturn sum >= 10 && sum < 20 ? 20 : sum;\r\n\t}\r\n", "public int sortaSum(int a, int b)\r\n{\r\n   if ( a + b >= 10 && a + b <= 19 )\r\n   {\r\n   return 20;\r\n   }\r\n  else \r\n  {\r\n      return ( a + b );\r\n  }\r\n    \r\n}\r\n"], "3": ["public boolean in1To10(int n, boolean outsideMode)\r\n{\r\n    if(outsideMode)\r\n        if(n<=1 || n>=10)\r\n        {return true;}\r\n    else\r\n    {\r\n        return false;}\r\n    \r\n    if(n>=1 && n<=10)\r\n    {return true;   }\r\n    return false;\r\n    \r\n}\r\n", "public boolean in1To10(int n, boolean outsideMode)\r\n{\r\n    if (outsideMode)\r\n    {\r\n        if (n <= 1 || n >= 10)\r\n        {\r\n            return true;\r\n        }\r\n        else\r\n        {\r\n            return false;\r\n        }\r\n    }\r\n    else \r\n    {\r\n        if (n >= 1 && n <= 10)\r\n        {\r\n            return true;\r\n        }\r\n        else \r\n        {\r\n            return false;\r\n        }\r\n    }\r\n}\r\n", "public boolean in1To10(int n, boolean outsideMode)\r\n{\r\n    if ( outsideMode == false && n >= 1 && n <= 10 )\r\n   return true;\r\n  if ( outsideMode == true && ( n <= 1 || n >= 10 ) )\r\n   return true;\r\n  else return false;\r\n}\r\n", "public boolean in1To10(int n, boolean outsideMode)\r\n{\r\n    if (outsideMode)\r\n        return (n <= 1 || n >= 10);\r\n    return (n >= 1 && n <= 10);\r\n}\r\n", "public boolean in1To10(int n, boolean outsideMode) {\r\n\t\tif(outsideMode) {\r\n\t\t\treturn n <= 1 || n >= 10;\r\n\t\t}\r\n\t\treturn n >= 1 && n <= 10;\r\n\t}"], "233": ["public boolean love6(int a, int b) {\r\n    if(a == 6 || b == 6 || a + b == 6 || Math.abs(a - b) == 6)\r\n        return true;\r\n          \r\n    return false;\r\n}\r\n", "public boolean love6(int a, int b)\r\n{\r\n    if (a == 6 || b == 6)\r\n    {\r\n        return true;\r\n    }\r\n    else\r\n    {\r\n        if (a + b == 6)\r\n        {\r\n            return true;\r\n        }\r\n        else if (Math.abs(a - b) == 6)\r\n        {\r\n            return true;\r\n        }\r\n        else\r\n        {\r\n            return false;\r\n        }\r\n    }\r\n}\r\n", "public boolean love6(int a, int b)\r\n{\r\n    if (a == 6 || b == 6)\r\n    {\r\n        return true;\r\n    }\r\n    else\r\n    {\r\n        if (a - b == 6 || a + b == 6 || b - a == 6)\r\n        {\r\n            return true;\r\n        }\r\n        else\r\n        {\r\n            return false;\r\n        }\r\n    }\r\n}\r\n", "public boolean love6(int a, int b)\r\n{\r\n    int sum = a + b;\r\n    int dif = a - b;\r\n    int diff = b - a;\r\n\tif (a == Math.abs(6))\r\n        return true;\r\n    if (b == Math.abs(6))\r\n        return true;\r\n    if (sum == Math.abs(6))\r\n        return true;\r\n    if (dif == Math.abs(6))\r\n        return true;\r\n    if (diff == Math.abs(6))\r\n        return true;\r\n    return false;\r\n}\r\n    ", "public boolean love6(int a, int b)\r\n{\r\n   if (a == 6 || b == 6)\r\n   {\r\n       return true;\r\n   }\r\n   else if (a + b == 6)\r\n   {\r\n   \t\treturn true;   \r\n   }\r\n   else if (a - b == 6)\r\n   {\r\n\t\treturn true;\r\n   }\r\n   else if (b + a == 6)\r\n   {\r\n\t\treturn true;\r\n   }\r\n   else if (b - a == 6)\r\n   {\r\n       return true;\r\n   }\r\n   else\r\n   {\r\n    \treturn false;   \r\n   }\r\n}\r\n"]}, "evidence": {"1:57": [4, 3, 3], "3:54": [2, 3, 15], "3:44": [2, 16, 16]}, "reasons": {"3:54": ["Todas as soluções se ramificam conforme a flag outsideMode (e conforme condições de intervalo) usando instruções if para escolher qual lógica aplicar.", "As soluções 1 e 2 aninham uma verificação de intervalo dentro do ramo de outsideMode, portanto é necessário entender condicionais aninhadas e o pareamento de seus else."], "233:48": ["Como a diferença pode ser negativa, as soluções precisam reconhecer que a - b e b - a diferem em sinal e que ambas as ordens devem ser consideradas."], "3:44": ["Toda solução compara n com os valores limite 1 e 10 usando <=, >= e raciocínio sobre limites inclusivos."]}};
+const NO_CONCEPT_PROBLEM = 236;
+const NOBODY_SOLVED = 'Ninguém acertou este problema ainda. O modelo de linguagem precisa de execuções corretas para extrair conceitos. Ligue um conceito clicando nas células.';
+const NO_SOLUTIONS = 'Ninguém acertou este problema, então o modelo não leu nenhuma solução dele.';
+const DISCARDED = 'O modelo apontou um trecho que não está nas soluções, e o app o descartou.';
+const TEACHER_LINK = 'O professor ligou este conceito a este problema. Não há justificativa nem trecho do modelo.';
+const HINT_REASON = 'A frase em que o modelo de linguagem explica por que o problema exige o conceito, traduzida. Os números citados são os das abas das soluções.';
+const HINT_SOLUTIONS = 'As soluções corretas deste problema que o modelo de linguagem leu na extração, até cinco, na ordem em que as recebeu. As linhas destacadas mostram onde o modelo aponta o conceito, e não a causa da extração.';
+const LLM_TIP = 'Gerado pelo modelo de linguagem';
+const escHtml = t => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+const STATEMENTS = new Map(A439.problems);
+const KC_NAMES = new Map(A439.kcs);
+const PROBLEM_IDS = A439.problems.map(([id]) => id);
+const COLLATOR = new Intl.Collator('pt-BR');
+Object.assign(TI, {
+  'file-code': '<path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="M10 12.5 8 15l2 2.5"/><path d="m14 12.5 2 2.5-2 2.5"/>',
+  'file-check': '<path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="m9 15 2 2 4-4"/>',
+  'sparkles': '<path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/><path d="M20 2v4"/><path d="M22 4h-4"/><circle cx="4" cy="20" r="2"/>',
+  'circle-alert': '<circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/>',
+  'circle-question-mark': '<circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/>',
+  'plus': '<path d="M5 12h14"/><path d="M12 5v14"/>',
+  'check': '<path d="M20 6 9 17l-5-5"/>',
+  'search': '<path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/>',
+  'pencil': '<path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/>',
+  'trash-2': '<path d="M10 11v6"/><path d="M14 11v6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>',
+});
+
+// Os ícones dos trechos estáticos de HTML entram por aqui, para o HTML não repetir o desenho de cada um
+document.querySelectorAll('i[data-icon]').forEach(el => { el.outerHTML = tIcon(el.dataset.icon, Number(el.dataset.size) || 14); });
+
+// O estado da matriz, com a ordem por recorrência decrescente, empate pelo nome em pt-BR e depois pelo id
+// O estado vazio simula o problema 236 sem conceito, e o conceito que só existia nele sai do exercício
+function conceptsState(variant) {
+  const links = variant === 'empty' ? A439.links.filter(([p]) => p !== NO_CONCEPT_PROBLEM) : A439.links;
+  const problemsByKc = new Map();
+  links.forEach(([p, k]) => { if (!problemsByKc.has(k)) problemsByKc.set(k, new Set()); problemsByKc.get(k).add(p); });
+  const concepts = [...problemsByKc].map(([id, problems]) => ({ id, name: KC_NAMES.get(id), problems }));
+  concepts.sort((a, b) => b.problems.size - a.problems.size || COLLATOR.compare(a.name, b.name) || a.id - b.id);
+  return { concepts, countOf: p => links.filter(([q]) => q === p).length };
+}
+
+const llmMark = (cls = '') => `<span class="llm-mark ${cls}" data-tip="${LLM_TIP}">${tIcon('sparkles', { 'llm-mark--lg': 16, 'llm-mark--sm': 12, 'llm-mark--tab': 10 }[cls] || 14)}</span>`;
+const infoHint = text => `<span class="info-hint" data-tip="${escHtml(text)}">${tIcon('circle-question-mark', 14)}</span>`;
+const zero = text => `<span class="qm-zero">${tIcon('circle-alert', 13)}${text}</span>`;
+
+function problemNumber(pid, isEmpty) {
+  if (isEmpty) {
+    return `<span class="qm-pnum qm-pnum--empty" data-tip-title="Problema ${pid} sem conceito" data-tip-size="wide" data-tip="${escHtml(NOBODY_SOLVED + '\n\n' + STATEMENTS.get(pid))}">${tIcon('circle-alert', 13)}${pid}</span>`;
+  }
+  const statement = STATEMENTS.get(pid);
+  return `<span class="qm-pnum" data-tip-title="Problema ${pid}" data-tip-size="wide" data-tip="${escHtml(statement || 'Sem enunciado.')}">${pid}</span>`;
+}
+
+function matrixHtml(variant, limit) {
+  const { concepts, countOf } = conceptsState(variant);
+  const colgroup = `<colgroup><col>${PROBLEM_IDS.map(() => '<col class="qm-col-p">').join('')}<col class="qm-col-rec"><col class="qm-col-act"></colgroup>`;
+  const head = `<thead><tr><th class="th-start qm-sticky"><span class="th"><span class="th__label">Conceito</span></span></th>${PROBLEM_IDS.map(pid => `<th class="qm-col">${problemNumber(pid, countOf(pid) === 0)}</th>`).join('')}<th><span class="th"><span class="th__label">Recorrência</span></span></th><th></th></tr></thead>`;
+  const rows = concepts.slice(0, limit).map(c => `<tr>
+    <td class="qm-name qm-sticky"><span class="qm-name__box"><span class="qm-name__text" data-tip="${escHtml(c.name)}">${escHtml(c.name)}</span>${llmMark()}</span></td>
+    ${PROBLEM_IDS.map(pid => `<td class="qm-cell"><button class="qm-dot${c.problems.has(pid) ? ' is-on' : ''}" type="button" aria-pressed="${c.problems.has(pid)}" aria-label="${escHtml(c.name)} no problema ${pid}"></button></td>`).join('')}
+    <td class="analysis-table__num"><span class="num">${c.problems.size}</span> <span class="analysis-table__sub">de ${PROBLEM_IDS.length}</span></td>
+    <td class="cell-actions"><button class="icon-btn" type="button" aria-label="Ver a origem">${tIcon('search', 15)}</button> <button class="icon-btn" type="button" aria-label="Renomear">${tIcon('pencil', 15)}</button> <button class="icon-btn" type="button" aria-label="Remover">${tIcon('trash-2', 15)}</button></td></tr>`).join('');
+  const foot = `<tr class="qm-foot"><td class="qm-sticky">Conceitos por problema</td>${PROBLEM_IDS.map(pid => `<td class="analysis-table__num">${countOf(pid) === 0 ? zero('0') : countOf(pid)}</td>`).join('')}<td></td><td></td></tr>`;
+  return `${colgroup}${head}<tbody>${rows}${foot}</tbody>`;
+}
+
+function problemsHtml(variant) {
+  const { countOf } = conceptsState(variant);
+  const rows = PROBLEM_IDS.map(pid => `<tr><td class="analysis-table__name">${pid}</td><td class="cell-wrap">${STATEMENTS.get(pid) ? escHtml(STATEMENTS.get(pid)) : '<span class="missing">sem enunciado</span>'}</td><td class="analysis-table__num">${countOf(pid) === 0 ? zero('0') : countOf(pid)}</td></tr>`).join('');
+  return `<colgroup><col class="pt-col-id"><col><col class="pt-col-count"></colgroup><thead><tr><th class="th-start"><span class="th"><span class="th__label">Problema</span></span></th><th class="th-start"><span class="th"><span class="th__label">Enunciado</span></span></th><th><span class="th"><span class="th__label">Conceitos</span></span></th></tr></thead><tbody>${rows}</tbody>`;
+}
+
+document.querySelectorAll('[data-matrix]').forEach(table => { table.innerHTML = matrixHtml(table.dataset.matrix, Number(table.dataset.limit) || Infinity); });
+document.querySelectorAll('[data-problems]').forEach(table => { table.innerHTML = problemsHtml(table.dataset.problems); });
+
+// A primeira coluna presa ganha o fio só quando a matriz está rolada de lado
+document.querySelectorAll('.qm-scroll').forEach(box => {
+  const mark = () => box.classList.toggle('is-scrolled', box.scrollLeft > 0);
+  box.addEventListener('scroll', mark);
+  if (box.dataset.scrollLeft) box.scrollLeft = Number(box.dataset.scrollLeft);
+  mark();
+});
+
+// Os balões da matriz, desenhados parados, porque o de verdade só aparece no hover
+const tooltipHtml = (text, title, isWide) => `<span class="tooltip${isWide ? ' tooltip--wide' : ''}">${title ? `<span class="tooltip__title">${escHtml(title)}</span>` : ''}${escHtml(text)}</span>`;
+document.getElementById('balloons').innerHTML = [
+  ['Nome cortado', tooltipHtml(KC_NAMES.get(54))],
+  ['Número do problema', tooltipHtml(STATEMENTS.get(233), 'Problema 233', true)],
+  ['Problema sem conceito, simulado', tooltipHtml(NOBODY_SOLVED + '\n\n' + STATEMENTS.get(NO_CONCEPT_PROBLEM), `Problema ${NO_CONCEPT_PROBLEM} sem conceito`, true)],
+].map(([label, html]) => `<div><span class="t-support">${label}</span>${html}</div>`).join('');
+
+// A escolha dos problemas do Novo conceito, no estado simulado em que o 236 não tem conceito
+const pickItems = document.getElementById('pick-items');
+pickItems.innerHTML = PROBLEM_IDS.map(pid => {
+  const n = conceptsState('empty').countOf(pid);
+  const count = n === 0 ? zero('sem conceito') : `${n} ${n === 1 ? 'conceito' : 'conceitos'}`;
+  return `<label class="pick__item"><input type="checkbox"${pid === NO_CONCEPT_PROBLEM ? ' checked' : ''}><span class="pick__text"><span class="pick__name num">${pid}</span><span class="pick__stmt">${escHtml(STATEMENTS.get(pid))}</span></span><span class="pick__count">${count}</span></label>`;
+}).join('');
+// A lista rola até o 234 ficar no topo, e o espaço no fim deixa o 236 inteiro sem cortar o item de cima
+function alignPickItems() {
+  pickItems.style.paddingBottom = '';
+  const first = pickItems.children[pickItems.children.length - 3];
+  const spare = pickItems.clientHeight - (pickItems.scrollHeight - first.offsetTop);
+  if (spare > 0) pickItems.style.paddingBottom = `${spare}px`;
+  pickItems.scrollTop = first.offsetTop;
+}
+alignPickItems();
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(alignPickItems);
+
+// O bloco de código com as abas Solução 1 a 5, aberto na solução do trecho e com as linhas dele destacadas
+function codeBlockHtml(codes, evidence) {
+  const active = evidence ? evidence[0] : 1;
+  const tabs = codes.map((_, i) => {
+    const mark = evidence && evidence[0] === i + 1 ? `<span class="code-tabs__mark" aria-label="trecho do modelo nesta solução">${tIcon('sparkles', 10)}</span>` : '';
+    return `<button type="button" role="tab" aria-selected="${i + 1 === active}">${tIcon('file-check', 14)}Solução ${i + 1}${mark}</button>`;
+  }).join('');
+  const lines = codes[active - 1].replace(/\r/g, '').split('\n');
+  if (lines[lines.length - 1] === '') lines.pop();
+  const rows = lines.map((text, i) => {
+    const marked = evidence && i + 1 >= evidence[1] && i + 1 <= evidence[2] ? ' is-hl' : '';
+    return `<span class="code__ln${marked}">${i + 1}</span><span class="code__tx${marked}">${escHtml(text) || ' '}</span>`;
+  }).join('');
+  return `<div class="code-block"><div class="code-tabs" role="tablist" aria-label="Soluções que o modelo leu">${tabs}</div><pre class="code" aria-label="Código da solução ${active}">${rows}</pre></div>`;
+}
+
+// O painel de um problema, com o enunciado, a justificativa e as soluções que o modelo leu
+function originPanelHtml({ pid, statement = STATEMENTS.get(pid), reasons, solutions, evidence, isDiscarded }) {
+  const reasonBlock = reasons
+    ? `<p class="dlg-static__h">${llmMark('llm-mark--sm')}Justificativa do modelo de linguagem${infoHint(HINT_REASON)}</p>${reasons.map(r => `<p class="t-body">${escHtml(r)}</p>`).join('')}`
+    : `<p class="dlg-static__h">Justificativa do modelo de linguagem</p><p class="origin-teacher">${TEACHER_LINK}</p>`;
+  const solutionsBlock = solutions.length
+    ? `${isDiscarded ? `<p class="origin-where">${DISCARDED}</p>` : ''}${codeBlockHtml(solutions, evidence)}`
+    : `<p class="origin-gray">${NO_SOLUTIONS}</p>`;
+  return `<div class="origin-panel" role="tabpanel">
+    <section class="origin-block"><p class="dlg-static__h">Enunciado do problema&nbsp;<span class="num">${pid}</span></p>${statement ? `<p class="t-body">${escHtml(statement)}</p>` : '<p class="missing">sem enunciado</p>'}</section>
+    <section class="origin-block">${reasonBlock}</section>
+    <section class="origin-block"><p class="dlg-static__h">Soluções que o modelo leu${infoHint(HINT_SOLUTIONS)}</p>${solutionsBlock}</section>
+  </div>`;
+}
+
+// O diálogo da origem do conceito, com as estrelas de 24px no nome e só o identificador em cada aba
+function originDialogHtml({ kcId, problemIds, active, panel }) {
+  const words = KC_NAMES.get(kcId).split(' ');
+  const last = words.pop();
+  const tabs = problemIds.map(pid => `<button class="tabs__tab tabs__tab--id" role="tab" type="button" aria-selected="${pid === active}" aria-label="Problema ${pid}"><span class="num">${pid}</span></button>`).join('');
+  return `<div class="dlg-static dlg-static--wide" role="group" aria-label="Origem do conceito">
+    <header class="dlg-static__head"><p class="dlg-static__title">${escHtml(words.join(' '))} <span class="name-tail">${escHtml(last)}${llmMark('llm-mark--lg')}</span></p>
+      <p class="facts"><span>aparece em <span class="num">${problemIds.length}</span> de <span class="num">${PROBLEM_IDS.length}</span> problemas</span></p></header>
+    <div class="tabs tabs--origin"><span class="tabs__label" aria-hidden="true">${tIcon('file-code', 15)}Problema</span><div class="tabs__list" role="tablist" aria-label="Problemas em que o conceito aparece">${tabs}</div></div>
+    ${panel}
+    <div class="dialog__footer"><button class="btn btn--secondary" type="button">Fechar</button></div></div>`;
+}
+
+const problemsOf = kcId => [...new Set(A439.links.filter(([, k]) => k === kcId).map(([p]) => p))].sort((a, b) => a - b);
+const originOf = (kcId, pid) => ({ pid, reasons: A439.reasons[`${pid}:${kcId}`], solutions: A439.solutions[pid], evidence: A439.evidence[`${pid}:${kcId}`] || null });
+document.getElementById('code-sample').innerHTML = codeBlockHtml(A439.solutions[1], A439.evidence['1:57']);
+document.getElementById('origin-main').innerHTML = originDialogHtml({ kcId: 44, problemIds: problemsOf(44), active: 3, panel: originPanelHtml(originOf(44, 3)) });
+document.getElementById('origin-two').innerHTML = originDialogHtml({ kcId: 54, problemIds: problemsOf(54), active: 3, panel: originPanelHtml(originOf(54, 3)) });
+document.getElementById('origin-discarded').innerHTML = originDialogHtml({ kcId: 48, problemIds: problemsOf(48), active: 233, panel: originPanelHtml({ ...originOf(48, 233), isDiscarded: true }) });
+document.getElementById('origin-teacher').innerHTML = originDialogHtml({ kcId: 56, problemIds: [5, NO_CONCEPT_PROBLEM], active: NO_CONCEPT_PROBLEM, panel: originPanelHtml({ pid: NO_CONCEPT_PROBLEM, statement: null, reasons: null, solutions: [], evidence: null }) });
+
+// O bloco rola por dentro até a primeira linha destacada, sem mexer na página
+document.querySelectorAll('.code').forEach(code => {
+  const first = code.querySelector('.code__tx.is-hl');
+  if (first && code.scrollHeight > code.clientHeight) code.scrollTop = Math.max(0, first.offsetTop - code.clientHeight * 0.3);
+});
+
 document.addEventListener('change', e => { if (e.target.id === 'kc-select') curve(e.target.value); });
 
 
-// Um único balão para todo elemento com data-tip, e a mira da curva segue a época sob o mouse
+// Um único balão para todo elemento com data-tip, com título opcional e largo no enunciado, e a mira da curva segue a época sob o mouse
 const tip = document.getElementById('tip');
 document.addEventListener('pointermove', e => {
   const target = e.target.closest ? e.target.closest('[data-tip]') : null;
   document.querySelectorAll('svg.loss .cross').forEach(c => c.setAttribute('visibility', 'hidden'));
   if (!target) { tip.hidden = true; return; }
-  tip.textContent = target.dataset.tip;
+  tip.replaceChildren();
+  if (target.dataset.tipTitle) {
+    const title = document.createElement('span');
+    title.className = 'tooltip__title';
+    title.textContent = target.dataset.tipTitle;
+    tip.append(title);
+  }
+  tip.append(target.dataset.tip);
+  tip.classList.toggle('tooltip--wide', target.dataset.tipSize === 'wide');
   tip.hidden = false;
   const r = tip.getBoundingClientRect();
   let left = e.clientX + 12, top = e.clientY - r.height - 10;

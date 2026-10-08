@@ -24,7 +24,7 @@ A fonte da verdade são quatro arquivos, e este documento não repete o que eles
 
 - `docs/DESIGN.md` tem as regras, os componentes por nome de token, os ícones e a organização das
   cinco telas.
-- `docs/design/design-system-v5.html` mostra cada peça e tem os valores (hex, medidas, sombras).
+- `docs/design/design-system-v6.html` mostra cada peça e tem os valores (hex, medidas, sombras).
   Abre direto no navegador.
 - `docs/DECISIONS.md`, na seção Frontend, tem o porquê de cada escolha.
 - `docs/GLOSSARY.md` tem os nomes novos, que valem para o código (`GeneratedByML`, `GeneratedByLLM`,
@@ -197,7 +197,7 @@ A439.
   problema e a tentativa de cada solução, que saíram do KCGen-KT, e uma matriz pensada para 15
   conceitos, quando o A439 agora tem 25. O `DESIGN.md` já descreve a tela nova, com o enunciado, os
   trechos de cada conceito e as justificativas traduzidas, e a página
-  `docs/design/design-system-v5.html` passa a mostrá-la na etapa 2 do plano.
+  `docs/design/design-system-v6.html` já a mostra.
 - **O 409 de modelo antigo na Análise.** A rota do domínio responde 409 quando precisa carregar um
   modelo de formato antigo (`IncompatibleTrainedModelError`), e a Análise ignora o erro
   (`AnalysisCard.tsx:39`, `:60`, `:74`). As colunas do modelo ficam vazias, sem aviso. Fica para a
