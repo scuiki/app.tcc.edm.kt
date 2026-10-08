@@ -4,7 +4,7 @@ As regras visuais do app docente. O porquê de cada decisão fica em `DECISIONS.
 Frontend. Os valores (hex, sombras, medidas) ficam no `src/web/src/styles/tokens.css`, e aqui cada
 papel é citado pelo nome do token.
 
-**Versão 5, 30/09/2026.** Referência visual em [`design/design-system-v5.html`](design/design-system-v5.html),
+**Versão 5, 30/09/2026, revista em 08/10/2026.** Referência visual em [`design/design-system-v5.html`](design/design-system-v5.html),
 que abre direto no navegador.
 
 **Estado.** Este documento é a especificação. O `tokens.css` e os componentes ainda seguem a
@@ -50,7 +50,8 @@ de uso.
 | | `--color-text-disabled` | Desabilitado |
 | | `--color-primary` e `--color-primary-hover` | Botão primário |
 | | `--color-focus` | Anel de foco |
-| Modelo | `--color-model` | Domínio, distribuição, curva de perda, ponto de treinado, estágios do treino |
+| | `--color-text-inverse` | Texto sobre o preenchido, no botão primário e no destrutivo, no passo atual e no balão |
+| Modelo | `--color-model` | Domínio, distribuição, curva de perda, ponto de treinado, estágios da extração e do treino |
 | | `--color-model-strong` | Hover das marcas do modelo, texto sobre o azul claro |
 | | `--color-model-soft` e `--color-model-soft-border` | Etiqueta Treinado, fundo dos marcadores de modelo |
 | Observado | `--color-observed` | Taxa de acerto e toda barra do que aconteceu |
@@ -93,7 +94,7 @@ A tabela usa 13,5px no corpo e 12,5px no cabeçalho. O título de cartão usa 13
 
 | Medida | Valor | Onde |
 |---|---|---|
-| `--radius` | 0 | Tudo, exceto pontos de situação e marcadores de modelo |
+| Raio | 0 | Tudo, exceto pontos de situação e marcadores de modelo. É regra do reset global, sem token |
 | `--control-height` | 36px | Botão, campo, aba |
 | `--control-height-compact` | 32px | Botão de ícone |
 | Botão compacto | 28px | Ação secundária dentro de cartão |
@@ -131,8 +132,9 @@ texto ao lado.
 
 **Menu lateral.** Árvore com turma, exercício e tela, cada nível recuado. O item ativo tem
 fundo `--color-active` e negrito, sem barra lateral. O ponto de situação do exercício fica vazio
-quando aguarda conceitos, meio preenchido com os conceitos aprovados e em `--color-model` quando
-existe um modelo treinado.
+quando aguarda conceitos, com a dica "Aguardando conceitos", meio preenchido com os conceitos
+aprovados e em `--color-model` quando existe um modelo treinado. O exercício que só tem estatísticas
+fica sem ponto, porque não chega a treinar. Cada item de tela leva o ícone da sua tela.
 
 **Abas.** A aba ativa tem texto `--color-text` em 600 e traço de 2px na mesma cor. A faixa das abas
 é branca, igual ao cartão.
@@ -187,7 +189,7 @@ sucesso é neutro, com o ícone em `--color-text`.
 
 **Marcadores de modelo.** Um ícone em `--color-model-strong` sobre um círculo `--color-model-soft`
 de 18px, com a dica de onde o dado veio.
-- `GeneratedByML`, o cérebro, "Estimado pelo modelo", para o que o Code-DKT produziu. Fica antes do
+- `GeneratedByML`, o cérebro, "Dado estimado por aprendizado de máquina", para o que o Code-DKT produziu. Fica antes do
   rótulo de toda coluna que vem do modelo.
 - `GeneratedByLLM`, as estrelas, "Gerado pelo modelo de linguagem", para o que o LLM escreveu, como
   o nome do conceito e a descrição do problema. Fica no fim do texto (20px, e 24px num título) ou
@@ -196,7 +198,7 @@ de 18px, com a dica de onde o dado veio.
 
 **Dica, alerta e balão.** A dica é o ícone de ? (`circle-question-mark`) em `--color-text-muted`. O
 ícone de ! (`circle-alert`) fica só para alerta e erro, em `--color-danger`, como um problema sem
-conceito. O balão é `--color-text` com texto branco, sem raio, e aparece no hover ou no foco pelo
+conceito. O balão é `--color-text` com texto em `--color-text-inverse`, sem raio, e aparece no hover ou no foco pelo
 `Tooltip`, nunca pelo `title` nativo.
 
 **Bloco de código.** Em `--font-code`, sobre `--color-surface-subtle`, com a numeração de linha à
@@ -233,8 +235,8 @@ dados importados, conceitos extraídos e modelo treinado.
 ## Ícones
 
 Os ícones vêm do lucide, com traço de 2px. Cada ícone representa uma coisa só, e a mesma coisa leva
-o mesmo ícone em todo lugar. O menu mantém o ponto de situação e não usa os ícones de etapa, para a
-lista longa ficar discreta.
+o mesmo ícone em todo lugar. O menu leva o ícone de cada tela, e o exercício leva o ponto de
+situação no lugar do ícone de etapa, para a lista longa ficar discreta.
 
 | Ícone (lucide) | Representa | Onde |
 |---|---|---|
@@ -245,7 +247,7 @@ lista longa ficar discreta.
 | `chart-column` | Análise | Menu e botão "Ver análise" |
 | `clipboard-pen` | Exercício | Menu e aba Exercícios |
 | `users` | Turmas e alunos | Menu, aba Alunos, evento de turma criada |
-| `upload` | Importar dados | Botão do cabeçalho da turma |
+| `upload` | Importar dados | Menu e botão do cabeçalho da turma |
 | `file-check` | Solução correta | Abas das soluções na origem do conceito |
 | `search` | Inspecionar | Lupa da linha do conceito, campo de busca |
 | `circle-question-mark` | Dica | Todo ícone de dica |
@@ -262,8 +264,8 @@ lista longa ficar discreta.
   texto inteiro no hover, e em tela larga aparece inteiro.
 - O histograma da tabela não tem eixo. A escala fica na dica do cabeçalho, e a faixa sem aluno é um
   traço de 1px em `--color-control-border`.
-- Na Análise, o nome fica à esquerda e os números centralizados sob rótulos centralizados. Nas
-  demais tabelas, tudo fica à esquerda, e só a coluna de botões fica à direita.
+- Em todas as tabelas, o nome fica à esquerda, os números e as etiquetas ficam centralizados sob
+  rótulos centralizados e só a coluna de botões fica à direita.
 - A taxa de acerto usa a barra em `--color-observed`. Domínio e distribuição usam `--color-model`
   e levam o marcador `GeneratedByML` no rótulo.
 - As barras e os histogramas das tabelas são CSS, com canto vivo.
@@ -390,6 +392,7 @@ fazer.
 
 | Versão | Data | O que mudou |
 |---|---|---|
+| 5, revista | 08/10/2026 | Correções antes da migração. Alinhamento igual em todas as tabelas, raio 0 sem token, `--color-text-inverse`, o texto do marcador do Code-DKT, os ícones de tela no menu com o `upload` em Importar dados e o exercício só com estatísticas sem ponto. A página de referência mantém o nome |
 | 5 | 30/09/2026 | Importar dados. Requisitos do pacote no lugar das caixas vazias, caixa do pacote de altura fixa, ações no rodapé do cartão e o fim da barra fixa, passos em preto e cinza, resultado com a tabela de exercícios da Turma e os ajustes numa lista neutra |
 | 4 | 30/09/2026 | Conceitos. Matriz problema × conceito com abas, origem do conceito com as soluções em abas de código, marcador `GeneratedByLLM` com as estrelas, dica com ?, vírgula na linha de fatos, estágios da extração em azul e a fonte mono só em bloco de código |
 | 3 | 29/09/2026 | Turmas e Turma. Tabela de exercícios com próximo passo, alunos da turma com busca e paginação de 10, execuções por dia, atividade recente com treinos e extrações, e os ícones de Conceitos, Problemas e Treinado nas etiquetas de situação |

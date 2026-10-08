@@ -266,5 +266,6 @@ A ordem nova é esta.
    KCGen-KT", e a extração do A439, na etapa 7 do `KCGEN_KT_PLAN.md`. Os outros quatro exercícios
    saem pela aplicação, e o treino vem depois da aprovação dos conceitos, uma vez só, com os dois
    métodos prontos.
-4. A base (F1, a migração dos componentes que já existem e F3) e depois as telas, uma por vez
-   (Conceitos, Análise, Turma, Importar dados e Turmas), cada uma com o seu backend.
+4. A base (F1, a migração dos componentes que já existem e F3), pelo `FRONTEND_BASE_PLAN.md`,
+   aprovado em 08/10/2026, e depois as telas, uma por vez (Conceitos, Análise, Turma, Importar
+   dados e Turmas), cada uma com o seu backend.

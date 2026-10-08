@@ -81,6 +81,13 @@ Todo `Protocol` da `api/` começa com `I` e fica numa pasta `interfaces/` (ver
 | `kc_approved` | O professor aprovou os KCs; pode treinar | aprovação |
 | `trained` | Existe um modelo publicado. Sem re-treino, os KCs ficam como estão; qualquer edição é recusada por `refuse_edit_after_training()` (`services/knowledge_component_edit.py`) | treino |
 
+Na tela, cada situação aparece numa etiqueta de situação, com o rótulo (`ASSIGNMENT_STATUS_LABEL`)
+e o ícone da etapa (`ASSIGNMENT_STATUS_ICON`). Os blocos marcam as três situações de conceitos, o
+cérebro marca `trained`, com o rótulo "Treinado", e `statistics_only` fica sem ícone. No menu, o
+exercício leva o ponto de situação no lugar do ícone, com três modificadores. O `awaiting`, vazio e
+com a dica "Aguardando conceitos", vale para `ready_for_kc_generation` e `kc_draft`. O
+`kc_approved` é meio preenchido, e o `trained` é azul. `statistics_only` fica sem ponto.
+
 Os jobs (`TrainingJob`, `KnowledgeComponentGenerationJob`) têm os estados `pending`,
 `running`, `done` e `failed`.
 
@@ -101,7 +108,7 @@ prevê" (só com modelo publicado). Sem níveis, faixas, recomendações ou cort
 | Nome no código | O que é | Nome antigo |
 |---|---|---|
 | `StudentMasteryMatrix` | A matriz `{(student_id, problem_id): mastery}`, o dado nativo do modelo | matriz aluno × KC |
-| domínio (`mastery`) | A chance prevista de o aluno acertar um problema se tentasse agora, lida do último passo do Code-DKT. Não é a fração do conceito aprendida. Na tela, sempre com o marcador de cérebro (`EstimatedMark`) e a dica com essa frase | — |
+| domínio (`mastery`) | A chance prevista de o aluno acertar um problema se tentasse agora, lida do último passo do Code-DKT. Não é a fração do conceito aprendida. Na tela, sempre com o marcador de cérebro (`GeneratedByML`) e a dica com essa frase | — |
 | `aggregate_by_knowledge_component()` | O domínio por conceito, a média dos problemas que o exigem, derivado da matriz na leitura e nunca gravado (`services/mastery_by_knowledge_component.py`) | `aggregate_student_mastery` (em `ml/mastery/`) |
 | `mean_and_histogram()` | A média e a distribuição em dez faixas de 10 pontos de uma lista de masteries (`services/mastery_distribution.py`) | `MasteryLevel`, `classify_mastery_level()` |
 | `mean_mastery_by_student()` / `weakest_knowledge_components()` | A média do aluno sobre os problemas e os três conceitos em que ele está mais fraco (`services/student_mastery.py`) | `find_students_at_risk()` |
@@ -113,7 +120,7 @@ prevê" (só com modelo publicado). Sem níveis, faixas, recomendações ou cort
 | curva de aprendizagem (`LearningCurve`) | A taxa de erro de um conceito em cada oportunidade, com quantos alunos chegaram a cada uma. Para quando menos de 10% da turma chega à oportunidade. Sai das execuções e dos vínculos problema × conceito, sem modelo | — |
 | oportunidade (`opportunity`) | Cada execução de um aluno num problema que exige o conceito, contada em ordem por aluno e conceito. A 1ª oportunidade é a primeira execução dele num desses problemas | — |
 | completar (`completed`) | Ter ao menos uma execução correta no problema | "fechar" |
-| dado estimado (`GeneratedByML`) | O marcador de cérebro antes do rótulo de toda coluna que vem do Code-DKT | `EstimatedMark`, badge "previsto" |
+| dado estimado (`GeneratedByML`) | O marcador de cérebro antes do rótulo de toda coluna que vem do Code-DKT, com a dica "Dado estimado por aprendizado de máquina" | `EstimatedMark`, badge "previsto" |
 | gerado pelo modelo de linguagem (`GeneratedByLLM`) | O marcador de estrelas no que o LLM escreveu, como o nome do conceito. Some do nome quando o professor o renomeia | — |
 | linha de fatos | A linha de números abaixo do título de uma tela, com os itens separados por vírgula. Na Análise traz alunos, problemas, conceitos, execuções e a versão do modelo com a data do treino, no lugar da descrição fixa | — |
 | recorrência (`recurrence`) | Em quantos problemas do exercício um conceito aparece. Com um só, o valor do conceito é o desse problema, evidência fraca | cobertura |
@@ -222,6 +229,14 @@ modelo, exceto o domínio médio dos exercícios treinados.
 | — | `SBERT_MODEL` / `CODEBERT_MODEL` | Os modelos de vetores, `all-MiniLM-L6-v2` para os nomes de KC e `microsoft/codebert-base` para as soluções, em `ml/kc_generation/embedding_models.py`, com a revisão do Hugging Face fixada em `SBERT_REVISION` e `CODEBERT_REVISION` | — |
 | — | `download_embedding_models()` | Põe os dois modelos de vetores no cache do Hugging Face, chamada só no build da imagem base | — |
 | — | `SOLUTIONS_PER_PROBLEM` / `SOLUTION_EMBEDDING_BATCH_SIZE` | As 5 soluções por problema do experimento principal do paper, e as 32 soluções que entram de cada vez no CodeBERT, fixas porque os vetores mudam um pouco com o tamanho do lote | — |
+
+## Componentes do front
+
+As peças de `src/web/src/components/` que levam um nome próprio do desenho.
+
+| Nome no código | O que é | Nome antigo |
+|---|---|---|
+| tabela de dados (`DataTable`) | A tabela comum do app, com rolagem lateral no próprio invólucro, nome à esquerda, números e etiquetas centralizados e botões à direita. O cabeçalho simples é o `ColumnHeader`, e o ordenável é o `SortableHeader`, com a mesma estrutura de marcador, rótulo truncado e dica | `.analysis-table`, `.classroom-table` |
 
 ## Rotas HTTP
 

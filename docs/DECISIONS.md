@@ -772,3 +772,58 @@ título e detalhe, registra o que o sistema corrigiu sozinho, e o vermelho fica 
 do texto, e os rótulos dos campos logo abaixo ficam sem ícone, para o mesmo sinal não aparecer duas
 vezes seguidas. A pasta é a simples, e a pasta compactada foi testada e descartada.
 
+**Entre o `DESIGN.md` e a página de referência, vale o que foi atualizado por último.** As versões do
+design saíram em sequência, e algumas regras escritas na versão 1 não acompanharam as maquetes das
+versões seguintes. A regra de alinhamento das tabelas é o caso que levou ao critério. O `DESIGN.md`
+mandava tudo à esquerda fora da Análise, e as tabelas de Turmas, Turma e Conceitos, desenhadas
+depois, centralizavam os números. O documento foi corrigido na revisão de 08/10/2026.
+
+**Todas as tabelas centralizam os números.** O nome fica à esquerda, os números e as etiquetas
+ficam centralizados sob rótulos centralizados e só os botões ficam à direita, como na Análise. Com
+uma regra só, a tabela comum não precisa de variante de alinhamento.
+
+**O raio 0 é regra do reset, e não token.** Um token que vale 0 em todo lugar não varia, e as 33
+declarações dele só repetiam o padrão. O reset zera o raio, e só os pontos de situação e os
+marcadores de modelo declaram o círculo.
+
+**O texto sobre o preenchido tem token próprio.** O botão primário, o destrutivo, o passo atual e o
+balão escreviam branco em `#ffffff` ou com `--color-surface`, que é cor de fundo. O
+`--color-text-inverse` dá a esses usos um nome com a sua situação de uso.
+
+**A tabela comum é a `DataTable`, em `components/ui`.** Cada tela tinha a sua folha de estilo de tabela, e a
+da Análise morava numa funcionalidade, que as outras não podem importar. A `DataTable` traz a
+rolagem lateral, os fios, as alturas, as fontes e as classes de célula, e a largura mínima fica com
+quem precisa dela, porque a Análise pede 900px e a tabela de Turmas, ao lado da atividade recente,
+não cabe com mínimo nenhum.
+
+**O menu mostra o ícone de cada tela, uma exceção consciente ao critério do atualizado por último.**
+A maquete do menu na página de referência não tem ícones, mas a tabela de ícones os põe no menu, e
+o menu que já existia os usa. Os ícones de tela ficam, o exercício leva o ponto de situação no lugar
+do ícone de etapa e Importar dados ganha o `upload`, o mesmo do botão do cabeçalho da turma. Com
+isso Conceitos passa a ser `blocks` em todo lugar e a aba Problemas passa a `file-code`, como a
+tabela pede.
+
+**As cinco situações do exercício viram três pontos no menu.** Pronto para conceitos e rascunho de
+conceitos ficam com o ponto vazio, porque para o professor os dois dizem que os conceitos ainda não
+foram aprovados. O exercício só com estatísticas fica sem ponto, porque não chega a treinar.
+
+**A etiqueta diz "Treinado", e não "Modelo treinado".** O cérebro ao lado já diz que é o modelo, e
+a etiqueta curta cabe nas tabelas. O título do diálogo de treino e as frases que falam do modelo
+treinado continuam como estão.
+
+**O marcador do Code-DKT diz "Dado estimado por aprendizado de máquina".** Havia três versões, uma
+no código, uma no `DESIGN.md` e uma na página de referência. A escolhida diz de onde o dado vem sem
+o nome técnico do modelo, e o cérebro diz qual é.
+
+**O `GeneratedByML` sobe para `components/` antes da segunda funcionalidade.** A tela Turma vai
+usá-lo no domínio médio dos alunos, e ele carrega o próprio texto, então é componente de produto,
+como o `PageHeader`, e não primitiva de `components/ui`. Subir agora evita mover o marcador de novo
+no meio da tela Turma.
+
+**O ícone de cada situação mora no `api/` de `assignments`, ao lado do rótulo.** É o único lugar
+que as outras funcionalidades e o `app/` podem importar, e `components/` não conhece as situações.
+A etiqueta recebe só o ícone.
+
+**O menu que recolhe em tela estreita fica para depois da tela Conceitos.** É comportamento novo, e
+não migração do que existe, e não ajuda a chegar à tela Conceitos. O desenho também não define o
+botão nem a camada do menu aberto além da maquete do celular.
