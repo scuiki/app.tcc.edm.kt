@@ -4,11 +4,13 @@ import { ApiError } from '../../http/client'
 import type { GenerationJob } from './api/knowledgeComponents'
 import {
   editErrorText,
+  factsLineCountsOf,
   isEditable,
   knowledgeComponentsOf,
   listProblemIds,
   problemCount,
   problemsOnlyMarkedBy,
+  problemsWithoutKnowledgeComponent,
   stageStateOf,
   GENERATION_STAGES,
 } from './knowledgeComponents'
@@ -42,6 +44,35 @@ describe('knowledgeComponentsOf', () => {
       { id: 2, name: 'Condicionais', problemIds: [5] },
       { id: 1, name: 'Laços', problemIds: [5, 12] },
     ])
+  })
+})
+
+describe('factsLineCountsOf and problemsWithoutKnowledgeComponent', () => {
+  const problems = [
+    { problem_id: 5, statement: null, correct_run_count: 12, knowledge_components: [LOOPS, IFS] },
+    { problem_id: 12, statement: null, correct_run_count: 9, knowledge_components: [LOOPS] },
+    { problem_id: 20, statement: null, correct_run_count: 0, knowledge_components: [] },
+    { problem_id: 31, statement: null, correct_run_count: 0, knowledge_components: [] },
+  ]
+
+  it('counts the problems, each concept once and the problems without concept', () => {
+    expect(factsLineCountsOf(problems)).toEqual({
+      problemCount: 4,
+      knowledgeComponentCount: 2,
+      problemsWithoutKnowledgeComponent: [20, 31],
+    })
+  })
+
+  it('lists no problem when every one has a concept', () => {
+    expect(problemsWithoutKnowledgeComponent(problems.slice(0, 2))).toEqual([])
+  })
+
+  it('counts zero concepts before the extraction', () => {
+    expect(factsLineCountsOf(problems.slice(2))).toEqual({
+      problemCount: 2,
+      knowledgeComponentCount: 0,
+      problemsWithoutKnowledgeComponent: [20, 31],
+    })
   })
 })
 

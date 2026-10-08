@@ -25,6 +25,29 @@ export function knowledgeComponentsOf(
   return [...byId.values()].sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'))
 }
 
+export function problemsWithoutKnowledgeComponent(
+  problems: ProblemKnowledgeComponents[],
+): number[] {
+  return problems
+    .filter((problem) => problem.knowledge_components.length === 0)
+    .map((problem) => problem.problem_id)
+}
+
+export interface FactsLineCounts {
+  problemCount: number
+  knowledgeComponentCount: number
+  problemsWithoutKnowledgeComponent: number[]
+}
+
+// O que a linha de fatos do cabeçalho conta, com um conceito contado uma vez em vários problemas
+export function factsLineCountsOf(problems: ProblemKnowledgeComponents[]): FactsLineCounts {
+  return {
+    problemCount: problems.length,
+    knowledgeComponentCount: knowledgeComponentsOf(problems).length,
+    problemsWithoutKnowledgeComponent: problemsWithoutKnowledgeComponent(problems),
+  }
+}
+
 // Com '5, 12 e 233' e não '5, 12, 233', como se escreve em pt-BR
 export function listProblemIds(problemIds: number[]): string {
   if (problemIds.length <= 1) return problemIds.join('')

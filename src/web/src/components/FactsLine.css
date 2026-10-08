@@ -1,0 +1,24 @@
+.facts-line {
+  margin: 0;
+  color: var(--color-text-secondary);
+}
+
+/* A linha só quebra depois de uma vírgula, nunca no meio de um fato */
+.facts-line__item {
+  white-space: nowrap;
+}
+
+.facts-line__item--alert {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  /* No topo da linha, o texto do alerta fica na mesma linha de base dos outros fatos */
+  vertical-align: top;
+  color: var(--color-danger-text);
+  font-weight: 600;
+}
+
+.facts-line__item--alert svg {
+  flex-shrink: 0;
+  color: var(--color-danger);
+}

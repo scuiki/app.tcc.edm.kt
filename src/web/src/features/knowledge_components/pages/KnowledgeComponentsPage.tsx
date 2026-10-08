@@ -1,19 +1,11 @@
 import { Breadcrumb } from '../../../components/Breadcrumb'
-import { PageHeader } from '../../../components/PageHeader'
 import { EmptyState, ErrorState, LoadingState } from '../../../components/states/states'
-import { Badge } from '../../../components/ui/Badge'
 import { Card } from '../../../components/ui/Card'
 import { classroomPath } from '../../../lib/paths'
-import {
-  assignmentStatusBadge,
-  useAssignmentContext,
-} from '../../assignments/api/useAssignmentContext'
+import { useAssignmentContext } from '../../assignments/api/useAssignmentContext'
 import { ApprovalBar } from '../components/ApprovalBar'
 import { AssignmentWorkspace } from '../components/AssignmentWorkspace'
 import { isEditable } from '../knowledgeComponents'
-
-const DESCRIPTION =
-  'O modelo sugere os conceitos a partir das soluções corretas. Ajuste o que não bater com a sua disciplina e aprove para liberar o treino.'
 
 interface KnowledgeComponentsPageProps {
   classroomId?: number
@@ -42,7 +34,7 @@ export function KnowledgeComponentsPage({
   const approvedCount = assignments.filter(
     (candidate) => candidate.status === 'kc_approved' || candidate.status === 'trained',
   ).length
-  const badge = assignment.status ? assignmentStatusBadge(assignment.status) : null
+  // O cabeçalho mora no AssignmentWorkspace, porque a linha de fatos lê a rota da tela
   return (
     <>
       <Breadcrumb
@@ -52,17 +44,6 @@ export function KnowledgeComponentsPage({
           { label: assignment.name },
           { label: 'Conceitos' },
         ]}
-      />
-      <PageHeader
-        title="Conceitos"
-        badge={
-          badge ? (
-            <Badge tone={badge.tone} icon={badge.icon}>
-              {badge.label}
-            </Badge>
-          ) : null
-        }
-        description={DESCRIPTION}
       />
       <AssignmentWorkspace key={assignment.id} assignment={assignment} />
       {assignment.status && isEditable(assignment.status) ? (

@@ -63,10 +63,22 @@ interface FakeApiOptions {
   classrooms?: ClassroomSummary[]
   job?: GenerationJob
   refuseStart?: boolean
+  // Os problemas e a data da extração do rascunho, o exercício 1
+  draft?: ProblemKnowledgeComponents[]
+  draftExtractedAt?: string | null
+  // A rota da tela fica sem resposta, como uma carga que ainda não voltou
+  problemsPending?: boolean
 }
 
 // Uma api em memória, com os exercícios de uma turma e os conceitos de cada um
-function fakeApi({ classrooms = [CLASSROOM], job, refuseStart = false }: FakeApiOptions = {}) {
+function fakeApi({
+  classrooms = [CLASSROOM],
+  job,
+  refuseStart = false,
+  draft = draftProblems(),
+  draftExtractedAt = EXTRACTED_AT,
+  problemsPending = false,
+}: FakeApiOptions = {}) {
   const assignments = [
     assignment(1, 439, 'kc_draft'),
     assignment(2, 487, 'ready_for_kc_generation'),
@@ -74,7 +86,7 @@ function fakeApi({ classrooms = [CLASSROOM], job, refuseStart = false }: FakeApi
     assignment(4, 502, 'trained'),
   ]
   const problems: Record<number, ProblemKnowledgeComponents[]> = {
-    1: draftProblems(),
+    1: draft,
     2: [
       {
         problem_id: 17,
@@ -88,7 +100,7 @@ function fakeApi({ classrooms = [CLASSROOM], job, refuseStart = false }: FakeApi
   }
   // Só os exercícios que já passaram pela extração têm a data dela
   const extractedAt: Record<number, string | null> = {
-    1: EXTRACTED_AT,
+    1: draftExtractedAt,
     2: null,
     3: null,
     4: EXTRACTED_AT,
@@ -102,6 +114,7 @@ function fakeApi({ classrooms = [CLASSROOM], job, refuseStart = false }: FakeApi
     if (path.startsWith('/assignments?classroom_id=')) return jsonResponse({ assignments })
     const problemsMatch = path.match(/^\/assignments\/(\d+)\/problems\/knowledge-components$/)
     if (problemsMatch) {
+      if (problemsPending) return new Promise<Response>(() => {})
       const id = Number(problemsMatch[1])
       return jsonResponse({
         assignment_id: id,
@@ -142,6 +155,13 @@ function calls(spy: ReturnType<typeof fakeApi>, method: string, path: string) {
   return spy.mock.calls.filter(([url, init]) => url === path && (init?.method ?? 'GET') === method)
 }
 
+// A linha de fatos é o parágrafo do cabeçalho que começa pela contagem dos problemas
+async function factsLine() {
+  const heading = await screen.findByRole('heading', { level: 1 })
+  const header = heading.closest<HTMLElement>('.page-header')!
+  return (await within(header).findByText(/^problemas?$/)).closest('p')
+}
+
 describe('KnowledgeComponentsPage, the exercise in the address', () => {
   it('shows the path and the status of the exercise named in the address', async () => {
     fakeApi()
@@ -178,6 +198,69 @@ describe('KnowledgeComponentsPage, the exercise in the address', () => {
     expect(screen.queryByRole('button', { name: /Adicionar conceito/ })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /Editar o nome/ })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /Aprovar/ })).not.toBeInTheDocument()
+  })
+})
+
+describe('KnowledgeComponentsPage, the header', () => {
+  it('titles the page with the exercise and lists the facts of the draft', async () => {
+    fakeApi()
+    renderWithClient(<KnowledgeComponentsPage classroomId={1} assignmentId={1} />)
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Assignment 439' }),
+    ).toBeInTheDocument()
+    expect((await factsLine())?.textContent).toBe(
+      '3 problemas, 3 conceitos, extraídos em 07/10/2026, nenhum problema sem conceito',
+    )
+  })
+
+  it('counts the problems without concept as an alert', async () => {
+    fakeApi({
+      draft: [
+        ...draftProblems(),
+        { problem_id: 31, statement: null, correct_run_count: 0, knowledge_components: [] },
+      ],
+    })
+    renderWithClient(<KnowledgeComponentsPage classroomId={1} assignmentId={1} />)
+    const facts = await factsLine()
+    expect(facts?.textContent).toBe(
+      '4 problemas, 3 conceitos, extraídos em 07/10/2026, 1 problema sem conceito',
+    )
+    const alert = within(facts!).getByText('problema sem conceito')
+    expect(alert.closest('.facts-line__item')).toHaveClass('facts-line__item--alert')
+  })
+
+  it('leaves the extraction date out when there is none', async () => {
+    fakeApi({ draftExtractedAt: null })
+    renderWithClient(<KnowledgeComponentsPage classroomId={1} assignmentId={1} />)
+    expect((await factsLine())?.textContent).toBe(
+      '3 problemas, 3 conceitos, nenhum problema sem conceito',
+    )
+  })
+
+  it('agrees the extraction date with a single concept', async () => {
+    fakeApi({
+      draft: draftProblems().map((problem) => ({ ...problem, knowledge_components: [LOOPS] })),
+    })
+    renderWithClient(<KnowledgeComponentsPage classroomId={1} assignmentId={1} />)
+    expect((await factsLine())?.textContent).toBe(
+      '3 problemas, 1 conceito, extraído em 07/10/2026, nenhum problema sem conceito',
+    )
+  })
+
+  it('shows the title and the status before the concepts arrive, without the facts', async () => {
+    fakeApi({ problemsPending: true })
+    renderWithClient(<KnowledgeComponentsPage classroomId={1} assignmentId={1} />)
+    const heading = await screen.findByRole('heading', { level: 1, name: 'Assignment 439' })
+    expect(screen.getByText('Rascunho de conceitos')).toBeInTheDocument()
+    expect(screen.getByText('Carregando os conceitos do exercício…')).toBeInTheDocument()
+    const header = heading.closest<HTMLElement>('.page-header')!
+    expect(header.querySelector('.facts-line')).toBeNull()
+  })
+
+  it('shows only the problems before the extraction', async () => {
+    fakeApi()
+    renderWithClient(<KnowledgeComponentsPage classroomId={1} assignmentId={2} />)
+    expect((await factsLine())?.textContent).toBe('1 problema')
   })
 })
 

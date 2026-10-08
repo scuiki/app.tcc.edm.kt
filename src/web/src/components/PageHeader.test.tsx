@@ -24,6 +24,21 @@ describe('PageHeader', () => {
     expect(screen.getByText('Treinado')).toBeInTheDocument()
   })
 
+  it('shows the facts line below the title row and outside the heading', () => {
+    render(
+      <PageHeader
+        title="Assignment 439"
+        badge={<span>Rascunho de conceitos</span>}
+        facts={<p>10 problemas, 25 conceitos</p>}
+      />,
+    )
+    const heading = screen.getByRole('heading', { level: 1, name: 'Assignment 439' })
+    const facts = screen.getByText('10 problemas, 25 conceitos')
+    expect(heading).not.toHaveTextContent('10 problemas')
+    expect(heading.parentElement).not.toContainElement(facts)
+    expect(heading.compareDocumentPosition(facts) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+
   it('renders without description nor action', () => {
     render(<PageHeader title="Minhas turmas" />)
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Minhas turmas')
