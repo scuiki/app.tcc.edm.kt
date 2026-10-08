@@ -10,11 +10,13 @@ interface OutcomeMessageProps {
   children: ReactNode
 }
 
-// Diz o que houve e por quê, sempre com o título e a explicação
+// Diz o que houve e por quê, e o ! vermelho só aparece na recusa
 export function OutcomeMessage({ tone, title, children }: OutcomeMessageProps) {
   return (
     <div className={`outcome outcome--${tone}`} role={tone === 'danger' ? 'alert' : 'status'}>
-      <CircleAlert className="outcome__icon" size={18} aria-hidden="true" />
+      {tone === 'danger' ? (
+        <CircleAlert className="outcome__icon" size={18} aria-hidden="true" />
+      ) : null}
       <div className="outcome__text">
         <span className="outcome__title">{title}</span>
         <span className="outcome__body">{children}</span>

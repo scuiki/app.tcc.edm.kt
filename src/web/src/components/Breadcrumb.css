@@ -3,8 +3,8 @@
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
-  font-size: 12px;
-  color: var(--color-text-muted);
+  font-size: 13px;
+  color: var(--color-text-secondary);
 }
 
 .breadcrumb__list {
@@ -25,14 +25,13 @@
 
 .breadcrumb__item a {
   color: var(--color-text-secondary);
-  font-weight: 600;
 }
 
 .breadcrumb__separator {
-  color: var(--color-text-disabled);
+  color: var(--color-text-muted);
 }
 
+/* O item atual só muda de cor, sem negrito */
 .breadcrumb__current {
   color: var(--color-text);
-  font-weight: 600;
 }

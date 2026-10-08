@@ -10,7 +10,7 @@ const DEFAULT_ERROR = 'Não foi possível carregar os dados. Verifique se a API 
 // Nomeia o que está sendo feito, em vez de um indicador de carregamento (spinner) sem legenda
 export function LoadingState({ label }: { label: string }) {
   return (
-    <div role="status" aria-live="polite" className="state">
+    <div role="status" aria-live="polite" className="state state--loading">
       <LoaderCircle className="state__spinner" size={18} aria-hidden="true" />
       <p className="state__text">{label}</p>
     </div>

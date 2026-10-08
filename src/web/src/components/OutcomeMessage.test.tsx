@@ -13,6 +13,7 @@ describe('OutcomeMessage', () => {
     const alert = screen.getByRole('alert')
     expect(alert).toHaveTextContent('Não foi possível abrir o arquivo')
     expect(alert).toHaveTextContent('Confira o pacote.')
+    expect(alert.querySelector('svg')).not.toBeNull()
   })
 
   it('announces a neutral outcome as a status', () => {
@@ -21,6 +22,9 @@ describe('OutcomeMessage', () => {
         Tente depois.
       </OutcomeMessage>,
     )
-    expect(screen.getByRole('status')).toHaveTextContent('Outro processo está rodando')
+    const status = screen.getByRole('status')
+    expect(status).toHaveTextContent('Outro processo está rodando')
+    // O ! fica só para a recusa, então o neutro não leva ícone
+    expect(status.querySelector('svg')).toBeNull()
   })
 })
