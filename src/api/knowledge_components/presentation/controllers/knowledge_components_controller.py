@@ -24,6 +24,9 @@ from api.knowledge_components.application.dtos.edit_knowledge_components_dto imp
 from api.knowledge_components.application.dtos.get_kc_generation_job_dto import (
     KnowledgeComponentGenerationJobDTO,
 )
+from api.knowledge_components.application.dtos.get_knowledge_component_origin_dto import (
+    KnowledgeComponentOriginDTO,
+)
 from api.knowledge_components.application.dtos.list_knowledge_components_dto import (
     ListKnowledgeComponentsResponseDTO,
 )
@@ -32,6 +35,9 @@ from api.knowledge_components.application.use_cases.list_knowledge_components_us
 )
 from api.knowledge_components.application.use_cases.get_kc_generation_job_use_case import (
     GetKnowledgeComponentGenerationJobUseCase,
+)
+from api.knowledge_components.application.use_cases.get_knowledge_component_origin_use_case import (
+    GetKnowledgeComponentOriginUseCase,
 )
 from api.knowledge_components.application.use_cases.remove_knowledge_component_use_case import (
     RemoveKnowledgeComponentUseCase,
@@ -69,6 +75,23 @@ def list_knowledge_components(
     ),
 ) -> ListKnowledgeComponentsResponseDTO:
     return use_case.execute(assignment_id)
+
+
+@router.get(
+    "/{kc_id}/origin",
+    response_model=KnowledgeComponentOriginDTO,
+    description=(
+        "A origem do conceito. Por problema ligado, o enunciado, as justificativas traduzidas, "
+        "o trecho e as soluções amostradas."
+    ),
+)
+def get_knowledge_component_origin(
+    kc_id: int,
+    use_case: GetKnowledgeComponentOriginUseCase = Depends(
+        dependencies.get_knowledge_component_origin_use_case
+    ),
+) -> KnowledgeComponentOriginDTO:
+    return use_case.execute(kc_id)
 
 
 @router.post("/generation-jobs", status_code=202, response_model=StartedJobDTO)

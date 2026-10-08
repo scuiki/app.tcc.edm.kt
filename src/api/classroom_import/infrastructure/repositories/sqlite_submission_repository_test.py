@@ -217,3 +217,23 @@ def test_an_assignment_without_a_correct_run_counts_nothing(tmp_db):
     assignment_id = add_assignment(tmp_db, add_classroom(tmp_db))
 
     assert SqliteSubmissionRepository(tmp_db).count_correct_runs_by_problem(assignment_id) == {}
+
+
+def test_the_codes_come_back_by_submission_id_with_line_breaks_and_tabs_intact(tmp_db):
+    repo = SqliteSubmissionRepository(tmp_db)
+    assignment_id = add_assignment(tmp_db, add_classroom(tmp_db))
+    add_problems(tmp_db, assignment_id, [1])
+    codes = ["int f() {\r\n\treturn 1;\r\n}", "int g() {\n\treturn 2;\n}\n"]
+    rows = [
+        cleaned_row(f"S{i}", 1, "2019-03-01T08:00:00Z", "Run.Program", 1.0, code, f"c{i}")
+        for i, code in enumerate(codes)
+    ]
+    repo.add_many(assignment_id, with_cleaned_dtypes(pd.DataFrame(rows)))
+    first, second = [row[0] for row in tmp_db.execute("SELECT id FROM submission ORDER BY id;")]
+
+    # O id que não existe some da resposta, sem erro
+    assert repo.get_codes([second, 999_999, first]) == {first: codes[0], second: codes[1]}
+
+
+def test_no_submission_id_gives_no_code(tmp_db):
+    assert SqliteSubmissionRepository(tmp_db).get_codes([]) == {}

@@ -27,3 +27,7 @@ class ISubmissionRepository(Protocol):
     def count_correct_runs_by_problem(self, assignment_id: int) -> dict[int, int]:
         # Quantas execuções corretas cada problema tem, e o problema sem acerto não volta
         ...
+
+    def get_codes(self, submission_ids: list[int]) -> dict[int, str]:
+        # O código de cada execução, com o `\r\n` e as tabulações intactos, sem o id que não existe
+        ...

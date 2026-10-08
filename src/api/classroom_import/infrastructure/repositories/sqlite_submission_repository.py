@@ -96,3 +96,12 @@ class SqliteSubmissionRepository:
             (assignment_id,),
         ).fetchall()
         return {int(problem_id): count for problem_id, count in rows}
+
+    def get_codes(self, submission_ids: list[int]) -> dict[int, str]:
+        if not submission_ids:
+            return {}
+        placeholders = ", ".join("?" * len(submission_ids))
+        rows = self._conn.execute(
+            f"SELECT id, code FROM submission WHERE id IN ({placeholders});", submission_ids
+        ).fetchall()
+        return {submission_id: code for submission_id, code in rows}

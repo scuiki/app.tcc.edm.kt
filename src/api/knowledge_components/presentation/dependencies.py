@@ -23,6 +23,9 @@ from api.knowledge_components.application.use_cases.approve_knowledge_components
 from api.knowledge_components.application.use_cases.get_kc_generation_job_use_case import (
     GetKnowledgeComponentGenerationJobUseCase,
 )
+from api.knowledge_components.application.use_cases.get_knowledge_component_origin_use_case import (
+    GetKnowledgeComponentOriginUseCase,
+)
 from api.knowledge_components.application.use_cases.remove_knowledge_component_use_case import (
     RemoveKnowledgeComponentUseCase,
 )
@@ -86,6 +89,21 @@ def list_knowledge_components_use_case(
         SqliteAssignmentRepository(conn),
         SqliteKnowledgeComponentRepository(conn),
         SqliteProblemKnowledgeComponentRepository(conn),
+    )
+
+
+def get_knowledge_component_origin_use_case(
+    conn: sqlite3.Connection = Depends(open_database_session),
+) -> GetKnowledgeComponentOriginUseCase:
+    return GetKnowledgeComponentOriginUseCase(
+        assignments=SqliteAssignmentRepository(conn),
+        problems=SqliteProblemRepository(conn),
+        knowledge_components=SqliteKnowledgeComponentRepository(conn),
+        problem_kcs=SqliteProblemKnowledgeComponentRepository(conn),
+        candidate_kcs=SqliteCandidateKnowledgeComponentRepository(conn),
+        evidence=SqliteKnowledgeComponentEvidenceRepository(conn),
+        sampled_solutions=SqliteSampledSolutionRepository(conn),
+        submissions=SqliteSubmissionRepository(conn),
     )
 
 

@@ -145,6 +145,11 @@ class MarkedCodeLLM:
         return answer
 
 
+# O nome e a justificativa em inglês de todo KC candidato semeado, que a origem não mostra
+CANDIDATE_NAME = "sum with an accumulator"
+CANDIDATE_REASONING = "The solution adds each element to a running total."
+
+
 def add_extraction(
     conn: sqlite3.Connection,
     assignment_id: int,
@@ -152,22 +157,60 @@ def add_extraction(
     correct_runs: dict[int, int],
     incorrect_runs: dict[int, int],
     extracted_at: str,
+    # O código das soluções amostradas de cada problema, na ordem da posição no prompt
+    sampled_solutions: dict[int, list[str]] | None = None,
+    # Os KCs candidatos como (problema, conceito, justificativa traduzida), na ordem da resposta
+    candidates: list[tuple[int, int, str | None]] | None = None,
+    # O trecho de cada par (problema, conceito) como (posição da solução, primeira e última linha)
+    evidence: dict[tuple[int, int], tuple[int, int, int]] | None = None,
 ) -> None:
-    # Quantas execuções corretas e incorretas cada problema tem, e o kc_job concluído na data dada
+    # As execuções e o kc_job concluído, e também as soluções amostradas, os candidatos e os trechos
+    codes_of = sampled_solutions or {}
+    assert all(len(codes) <= correct_runs.get(p, 0) for p, codes in codes_of.items())
     runs = []
     for problem_id, count in correct_runs.items():
-        runs += [(problem_id, 1)] * count
+        codes = codes_of.get(problem_id, [])
+        # As soluções amostradas são as primeiras execuções corretas do problema
+        runs += [(problem_id, 1, code, position) for position, code in enumerate(codes, 1)]
+        runs += [(problem_id, 1, "", None)] * (count - len(codes))
     for problem_id, count in incorrect_runs.items():
-        runs += [(problem_id, 0)] * count
-    conn.executemany(
-        "INSERT INTO submission (assignment_id, student_id, problem_id, code_snapshot_id, code, "
-        "score, submitted_at, event_type, is_correct) "
-        "VALUES (?, ?, ?, ?, '', ?, '2019-03-01T08:00:00Z', 'Run.Program', ?);",
-        [
-            (assignment_id, f"S{n}", problem_id, f"c{n}", float(is_correct), is_correct)
-            for n, (problem_id, is_correct) in enumerate(runs)
-        ],
-    )
+        runs += [(problem_id, 0, "", None)] * count
+    for n, (problem_id, is_correct, code, position) in enumerate(runs):
+        submission_id = conn.execute(
+            "INSERT INTO submission (assignment_id, student_id, problem_id, code_snapshot_id, "
+            "code, score, submitted_at, event_type, is_correct) "
+            "VALUES (?, ?, ?, ?, ?, ?, '2019-03-01T08:00:00Z', 'Run.Program', ?);",
+            (assignment_id, f"S{n}", problem_id, f"c{n}", code, float(is_correct), is_correct),
+        ).lastrowid
+        if position is not None:
+            conn.execute(
+                "INSERT INTO sampled_solution (assignment_id, problem_id, position, submission_id) "
+                "VALUES (?, ?, ?, ?);",
+                (assignment_id, problem_id, position, submission_id),
+            )
+    # A posição do KC candidato conta dentro do problema, como na resposta do LLM
+    positions: dict[int, int] = {}
+    for problem_id, kc_id, translated_reasoning in candidates or []:
+        positions[problem_id] = positions.get(problem_id, 0) + 1
+        conn.execute(
+            "INSERT INTO candidate_kc (assignment_id, problem_id, position, name, reasoning, "
+            "kc_id, translated_reasoning) VALUES (?, ?, ?, ?, ?, ?, ?);",
+            (
+                assignment_id,
+                problem_id,
+                positions[problem_id],
+                CANDIDATE_NAME,
+                CANDIDATE_REASONING,
+                kc_id,
+                translated_reasoning,
+            ),
+        )
+    for (problem_id, kc_id), (position, first_line, last_line) in (evidence or {}).items():
+        conn.execute(
+            "INSERT INTO kc_evidence (assignment_id, problem_id, kc_id, position, first_line, "
+            "last_line) VALUES (?, ?, ?, ?, ?, ?);",
+            (assignment_id, problem_id, kc_id, position, first_line, last_line),
+        )
     conn.execute(
         "INSERT INTO kc_job (assignment_id, status, created_at, updated_at) "
         "VALUES (?, 'done', ?, ?);",

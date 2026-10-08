@@ -1,4 +1,4 @@
-# Rotas de /knowledge-components, disparo/progresso da geração, edição e aprovação dos KCs.
+# Rotas de /knowledge-components, disparo/progresso da geração, edição, aprovação e origem dos KCs.
 from __future__ import annotations
 
 import subprocess
@@ -23,6 +23,11 @@ from api.knowledge_components.infrastructure.repositories.sqlite_problem_knowled
 from api.knowledge_components.presentation.dependencies import KC_GENERATION_WORKER
 from tests.fixtures.assignments import add_assignment
 from tests.fixtures.classrooms import add_classroom
+from tests.fixtures.knowledge_components import (
+    CANDIDATE_NAME,
+    CANDIDATE_REASONING,
+    add_extraction,
+)
 from tests.fixtures.problems import add_problems
 
 _NOW = "2026-06-21T00:00:00Z"
@@ -421,6 +426,7 @@ def test_a_kc_of_a_removed_assignment_is_404_on_every_route_by_kc_id(api_client)
     assert client.delete(f"/knowledge-components/{kc_id}").status_code == 404
     assert client.post(f"/knowledge-components/{kc_id}/problems/1").status_code == 404
     assert client.delete(f"/knowledge-components/{kc_id}/problems/1").status_code == 404
+    assert client.get(f"/knowledge-components/{kc_id}/origin").status_code == 404
 
 
 # Criar um conceito, sempre ligado a ao menos um problema
@@ -496,3 +502,232 @@ def test_creating_a_concept_with_a_problem_of_another_assignment_is_refused(api_
     assert resp.status_code == 409
     assert resp.json()["detail"] == "problemas que não existem no assignment [9]"
     assert SqliteKnowledgeComponentRepository(conn).list_by_assignment(aid) == []
+
+
+# A origem do conceito
+
+_STATEMENT = "Devolva a soma dos elementos do vetor."
+
+
+def _solution(problem_id: int, position: int) -> str:
+    # Código com CRLF e tabulação, como o dado real
+    return "\r\n".join(
+        [
+            f"public int p{problem_id}s{position}(int[] v) {{",
+            "\tint total = 0;",
+            "\tfor (int x : v) total += x;",
+            "\treturn total;",
+            "}",
+        ]
+    )
+
+
+def _solutions(problem_id: int, count: int) -> list[dict]:
+    return [{"position": n, "code": _solution(problem_id, n)} for n in range(1, count + 1)]
+
+
+def _seed_origin(conn) -> tuple[int, int, int]:
+    # Extração nova com Laços nos problemas 1 e 2 e Condicionais nos 1, 3 e 4, e ninguém acertou o 4
+    aid = add_assignment(conn, add_classroom(conn), status="kc_draft")
+    loops = _seed_kc(conn, aid, "Laços", kc_index=0, generated_name="loops")
+    conditionals = _seed_kc(conn, aid, "Condicionais", kc_index=1, generated_name="conditionals")
+    # Fora da ordem numérica, porque a origem ordena os problemas
+    links = [(loops, 2), (loops, 1), (conditionals, 4), (conditionals, 3), (conditionals, 1)]
+    for kc_id, problem_id in links:
+        _bind(conn, aid, kc_id, problem_id)
+    conn.execute(
+        "UPDATE problem SET statement = ? WHERE assignment_id = ? AND problem_id = 1;",
+        (_STATEMENT, aid),
+    )
+    add_extraction(
+        conn,
+        aid,
+        correct_runs={1: 7, 2: 3, 3: 2},
+        incorrect_runs={4: 2},
+        extracted_at=_NOW,
+        sampled_solutions={
+            1: [_solution(1, n) for n in range(1, 6)],
+            2: [_solution(2, n) for n in range(1, 4)],
+            3: [_solution(3, n) for n in range(1, 3)],
+        },
+        # Laços no 2 e Condicionais no 4 não têm candidato, são vínculos do professor
+        candidates=[
+            (1, conditionals, "As condicionais escolhem o caminho."),
+            (1, loops, "O laço percorre o vetor."),
+            (1, conditionals, "Um if testa cada elemento."),
+            (3, conditionals, "O if decide o retorno."),
+        ],
+        # Condicionais no 3 tem candidato e não tem trecho, que a extração descartou
+        evidence={(1, loops): (3, 3, 3), (1, conditionals): (1, 2, 3)},
+    )
+    return aid, loops, conditionals
+
+
+def _origin(client, kc_id) -> dict:
+    response = client.get(f"/knowledge-components/{kc_id}/origin")
+    assert response.status_code == 200
+    return response.json()
+
+
+def _problem(origin: dict, problem_id: int) -> dict:
+    return next(p for p in origin["problems"] if p["problem_id"] == problem_id)
+
+
+def test_the_origin_of_a_generated_concept_brings_reasonings_evidence_and_solutions_in_order(
+    api_client,
+):
+    client, conn = api_client
+    _, loops, _ = _seed_origin(conn)
+
+    response = client.get(f"/knowledge-components/{loops}/origin")
+
+    assert response.status_code == 200
+    # Sem o nome gerado e sem o nome e a justificativa em inglês dos candidatos
+    for english in ("loops", CANDIDATE_NAME, CANDIDATE_REASONING):
+        assert english not in response.text
+    origin = response.json()
+    assert origin == {
+        "kc_id": loops,
+        "name": "Laços",
+        "is_generated_by_llm": True,
+        "problems": [
+            {
+                "problem_id": 1,
+                "statement": _STATEMENT,
+                "translated_reasonings": ["O laço percorre o vetor."],
+                "evidence": {"position": 3, "first_line": 3, "last_line": 3},
+                "sampled_solutions": _solutions(1, 5),
+            },
+            {
+                "problem_id": 2,
+                "statement": None,
+                "translated_reasonings": [],
+                "evidence": None,
+                "sampled_solutions": _solutions(2, 3),
+            },
+        ],
+    }
+    first_code = origin["problems"][0]["sampled_solutions"][0]["code"]
+    assert first_code.split("\r\n")[1] == "\tint total = 0;"
+
+
+def test_a_renamed_concept_comes_with_its_new_name_and_without_the_generated_marker(api_client):
+    client, conn = api_client
+    _, _, conditionals = _seed_origin(conn)
+    renamed = client.put(f"/knowledge-components/{conditionals}", json={"name": "Desvios"})
+    assert renamed.status_code == 200
+
+    origin = _origin(client, conditionals)
+
+    assert (origin["name"], origin["is_generated_by_llm"]) == ("Desvios", False)
+
+
+def test_a_pair_with_two_candidates_brings_both_reasonings_in_position_order(api_client):
+    client, conn = api_client
+    _, _, conditionals = _seed_origin(conn)
+
+    problem = _problem(_origin(client, conditionals), 1)
+
+    assert problem["translated_reasonings"] == [
+        "As condicionais escolhem o caminho.",
+        "Um if testa cada elemento.",
+    ]
+    assert problem["evidence"] == {"position": 1, "first_line": 2, "last_line": 3}
+
+
+def test_a_teacher_link_has_no_reasoning_nor_evidence_but_brings_the_problem_solutions(
+    api_client,
+):
+    client, conn = api_client
+    _, loops, _ = _seed_origin(conn)
+
+    problem = _problem(_origin(client, loops), 2)
+
+    assert problem["translated_reasonings"] == []
+    assert problem["evidence"] is None
+    assert problem["sampled_solutions"] == _solutions(2, 3)
+
+
+def test_a_discarded_snippet_keeps_the_reasoning_without_evidence(api_client):
+    client, conn = api_client
+    _, _, conditionals = _seed_origin(conn)
+
+    problem = _problem(_origin(client, conditionals), 3)
+
+    assert problem["translated_reasonings"] == ["O if decide o retorno."]
+    assert problem["evidence"] is None
+    assert problem["sampled_solutions"] == _solutions(3, 2)
+
+
+def test_unlinking_hides_the_problem_and_relinking_brings_back_its_evidence(api_client):
+    client, conn = api_client
+    _, _, conditionals = _seed_origin(conn)
+    before = _problem(_origin(client, conditionals), 1)
+
+    unlinked = client.delete(f"/knowledge-components/{conditionals}/problems/1")
+    assert unlinked.status_code == 200
+    assert [p["problem_id"] for p in _origin(client, conditionals)["problems"]] == [3, 4]
+    relinked = client.post(f"/knowledge-components/{conditionals}/problems/1")
+    assert relinked.status_code == 201
+
+    # Os candidatos e os trechos não têm soft delete, e o par religado os encontra de novo
+    assert _problem(_origin(client, conditionals), 1) == before
+    assert before["evidence"] == {"position": 1, "first_line": 2, "last_line": 3}
+
+
+def test_a_problem_without_statement_comes_with_a_null_statement(api_client):
+    client, conn = api_client
+    _, _, conditionals = _seed_origin(conn)
+
+    origin = _origin(client, conditionals)
+
+    assert [(p["problem_id"], p["statement"]) for p in origin["problems"]] == [
+        (1, _STATEMENT),
+        (3, None),
+        (4, None),
+    ]
+
+
+def test_a_null_translated_reasoning_is_left_out(api_client):
+    # O gerador sempre traduz, e a linha sem tradução só existe se gravada fora da extração
+    client, conn = api_client
+    aid = add_assignment(conn, add_classroom(conn), status="kc_draft")
+    kc_id = _seed_kc(conn, aid, "Laços", kc_index=0, generated_name="loops")
+    _bind(conn, aid, kc_id, 1)
+    add_extraction(
+        conn,
+        aid,
+        correct_runs={1: 1},
+        incorrect_runs={},
+        extracted_at=_NOW,
+        sampled_solutions={1: [_solution(1, 1)]},
+        candidates=[(1, kc_id, None), (1, kc_id, "O laço percorre o vetor.")],
+    )
+
+    problem = _problem(_origin(client, kc_id), 1)
+
+    assert problem["translated_reasonings"] == ["O laço percorre o vetor."]
+
+
+def test_a_problem_nobody_solved_comes_without_solutions(api_client):
+    client, conn = api_client
+    _, _, conditionals = _seed_origin(conn)
+
+    problem = _problem(_origin(client, conditionals), 4)
+
+    assert problem == {
+        "problem_id": 4,
+        "statement": None,
+        "translated_reasonings": [],
+        "evidence": None,
+        "sampled_solutions": [],
+    }
+
+
+def test_the_origin_of_a_missing_or_removed_concept_is_404(api_client):
+    client, conn = api_client
+    _, loops, _ = _seed_origin(conn)
+    SqliteKnowledgeComponentRepository(conn).remove(loops, removed_at=_NOW)
+
+    assert client.get("/knowledge-components/999/origin").status_code == 404
+    assert client.get(f"/knowledge-components/{loops}/origin").status_code == 404
