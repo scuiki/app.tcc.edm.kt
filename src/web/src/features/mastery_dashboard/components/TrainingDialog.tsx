@@ -56,7 +56,7 @@ export function TrainingDialog({ training, assignmentName }: TrainingDialogProps
             {job?.java_parse_rate != null ? (
               <p className="training__fact">
                 Código dos alunos lido pelo parser Java{' '}
-                <span className="mono">{formatPercent(job.java_parse_rate)}</span>
+                <span className="num">{formatPercent(job.java_parse_rate)}</span>
               </p>
             ) : null}
           </>
@@ -67,7 +67,7 @@ export function TrainingDialog({ training, assignmentName }: TrainingDialogProps
             {job?.error_message ? (
               <div className="training__detail">
                 <span className="training__detail-title">Detalhe técnico</span>
-                <span className="mono">{job.error_message}</span>
+                <span>{job.error_message}</span>
               </div>
             ) : null}
           </>

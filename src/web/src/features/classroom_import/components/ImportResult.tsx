@@ -40,7 +40,7 @@ export function ImportResult({ report, classroomName, fileName, mainTable }: Imp
             <div className="summary-numbers">
               {SUMMARY_NUMBERS.map(({ key, label }) => (
                 <div key={key}>
-                  <div className="summary-numbers__value mono">
+                  <div className="summary-numbers__value num">
                     {formatCount(report.dataset_summary[key] ?? 0)}
                   </div>
                   <div className="summary-numbers__label">{label}</div>
@@ -95,7 +95,7 @@ function ImportedDetailsCard({ report, classroomName, fileName, mainTable }: Imp
           <dt>Arquivo</dt>
           <dd>{fileName}</dd>
           <dt>Tabela usada</dt>
-          <dd className="mono">{mainTable}</dd>
+          <dd className="num">{mainTable}</dd>
         </dl>
         <div className="import-card__rule" />
         <span className="import-card__section-title">Avisos do processamento</span>

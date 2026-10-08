@@ -22,7 +22,7 @@ export function RatioBar({ value, tone, label }: RatioBarProps) {
           style={{ width: `${Math.max(0, Math.min(1, value)) * 100}%` }}
         />
       </div>
-      <span className="ratio-bar__value mono">{percent}</span>
+      <span className="ratio-bar__value num">{percent}</span>
     </div>
   )
 }

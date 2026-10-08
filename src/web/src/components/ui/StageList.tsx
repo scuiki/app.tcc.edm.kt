@@ -33,7 +33,7 @@ export function StageList({ items }: { items: StageItem[] }) {
             <Icon className="stage-list__icon" size={17} aria-hidden="true" />
             <span className="stage-list__label">{label}</span>
             {state === 'current' && progress ? (
-              <span className="stage-list__progress mono">{progress}</span>
+              <span className="stage-list__progress num">{progress}</span>
             ) : null}
           </li>
         )

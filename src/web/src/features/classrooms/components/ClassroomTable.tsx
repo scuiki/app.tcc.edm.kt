@@ -122,7 +122,7 @@ function ClassroomRow({ classroom, onRename, onRemove }: ClassroomRowProps) {
       </td>
       <CountCell value={classroom.problem_count} />
       <CountCell value={classroom.student_count} />
-      <td className="mono classroom-table__date">{formatDate(classroom.created_at)}</td>
+      <td className="num classroom-table__date">{formatDate(classroom.created_at)}</td>
       <td>
         <ClassroomStatusBadge status={classroom.status} />
       </td>
@@ -145,7 +145,7 @@ function ClassroomRow({ classroom, onRename, onRemove }: ClassroomRowProps) {
 // Traço no lugar de zero, porque a turma sem dados ainda não tem o que contar
 function CountCell({ value }: { value: number }) {
   return (
-    <td className="mono">
+    <td className="num">
       {value === 0 ? <span className="classroom-table__missing">—</span> : formatCount(value)}
     </td>
   )

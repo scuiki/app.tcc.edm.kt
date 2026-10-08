@@ -63,27 +63,27 @@ function StudentDetail({
                   Domínio
                   <InfoHint text={MASTERY_HINT} />
                 </dt>
-                <dd className="mono">{formatPercent(student.mean_mastery)}</dd>
+                <dd className="num">{formatPercent(student.mean_mastery)}</dd>
               </div>
               <div>
                 <dt>Completou</dt>
-                <dd className="mono">
+                <dd className="num">
                   {student.completed} <span className="student-dialog__sub">de {problemCount}</span>
                 </dd>
               </div>
               <div>
                 <dt>Tentou</dt>
-                <dd className="mono">
+                <dd className="num">
                   {student.attempted} <span className="student-dialog__sub">de {problemCount}</span>
                 </dd>
               </div>
               <div>
                 <dt>Execuções</dt>
-                <dd className="mono">{formatCount(student.runs)}</dd>
+                <dd className="num">{formatCount(student.runs)}</dd>
               </div>
               <div>
                 <dt>Erros de compilação</dt>
-                <dd className="mono">{formatCount(student.compile_errors)}</dd>
+                <dd className="num">{formatCount(student.compile_errors)}</dd>
               </div>
             </dl>
             <section className="student-dialog__section" aria-label="Domínio por conceito">

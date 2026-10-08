@@ -196,7 +196,7 @@ function PackageItem({ found, name, role }: { found: boolean; name: string; role
   return (
     <li className={`package-contents__item${found ? '' : ' package-contents__item--missing'}`}>
       <Icon className="package-contents__icon" size={15} strokeWidth={2.6} aria-hidden="true" />
-      <span className="mono package-contents__name">{name}</span>
+      <span className="num package-contents__name">{name}</span>
       <span className="t-support">{role}</span>
     </li>
   )
@@ -265,7 +265,7 @@ function MainTableChoice({ upload, mainTable, onMainTableChange, locked }: MainT
             disabled={locked}
             onChange={() => onMainTableChange(path)}
           />
-          <span className="mono">{pathInUpload(path, upload)}</span>
+          <span className="num">{pathInUpload(path, upload)}</span>
         </label>
       ))}
     </fieldset>

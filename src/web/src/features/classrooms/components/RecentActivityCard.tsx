@@ -27,7 +27,7 @@ export function RecentActivityCard({ classrooms }: { classrooms: ClassroomSummar
               <span>
                 <strong>{classroom.name}</strong> foi criada
               </span>
-              <span className="activity__time mono">{formatDateTime(classroom.created_at)}</span>
+              <span className="activity__time num">{formatDateTime(classroom.created_at)}</span>
             </div>
           </li>
         ))}

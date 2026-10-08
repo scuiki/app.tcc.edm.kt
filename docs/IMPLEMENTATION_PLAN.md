@@ -38,9 +38,8 @@ Várias opções delas foram descartadas depois, então elas não servem de refe
 
 ### Frontend
 
-O `tokens.css` já tem as cores, as sombras e o raio 0 da v5. A tipografia ainda é a anterior, com a
-Open Sans carregada do Google Fonts no `index.html`, `--font-mono` e `--font-table` (Arial só nas
-tabelas da Análise). As telas têm a organização anterior ao design, e
+O `tokens.css` já tem as cores, as sombras, o raio 0 e a tipografia da v5, com a Public Sans
+carregada do Google Fonts no `index.html` e o Arial em `--font-data`. As telas têm a organização anterior ao design, e
 a importação e os conceitos usam o `PageActionBar`, a barra fixa no rodapé.
 
 Componentes que existem e mudam na migração estão em `src/web/src/components/` (`Breadcrumb`,

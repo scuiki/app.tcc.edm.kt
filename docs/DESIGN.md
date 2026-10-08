@@ -8,8 +8,8 @@ papel é citado pelo nome do token.
 que abre direto no navegador.
 
 **Estado.** Este documento é a especificação. A migração para ela segue o `FRONTEND_BASE_PLAN.md`.
-As cores, as sombras e o raio do `tokens.css` já são os da v5, e a tipografia (Open Sans com Arial
-nas tabelas) e os componentes ainda seguem a linguagem anterior. As cinco telas ainda têm a
+As cores, as sombras, o raio e a tipografia do `tokens.css` já são os da v5, e os componentes
+ainda seguem a linguagem anterior. As cinco telas ainda têm a
 organização antiga e mudam uma a uma depois da base.
 
 ## Princípios
@@ -71,8 +71,6 @@ acaso.
 O Arial é o mesmo da monografia, então tabelas e figuras entram no texto do TCC sem destoar. No
 Linux a reserva é a Liberation Sans, que tem as mesmas medidas do Arial, e o layout não muda entre
 máquinas. Os algarismos do Arial já têm largura fixa, e `.num` mantém `tabular-nums` mesmo assim.
-A migração troca `--font-mono` e `--font-table` por `--font-data`.
-
 A única exceção é `--font-code`, uma fonte mono do sistema, só em bloco de código, porque o
 alinhamento e a indentação do código dependem da largura fixa.
 

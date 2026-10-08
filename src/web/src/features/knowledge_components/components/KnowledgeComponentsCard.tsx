@@ -29,11 +29,11 @@ export function KnowledgeComponentsCard({
     <Card title="Conceitos do exercício">
       <div className="kc-summary">
         <div>
-          <div className="kc-summary__value mono">{knowledgeComponents.length}</div>
+          <div className="kc-summary__value num">{knowledgeComponents.length}</div>
           <div className="kc-summary__label">conceitos</div>
         </div>
         <div>
-          <div className="kc-summary__value mono">{problemTotal}</div>
+          <div className="kc-summary__value num">{problemTotal}</div>
           <div className="kc-summary__label">problemas</div>
         </div>
       </div>

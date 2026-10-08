@@ -111,11 +111,11 @@ function Done({ result }: { result: ExtractionDialogProps['result'] }) {
     <>
       <div className="extraction-numbers">
         <div>
-          <div className="extraction-numbers__value mono">{result.knowledgeComponents}</div>
+          <div className="extraction-numbers__value num">{result.knowledgeComponents}</div>
           <div className="extraction-numbers__label">conceitos</div>
         </div>
         <div>
-          <div className="extraction-numbers__value mono">{result.problemsCovered}</div>
+          <div className="extraction-numbers__value num">{result.problemsCovered}</div>
           <div className="extraction-numbers__label">problemas cobertos</div>
         </div>
       </div>
@@ -131,7 +131,7 @@ function Failed({ detail }: { detail: string | null }) {
       {detail ? (
         <div className="extraction__detail">
           <span className="extraction__detail-title">Detalhe técnico</span>
-          <span className="mono">{detail}</span>
+          <span>{detail}</span>
         </div>
       ) : null}
     </>

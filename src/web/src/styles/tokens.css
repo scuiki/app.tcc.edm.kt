@@ -56,11 +56,12 @@
   /* Texto de erro e hover do destrutivo */
   --color-danger-text: #a2191f;
 
-  --font-sans: 'Open Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
-  /* Contagem, percentual, data e identificador, com dígitos de largura fixa */
-  --font-mono: ui-monospace, 'SF Mono', Menlo, monospace;
-  /* As tabelas da Análise, no padrão das tabelas de trabalho acadêmico */
-  --font-table: Arial, Helvetica, sans-serif;
+  /* Títulos, menu, abas, botões, campos, etiquetas, balões e texto corrido */
+  --font-sans: 'Public Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  /* A tabela e o gráfico inteiros e todo número fora deles, na fonte da monografia */
+  --font-data: Arial, 'Liberation Sans', Arimo, Helvetica, sans-serif;
+  /* Só o bloco de código, porque a indentação depende da largura fixa */
+  --font-code: ui-monospace, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
 
   /* Barra superior */
   --shadow-bar: 0 1px 0 #e0e0e0, 0 2px 8px rgba(22, 22, 22, 0.06);
@@ -155,8 +156,9 @@ a:hover {
   color: var(--color-text-muted);
 }
 
-.mono {
-  font-family: var(--font-mono);
+/* Contagem, percentual, data, versão e identificador fora da tabela */
+.num {
+  font-family: var(--font-data);
   font-variant-numeric: tabular-nums;
 }
 
