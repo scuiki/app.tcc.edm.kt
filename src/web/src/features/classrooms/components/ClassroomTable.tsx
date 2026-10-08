@@ -5,6 +5,7 @@ import { Pencil, Plus, Trash2, Users } from 'lucide-react'
 import { EmptyState, QueryStates } from '../../../components/states/states'
 import { Button, IconButton } from '../../../components/ui/Button'
 import { Card } from '../../../components/ui/Card'
+import { ColumnHeader, DataTable } from '../../../components/ui/DataTable'
 import { SearchField } from '../../../components/ui/SearchField'
 import { formatCount, formatDate } from '../../../lib/format'
 import { classroomPath } from '../../../lib/paths'
@@ -65,39 +66,37 @@ export function ClassroomTable({ query, onCreate, onRename, onRemove }: Classroo
         }
       >
         {() => (
-          <div className="classroom-table__scroll">
-            <table className="classroom-table">
-              <thead>
+          <DataTable label="Turmas">
+            <thead>
+              <tr>
+                <ColumnHeader label="Turma" />
+                <ColumnHeader label="Problemas" />
+                <ColumnHeader label="Alunos" />
+                <ColumnHeader label="Criada em" />
+                <ColumnHeader label="Situação" />
+                <th scope="col" className="data-table__actions">
+                  <span className="visually-hidden">Ações</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {visible.map((classroom) => (
+                <ClassroomRow
+                  key={classroom.id}
+                  classroom={classroom}
+                  onRename={onRename}
+                  onRemove={onRemove}
+                />
+              ))}
+              {visible.length === 0 ? (
                 <tr>
-                  <th scope="col">Turma</th>
-                  <th scope="col">Problemas</th>
-                  <th scope="col">Alunos</th>
-                  <th scope="col">Criada em</th>
-                  <th scope="col">Situação</th>
-                  <th scope="col">
-                    <span className="visually-hidden">Ações</span>
-                  </th>
+                  <td colSpan={6} className="classroom-table__no-match">
+                    Nenhuma turma com esse nome.
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {visible.map((classroom) => (
-                  <ClassroomRow
-                    key={classroom.id}
-                    classroom={classroom}
-                    onRename={onRename}
-                    onRemove={onRemove}
-                  />
-                ))}
-                {visible.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="classroom-table__no-match">
-                      Nenhuma turma com esse nome.
-                    </td>
-                  </tr>
-                ) : null}
-              </tbody>
-            </table>
-          </div>
+              ) : null}
+            </tbody>
+          </DataTable>
         )}
       </QueryStates>
     </Card>
@@ -117,16 +116,16 @@ interface ClassroomRowProps {
 function ClassroomRow({ classroom, onRename, onRemove }: ClassroomRowProps) {
   return (
     <tr>
-      <td className="classroom-table__name">
+      <td className="data-table__name">
         <a href={`#${classroomPath(classroom.id)}`}>{classroom.name}</a>
       </td>
       <CountCell value={classroom.problem_count} />
       <CountCell value={classroom.student_count} />
-      <td className="num classroom-table__date">{formatDate(classroom.created_at)}</td>
-      <td>
+      <td className="data-table__num">{formatDate(classroom.created_at)}</td>
+      <td className="data-table__num">
         <ClassroomStatusBadge status={classroom.status} />
       </td>
-      <td className="classroom-table__actions">
+      <td className="data-table__actions">
         <IconButton
           icon={Pencil}
           label={`Renomear ${classroom.name}`}
@@ -145,8 +144,8 @@ function ClassroomRow({ classroom, onRename, onRemove }: ClassroomRowProps) {
 // Traço no lugar de zero, porque a turma sem dados ainda não tem o que contar
 function CountCell({ value }: { value: number }) {
   return (
-    <td className="num">
-      {value === 0 ? <span className="classroom-table__missing">—</span> : formatCount(value)}
+    <td className="data-table__num">
+      {value === 0 ? <span className="data-table__missing">—</span> : formatCount(value)}
     </td>
   )
 }

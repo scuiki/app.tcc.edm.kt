@@ -47,12 +47,8 @@ describe('SortableHeader', () => {
       <table>
         <thead>
           <tr>
-            <SortableHeader direction="desc" onSort={onSort}>
-              Taxa de acerto
-            </SortableHeader>
-            <SortableHeader direction={null} onSort={onSort}>
-              Execuções
-            </SortableHeader>
+            <SortableHeader label="Taxa de acerto" direction="desc" onSort={onSort} />
+            <SortableHeader label="Execuções" direction={null} onSort={onSort} />
           </tr>
         </thead>
       </table>,
@@ -62,5 +58,26 @@ describe('SortableHeader', () => {
     expect(inactive).toHaveAttribute('aria-sort', 'none')
     fireEvent.click(screen.getByRole('button', { name: 'Execuções' }))
     expect(onSort).toHaveBeenCalledTimes(1)
+  })
+
+  it('keeps the marker out of the button and shows the whole label on hover', () => {
+    render(
+      <table>
+        <thead>
+          <tr>
+            <SortableHeader
+              label="Erros de compilação por execução"
+              direction={null}
+              onSort={() => {}}
+              leading={<span role="img" aria-label="Dado estimado" />}
+            />
+          </tr>
+        </thead>
+      </table>,
+    )
+    const button = screen.getByRole('button', { name: 'Erros de compilação por execução' })
+    expect(button).not.toContainElement(screen.getByRole('img', { name: 'Dado estimado' }))
+    fireEvent.mouseEnter(screen.getByText('Erros de compilação por execução'))
+    expect(screen.getByRole('tooltip')).toHaveTextContent('Erros de compilação por execução')
   })
 })

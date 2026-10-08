@@ -1,7 +1,7 @@
 .concept-recurrence {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: center;
   gap: 4px;
 }
 
@@ -16,7 +16,7 @@
   font: inherit;
   color: var(--color-text);
   text-decoration: underline;
-  text-underline-offset: 2px;
+  text-underline-offset: 3px;
   cursor: pointer;
   white-space: nowrap;
 }
@@ -31,6 +31,6 @@
   padding: 6px 8px;
   background: var(--color-surface-subtle);
   font-size: 12px;
-  text-align: right;
+  text-align: center;
   color: var(--color-text-secondary);
 }

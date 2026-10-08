@@ -4,9 +4,32 @@ import { Trash2 } from 'lucide-react'
 import { describe, expect, it, vi } from 'vitest'
 
 import { Button, IconButton } from './Button'
+import { ColumnHeader, DataTable } from './DataTable'
 import { Dialog, DialogBody } from './Dialog'
 import { SelectField } from './SelectField'
 import { TextField } from './TextField'
+
+describe('DataTable', () => {
+  it('names the table and gives the column the marker, the label and the hint', () => {
+    render(
+      <DataTable label="Turmas">
+        <thead>
+          <tr>
+            <ColumnHeader
+              label="Distribuição"
+              leading={<span role="img" aria-label="Dado estimado" />}
+              hint={<button type="button" aria-label="Como ler" />}
+            />
+          </tr>
+        </thead>
+      </DataTable>,
+    )
+    const header = screen.getByRole('columnheader', { name: /Distribuição/ })
+    expect(screen.getByRole('table', { name: 'Turmas' })).toContainElement(header)
+    expect(header).toContainElement(screen.getByRole('img', { name: 'Dado estimado' }))
+    expect(header).toContainElement(screen.getByRole('button', { name: 'Como ler' }))
+  })
+})
 
 describe('Button and IconButton', () => {
   it('defaults to type button, so it never submits a form by accident', () => {

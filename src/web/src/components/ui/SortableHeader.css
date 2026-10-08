@@ -1,50 +1,26 @@
-.sortable-header {
-  padding: 0;
-}
-
-.sortable-header__content {
-  display: inline-flex;
-  align-items: center;
-  width: 100%;
-  padding-right: 6px;
-}
-
-.sortable-header--center .sortable-header__content {
-  justify-content: center;
-}
-
-.sortable-header--end .sortable-header__content {
-  justify-content: flex-end;
-}
-
+/* O botão ocupa só o rótulo e a seta, e a altura é a da linha do cabeçalho */
 .sortable-header__button {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  min-height: 38px;
-  padding: 6px 10px;
-  text-align: inherit;
+  gap: 2px;
+  min-width: 0;
+  padding: 0;
   border: 0;
   background: transparent;
   color: inherit;
   font: inherit;
-  font-weight: inherit;
-  text-align: inherit;
   cursor: pointer;
 }
 
-.sortable-header--center .sortable-header__button {
-  justify-content: center;
-}
-
-.sortable-header--end .sortable-header__button {
-  justify-content: flex-end;
+.sortable-header__button svg {
+  flex-shrink: 0;
 }
 
 .sortable-header__button:hover {
   color: var(--color-text);
 }
 
+/* A coluna ordenada leva o rótulo e a seta na cor do texto */
 .sortable-header[aria-sort='ascending'] .sortable-header__button,
 .sortable-header[aria-sort='descending'] .sortable-header__button {
   color: var(--color-text);

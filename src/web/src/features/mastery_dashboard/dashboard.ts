@@ -77,6 +77,9 @@ export function mergeConcepts(
   })
 }
 
+// A largura mínima das tabelas da Análise, abaixo dela elas rolam de lado dentro do cartão
+export const ANALYSIS_MIN_WIDTH = 900
+
 // Os textos que acompanham os números, os mesmos em toda a tela
 export const ESTIMATED_HINT = 'Dado estimado'
 

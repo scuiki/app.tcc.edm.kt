@@ -237,7 +237,7 @@ As peças de `src/web/src/components/` que levam um nome próprio do desenho.
 
 | Nome no código | O que é | Nome antigo |
 |---|---|---|
-| tabela de dados (`DataTable`) | A tabela comum do app, com rolagem lateral no próprio invólucro, nome à esquerda, números e etiquetas centralizados e botões à direita. O cabeçalho simples é o `ColumnHeader`, e o ordenável é o `SortableHeader`, com a mesma estrutura de marcador, rótulo truncado e dica | `.analysis-table`, `.classroom-table` |
+| tabela de dados (`DataTable`) | A tabela comum do app, com rolagem lateral no próprio invólucro, nome à esquerda, números e etiquetas centralizados e botões à direita. O cabeçalho simples é o `ColumnHeader`, e o ordenável é o `SortableHeader`, com a mesma estrutura de marcador, rótulo truncado (`ColumnLabel`, com o texto inteiro no balão) e dica | `.analysis-table`, `.classroom-table` |
 
 ## Rotas HTTP
 

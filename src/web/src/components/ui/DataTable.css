@@ -1,0 +1,104 @@
+/* A rolagem lateral e o espaço em volta da tabela ficam no invólucro, dentro do cartão */
+.data-table__scroll {
+  overflow-x: auto;
+  padding: 14px 16px;
+}
+
+/* Sem fio vertical, com o traço escuro sob o cabeçalho e no fim e o fio claro entre as linhas */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  border-bottom: 1px solid var(--color-text);
+  font-family: var(--font-data);
+  font-size: 13.5px;
+  color: var(--color-text);
+}
+
+.data-table th {
+  height: var(--table-row-height);
+  padding: 0 8px;
+  border-bottom: 1px solid var(--color-text);
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--color-text-body);
+  text-align: center;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.data-table td {
+  height: var(--table-row-height);
+  padding: 4px 8px;
+  vertical-align: middle;
+}
+
+/* Só o nome, na primeira coluna, fica à esquerda */
+.data-table th:first-child,
+.data-table td:first-child {
+  text-align: left;
+  padding-left: 4px;
+}
+
+.data-table tbody tr + tr td {
+  border-top: 1px solid var(--color-rule);
+}
+
+.data-table tbody tr:hover td {
+  background: var(--color-surface-subtle);
+}
+
+/* O marcador, o rótulo e a dica de um cabeçalho, centrados como os números abaixo deles */
+.data-table__th {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  max-width: 100%;
+  vertical-align: middle;
+}
+
+.data-table th:first-child .data-table__th {
+  justify-content: flex-start;
+}
+
+.data-table__label {
+  min-width: 0;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.data-table__name {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.data-table__num {
+  text-align: center;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.data-table__sub {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.data-table__missing {
+  font-size: 12.5px;
+  color: var(--color-text-disabled);
+}
+
+/* A coluna de botões é a única à direita */
+.data-table th.data-table__actions,
+.data-table td.data-table__actions {
+  text-align: right;
+  padding-right: 4px;
+  white-space: nowrap;
+}
+
+.data-table__actions > * + * {
+  margin-left: 6px;
+}
