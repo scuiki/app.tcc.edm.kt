@@ -64,11 +64,11 @@ export function useStartGeneration(assignmentId: number) {
 export function useCreateKnowledgeComponent(assignmentId: number) {
   const invalidate = useRefreshAssignment(assignmentId)
   return useMutation({
-    mutationFn: ({ name, problemId }: { name: string; problemId: number }) =>
+    mutationFn: ({ name, problemIds }: { name: string; problemIds: number[] }) =>
       sendJson<KnowledgeComponent>('POST', '/knowledge-components', {
         assignment_id: assignmentId,
         name,
-        problem_ids: [problemId],
+        problem_ids: problemIds,
       }),
     onSuccess: invalidate,
   })

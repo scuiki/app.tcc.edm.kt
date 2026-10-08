@@ -9,6 +9,7 @@ import {
   isEditable,
   knowledgeComponentsOf,
   listProblemIds,
+  normalizedName,
   problemCount,
   problemsOnlyMarkedBy,
   problemsWithoutKnowledgeComponent,
@@ -152,6 +153,17 @@ describe('listProblemIds and problemCount', () => {
   it('counts problems in the singular and plural', () => {
     expect(problemCount(1)).toBe('1 problema')
     expect(problemCount(3)).toBe('3 problemas')
+  })
+})
+
+describe('normalizedName', () => {
+  it('ignores the accents, the case and the spaces around the name', () => {
+    expect(normalizedName('  Laços ')).toBe('lacos')
+    expect(normalizedName('CONDIÇÃO')).toBe(normalizedName('condicao'))
+  })
+
+  it('keeps the spaces inside the name', () => {
+    expect(normalizedName('Laços aninhados')).toBe('lacos aninhados')
   })
 })
 

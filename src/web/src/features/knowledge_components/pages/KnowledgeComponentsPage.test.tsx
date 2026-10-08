@@ -165,6 +165,17 @@ function fakeApi({
       )
       return jsonResponse({ kc_id: kcId, problem_id: problemId })
     }
+    // O conceito novo é do professor, sem as estrelas, e já entra nos problemas marcados
+    if (path === '/knowledge-components' && method === 'POST') {
+      const body = JSON.parse(String(init!.body)) as { name: string; problem_ids: number[] }
+      const created = { id: 9, name: body.name, is_generated_by_llm: false }
+      problems[1] = problems[1].map((p) =>
+        body.problem_ids.includes(p.problem_id)
+          ? { ...p, knowledge_components: [...p.knowledge_components, created] }
+          : p,
+      )
+      return jsonResponse(created, 201)
+    }
     if (method !== 'GET') return jsonResponse({}, 200)
     throw new Error(`fetch inesperado ${method} ${path}`)
   })
@@ -250,10 +261,10 @@ describe('KnowledgeComponentsPage, the exercise in the address', () => {
     expect(screen.queryByRole('button', { name: /^Remover / })).not.toBeInTheDocument()
     expect(screen.queryByRole('columnheader', { name: 'Ações' })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /Aprovar/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Novo conceito' })).not.toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('tab', { name: 'Problemas' }))
     expect(screen.queryByRole('button', { name: /^Tirar / })).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /Adicionar conceito/ })).not.toBeInTheDocument()
     // A frase de consulta vale nas duas abas
     expect(
       screen.getByText(/Exercício treinado. Os conceitos ficam só para consulta/),
@@ -631,41 +642,6 @@ describe('KnowledgeComponentsPage, editing a draft', () => {
     )
   })
 
-  it('adds an existing concept found by the search', async () => {
-    const spy = await openDraft()
-    fireEvent.click(screen.getByRole('tab', { name: 'Problemas' }))
-    fireEvent.click(screen.getByRole('button', { name: 'Adicionar conceito ao problema 12' }))
-    const dialog = screen.getByRole('dialog', { name: 'Adicionar conceito' })
-    expect(within(dialog).queryByRole('radio', { name: /Laços/ })).not.toBeInTheDocument()
-    fireEvent.change(within(dialog).getByLabelText(/Buscar um conceito/), {
-      target: { value: 'rec' },
-    })
-    fireEvent.click(within(dialog).getByRole('radio', { name: /Recursão/ }))
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Adicionar' }))
-    await waitFor(() =>
-      expect(calls(spy, 'POST', '/knowledge-components/3/problems/12')).toHaveLength(1),
-    )
-  })
-
-  it('creates a new concept with the typed name', async () => {
-    const spy = await openDraft()
-    fireEvent.click(screen.getByRole('tab', { name: 'Problemas' }))
-    fireEvent.click(screen.getByRole('button', { name: 'Adicionar conceito ao problema 12' }))
-    const dialog = screen.getByRole('dialog', { name: 'Adicionar conceito' })
-    fireEvent.change(within(dialog).getByLabelText(/Buscar um conceito/), {
-      target: { value: 'Vetores' },
-    })
-    fireEvent.click(within(dialog).getByRole('radio', { name: /Criar “Vetores”/ }))
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Adicionar' }))
-    await waitFor(() => expect(calls(spy, 'POST', '/knowledge-components')).toHaveLength(1))
-    const [, init] = calls(spy, 'POST', '/knowledge-components')[0]
-    expect(JSON.parse(String(init!.body))).toEqual({
-      assignment_id: 1,
-      name: 'Vetores',
-      problem_ids: [12],
-    })
-  })
-
   it('renames a concept, saying which problems it marks', async () => {
     const spy = await openDraft()
     fireEvent.click(screen.getByRole('button', { name: 'Editar o nome de Laços' }))
@@ -674,6 +650,22 @@ describe('KnowledgeComponentsPage, editing a draft', () => {
     fireEvent.change(within(dialog).getByLabelText(/Nome/), { target: { value: 'Repetição' } })
     fireEvent.click(within(dialog).getByRole('button', { name: 'Salvar' }))
     await waitFor(() => expect(calls(spy, 'PUT', '/knowledge-components/1')).toHaveLength(1))
+  })
+
+  it('warns that the stars leave when renaming a name the model gave', async () => {
+    await openDraft()
+    fireEvent.click(screen.getByRole('button', { name: 'Editar o nome de Laços' }))
+    expect(screen.getByRole('dialog', { name: 'Editar conceito' })).toHaveTextContent(
+      'O nome atual veio do modelo de linguagem. Ao salvar, o nome passa a ser seu e as estrelas saem.',
+    )
+  })
+
+  it('says nothing about the stars when renaming a concept the teacher created', async () => {
+    await openDraft()
+    fireEvent.click(screen.getByRole('button', { name: 'Editar o nome de Recursão' }))
+    const dialog = screen.getByRole('dialog', { name: 'Editar conceito' })
+    expect(dialog).toHaveTextContent('Este conceito marca 1 problema: 20.')
+    expect(dialog).not.toHaveTextContent(/estrelas/)
   })
 
   it('refuses to remove a concept that is the only one of a problem', async () => {
@@ -690,6 +682,113 @@ describe('KnowledgeComponentsPage, editing a draft', () => {
     const dialog = screen.getByRole('alertdialog', { name: 'Remover Condicionais?' })
     fireEvent.click(within(dialog).getByRole('button', { name: 'Remover conceito' }))
     await waitFor(() => expect(calls(spy, 'DELETE', '/knowledge-components/2')).toHaveLength(1))
+  })
+})
+
+describe('KnowledgeComponentsPage, a new concept', () => {
+  async function openNewConcept(options: FakeApiOptions = {}) {
+    const spy = fakeApi(options)
+    renderWithClient(<KnowledgeComponentsPage classroomId={1} assignmentId={1} />)
+    fireEvent.click(await screen.findByRole('button', { name: 'Novo conceito' }))
+    const dialog = screen.getByRole('dialog', { name: 'Novo conceito' })
+    return {
+      spy,
+      dialog,
+      name: within(dialog).getByRole('textbox', { name: 'Nome' }),
+      create: within(dialog).getByRole('button', { name: 'Criar' }),
+      problem: (problemId: number) =>
+        within(dialog).getByRole('checkbox', { name: String(problemId) }),
+    }
+  }
+
+  it('sits left of the approval on the matrix tab, and no problem adds a concept anymore', async () => {
+    fakeApi()
+    renderWithClient(<KnowledgeComponentsPage classroomId={1} assignmentId={1} />)
+    const newConcept = await screen.findByRole('button', { name: 'Novo conceito' })
+    expect(newConcept.parentElement).toHaveClass('tabs__actions')
+    expect(newConcept.nextElementSibling).toBe(
+      screen.getByRole('button', { name: 'Aprovar conceitos' }),
+    )
+    fireEvent.click(screen.getByRole('tab', { name: 'Problemas' }))
+    expect(screen.queryByRole('button', { name: 'Novo conceito' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Adicionar/ })).not.toBeInTheDocument()
+  })
+
+  it('opens on the name, with no balloon, and a box per problem with only its number', async () => {
+    const { dialog, name, problem } = await openNewConcept({
+      draft: [
+        ...draftProblems(),
+        { problem_id: 31, statement: null, correct_run_count: 0, knowledge_components: [] },
+      ],
+    })
+    expect(name).toHaveFocus()
+    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument()
+    const group = within(dialog).getByRole('group', { name: 'Problemas' })
+    const boxes = within(group).getAllByRole('checkbox')
+    expect(boxes).toEqual([problem(5), problem(12), problem(20), problem(31)])
+    boxes.forEach((box) => expect(box).not.toBeChecked())
+    expect(problem(5)).toHaveAccessibleDescription(`${STATEMENT} 2 conceitos`)
+    expect(problem(12)).toHaveAccessibleDescription('sem enunciado 1 conceito')
+    expect(problem(31)).toHaveAccessibleDescription('sem enunciado sem conceito')
+    const empty = within(group).getByText('sem conceito')
+    expect(empty).toHaveClass('kc-new__count--empty')
+    expect(empty.querySelector('svg')).not.toBeNull()
+  })
+
+  it('enables Criar only with a name and at least one problem', async () => {
+    const { name, create, problem } = await openNewConcept()
+    expect(create).toBeDisabled()
+    fireEvent.change(name, { target: { value: 'Vetores' } })
+    expect(create).toBeDisabled()
+    fireEvent.click(problem(12))
+    expect(create).toBeEnabled()
+    fireEvent.change(name, { target: { value: '   ' } })
+    expect(create).toBeDisabled()
+    fireEvent.change(name, { target: { value: 'Vetores' } })
+    fireEvent.click(problem(12))
+    expect(create).toBeDisabled()
+  })
+
+  it('refuses a name that already exists in the field, ignoring accents and case', async () => {
+    const { spy, name, create, problem } = await openNewConcept()
+    fireEvent.click(problem(12))
+    fireEvent.change(name, { target: { value: '  lacos ' } })
+    expect(name).toHaveAttribute('aria-invalid', 'true')
+    expect(name).toHaveAccessibleDescription('Já existe um conceito com este nome.')
+    expect(create).toBeDisabled()
+    fireEvent.submit(name.closest('form')!)
+    expect(calls(spy, 'POST', '/knowledge-components')).toHaveLength(0)
+
+    fireEvent.change(name, { target: { value: 'Laços aninhados' } })
+    expect(name).not.toHaveAttribute('aria-invalid')
+    expect(create).toBeEnabled()
+  })
+
+  it('creates the concept on the marked problems and adds it at the end of the matrix', async () => {
+    const { spy, name, create, problem } = await openNewConcept()
+    fireEvent.change(name, { target: { value: ' Vetores ' } })
+    fireEvent.click(problem(20))
+    fireEvent.click(problem(12))
+    fireEvent.click(create)
+    await waitFor(() => expect(calls(spy, 'POST', '/knowledge-components')).toHaveLength(1))
+    const [, init] = calls(spy, 'POST', '/knowledge-components')[0]
+    expect(JSON.parse(String(init!.body))).toEqual({
+      assignment_id: 1,
+      name: 'Vetores',
+      problem_ids: [12, 20],
+    })
+    expect(
+      await screen.findByRole('button', { name: 'Vetores no problema 20', pressed: true }),
+    ).toBeInTheDocument()
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    // Pela recorrência a Vetores subiria acima da Recursão, e a ordem fixa a põe no fim
+    expect(rowNames()).toEqual(['Condicionais', 'Laços', 'Recursão', 'Vetores'])
+    expect(within(rowOf('Vetores')).queryByRole('img')).not.toBeInTheDocument()
+  })
+
+  it('says the new concept is born without stars', async () => {
+    const { dialog } = await openNewConcept()
+    expect(dialog).toHaveTextContent('O conceito novo nasce sem estrelas, porque o nome é seu.')
   })
 })
 
@@ -731,6 +830,7 @@ describe('KnowledgeComponentsPage, approving', () => {
     expect(await screen.findByRole('button', { name: 'Aprovar conceitos' })).toBeDisabled()
     expect(screen.getByRole('button', { name: 'Laços no problema 5' })).toBeEnabled()
     expect(screen.getByRole('button', { name: 'Editar o nome de Laços' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Novo conceito' })).toBeEnabled()
     expect(screen.getByText(/Conceitos aprovados. Mexer em qualquer conceito/)).toBeInTheDocument()
     expect(screen.queryByText(/Clique numa célula/)).not.toBeInTheDocument()
   })

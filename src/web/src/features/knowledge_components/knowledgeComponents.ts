@@ -109,6 +109,15 @@ export function problemsOnlyMarkedBy(
     .map((problem) => problem.problem_id)
 }
 
+// Sem acento, sem caixa e sem os espaços das pontas, para Laços e lacos serem o mesmo nome
+export function normalizedName(name: string): string {
+  return name
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .toLowerCase()
+    .trim()
+}
+
 // O backend também barra, e quando barra a mensagem dele vem junto, como veio
 export function editErrorText(error: Error): string {
   if (error instanceof ApiError && error.status === 409 && error.detail) {

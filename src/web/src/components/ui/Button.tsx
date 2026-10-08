@@ -10,7 +10,7 @@ type ButtonVariant = 'primary' | 'secondary' | 'destructive'
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant: ButtonVariant
   icon?: LucideIcon
-  // O compacto encosta nas etiquetas de 28px, como o Adicionar de cada problema
+  // O compacto é a ação dentro de um cartão, como o Novo conceito na faixa das abas
   size?: 'default' | 'compact'
 }
 

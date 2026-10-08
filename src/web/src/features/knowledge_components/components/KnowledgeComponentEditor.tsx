@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { Blocks, Check, FileCode } from 'lucide-react'
+import { Blocks, Check, FileCode, Plus } from 'lucide-react'
 
 import { OutcomeMessage } from '../../../components/OutcomeMessage'
 import { Button } from '../../../components/ui/Button'
@@ -21,8 +21,8 @@ import {
   problemsWithoutKnowledgeComponent,
   stableKnowledgeComponentOrder,
 } from '../knowledgeComponents'
-import { AddKnowledgeComponentDialog } from './AddKnowledgeComponentDialog'
 import { KnowledgeComponentMatrix } from './KnowledgeComponentMatrix'
+import { NewKnowledgeComponentDialog } from './NewKnowledgeComponentDialog'
 import { ProblemsCard } from './ProblemsCard'
 import { RemoveKnowledgeComponentDialog } from './RemoveKnowledgeComponentDialog'
 import { RenameKnowledgeComponentDialog } from './RenameKnowledgeComponentDialog'
@@ -39,7 +39,7 @@ const TABS: TabItem<EditorTab>[] = [
 // Um diálogo por vez, com o conceito e o problema pelo id, nunca uma cópia que envelhece
 type EditorDialog =
   | { kind: 'closed' }
-  | { kind: 'add'; problemId: number }
+  | { kind: 'new' }
   | { kind: 'rename' | 'remove'; kcId: number }
   | { kind: 'unlink'; target: UnlinkTarget }
 
@@ -136,15 +136,25 @@ export function KnowledgeComponentEditor({
           label="Conceitos do exercício"
           actions={
             tab === 'matrix' && editable ? (
-              <Button
-                variant="primary"
-                size="compact"
-                icon={Check}
-                disabled={!canApprove || approve.isPending}
-                onClick={handleApprove}
-              >
-                Aprovar conceitos
-              </Button>
+              <>
+                <Button
+                  variant="secondary"
+                  size="compact"
+                  icon={Plus}
+                  onClick={() => setDialog({ kind: 'new' })}
+                >
+                  Novo conceito
+                </Button>
+                <Button
+                  variant="primary"
+                  size="compact"
+                  icon={Check}
+                  disabled={!canApprove || approve.isPending}
+                  onClick={handleApprove}
+                >
+                  Aprovar conceitos
+                </Button>
+              </>
             ) : null
           }
         />
@@ -167,14 +177,14 @@ export function KnowledgeComponentEditor({
           <ProblemsCard
             problems={problems}
             onUnlink={editable ? (kc, problemId) => handleCellClick(kc.id, problemId) : undefined}
-            onAdd={editable ? (problemId) => setDialog({ kind: 'add', problemId }) : undefined}
             isBusy={unlink.isPending}
           />
         )}
       </Card>
-      <AddKnowledgeComponentDialog
+      <NewKnowledgeComponentDialog
         assignmentId={assignmentId}
-        problemId={dialog.kind === 'add' ? dialog.problemId : null}
+        open={dialog.kind === 'new'}
+        problems={problems}
         knowledgeComponents={knowledgeComponents}
         onClose={close}
       />

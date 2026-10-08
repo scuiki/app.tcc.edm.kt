@@ -1,19 +1,17 @@
-import { Plus, X } from 'lucide-react'
+import { X } from 'lucide-react'
 
-import { Button } from '../../../components/ui/Button'
 import type { KnowledgeComponent, ProblemKnowledgeComponents } from '../api/knowledgeComponents'
 import './ProblemsCard.css'
 
 interface ProblemsCardProps {
   problems: ProblemKnowledgeComponents[]
-  // Sem as ações, a lista fica só para consulta
+  // Sem a ação, a lista fica só para consulta
   onUnlink?: (kc: KnowledgeComponent, problemId: number) => void
-  onAdd?: (problemId: number) => void
   isBusy?: boolean
 }
 
-// A lista da aba Problemas, já dentro do cartão do editor, com as etiquetas e o Adicionar
-export function ProblemsCard({ problems, onUnlink, onAdd, isBusy }: ProblemsCardProps) {
+// A lista da aba Problemas, já dentro do cartão do editor, com as etiquetas
+export function ProblemsCard({ problems, onUnlink, isBusy }: ProblemsCardProps) {
   return (
     <ul className="problem-list">
       {problems.map((problem) => (
@@ -44,18 +42,6 @@ export function ProblemsCard({ problems, onUnlink, onAdd, isBusy }: ProblemsCard
             ))}
             {problem.knowledge_components.length === 0 ? (
               <span className="problem-list__empty">Sem nenhum conceito</span>
-            ) : null}
-            {onAdd ? (
-              <Button
-                variant="secondary"
-                size="compact"
-                icon={Plus}
-                disabled={isBusy}
-                onClick={() => onAdd(problem.problem_id)}
-                aria-label={`Adicionar conceito ao problema ${problem.problem_id}`}
-              >
-                Adicionar
-              </Button>
             ) : null}
           </div>
         </li>

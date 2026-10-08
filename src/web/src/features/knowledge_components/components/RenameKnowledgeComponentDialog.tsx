@@ -65,6 +65,12 @@ function RenameForm({
           Este conceito marca {problemCount(kc.problemIds.length)}: {listProblemIds(kc.problemIds)}.
           O nome novo passa a valer em todos eles.
         </p>
+        {kc.is_generated_by_llm ? (
+          <p className="kc-dialog__note">
+            O nome atual veio do modelo de linguagem. Ao salvar, o nome passa a ser seu e as
+            estrelas saem.
+          </p>
+        ) : null}
       </DialogBody>
       <DialogFooter>
         <Button variant="secondary" onClick={onDone}>
