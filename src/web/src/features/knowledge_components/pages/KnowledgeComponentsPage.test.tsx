@@ -1529,7 +1529,11 @@ describe('KnowledgeComponentsPage, the origin of a concept', () => {
     await waitFor(() => expect(calls(spy, 'PUT', '/knowledge-components/1')).toHaveLength(1))
 
     fireEvent.click(await screen.findByRole('button', { name: 'Ver a origem de Repetição' }))
-    const reopened = await screen.findByRole('dialog', { name: 'Repetição' })
+    const reopened = screen.getByRole('dialog', { name: 'Repetição' })
+    // Sem a resposta de antes da edição no cache, a origem reabre carregando
+    expect(within(reopened).getByRole('status')).toHaveTextContent(
+      'Carregando a origem do conceito…',
+    )
     await panelOf(reopened, 5)
     expect(calls(spy, 'GET', '/knowledge-components/1/origin')).toHaveLength(2)
     const heading = within(reopened).getByRole('heading', { level: 2, name: 'Repetição' })

@@ -58,12 +58,14 @@ export function useGenerationJob(jobId: number | null, onFinished: () => void) {
 // Toda edição muda os conceitos do exercício e pode mudar a situação dele e a origem dos conceitos
 export function useRefreshAssignment(assignmentId: number) {
   const queryClient = useQueryClient()
-  return () =>
-    Promise.all([
+  return () => {
+    // A origem sai do cache para não reabrir com as abas de antes da edição
+    queryClient.removeQueries({ queryKey: knowledgeComponentKeys.origins })
+    return Promise.all([
       queryClient.invalidateQueries({ queryKey: knowledgeComponentKeys.problemsOf(assignmentId) }),
       queryClient.invalidateQueries({ queryKey: assignmentKeys.all }),
-      queryClient.invalidateQueries({ queryKey: knowledgeComponentKeys.origins }),
     ])
+  }
 }
 
 export function useStartGeneration(assignmentId: number) {

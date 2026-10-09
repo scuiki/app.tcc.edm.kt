@@ -1187,4 +1187,4 @@ aceitar.
 | 10 | Concluída, commit `f502404` |
 | 11 | Concluída, commit `78401d0` |
 | 12 | Concluída, no commit desta etapa |
-| Revisão independente da tela | A fazer |
+| Revisão independente da tela | Concluída, com a correção no commit seguinte ao da etapa 12 (a origem sai do cache a cada edição) |
