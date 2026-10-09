@@ -193,12 +193,13 @@ As de A a H já estavam decididas no desenho e só faltava implementar. As de I 
 - A contagem de execuções corretas e o código das soluções vêm do `ISubmissionRepository`, porque
   `classroom_import` é a dona da tabela `submission`, e `knowledge_components` já importa essa
   interface (`run_kc_generation_use_case.py:7`). Os dois métodos novos,
-  `count_correct_runs_by_problem()` e `get_codes()`, usam SQL direto, sem DataFrame, com o mesmo
-  filtro do `list_correct_runs()` (`sqlite_submission_repository.py:79-84`). A contagem acrescenta
+  `count_correct_runs_by_problem()` e `get_codes()`, usam SQL direto, sem DataFrame. A contagem usa
+  o mesmo filtro do `list_correct_runs()` (`sqlite_submission_repository.py:79-84`) e acrescenta
   `AND problem_id IS NOT NULL`, porque a coluna aceita nulo (`0011_problem_table.sql:20`) e o
   `GROUP BY` devolveria uma chave nula, que o `int()` do dicionário não converte. O gerador já
   descarta o nulo do mesmo jeito (`kcgen_kt_generator.py:93`). Um problema sem acerto não volta no
-  `GROUP BY`, e o caso de uso completa com 0.
+  `GROUP BY`, e o caso de uso completa com 0. O `get_codes()` filtra só pelo id, porque a solução
+  amostrada já aponta uma execução correta.
 - A data da extração vem de `find_latest_done()`, um método novo do repositório do job, que hoje
   não lê por exercício (`kc_generation_job_repository.py:12-26`). O `updated_at` do job concluído é
   gravado pelo `mark_done()` (`sqlite_kc_generation_job_repository.py:73-76`).
@@ -1152,8 +1153,9 @@ exercício treinado do banco, o A439 antigo, que serve para conferir a tela Aná
 ordem segura é esta.
 1. O Leo revisa e aprova os conceitos do A439 da turma 6 na tela nova. Os 10 problemas têm
    conceito, então o Aprovar habilita.
-2. O Leo treina o A439 da turma 6 pela tela, na GPU, em alguns minutos. É o primeiro treino real
-   pela tela (`IMPLEMENTATION_PLAN.md:215-216`), e ele congela os conceitos desse exercício.
+2. O Leo treina o A439 da turma 6 pela tela, na GPU, em alguns minutos. O treino pela tela já foi
+   testado pelo Leo em 08/10/2026, na turma 7 "Teste novo", e este treino congela os conceitos
+   do A439.
 3. Só então o Leo apaga a turma 1 e a turma 5 pela tela Turmas, com soft delete.
 
 Apagar a turma 1 antes do treino deixa o app sem exercício treinado até lá, o que o Leo pode
@@ -1168,21 +1170,21 @@ aceitar.
 
 | Etapa | Situação |
 |---|---|
-| 0 | Concluída |
+| 0 | Concluída, commit `311dfbb` |
 | 1 | Concluída, sem commit. O balão do `InfoHint` e do `GeneratedByML` nasce por baixo do diálogo do aluno, filho do `body` e encoberto pelo `<dialog>` modal |
-| 2 | A fazer |
-| 3 | A fazer |
-| 4 | A fazer |
-| 5a | A fazer |
-| 5b | A fazer |
-| 6 | A fazer |
-| Recriação da api | A fazer, depois da etapa 6 |
-| 7 | A fazer |
-| 8 | A fazer |
-| 9a | A fazer |
-| 9b | A fazer |
-| 9c | A fazer |
-| 10 | A fazer |
-| 11 | A fazer |
-| 12 | A fazer |
+| 2 | Concluída, commit `e574571` |
+| 3 | Concluída, commit `04c8824` |
+| 4 | Concluída, commit `6d31cc7` |
+| 5a | Concluída, commit `83af401` |
+| 5b | Concluída, commit `23f3130` |
+| 6 | Concluída, commit `b37cb13` |
+| Recriação da api | Concluída em 08/10/2026, a pedido do Leo, depois da etapa 6, com a cópia de segurança e o ensaio das migrações (banco na versão 22) |
+| 7 | Concluída, commit `77b7635` |
+| 8 | Concluída, commit `e210085` |
+| 9a | Concluída, commit `b4e7e79` |
+| 9b | Concluída, commit `49dadd7` |
+| 9c | Concluída, commit `4ad1127` |
+| 10 | Concluída, commit `f502404` |
+| 11 | Concluída, commit `78401d0` |
+| 12 | Concluída, no commit desta etapa |
 | Revisão independente da tela | A fazer |

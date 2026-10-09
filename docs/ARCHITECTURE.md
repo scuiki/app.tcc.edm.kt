@@ -22,9 +22,9 @@ Os nomes seguem o [glossário](GLOSSARY.md).
 |---|---|
 | `api/classrooms/` | `Classroom`, a turma do professor, o CRUD dela e o `ClassroomStatus` |
 | `api/assignments/` | `Assignment` e o ciclo de `AssignmentStatus`. O assignment pertence a uma turma, e todas as outras funcionalidades dependem dele |
-| `api/assignments/problems/` | `Problem`, os problemas de cada assignment e o enunciado de cada um, quando o pacote traz o arquivo de enunciados. A descrição que o LLM deduzia só existe nas turmas extraídas antes do KCGen-KT novo. É uma sub-funcionalidade de `assignments`, com camadas próprias |
+| `api/assignments/problems/` | `Problem`, os problemas de cada assignment e o enunciado de cada um, quando o pacote traz o arquivo de enunciados. É uma sub-funcionalidade de `assignments`, com camadas próprias |
 | `api/classroom_import/` | Upload do ProgSnap2, validação, limpeza, checagem de treinabilidade e o arquivo opcional de enunciados |
-| `api/knowledge_components/` | Gerar os conceitos pelo KCGen-KT, gravando as soluções amostradas (`sampled_solution`), os KCs candidatos (`candidate_kc`) e os trechos de cada conceito (`kc_evidence`), editar os conceitos de cada problema e aprová-los |
+| `api/knowledge_components/` | Gerar os conceitos pelo KCGen-KT, gravando as soluções amostradas (`sampled_solution`), os KCs candidatos (`candidate_kc`) e os trechos de cada conceito (`kc_evidence`), editar os conceitos de cada problema e aprová-los, e mostrar a origem de cada conceito, com o enunciado, as justificativas traduzidas, o trecho e as soluções que o modelo leu |
 | `api/model_training/` | Disparar e acompanhar o treino do Code-DKT, guardar os modelos |
 | `api/mastery_dashboard/` | O que aconteceu nas execuções e o que o modelo prevê, por problema, conceito e aluno |
 | `api/shared/` | O que todas usam: erros, base de use case, banco, trava, settings |
@@ -191,10 +191,11 @@ start_training_use_case_test.py
 - **Um pré-requisito no banco sai de uma função de `tests/fixtures/`.** A turma e o assignment de
   que um teste precisa nascem de `add_classroom` (`tests/fixtures/classrooms.py`) e de
   `add_assignment` (`tests/fixtures/assignments.py`), e os problemas de `add_problems`, em SQL
-  direto. São funções comuns, importadas pelo teste e não registradas no `conftest.py`, e o valor
-  que o teste confere vai explícito na chamada. Só não as usam o teste de migration, que grava o
-  SQL de cada versão do schema, e o teste que confere a própria criação, seja o repositório sob
-  teste, seja a rota HTTP.
+  direto. Uma extração concluída, com as execuções, as soluções amostradas, os KCs candidatos e os
+  trechos, nasce de `add_extraction` (`tests/fixtures/knowledge_components.py`). São funções
+  comuns, importadas pelo teste e não registradas no `conftest.py`, e o valor que o teste confere
+  vai explícito na chamada. Só não as usam o teste de migration, que grava o SQL de cada versão do
+  schema, e o teste que confere a própria criação, seja o repositório sob teste, seja a rota HTTP.
 - Em `tests/` ficam só os testes de regressão do Code-DKT e do KCGen-KT no A439 (o sistema
   inteiro, com GPU e o CSEDM real), a comparação com as Tabelas 1 e 2 de Shi et al. (2022), os
   dados de exemplo em `tests/data/` e as fixtures de `tests/fixtures/`. A comparação tem o marcador
@@ -228,9 +229,11 @@ camadas de componente e uma fronteira de conhecimento entre elas.
 ```
 app/          o app shell: barra superior, menu em árvore, a tabela de rotas e o ErrorBoundary
 components/
-  ui/         primitivas sem domínio (Button, Card, DataTable, Dialog, Tabs, Tooltip, RatioBar…)
+  ui/         primitivas sem domínio (Button, Card, CodeBlock, DataTable, Dialog, Tabs, Tooltip,
+              RatioBar…)
   states/     os quatro estados de toda tela (carregando, erro, vazio, conteúdo)
-  …           outros componentes de produto, como o PageHeader, o Breadcrumb e o GeneratedByML
+  …           outros componentes de produto, como o PageHeader, o Breadcrumb, o FactsLine e os
+              marcadores de modelo (GeneratedByML e GeneratedByLLM)
 features/
   <funcionalidade>/
     api/        os hooks de dados (TanStack Query) e os tipos do DTO
@@ -273,9 +276,12 @@ arquivo real. O ESLint não serve aqui, porque com imports relativos `../../comp
   teste próprio fica no arquivo de quem o usa.
 - Estado é o mínimo que não se calcula. Estados que se excluem viram um `status` só, e uma seleção
   guarda o id, nunca o objeto.
-- `useEffect` só sincroniza com algo de fora do React. Hoje são o `showModal()` do `Dialog`, o
-  aviso de `beforeunload` dos diálogos de job e o `localStorage` do menu. A rota lê o hash com
-  `useSyncExternalStore`, sem effect.
+- `useEffect` só sincroniza com algo de fora do React. Hoje são o `showModal()` do `Dialog`, a
+  rolagem do `CodeBlock` até o trecho destacado, o aviso de `beforeunload` dos diálogos de job e o
+  `localStorage` do menu. A rolagem espera um quadro (`requestAnimationFrame`), porque na primeira
+  abertura com o dado já no cache o `CodeBlock` nasce no mesmo commit do `showModal()`, e o effect
+  do filho roda antes do effect do `Dialog`, com o diálogo ainda fechado e sem altura para rolar.
+  A rota lê o hash com `useSyncExternalStore`, sem effect.
 - Um formulário nasce limpo por remontagem, nunca por effect de reset. O `Dialog` só renderiza o
   conteúdo aberto.
 - Sem `useMemo`, `useCallback` ou `memo` defensivos.
@@ -302,7 +308,25 @@ docker compose run --rm --no-deps web sh -c "npx tsc -b && npx eslint . && npx p
 ```
 
 Os tipos da api saem do OpenAPI com `npm run types`, com a api no ar, e o `schema.d.ts` nunca é
-editado à mão. A regra dos comentários vale também aqui (só `//` de uma linha, e o `/* */` de uma
-linha no CSS), verificada pelo mesmo `src/api/code_comments_test.py`. O `tokens.test.ts`, ao lado
-do `architecture.test.ts`, confere que todo token lido está declarado no `tokens.css` e que nenhuma
+editado à mão. A api só serve o contrato novo depois de recriada, o que aplica as migrations ao
+`app.db`. Sem ela no ar, ou antes de recriá-la com o código novo, o OpenAPI sai da imagem do
+backend, que o gera sem rodar o lifespan e sem abrir banco, e o `openapi-typescript` do container
+`web` o lê do arquivo. O `$OUT` é uma pasta fora do repositório, e o `--no-deps` é obrigatório,
+porque sem ele o `run` sobe a api pelo `depends_on`.
+
+```bash
+docker run --rm --security-opt label=disable --network none -e PYTHONDONTWRITEBYTECODE=1 \
+  -e PYTHONPATH=/app/src -v "$PWD":/app:ro -v "$OUT":/out -w /tmp edmkt-core:dev \
+  python -c "import json; from api.main import create_app; open('/out/openapi.json','w').write(json.dumps(create_app().openapi(), indent=1))"
+docker compose run --rm --no-deps --user "$(id -u):$(id -g)" -e HOME=/tmp -v "$OUT":/out \
+  web npx openapi-typescript /out/openapi.json -o src/http/schema.d.ts
+```
+
+Nos testes, o Vitest deixa vazio o CSS que os componentes importam. Só o importado com `?raw` chega
+inteiro (`css.include` no `vite.config.ts`), e o `ui.test.tsx` injeta o `Dialog.css` assim num
+`<style>`, para conferir a largura e a altura máxima do diálogo.
+
+A regra dos comentários vale também aqui (só `//` de uma linha, e o `/* */` de uma linha no CSS),
+verificada pelo mesmo `src/api/code_comments_test.py`. O `tokens.test.ts`, ao lado do
+`architecture.test.ts`, confere que todo token lido está declarado no `tokens.css` e que nenhuma
 cor literal mora fora dele.

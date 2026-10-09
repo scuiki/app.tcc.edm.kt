@@ -238,9 +238,11 @@ de cada execução, e o contrato de colunas do dado limpo, que o treino usa, fic
 de cada problema e o código das soluções da origem do conceito são consultas novas desse
 repositório, e não de `knowledge_components`, porque a `classroom_import` é a dona da tabela
 `submission`, e `knowledge_components` já importa a interface dela para a extração. As duas
-consultas usam SQL direto, sem montar o DataFrame do dado limpo, com o mesmo filtro do
-`list_correct_runs()`. A contagem deixa de fora a execução sem problema, porque a coluna aceita nulo
-e o agrupamento devolveria uma chave nula, que não é o número de nenhum problema.
+consultas usam SQL direto, sem montar o DataFrame do dado limpo. A contagem usa o mesmo filtro do
+`list_correct_runs()` e deixa de fora a execução sem problema, porque a coluna aceita nulo e o
+agrupamento devolveria uma chave nula, que não é o número de nenhum problema. O código das soluções
+filtra só pelo id da execução, porque a solução amostrada já aponta uma execução correta do
+exercício, e um filtro de acerto repetiria o que a extração já decidiu.
 
 **O trecho é procurado na solução sem contar os espaços.** O LLM devolve o trecho como texto, e o
 app o procura na solução que ele apontou, com qualquer quantidade de espaço, tabulação ou quebra de
@@ -569,6 +571,13 @@ um problema que continua marcado por ele em outros é rápido e fácil de refaze
 mesma célula. Tirar do último problema remove o conceito, e sem restaurar. O xis das etiquetas, que
 fazia o mesmo, saiu com a matriz.
 
+**A célula ignora o segundo clique enquanto o pedido dela está a caminho.** Num clique duplo, o
+segundo pedido falhava na api, porque o vínculo já estava feito, ou já tinha sido desfeito, e o
+cartão mostrava um erro depois de uma edição que deu certo. A tela guarda as células com um pedido
+no ar num `useRef` e ignora o clique nelas. Não é um estado, porque o segundo clique do clique duplo
+chega antes da próxima renderização, e um estado ainda diria que a célula está livre. As outras
+células seguem livres.
+
 **O diálogo de extração não fecha enquanto o job roda.** Como reencontrar uma extração em andamento
 ficou fora do escopo, fechar perderia o acompanhamento. O Esc é bloqueado, o `Dialog` reabre se o
 navegador o fechar mesmo assim (o Chrome fecha no segundo Esc) e a aba pede confirmação antes de
@@ -650,6 +659,15 @@ Presa, ela cobre as colunas que passam por baixo, e o fio à direita marca essa 
 rolado, o fio seria só um fio vertical, que as tabelas não têm, então ele aparece quando o
 invólucro rola e some quando volta ao início.
 
+**A coluna presa da matriz cobre o recuo do invólucro.** O invólucro da `DataTable` tem um recuo de
+16px, e as colunas que rolam passavam por essa faixa, à esquerda da coluna presa. Um `::before` da
+célula, de 16px e com o fundo do cartão, cobre a faixa.
+
+**O invólucro da `DataTable` tem `position: relative`.** O cabeçalho das ações da matriz tem um
+texto escondido para o leitor de tela, que é absoluto, e sem um ancestral posicionado ele não ficava
+preso ao invólucro e alargava a página. Com o invólucro posicionado, o texto escondido fica dentro
+dele, que é quem rola.
+
 **Os estágios da extração e do treino são azuis.** A lista de estágios serve a dois diálogos, e os
 dois são trabalho de modelo, o modelo de linguagem na extração de conceitos e o Code-DKT no treino.
 Até a versão 3 do design a extração ficava preta, porque o azul era só do Code-DKT. Com as estrelas
@@ -668,6 +686,15 @@ larga comporta o enunciado do problema, que o balão do número mostra na matriz
 acima de tudo o que está no `body`, então um balão posto no `body` nasceria por baixo do diálogo,
 como as dicas da origem do conceito. O balão vai para o `dialog[open]` mais próximo do elemento, e
 para o `body` fora de diálogo, o que vale também para o diálogo do aluno da Análise.
+
+**O balão no foco só abre com o anel de foco visível.** Um diálogo aberto por um clique foca o
+primeiro controle ao abrir, e esse foco não é de quem usa o teclado. Com o balão nascendo dentro do
+diálogo, o do primeiro controle, uma dica como a do domínio no diálogo do aluno da Análise,
+apareceria sozinho a cada abertura por clique, sem o professor ter passado o mouse. O `Tooltip`
+confere o `:focus-visible` no foco, o mesmo critério do anel de foco, então o foco que o diálogo dá
+ao abrir depois de um clique não abre o balão. Quem tabula continua vendo o balão, e quem abre o
+diálogo pelo Enter também, porque aí o anel vale e o balão do primeiro controle aparece. O hover não
+muda.
 
 **A janela não rola, só o conteúdo.** A barra superior e o menu ficam parados sem `sticky`, que
 pediria a barra sticky também. A tabela oculta do histograma, que dá os números ao leitor de tela,
@@ -785,6 +812,11 @@ ordem só é refeita quando o professor sai da tela e volta. A matriz não tem o
 **Mesclar conceitos saiu.** Com dois conceitos duplicados, o professor remove um e o outro fica, e
 isso é mais simples de entender do que um diálogo de mescla.
 
+**O cartão do estado vazio não tem título.** A maquete aprovada não dá título ao pronto para
+conceitos, só o estado vazio com os blocos, a frase e o Extrair conceitos, então o cartão perdeu o
+"Conceitos por problema" que tinha. O exercício só com estatísticas perdeu o título junto, porque os
+dois estados vazios dividem o mesmo cartão, e o estado vazio já diz sozinho o que falta.
+
 **A origem do conceito mostra as soluções que o modelo de linguagem leu e onde o conceito aparece
 nelas.** O professor precisa ver de onde o conceito veio para validá-lo, e a evidência é o código.
 Não há como medir a influência de cada linha num modelo acessado pela CLI, então os trechos vêm de
@@ -804,7 +836,9 @@ da matriz, e o código das soluções de todos os conceitos iria junto toda vez.
 quando o professor abre a lupa e traz só os problemas daquele conceito, com o enunciado, as
 justificativas, o trecho e até cinco soluções de cada um. O vínculo do professor se reconhece pela
 falta de KC candidato no par, e o trecho fica depois de desligar e religar, porque os KCs candidatos
-e os trechos não têm soft delete.
+e os trechos não têm soft delete. O título e a linha de fatos do diálogo vêm da rota da tela, que já
+está carregada, e só o corpo vem da rota da origem, então o título fica à vista enquanto a origem
+carrega.
 
 **O diálogo da origem tem 760px, e os outros, 440px.** O código Java das soluções pede largura. No
 A439, em 440px, 34 das 50 soluções teriam ao menos uma linha rolando de lado, e em 760px, 3. A
@@ -854,6 +888,12 @@ de seguir. Quando a edição já tem confirmação própria, como remover e tira
 conceito, ou é um formulário, como renomear e o Novo conceito, o aviso é uma linha dentro dele,
 para não abrir dois diálogos seguidos. Depois da edição o exercício está em rascunho, o Aprovar
 volta a habilitar e não há mais o que avisar, então a tela não guarda se já avisou.
+
+**O aviso de reabrir fica aberto até o pedido voltar.** Seguir no aviso do clique na célula manda o
+pedido da edição. Se o aviso fechasse no clique, a matriz por baixo ficaria livre antes de o pedido
+voltar, e o segundo clique de um clique duplo no botão de seguir cairia numa célula. O aviso fica
+aberto, com os botões desabilitados e o Esc bloqueado, e fecha quando o pedido volta, com sucesso ou
+não. O erro aparece na mensagem do cartão, como o do clique direto, e não dentro do aviso.
 
 **O app não tem barra fixa presa à janela.** A barra de ação no rodapé existia na importação e nos
 conceitos. Ela separava os botões do que eles enviam e ficava sobre o conteúdo. As ações de um

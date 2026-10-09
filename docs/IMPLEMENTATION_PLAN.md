@@ -4,13 +4,14 @@ Documento para retomar o trabalho. Ele junta o contexto das iterações de desig
 hoje e a separação inicial do trabalho em blocos de backend e de frontend. O plano de cada bloco
 ainda vai ser discutido, e este arquivo é o ponto de partida dessa discussão, não o plano fechado.
 
-Estado em 30/09/2026, com a base concluída em 08/10/2026 pelo `FRONTEND_BASE_PLAN.md`. A
-seção 9 registra as decisões da discussão de 30/09 e 01/10/2026 e a ordem nova, que põe a fidelidade
-à literatura antes da base.
+Estado em 08/10/2026, com a base concluída pelo `FRONTEND_BASE_PLAN.md` e a tela Conceitos pelo
+`CONCEPTS_SCREEN_PLAN.md`. A seção 9 registra as decisões da discussão de 30/09 e 01/10/2026 e a
+ordem nova, que põe a fidelidade à literatura antes da base. O treino pela tela foi testado de ponta
+a ponta pelo Leo em 08/10/2026, na turma 7 "Teste novo", em cerca de 2 min 20 s.
 
 ## 1. Contexto
 
-Entre 29 e 30/09/2026 o design do app foi refeito em cinco versões, todas no `main` e no GitHub.
+Entre 29/09 e 08/10/2026 o design do app foi refeito em seis versões, todas no `main`.
 
 | Versão | Commit | O que definiu |
 |---|---|---|
@@ -19,6 +20,7 @@ Entre 29 e 30/09/2026 o design do app foi refeito em cinco versões, todas no `m
 | v3 | `129959a` | Turmas e Turma, com a tabela de exercícios, os alunos da turma paginados e as execuções por dia |
 | v4 | `8da55ed` | Conceitos, com a matriz problema × conceito e a origem do conceito, e os marcadores de modelo |
 | v5 | `fdaaadc` | Importar dados, com os requisitos do pacote, e o fim da barra fixa no app |
+| v6 | `e574571` | A tela Conceitos, com a matriz problema × conceito, o enunciado, o aviso de reabrir a aprovação e a origem do conceito empilhada |
 
 A fonte da verdade são quatro arquivos, e este documento não repete o que eles dizem.
 
@@ -38,19 +40,19 @@ Várias opções delas foram descartadas depois, então elas não servem de refe
 
 ### Frontend
 
-A base do design v5 está feita pelo `FRONTEND_BASE_PLAN.md`, concluído em 08/10/2026. O
-`tokens.css` tem as cores, as sombras, o raio 0 e a tipografia da v5, os componentes que já existiam
-seguem a linguagem nova, e as tabelas da Análise e de Turmas usam a `DataTable`. As telas ainda têm
-a organização anterior ao design, e a importação e os conceitos usam o `PageActionBar`, a barra fixa
-no rodapé.
+A base do design v5 está feita pelo `FRONTEND_BASE_PLAN.md`, concluído em 08/10/2026. O `tokens.css`
+tem as cores, as sombras, o raio 0 e a tipografia da v5, os componentes que já existiam seguem a
+linguagem nova, e as tabelas da Análise e de Turmas usam a `DataTable`. A tela Conceitos foi refeita
+em seguida, pelo `CONCEPTS_SCREEN_PLAN.md`, e as outras quatro telas ainda têm a organização
+anterior ao design. A importação usa o `PageActionBar`, a barra fixa no rodapé, que sai com ela.
 
-Os componentes compartilhados estão em `src/web/src/components/` (`Breadcrumb`, `FileDropZone`,
-`GeneratedByML`, `OutcomeMessage`, `PageActionBar`, `PageHeader`, `states`) e em
-`src/web/src/components/ui/` (`Badge`, `Button`, `Card`, `DataTable`, `Dialog`, `Histogram`,
-`InfoHint`, `RatioBar`, `SearchField`, `SelectField`, `SortableHeader`, `StageList`, `Tabs`,
-`TextField`, `Tooltip`). O menu e a barra superior estão em `src/web/src/app/`. As dependências
-relevantes são Chart.js 4.5.1 com react-chartjs-2 5.3.1 e lucide-react 1.21.0, que já têm tudo o que
-o design pede.
+Os componentes compartilhados estão em `src/web/src/components/` (`Breadcrumb`, `FactsLine`,
+`FileDropZone`, `GeneratedByLLM`, `GeneratedByML`, `OutcomeMessage`, `PageActionBar`, `PageHeader`,
+`states`) e em `src/web/src/components/ui/` (`Badge`, `Button`, `Card`, `CodeBlock`, `DataTable`,
+`Dialog`, `Histogram`, `InfoHint`, `RatioBar`, `SearchField`, `SelectField`, `SortableHeader`,
+`StageList`, `Tabs`, `TextField`, `Tooltip`). O menu e a barra superior estão em `src/web/src/app/`.
+As dependências relevantes são Chart.js 4.5.1 com react-chartjs-2 5.3.1 e lucide-react 1.21.0, que
+já têm tudo o que o design pede.
 
 ### Backend
 
@@ -61,14 +63,16 @@ As rotas de hoje, agrupadas por funcionalidade.
 | classrooms | `GET/POST /classrooms`, `PUT/DELETE /classrooms/{id}` |
 | assignments | `GET /assignments`, `GET /assignments/{id}/problems`, `GET /assignments/{id}/problems/knowledge-components` |
 | classroom_import | `POST /classroom-imports`, `POST /classroom-imports/process` |
-| knowledge_components | geração (`POST /knowledge-components/generation-jobs`, `GET .../generation-jobs/{job_id}`), criar, renomear, remover, `POST /merge`, `POST /approve`, ligar e desligar conceito de problema |
+| knowledge_components | geração (`POST /knowledge-components/generation-jobs`, `GET .../generation-jobs/{job_id}`), listar, criar, renomear, remover, `POST /approve`, ligar e desligar conceito de problema, e a origem do conceito (`GET /knowledge-components/{kc_id}/origin`) |
 | model_training | `POST /training-jobs`, `GET /training-jobs/{id}`, `GET /training-jobs/{id}/loss-history` |
 | mastery_dashboard | `GET /mastery-dashboard/{assignment_id}/submission-statistics`, `.../mastery`, `.../students`, `.../students/{student_id}` |
 
 O que já sai da API e as telas usam hoje inclui a contagem de alunos e problemas da turma e a
 situação dela, a lista de exercícios com nome e situação, as estatísticas por problema e por
-conceito, o domínio com a versão e a data do modelo, a lista de alunos e o detalhe de um aluno, e o
-envio do pacote com as tabelas encontradas (`raw_dir`, `main_tables`, `code_snapshots`).
+conceito, o enunciado e a contagem de execuções corretas de cada problema com os conceitos dele e a
+data da extração, a origem de cada conceito, o domínio com a versão e a data do modelo, a lista de
+alunos e o detalhe de um aluno, e o envio do pacote com as tabelas encontradas (`raw_dir`,
+`main_tables`, `code_snapshots`).
 
 ## 3. Blocos de backend
 
@@ -89,16 +93,16 @@ em 30/09/2026 (seção 9), as faixas de tentativas não são do Duan, que agrupa
 das soluções corretas e amostra uma por grupo, e o prompt do app não é o do paper. O B1 passa a
 depender da etapa de fidelidade do KCGen-KT. Em 04/10/2026, o B1 foi substituído pelo
 `KCGEN_KT_PLAN.md`, que leva ao código as decisões do KCGen-KT do `DEVELOPMENT.md`, inclusive as
-soluções amostradas gravadas na extração. A rota e o diálogo da origem do conceito ficam com a tela
-Conceitos, pelo `CONCEPTS_SCREEN_PLAN.md`.
+soluções amostradas gravadas na extração. A rota e o diálogo da origem do conceito saíram com a tela
+Conceitos, pelo `CONCEPTS_SCREEN_PLAN.md`, em 08/10/2026.
 
 **B2. Conceito editado pelo professor.**
 O marcador `GeneratedByLLM` some do nome do conceito quando o professor o renomeia, e um conceito
 criado em "Novo conceito" também não é do modelo. A tabela `kc` não registra o renomear hoje,
 então entra uma coluna, o que pede uma migração do banco. A rota de mesclar
 (`POST /knowledge-components/merge`) sai, porque o design tirou o mesclar. Depende disso a tela
-Conceitos. Em 08/10/2026, o B2 passou ao `CONCEPTS_SCREEN_PLAN.md`, com a coluna `updated_at` do
-`kc` e a saída do mesclar inteiro.
+Conceitos. Em 08/10/2026, o B2 passou ao `CONCEPTS_SCREEN_PLAN.md`, que fez a coluna `updated_at`
+do `kc` e a saída do mesclar inteiro.
 
 **B3. Curva de aprendizagem.**
 Rota nova com a taxa de erro por oportunidade de cada conceito e os alunos que chegaram a cada uma,
@@ -130,7 +134,7 @@ exercícios ou de um registro novo. Depende disso a tela Turmas.
 A linha de fatos de cada tela pede números que ainda não saem da API. A Análise pede o total de
 execuções do exercício, a Turma pede o total de exercícios e de execuções, e Conceitos pede a data
 da extração. O que já existe (alunos, problemas, conceitos, versão e data do modelo) continua. A
-parte da Conceitos, a data da extração, entra pelo `CONCEPTS_SCREEN_PLAN.md`.
+parte da Conceitos, a data da extração, entrou pelo `CONCEPTS_SCREEN_PLAN.md`.
 
 **B9. Requisitos do pacote.**
 O envio devolve as tabelas encontradas, mas o formato ProgSnap2 v6 (as colunas obrigatórias) só é
@@ -141,10 +145,12 @@ antes de enviar. Depende disso a tela Importar dados.
 ## 4. Blocos de frontend
 
 **Estado em 08/10/2026.** O F1, a migração dos componentes que já existiam e o F3 estão feitos pelo
-`FRONTEND_BASE_PLAN.md`, e o `GeneratedByML` já existe. Do F2 ficam com as telas os componentes
-novos (`GeneratedByLLM`, indicador de passos, paginação, bloco de código e lista de requisitos), o
-cartão com título com ícone e rodapé com ações, as ações na faixa das abas e a linha de fatos. O
-menu que recolhe abaixo de 900px fica para depois da tela Conceitos.
+`FRONTEND_BASE_PLAN.md`, e o `GeneratedByML` já existe. A tela Conceitos, pelo
+`CONCEPTS_SCREEN_PLAN.md`, fez do F2 o `GeneratedByLLM`, o bloco de código, as ações na faixa das
+abas e a linha de fatos, com as variantes novas de `Dialog`, `Tabs`, `Tooltip` e `DataTable`. Do F2
+ficam com as outras telas o indicador de passos, a paginação, a lista de requisitos e o cartão com
+título com ícone e rodapé com ações. O menu que recolhe abaixo de 900px fica para uma etapa própria,
+depois da tela Conceitos.
 
 **F1. Tokens e fundamentos.**
 O `tokens.css` passa aos tokens planejados no `DESIGN.md` (`--color-primary`, os tokens de modelo,
@@ -178,7 +184,7 @@ curva de perda do treino passa às cores e à fonte novas. Dependem de B3 e de B
 | Análise | Linha de fatos, abas com Conceitos primeiro, vista Tabela e Curva de aprendizagem, sem cabeçalho agrupado | B3, B8 |
 | Turmas | Linha de fatos, Nova turma como primário, atividade recente | B7 |
 | Turma | Cabeçalho com Importar dados, figura de execuções por dia, abas Exercícios e Alunos | B4, B5, B6, B8 |
-| Conceitos | Título do exercício, linha de fatos, abas com a matriz e os problemas, origem do conceito, sem mesclar | B1, B2, B8 |
+| Conceitos | Feita em 08/10/2026, pelo `CONCEPTS_SCREEN_PLAN.md`. Título do exercício, linha de fatos, abas com a matriz e os problemas, origem do conceito, sem mesclar | B1, B2, B8 |
 | Importar dados | Requisitos do pacote, caixa do pacote de altura fixa, ações no rodapé do cartão, resultado com a tabela de exercícios da Turma | B4, B9 |
 
 ## 5. Dependências entre os blocos
@@ -191,13 +197,14 @@ A439.
 ## 6. Pendências conhecidas
 
 - **A amostragem do KCGen-KT** (B1), que mandava uma solução por problema ao LLM em vez de cinco,
-  corrigida pelo `KCGEN_KT_PLAN.md`. A descrição deduzida pelo LLM deixou de ser gravada, e a tela
-  Conceitos troca a descrição pelo enunciado, que é opcional.
-- **O desenho da tela Conceitos** passou ao `CONCEPTS_SCREEN_PLAN.md`. Ele trazia a descrição do
-  problema e a tentativa de cada solução, que saíram do KCGen-KT, e uma matriz pensada para 15
-  conceitos, quando o A439 agora tem 25. O `DESIGN.md` já descreve a tela nova, com o enunciado, os
-  trechos de cada conceito e as justificativas traduzidas, e a página
-  `docs/design/design-system-v6.html` já a mostra.
+  corrigida pelo `KCGEN_KT_PLAN.md`. A descrição deduzida pelo LLM deixou de ser gravada e saiu do
+  banco, das rotas e da tela com a tela Conceitos, que mostra no lugar dela o enunciado, que é
+  opcional.
+- **A validação da tela Conceitos.** A tela está feita pelo `CONCEPTS_SCREEN_PLAN.md`, sem a
+  descrição do problema nem a tentativa de cada solução, que saíram do KCGen-KT, e com uma matriz
+  pensada para 25 conceitos, quando o desenho antigo era para 15. Faltam a revisão independente da
+  tela e a validação do Leo. O `DESIGN.md` e a página `docs/design/design-system-v6.html` descrevem
+  a tela nova.
 - **O 409 de modelo antigo na Análise.** A rota do domínio responde 409 quando precisa carregar um
   modelo de formato antigo (`IncompatibleTrainedModelError`), e a Análise ignora o erro
   (`AnalysisCard.tsx:39`, `:60`, `:74`). As colunas do modelo ficam vazias, sem aviso. Fica para a
@@ -212,8 +219,6 @@ A439.
   apagar as duas turmas e fazer uma nova extração pela aplicação (seção 9).
 - **O detalhe do aluno lento.** Cerca de 1,3 s por chamada, porque recarrega o recorte do exercício a
   cada GET.
-- **O treino pela tela** nunca foi testado de ponta a ponta com um treino real, porque o treino
-  congela os conceitos do exercício.
 
 ## 7. Perguntas para a discussão do plano
 
@@ -289,5 +294,5 @@ A ordem nova é esta.
    métodos prontos.
 4. A base (F1, a migração dos componentes que já existem e F3), pelo `FRONTEND_BASE_PLAN.md`,
    aprovado e concluído em 08/10/2026, e depois as telas, uma por vez (Conceitos, Análise, Turma,
-   Importar dados e Turmas), cada uma com o seu backend. A Conceitos segue o
-   `CONCEPTS_SCREEN_PLAN.md`, aprovado em 08/10/2026.
+   Importar dados e Turmas), cada uma com o seu backend. A Conceitos seguiu o
+   `CONCEPTS_SCREEN_PLAN.md`, aprovado e executado em 08/10/2026.

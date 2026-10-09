@@ -8,10 +8,9 @@ papel é citado pelo nome do token.
 [`design/design-system-v6.html`](design/design-system-v6.html), que abre direto no navegador.
 
 **Estado.** Este documento é a especificação. A base da migração está feita pelo
-`FRONTEND_BASE_PLAN.md`, com os tokens, os componentes que já existiam e as tabelas na v5. As cinco
-telas ainda têm a organização antiga e mudam uma a uma. A tela Conceitos está em obra pelo
-`CONCEPTS_SCREEN_PLAN.md`, as seções dela aqui já descrevem a tela nova, e a página de referência
-já a mostra.
+`FRONTEND_BASE_PLAN.md`, com os tokens, os componentes que já existiam e as tabelas na v5. A tela
+Conceitos está concluída pelo `CONCEPTS_SCREEN_PLAN.md`, e as outras quatro telas ainda têm a
+organização antiga e mudam uma a uma. A página de referência mostra a Conceitos.
 
 ## Princípios
 
@@ -132,18 +131,23 @@ aprovados e em `--color-model` quando existe um modelo treinado. O exercício qu
 fica sem ponto, porque não chega a treinar. Cada item de tela leva o ícone da sua tela.
 
 **Abas.** A aba ativa tem texto `--color-text` em 600 e traço de 2px na mesma cor. A faixa das abas
-é branca, igual ao cartão.
+é branca, igual ao cartão, com as ações do cartão à direita e, quando há, um rótulo à esquerda. A
+variante só com o identificador, como o número do problema na origem do conceito, mostra o número em
+`.num`, tem o nome acessível "Problema N" em cada aba e rola de lado quando a fileira passa da
+largura, com o anel de foco para dentro da aba, para a rolagem não cortá-lo.
 
 **Cartão.** Branco, com `--shadow-card` e sem borda, com cabeçalho próprio de 48px e fio abaixo
 dele. O rodapé opcional tem 44px e texto de apoio.
 
 **Diálogo.** O `<dialog>` nativo, com `--shadow-dialog` sobre o fundo escurecido. O rodapé é
-`--color-surface-subtle`, com as ações à direita e a principal por último. A largura é de 440px, e
-a origem do conceito usa a larga, de 760px, por causa do código das soluções. Nas duas larguras, a
-altura vai até `calc(100vh - 48px)`, com o cabeçalho e o rodapé presos e o corpo rolando por
-dentro. O aviso, como o de reabrir a aprovação, é neutro, com Cancelar e a ação de seguir, e o
-destrutivo fica para a exclusão. Quando a ação já tem confirmação ou formulário próprio, o aviso
-entra como uma linha dentro dele, acima dos botões, para não abrir dois diálogos seguidos.
+`--color-surface-subtle`, com as ações à direita e a principal por último. A largura é de 440px, e a
+origem do conceito usa a larga, de 760px, por causa do código das soluções. O título é de 16px no de
+440px e de 18px no largo. Nas duas larguras, a altura vai até `calc(100vh - 48px)`, com o cabeçalho
+e o rodapé presos e o corpo rolando por dentro. O aviso, como o de reabrir a aprovação, é neutro,
+com Cancelar e a ação de seguir, e o destrutivo fica para a exclusão. Quando a ação já tem
+confirmação ou formulário próprio, o aviso entra como uma linha dentro dele, acima dos botões, para
+não abrir dois diálogos seguidos. O aviso do clique na célula fica aberto até o pedido voltar, com
+os botões desabilitados e o Esc bloqueado, para o clique não cair na matriz por baixo.
 
 **Área de soltar arquivo.** Contorno tracejado em `--color-control-border`. Com o arquivo por cima,
 o contorno fica sólido em `--color-text` e o fundo `--color-hover`. Importar dados vem antes de
@@ -201,34 +205,36 @@ com a dica de onde o dado veio.
 **Dica, alerta e balão.** A dica é o ícone de ? (`circle-question-mark`) em `--color-text-muted`. O
 ícone de ! (`circle-alert`) fica só para alerta e erro, em `--color-danger`, como um problema sem
 conceito. O balão é `--color-text` com texto em `--color-text-inverse`, sem raio, e aparece no hover
-ou no foco pelo `Tooltip`, nunca pelo `title` nativo. Ele tem até 260px de largura, e o largo, até
-360px, leva o enunciado do problema. Um título opcional vem em 600, numa linha própria, e o texto
-mantém as quebras de linha, como no balão do número do problema na matriz, com "Problema N" no
-título e o motivo separado do enunciado por uma linha em branco. Dentro de um diálogo, o balão
-nasce no próprio diálogo, para não ficar por baixo dele.
+ou no foco pelo `Tooltip`, nunca pelo `title` nativo. No foco, ele só abre com o anel de foco
+visível, o do teclado, e não quando um diálogo aberto por um clique foca o primeiro controle. Ele
+tem até 260px de largura, e o largo, até 360px, leva o enunciado do problema. Um título opcional vem
+em 600, numa linha própria, e o texto mantém as quebras de linha, como no balão do número do
+problema na matriz, com "Problema N" no título e o motivo separado do enunciado por uma linha em
+branco. Dentro de um diálogo, o balão nasce no próprio diálogo, para não ficar por baixo dele.
 
 **Bloco de código.** Em `--font-code`, sobre `--color-surface-subtle`, com a numeração de linha à
-esquerda em `--color-text-disabled`. Quando há mais de um arquivo, abas presas ao topo do bloco
-trocam o código, e a aba ativa tem o traço de 2px em `--color-text`. O código mantém as tabulações,
-com tab-size 4, e não quebra linha. O bloco tem altura máxima e rola nos dois sentidos por dentro.
-As linhas destacadas ficam em `--color-model-soft`, com o número em `--color-model-strong` 600, e ao
-mostrar uma aba com destaque o bloco rola por dentro até a primeira linha destacada, sem mexer na
-página.
+esquerda em `--color-text-disabled`. Abas presas ao topo do bloco, uma por arquivo, trocam o código,
+mesmo com um arquivo só, e a aba ativa tem o traço de 2px em `--color-text`. O código mantém as
+tabulações, com tab-size 4, e não quebra linha. O bloco tem altura máxima e rola nos dois sentidos
+por dentro. As linhas destacadas ficam em `--color-model-soft`, com o número em
+`--color-model-strong` 600, e ao mostrar uma aba com destaque o bloco rola por dentro até a primeira
+linha destacada, sem mexer na página.
 
 **Matriz de conceitos.** Os conceitos nas linhas e os problemas nas colunas, em ordem numérica. A
 célula é um quadrado de 20px, preenchido em `--color-text` quando o conceito está ligado ao
-problema, que liga e desliga no clique. Desligar é direto, pede confirmação quando o conceito
-sairia do exercício e é recusado quando o problema ficaria sem conceito. No exercício treinado a
-célula fica em `--color-observed` e não responde. A coluna do nome ocupa a sobra do cartão, corta o
-nome com reticências, com o nome inteiro no balão e as estrelas sempre à vista depois dele, e fica
+problema, que liga e desliga no clique. Desligar é direto, pede confirmação quando o conceito sairia
+do exercício e é recusado quando o problema ficaria sem conceito. No exercício treinado a célula
+fica em `--color-observed` e não responde. Enquanto o pedido de uma célula está a caminho, o clique
+nela é ignorado, e as outras células seguem livres. A coluna do nome ocupa a sobra do cartão, corta
+o nome com reticências, com o nome inteiro no balão e as estrelas sempre à vista depois dele, e fica
 presa na rolagem lateral. O número do problema no cabeçalho tem sublinhado pontilhado e mostra o
 balão largo com o título "Problema N" e o enunciado, ou a frase "Sem enunciado." A recorrência fica
 à direita, como "N de M", a última linha traz quantos conceitos cada problema tem, e as ações da
-linha do conceito são lupa, lápis e lixeira, nessa ordem. O problema sem conceito fica em
-`--color-danger-text` com o `circle-alert`, no número e no 0 da última linha. As linhas seguem a
-recorrência decrescente, com empate pelo nome e depois pelo id, numa ordem calculada ao abrir a
-tela e fixa enquanto o professor edita. O conceito novo entra no fim, o removido sai, e não há
-ordenação clicável.
+linha do conceito são lupa, lápis e lixeira, nessa ordem, numa coluna de 120px, que no exercício
+treinado tem 48px e só a lupa. O problema sem conceito fica em `--color-danger-text` com o
+`circle-alert`, no número e no 0 da última linha. As linhas seguem a recorrência decrescente, com
+empate pelo nome e depois pelo id, numa ordem calculada ao abrir a tela e fixa enquanto o professor
+edita. O conceito novo entra no fim, o removido sai, e não há ordenação clicável.
 
 **Origem do conceito.** Um diálogo largo aberto pela lupa, também no exercício treinado. O título é
 o nome do conceito, com as estrelas de 24px quando o nome é o que o modelo gerou, e a linha de
@@ -423,10 +429,11 @@ depois.
    nome atual veio do modelo de linguagem. Ao salvar, o nome passa a ser seu e as estrelas saem."
 6. **Aviso de reabrir.** Com os conceitos aprovados, a primeira edição, seja ligar, desligar,
    renomear, remover ou criar, avisa que "Editar a matriz agora reabre todos os conceitos para
-   aprovação". No clique na célula é um diálogo neutro, com Cancelar e a ação de seguir. Na
-   confirmação de remover, na de tirar o último problema do conceito, no renomear e no Novo conceito
-   é uma linha dentro do próprio diálogo, acima dos botões. Depois da edição o exercício volta a
-   rascunho, e o Aprovar volta a habilitar.
+   aprovação". No clique na célula é um diálogo neutro, com Cancelar e a ação de seguir, que fica
+   aberto até o pedido voltar, e um erro vai para a mensagem do cartão. Na confirmação de remover,
+   na de tirar o último problema do conceito, no renomear e no Novo conceito é uma linha dentro do
+   próprio diálogo, acima dos botões. Depois da edição o exercício volta a rascunho, e o Aprovar
+   volta a habilitar.
 7. **Origem do conceito**, o diálogo aberto pela lupa.
 
 No exercício treinado a matriz é só consulta, com as células em `--color-observed`, só a lupa e sem

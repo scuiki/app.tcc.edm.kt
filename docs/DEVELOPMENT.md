@@ -561,7 +561,7 @@ Estes pontos são iguais no paper, no repositório e no app, e não pediram deci
   submissions as examples" (p. 33407 (PDF 3)), e na ablação incluir soluções incorretas derruba o AUC
   de 0,812 para 0,773 (Tabela 4, p. 33411 (PDF 7)). O repositório filtra `Score_x == 1.0`
   (`KC_gen.py:570`) e roda com `n_incor=0` (`KC_gen.py:646`), e o app filtra `is_correct == 1`
-  (`kcgen_kt_generator.py:75` do app).
+  (`sqlite_submission_repository.py:79-84` do app).
 - O código vai ao LLM como texto. O repositório monta o prompt com o texto das soluções
   (`KC_gen.py:103`), embora o README fale em AST, e o app faz o mesmo
   (`candidate_generation.py:141-143` do app). Na ablação, trocar o código pela AST derruba o AUC de
@@ -704,10 +704,10 @@ cache vazio pode dar outros KCs.
 **11. Descrição do problema na resposta.** No paper, o enunciado do problema é entrada do prompt
 (Tabela 9, p. 33421 (PDF 17)), e o LLM devolve só os KCs. O TCC 1, sem enunciado, pedia ao LLM uma
 descrição de uma a duas frases deduzida das soluções e a recebia na resposta (notebook 03b, célula
-8). O app a grava e a mostra na lista de problemas da tela Conceitos, e o desenho da origem do
-conceito, ainda não implementado, também a prevê (`docs/DESIGN.md:211-214`). É uma etapa que o paper
-não tem, e a adaptação do critério 4 não cria etapa nova. A descrição sai da resposta, da tela e do
-desenho.
+8). O app a gravava e a mostrava na lista de problemas da tela Conceitos, e o desenho da origem do
+conceito também a previa. É uma etapa que o paper não tem, e a adaptação do critério 4 não cria
+etapa nova. A descrição saiu da resposta (commit `c38eade`) e, com a tela Conceitos, da tela, das
+rotas e do banco (commit `23f3130`), e o enunciado, quando o pacote o traz, ocupa o lugar dela.
 
 **12. Texto do prompt.** O paper mostra o prompt da geração na Tabela 9 (Apêndice G.1, p. 33421
 (PDF 17)), e o repositório executa o mesmo texto de sistema (`KC_gen.py:100-170`). O TCC 1 escreveu
@@ -995,8 +995,8 @@ prompt (linha 15). Com um anotador só, não há a medida de concordância que o
   por KC nas submissões incorretas (Tabela 11) para traçar as curvas (§4.2). A curva do paper conta
   como oportunidade cada problema em que o aluno pratica o KC, "the problem that represents their
   t-th attempt at the KC" (p. 33412 (PDF 8)), sobre as primeiras submissões (§3, p. 33409 (PDF 5)).
-  A curva do app é do painel, conta cada execução como oportunidade (`DECISIONS.md:531-535` do app)
-  e é revista quando o painel for implementado.
+  A curva do app é do painel, conta cada execução como oportunidade (a entrada da curva de
+  aprendizagem no `DECISIONS.md` do app) e é revista quando o painel for implementado.
 - **O FalconCode e os vários níveis de abstração.** O app só lê Java e usa um nível de abstração por
   exercício, sem a ontologia entre níveis da Figura 4.
 
@@ -1006,8 +1006,9 @@ prompt (linha 15). Com um anotador só, não há a medida de concordância que o
   uso real, "we recommend that automatically generated KCs be reviewed by domain experts before
   deployment in real educational settings" (p. 33414 (PDF 10)), sem dizer como. No app, o exercício
   fica em rascunho até o professor aprovar os conceitos, e só a aprovação libera o treino
-  (`approve_knowledge_components_use_case.py:49` e `start_training_use_case.py:41` do app). A v3 não
-  tem essa recomendação.
+  (`approve_knowledge_components_use_case.py:63` e `start_training_use_case.py:41` do app). A
+  aprovação é recusada enquanto um problema estiver sem conceito (commit `6d31cc7`). A v3 não tem
+  essa recomendação.
 - **Onde cada conceito aparece nas soluções.** Depois do agrupamento, na mesma extração, uma segunda
   chamada ao mesmo modelo recebe, para cada problema, as soluções que o LLM leu e os conceitos
   finais do problema. Ela devolve, para cada conceito, a solução e o trecho de código copiado dela.
@@ -1018,27 +1019,33 @@ prompt (linha 15). Com um anotador só, não há a medida de concordância que o
   aparece. A justificativa de uma frase que o prompt do Duan pede para cada KC, "a one-sentence
   reasoning explaining why this KC is necessary based on the provided solutions" (Tabela 9, p. 33421
   (PDF 17)), também passa a ser guardada e mostrada. Decidido em 03/10/2026, implementado em
-  06/10/2026 no commit `b5278ac`. Na validação de 04/10/2026, no problema 1 do A439, os 7 conceitos
-  ganharam um trecho, e os 7 trechos estavam nas soluções. No problema 232 do A439, com aspas em
-  todas as soluções (`return "off";`), a geração, os trechos e a tradução vieram em JSON válido, com
-  as aspas escapadas, e os 11 trechos estavam nas soluções.
+  06/10/2026 no commit `b5278ac`. A tela Conceitos o mostra desde o commit `78401d0`, pela rota da
+  origem do conceito do commit `b37cb13`. Na validação de 04/10/2026, no problema 1 do A439, os 7
+  conceitos ganharam um trecho, e os 7 trechos estavam nas soluções. No problema 232 do A439, com
+  aspas em todas as soluções (`return "off";`), a geração, os trechos e a tradução vieram em JSON
+  válido, com as aspas escapadas, e os 11 trechos estavam nas soluções.
 - **Os nomes em português.** O método roda em inglês, como no paper, com os prompts do Duan e, no
   agrupamento, o SBERT `all-MiniLM-L6-v2` do repositório, que é um modelo de inglês. Depois da
   nomeação, uma chamada ao mesmo modelo traduz para o português todos os nomes finais do exercício
   de uma vez, para que o mesmo termo saia igual em todos os conceitos, e na mesma chamada as
   justificativas de cada KC que a origem do conceito mostra. O app guarda o nome em inglês, que é o
-  resultado do método, e o nome em português, que a tela mostra e o professor pode renomear.
+  resultado do método, e o nome em português, que a tela mostra e o professor pode renomear. O nome
+  em inglês não aparece em lugar nenhum da tela, nem na origem do conceito, e a api não o devolve.
   Decidido em 03/10/2026, implementado em 06/10/2026 no commit `b5278ac`. Na validação de
   04/10/2026, a tradução de 7 nomes e 18 justificativas do problema 1 do A439 manteve os termos de
   Java, como em "Instrução return".
 - **Os problemas sem conceito.** Um problema sem nenhuma execução correta não tem solução para o LLM
   ler e fica sem conceito. O paper não trata, e o repositório e o TCC 1 o deixam de fora sem aviso.
   O app também, porque a lista de problemas sai das execuções corretas
-  (`kcgen_kt_generator.py:75-77` do app) e a conferência só olha os problemas gerados
-  (`knowledge_component_generator.py:24-32` do app). Durante a disciplina, é o caso do problema que
+  (`kcgen_kt_generator.py:93` do app) e a conferência só olha os problemas gerados
+  (`knowledge_component_generator.py:33-41` do app). Durante a disciplina, é o caso do problema que
   ninguém acertou ainda. A extração passa a gerar os conceitos dos outros problemas e a listar para
   o professor os que ficaram sem conceito, com o motivo. Decidido em 03/10/2026. Desde o commit
-  `b5278ac` a extração segue sem eles, e a lista para o professor entra com a tela Conceitos.
+  `b5278ac` a extração segue sem eles. A lista para o professor entrou com a tela Conceitos, na
+  linha de fatos do cabeçalho (commit `77b7635`) e na matriz, com o motivo no balão do número
+  (commit `b4e7e79`), e o motivo sai da contagem de execuções corretas que a rota da tela devolve
+  (commit `83af401`). A aprovação é recusada enquanto houver um problema sem conceito (commit
+  `6d31cc7`).
 
 ### Estado
 
@@ -1046,7 +1053,7 @@ prompt (linha 15). Com um anotador só, não há a medida de concordância que o
 |---|---|
 | 1 e 4 a 8 | Decididas em 03/10/2026, implementadas em 04/10/2026 no commit `af49b24`. Na extração de referência, cada um dos 10 problemas do A439 deu 5 soluções de 5 alunos distintos, e a regressão do commit `653b1a2` refaz o sorteio |
 | 2 e 3 | Decididas em 03/10/2026. O `microsoft/codebert-base`, na revisão `3b0952f`, entrou na imagem base em 04/10/2026 no commit `7dfae7a`, e o vetor de cada solução no commit `af49b24`. Medido em 04/10/2026 na GPU, o cálculo dos vetores das 3.821 execuções corretas do A439, em lotes de 32 soluções, levou 44,6 segundos, com pico de 1.069 MiB alocados pelo PyTorch (1.858 MiB reservados). Com o mesmo tamanho de lote, duas execuções deram os mesmos vetores, bit a bit, e lotes de 16 e de 32 diferem em até 3e-5 |
-| 9 e 11 a 17 | Decididas em 03/10/2026, implementadas em 04/10/2026 no commit `c38eade`. O enunciado da linha 14 entra pela importação desde o commit `0aac582`, e na turma de referência os 50 problemas da CSEDM têm enunciado. A troca da descrição pelo enunciado na tela e no desenho, das linhas 11 e 14, fica com a tela Conceitos, pelo `CONCEPTS_SCREEN_PLAN.md` |
+| 9 e 11 a 17 | Decididas em 03/10/2026, implementadas em 04/10/2026 no commit `c38eade`. O enunciado da linha 14 entra pela importação desde o commit `0aac582`, e na turma de referência os 50 problemas da CSEDM têm enunciado. A troca da descrição pelo enunciado na tela e no desenho, das linhas 11 e 14, entrou com a tela Conceitos, pelo `CONCEPTS_SCREEN_PLAN.md`. A rota da tela passou a devolver o enunciado no commit `83af401`, a descrição saiu do banco, das rotas e da tela no `23f3130`, e a aba Problemas mostra o enunciado desde o `4ad1127` |
 | 10 e 18 | Decididas em 03/10/2026, sem mudança no código |
 | 19 a 26 | Decididas em 03/10/2026, implementadas em 04/10/2026 no commit `11aea49`. Na extração de referência do A439, os 51 nomes únicos deram 25 grupos e 25 conceitos, sem fusão por nome. O TCC 1 tinha 15 conceitos no A439 |
 | 27 e 28 | Decididas em 03/10/2026, implementadas em 07/10/2026 no commit `653b1a2`, só no A439, como o Leo decidiu em 07/10/2026. A extração de referência, de 06/10/2026, tem o cache das respostas e os artefatos em `tests/data/kc`, e o resumo em `docs/results/kcgen_kt_a439_reference_extraction.md` |
