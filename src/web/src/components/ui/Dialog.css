@@ -8,11 +8,32 @@
   box-shadow: var(--shadow-dialog);
 }
 
+/* A origem do conceito usa a larga, por causa do código das soluções */
+.dialog--wide {
+  width: 760px;
+}
+
+/* Aberto, o diálogo é uma coluna que não passa da janela, e só o corpo rola por dentro */
+dialog.dialog[open] {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 48px);
+  overflow: hidden;
+}
+
+/* O formulário em volta do corpo e do rodapé repassa a coluna, para o corpo rolar dentro dele */
+.dialog > form {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
 .dialog::backdrop {
   background: var(--backdrop);
 }
 
 .dialog__header {
+  flex-shrink: 0;
   padding: 16px 20px 6px;
   display: flex;
   align-items: center;
@@ -24,13 +45,38 @@
   color: var(--color-danger);
 }
 
+.dialog__heading {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+/* O marcador fica ao lado do título, fora do h2 */
+.dialog__title {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.dialog--wide .dialog__title .t-section-title {
+  font-size: 18px;
+}
+
 .dialog__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
   padding: 4px 20px 18px;
   display: flex;
   flex-direction: column;
   gap: 6px;
   color: var(--color-text-body);
   line-height: 1.55;
+}
+
+/* Quem rola é o corpo, e nada dentro dele encolhe, nem uma tabela com rolagem própria */
+.dialog__body > * {
+  flex-shrink: 0;
 }
 
 /* No de exclusão o texto alinha com o título, depois do ícone */
@@ -43,6 +89,7 @@
 }
 
 .dialog__footer {
+  flex-shrink: 0;
   padding: 12px 20px;
   border-top: 1px solid var(--color-rule);
   background: var(--color-surface-subtle);

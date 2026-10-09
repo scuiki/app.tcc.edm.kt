@@ -3,12 +3,20 @@ import { CircleAlert } from 'lucide-react'
 
 import './Dialog.css'
 
+type DialogSize = 'default' | 'wide'
+
 interface DialogProps {
   open: boolean
   onClose: () => void
   title: string
   // O de exclusão vira alertdialog, com o ícone de alerta ao lado do título
   tone?: 'default' | 'danger'
+  // O largo, de 760px no lugar de 440px, cabe o código das soluções na origem do conceito
+  size?: DialogSize
+  // Logo depois do título e fora do h2, para o nome do diálogo continuar só o título
+  titleAside?: ReactNode
+  // A linha de fatos abaixo do título
+  facts?: ReactNode
   // Falso enquanto algo roda e não pode ser largado no meio, e aí o Esc não fecha
   dismissible?: boolean
   children: ReactNode
@@ -20,6 +28,9 @@ export function Dialog({
   onClose,
   title,
   tone = 'default',
+  size = 'default',
+  titleAside,
+  facts,
   dismissible = true,
   children,
 }: DialogProps) {
@@ -38,7 +49,7 @@ export function Dialog({
   return (
     <dialog
       ref={ref}
-      className={`dialog dialog--${tone}`}
+      className={size === 'wide' ? `dialog dialog--${tone} dialog--wide` : `dialog dialog--${tone}`}
       role={tone === 'danger' ? 'alertdialog' : undefined}
       aria-labelledby={titleId}
       onCancel={(event) => {
@@ -56,9 +67,15 @@ export function Dialog({
             {tone === 'danger' ? (
               <CircleAlert className="dialog__alert-icon" size={20} aria-hidden="true" />
             ) : null}
-            <h2 id={titleId} className="t-section-title">
-              {title}
-            </h2>
+            <div className="dialog__heading">
+              <div className="dialog__title">
+                <h2 id={titleId} className="t-section-title">
+                  {title}
+                </h2>
+                {titleAside}
+              </div>
+              {facts}
+            </div>
           </div>
           {children}
         </>

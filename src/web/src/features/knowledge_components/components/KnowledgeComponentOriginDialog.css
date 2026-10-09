@@ -1,0 +1,50 @@
+/* A fileira dos problemas fica presa sob o título, com o recuo do diálogo */
+.kc-origin__problems .tabs {
+  padding: 8px 20px 0;
+}
+
+/* Os três blocos do problema, empilhados, e o código nunca alarga o diálogo */
+.kc-origin__panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 18px;
+  padding-top: 12px;
+}
+
+.kc-origin__block {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 6px;
+}
+
+/* As estrelas e a dica ficam ao lado do rótulo, fora do h3 */
+.kc-origin__label {
+  display: flex;
+  align-items: center;
+}
+
+.kc-origin__heading {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.kc-origin__no-statement {
+  font-size: 12.5px;
+  color: var(--color-text-disabled);
+}
+
+.kc-origin__teacher-link {
+  color: var(--color-text-secondary);
+}
+
+.kc-origin__discarded {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.kc-origin__no-solutions {
+  font-size: 12.5px;
+  color: var(--color-text-muted);
+}

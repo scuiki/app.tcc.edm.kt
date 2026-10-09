@@ -1,11 +1,12 @@
 import { fireEvent, render, screen, within } from '@testing-library/react'
 import { useState } from 'react'
 import { Trash2 } from 'lucide-react'
-import { describe, expect, it, vi } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 
 import { Button, IconButton } from './Button'
 import { ColumnHeader, ColumnLabel, DataTable } from './DataTable'
-import { Dialog, DialogBody } from './Dialog'
+import { Dialog, DialogBody, DialogFooter } from './Dialog'
+import dialogStyles from './Dialog.css?raw'
 import { SelectField } from './SelectField'
 import { Tabs } from './Tabs'
 import { TextField } from './TextField'
@@ -169,6 +170,28 @@ describe('Tabs', () => {
     fireEvent.click(screen.getByRole('tab', { name: 'Problema 12' }))
     expect(onChange).toHaveBeenCalledWith('12')
   })
+
+  it('shows only the identifier in the data font in the identifier variant', () => {
+    render(
+      <Tabs
+        variant="identifier"
+        items={[{ key: '232', label: '232', ariaLabel: 'Problema 232' }]}
+        active="232"
+        onChange={() => {}}
+        label="Problemas em que o conceito aparece"
+      />,
+    )
+    const tab = screen.getByRole('tab', { name: 'Problema 232' })
+    expect(tab).toHaveTextContent(/^232$/)
+    expect(within(tab).getByText('232')).toHaveClass('num')
+    expect(tab.closest('.tabs')).toHaveClass('tabs', 'tabs--identifier')
+  })
+
+  it('keeps the label of the default tabs in the interface font', () => {
+    render(<Tabs items={items} active="matrix" onChange={() => {}} label="O que revisar" />)
+    expect(screen.getByText('Problemas')).not.toHaveClass('num')
+    expect(screen.getByRole('tablist').parentElement).toHaveAttribute('class', 'tabs')
+  })
 })
 
 describe('Button and IconButton', () => {
@@ -209,6 +232,18 @@ function FieldWithState() {
 }
 
 describe('Dialog', () => {
+  // O jsdom aplica as regras de uma folha de estilo do documento, e o teste lê o CSS do Dialog
+  beforeAll(() => {
+    const style = document.createElement('style')
+    style.id = 'dialog-styles'
+    style.textContent = dialogStyles
+    document.head.append(style)
+  })
+
+  afterAll(() => {
+    document.getElementById('dialog-styles')?.remove()
+  })
+
   it('renders nothing inside while closed, and the titled content when open', () => {
     const { rerender } = render(
       <Dialog open={false} onClose={() => {}} title="Nova turma">
@@ -260,6 +295,87 @@ describe('Dialog', () => {
     fireEvent(screen.getByRole('dialog'), new Event('close'))
     expect(onClose).not.toHaveBeenCalled()
     expect(screen.getByRole('dialog')).toHaveAttribute('open')
+  })
+
+  it('stays 440px wide by default and takes 760px in the wide size', () => {
+    const { rerender } = render(
+      <Dialog open onClose={() => {}} title="Nova turma">
+        <p>Conteúdo</p>
+      </Dialog>,
+    )
+    expect(getComputedStyle(screen.getByRole('dialog')).width).toBe('440px')
+
+    rerender(
+      <Dialog open onClose={() => {}} title="Laços" size="wide">
+        <p>Conteúdo</p>
+      </Dialog>,
+    )
+    expect(screen.getByRole('dialog')).toHaveClass('dialog', 'dialog--wide')
+    expect(getComputedStyle(screen.getByRole('dialog')).width).toBe('760px')
+  })
+
+  it('keeps the marker after the title out of the accessible name, and shows the facts', () => {
+    render(
+      <Dialog
+        open
+        onClose={() => {}}
+        title="Laços"
+        size="wide"
+        titleAside={<span role="img" aria-label="Gerado pelo modelo de linguagem" />}
+        facts={<p>aparece em 2 de 10 problemas</p>}
+      >
+        <p>Conteúdo</p>
+      </Dialog>,
+    )
+    const dialog = screen.getByRole('dialog', { name: 'Laços' })
+    const heading = within(dialog).getByRole('heading', { level: 2, name: 'Laços' })
+    const marker = within(dialog).getByRole('img', { name: 'Gerado pelo modelo de linguagem' })
+    expect(heading).not.toContainElement(marker)
+    expect(heading.nextElementSibling).toBe(marker)
+    expect(within(dialog).getByText('aparece em 2 de 10 problemas')).toBeInTheDocument()
+  })
+
+  it('never grows past the window, with the header and the footer pinned and the body scrolling', () => {
+    render(
+      <Dialog open onClose={() => {}} title="Laços" size="wide">
+        <DialogBody>
+          <p>Um painel mais alto que a janela</p>
+        </DialogBody>
+        <DialogFooter>
+          <button type="button">Fechar</button>
+        </DialogFooter>
+      </Dialog>,
+    )
+    const dialog = screen.getByRole('dialog')
+    expect(getComputedStyle(dialog).maxHeight).toBe('calc(100vh - 48px)')
+    expect(getComputedStyle(dialog).display).toBe('flex')
+    expect(getComputedStyle(dialog).overflow).toBe('hidden')
+    const header = dialog.querySelector('.dialog__header')!
+    const body = dialog.querySelector('.dialog__body')!
+    const footer = dialog.querySelector('.dialog__footer')!
+    expect(getComputedStyle(header).flexShrink).toBe('0')
+    expect(getComputedStyle(footer).flexShrink).toBe('0')
+    expect(getComputedStyle(body).overflow).toBe('auto')
+    expect(getComputedStyle(body).minHeight).toBe('0')
+  })
+
+  it('lets the body of a form scroll too, with the form passing the column on', () => {
+    render(
+      <Dialog open onClose={() => {}} title="Novo conceito">
+        <form>
+          <DialogBody>
+            <p>Nome e problemas</p>
+          </DialogBody>
+          <DialogFooter>
+            <button type="submit">Criar</button>
+          </DialogFooter>
+        </form>
+      </Dialog>,
+    )
+    const form = screen.getByRole('dialog').querySelector('form')!
+    expect(getComputedStyle(form).display).toBe('flex')
+    expect(getComputedStyle(form).flexDirection).toBe('column')
+    expect(getComputedStyle(form).minHeight).toBe('0')
   })
 
   it('opens with a clean field after cancelling a half-typed form', () => {

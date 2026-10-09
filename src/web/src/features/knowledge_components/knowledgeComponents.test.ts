@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { ApiError } from '../../http/client'
-import type { GenerationJob } from './api/knowledgeComponents'
+import type { GenerationJob, ProblemOrigin } from './api/knowledgeComponents'
 import {
   cellClickOutcomeOf,
   editErrorText,
@@ -11,6 +11,7 @@ import {
   listProblemIds,
   normalizedName,
   problemCount,
+  problemOriginKindOf,
   problemsOnlyMarkedBy,
   problemsWithoutKnowledgeComponent,
   stableKnowledgeComponentOrder,
@@ -227,6 +228,33 @@ describe('stageStateOf', () => {
   it('shows a job done at an older stage as done, like the ones of the older classrooms', () => {
     const states = GENERATION_STAGES.map((item) => stageStateOf(item.stage, job('done', 'qmatrix')))
     expect(states).toEqual(GENERATION_STAGES.map(() => 'done'))
+  })
+})
+
+describe('problemOriginKindOf', () => {
+  // A origem de um par, com as justificativas e o trecho dados e uma solução lida
+  function origin(reasonings: string[], withEvidence: boolean): ProblemOrigin {
+    return {
+      problem_id: 3,
+      statement: null,
+      translated_reasonings: reasonings,
+      evidence: withEvidence ? { position: 2, first_line: 16, last_line: 16 } : null,
+      sampled_solutions: [{ position: 1, code: 'return 1;' }],
+    }
+  }
+
+  it('shows the evidence when the model pointed lines that exist in the solutions', () => {
+    expect(problemOriginKindOf(origin(['Toda solução compara n com 0.'], true))).toBe('evidence')
+  })
+
+  it('tells the evidence was discarded when the model wrote a reasoning and no lines were kept', () => {
+    expect(problemOriginKindOf(origin(['Toda solução compara n com 0.'], false))).toBe(
+      'discarded_evidence',
+    )
+  })
+
+  it('takes the pair with no reasoning from the model as the link the teacher made', () => {
+    expect(problemOriginKindOf(origin([], false))).toBe('teacher_link')
   })
 })
 

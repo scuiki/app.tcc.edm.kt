@@ -3,6 +3,8 @@ import type { ReactNode } from 'react'
 
 import './Tabs.css'
 
+type TabsVariant = 'default' | 'identifier'
+
 export interface TabItem<K extends string> {
   key: K
   label: string
@@ -20,6 +22,8 @@ interface TabsProps<K extends string> {
   leading?: ReactNode
   // As ações do cartão à direita, fora da tablist
   actions?: ReactNode
+  // Só o identificador em cada aba, como o número do problema, e a fileira longa rola de lado
+  variant?: TabsVariant
 }
 
 // Abas no topo de um cartão; a ativa leva o texto escuro, o negrito e o fio embaixo
@@ -30,9 +34,10 @@ export function Tabs<K extends string>({
   label,
   leading,
   actions,
+  variant = 'default',
 }: TabsProps<K>) {
   return (
-    <div className="tabs">
+    <div className={variant === 'identifier' ? 'tabs tabs--identifier' : 'tabs'}>
       {leading ? (
         <span className="tabs__label" aria-hidden="true">
           {leading}
@@ -50,7 +55,7 @@ export function Tabs<K extends string>({
             onClick={() => onChange(key)}
           >
             {Icon ? <Icon size={15} aria-hidden="true" /> : null}
-            <span>{text}</span>
+            <span className={variant === 'identifier' ? 'num' : undefined}>{text}</span>
           </button>
         ))}
       </div>

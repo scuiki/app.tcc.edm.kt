@@ -1,4 +1,4 @@
-import { CircleAlert, Pencil, Trash2 } from 'lucide-react'
+import { CircleAlert, Pencil, Search, Trash2 } from 'lucide-react'
 
 import { GeneratedByLLM } from '../../../components/GeneratedByLLM'
 import { IconButton } from '../../../components/ui/Button'
@@ -13,7 +13,9 @@ import './KnowledgeComponentMatrix.css'
 const NAME_MIN_WIDTH = 220
 const PROBLEM_WIDTH = 48
 const RECURRENCE_WIDTH = 96
-const ACTIONS_WIDTH = 84
+// A lupa, o lápis e a lixeira no rascunho, e só a lupa no treinado
+const ACTIONS_WIDTH = 120
+const ORIGIN_ONLY_WIDTH = 48
 
 const NOBODY_SOLVED =
   'Ninguém acertou este problema ainda. O modelo de linguagem precisa de execuções corretas para extrair conceitos. Ligue um conceito clicando nas células.'
@@ -24,7 +26,9 @@ interface KnowledgeComponentMatrixProps {
   problems: ProblemKnowledgeComponents[]
   // Os conceitos já na ordem das linhas, que o editor mantém fixa
   knowledgeComponents: KnowledgeComponentUsage[]
-  // Sem as ações, a matriz fica só para consulta, como no exercício treinado
+  // A lupa abre a origem do conceito, também no exercício treinado
+  onShowOrigin: (kcId: number) => void
+  // Sem as edições, a matriz fica só para consulta, como no exercício treinado
   onCellClick?: (kcId: number, problemId: number) => void
   onRename?: (kcId: number) => void
   onRemove?: (kcId: number) => void
@@ -34,16 +38,15 @@ interface KnowledgeComponentMatrixProps {
 export function KnowledgeComponentMatrix({
   problems,
   knowledgeComponents,
+  onShowOrigin,
   onCellClick,
   onRename,
   onRemove,
 }: KnowledgeComponentMatrixProps) {
-  const hasActions = onRename != null && onRemove != null
+  const canEdit = onRename != null && onRemove != null
+  const actionsWidth = canEdit ? ACTIONS_WIDTH : ORIGIN_ONLY_WIDTH
   const minWidth =
-    NAME_MIN_WIDTH +
-    PROBLEM_WIDTH * problems.length +
-    RECURRENCE_WIDTH +
-    (hasActions ? ACTIONS_WIDTH : 0)
+    NAME_MIN_WIDTH + PROBLEM_WIDTH * problems.length + RECURRENCE_WIDTH + actionsWidth
   return (
     <DataTable label="Conceitos por problema" minWidth={minWidth} fixedLayout stickyFirstColumn>
       <colgroup>
@@ -52,7 +55,7 @@ export function KnowledgeComponentMatrix({
           <col key={problem.problem_id} style={{ width: PROBLEM_WIDTH }} />
         ))}
         <col style={{ width: RECURRENCE_WIDTH }} />
-        {hasActions ? <col style={{ width: ACTIONS_WIDTH }} /> : null}
+        <col style={{ width: actionsWidth }} />
       </colgroup>
       <thead>
         <tr>
@@ -63,11 +66,9 @@ export function KnowledgeComponentMatrix({
             </th>
           ))}
           <ColumnHeader label="Recorrência" />
-          {hasActions ? (
-            <th scope="col" className="data-table__actions">
-              <span className="visually-hidden">Ações</span>
-            </th>
-          ) : null}
+          <th scope="col" className="data-table__actions">
+            <span className="visually-hidden">Ações</span>
+          </th>
         </tr>
       </thead>
       <tbody>
@@ -95,20 +96,27 @@ export function KnowledgeComponentMatrix({
               {formatCount(kc.problemIds.length)}{' '}
               <span className="data-table__sub">de {formatCount(problems.length)}</span>
             </td>
-            {hasActions ? (
-              <td className="data-table__actions">
-                <IconButton
-                  icon={Pencil}
-                  label={`Editar o nome de ${kc.name}`}
-                  onClick={() => onRename(kc.id)}
-                />
-                <IconButton
-                  icon={Trash2}
-                  label={`Remover ${kc.name} do exercício`}
-                  onClick={() => onRemove(kc.id)}
-                />
-              </td>
-            ) : null}
+            <td className="data-table__actions">
+              <IconButton
+                icon={Search}
+                label={`Ver a origem de ${kc.name}`}
+                onClick={() => onShowOrigin(kc.id)}
+              />
+              {canEdit ? (
+                <>
+                  <IconButton
+                    icon={Pencil}
+                    label={`Editar o nome de ${kc.name}`}
+                    onClick={() => onRename(kc.id)}
+                  />
+                  <IconButton
+                    icon={Trash2}
+                    label={`Remover ${kc.name} do exercício`}
+                    onClick={() => onRemove(kc.id)}
+                  />
+                </>
+              ) : null}
+            </td>
           </tr>
         ))}
       </tbody>
@@ -127,7 +135,7 @@ export function KnowledgeComponentMatrix({
             </td>
           ))}
           <td />
-          {hasActions ? <td /> : null}
+          <td />
         </tr>
       </tfoot>
     </DataTable>

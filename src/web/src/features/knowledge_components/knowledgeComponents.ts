@@ -5,6 +5,7 @@ import type {
   GenerationJob,
   KnowledgeComponent,
   ProblemKnowledgeComponents,
+  ProblemOrigin,
 } from './api/knowledgeComponents'
 
 // Um conceito do exercício com os problemas que ele marca
@@ -133,6 +134,15 @@ export function isEditable(status: AssignmentStatus | null | undefined): boolean
 
 export function hasKnowledgeComponents(status: AssignmentStatus | null | undefined): boolean {
   return isEditable(status) || status === 'trained'
+}
+
+// O painel de um problema na origem, com trecho, com o trecho descartado ou vínculo do professor
+export type ProblemOriginKind = 'evidence' | 'discarded_evidence' | 'teacher_link'
+
+// Sem justificativa do modelo o vínculo é do professor, e com ela e sem trecho houve descarte
+export function problemOriginKindOf(problem: ProblemOrigin): ProblemOriginKind {
+  if (problem.evidence) return 'evidence'
+  return problem.translated_reasonings.length > 0 ? 'discarded_evidence' : 'teacher_link'
 }
 
 // O aviso da primeira edição dos conceitos aprovados, no diálogo da célula e nos outros diálogos

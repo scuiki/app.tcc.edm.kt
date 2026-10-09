@@ -33,5 +33,7 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: 'src/test/setup.ts',
+    // O CSS importado fica vazio nos testes, e só o lido como texto chega inteiro
+    css: { include: [/\.css\?raw$/] },
   },
 })

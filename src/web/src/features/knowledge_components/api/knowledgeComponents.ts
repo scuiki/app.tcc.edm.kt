@@ -8,11 +8,16 @@ export type ProblemKnowledgeComponents = Schema<'ProblemKnowledgeComponentsDTO'>
 export type AssignmentProblems = Schema<'ListProblemKnowledgeComponentsResponseDTO'>
 export type KnowledgeComponent = Schema<'KnowledgeComponentDTO'>
 export type GenerationJob = Schema<'KnowledgeComponentGenerationJobDTO'>
+export type KnowledgeComponentOrigin = Schema<'KnowledgeComponentOriginDTO'>
+export type ProblemOrigin = Schema<'ProblemOriginDTO'>
 type StartedJob = Schema<'StartedJobDTO'>
 
 export const knowledgeComponentKeys = {
   problemsOf: (assignmentId: number) => ['problem-knowledge-components', assignmentId] as const,
   job: (jobId: number) => ['knowledge-component-generation-job', jobId] as const,
+  // A raiz das origens, para uma edição invalidar a de todos os conceitos de uma vez
+  origins: ['knowledge-component-origin'] as const,
+  originOf: (kcId: number) => ['knowledge-component-origin', kcId] as const,
 }
 
 // Os problemas do exercício, cada um com os conceitos que exige
@@ -21,6 +26,14 @@ export function useAssignmentProblems(assignmentId: number) {
     queryKey: knowledgeComponentKeys.problemsOf(assignmentId),
     queryFn: () =>
       getJson<AssignmentProblems>(`/assignments/${assignmentId}/problems/knowledge-components`),
+  })
+}
+
+// Por problema ligado, o enunciado, as justificativas traduzidas, o trecho e as soluções lidas
+export function useKnowledgeComponentOrigin(kcId: number) {
+  return useQuery({
+    queryKey: knowledgeComponentKeys.originOf(kcId),
+    queryFn: () => getJson<KnowledgeComponentOrigin>(`/knowledge-components/${kcId}/origin`),
   })
 }
 
@@ -42,13 +55,14 @@ export function useGenerationJob(jobId: number | null, onFinished: () => void) {
   })
 }
 
-// Toda edição muda os conceitos do exercício e pode mudar a situação dele
+// Toda edição muda os conceitos do exercício e pode mudar a situação dele e a origem dos conceitos
 export function useRefreshAssignment(assignmentId: number) {
   const queryClient = useQueryClient()
   return () =>
     Promise.all([
       queryClient.invalidateQueries({ queryKey: knowledgeComponentKeys.problemsOf(assignmentId) }),
       queryClient.invalidateQueries({ queryKey: assignmentKeys.all }),
+      queryClient.invalidateQueries({ queryKey: knowledgeComponentKeys.origins }),
     ])
 }
 

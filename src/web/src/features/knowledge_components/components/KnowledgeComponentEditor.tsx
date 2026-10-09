@@ -22,6 +22,7 @@ import {
   stableKnowledgeComponentOrder,
 } from '../knowledgeComponents'
 import { KnowledgeComponentMatrix } from './KnowledgeComponentMatrix'
+import { KnowledgeComponentOriginDialog } from './KnowledgeComponentOriginDialog'
 import { NewKnowledgeComponentDialog } from './NewKnowledgeComponentDialog'
 import { ProblemStatementsTable } from './ProblemStatementsTable'
 import { RemoveKnowledgeComponentDialog } from './RemoveKnowledgeComponentDialog'
@@ -41,7 +42,7 @@ const TABS: TabItem<EditorTab>[] = [
 type EditorDialog =
   | { kind: 'closed' }
   | { kind: 'new' }
-  | { kind: 'rename' | 'remove'; kcId: number }
+  | { kind: 'origin' | 'rename' | 'remove'; kcId: number }
   | { kind: 'unlink'; target: UnlinkTarget }
   | { kind: 'reopen'; edit: PendingCellEdit; isSending: boolean }
 
@@ -80,7 +81,9 @@ export function KnowledgeComponentEditor({
   const rows = nextOrder.map((id) => byId.get(id)!)
 
   const kcOfDialog =
-    dialog.kind === 'rename' || dialog.kind === 'remove' ? byId.get(dialog.kcId) : undefined
+    dialog.kind === 'origin' || dialog.kind === 'rename' || dialog.kind === 'remove'
+      ? byId.get(dialog.kcId)
+      : undefined
   const canApprove =
     status === 'kc_draft' && problemsWithoutKnowledgeComponent(problems).length === 0
   const close = () => setDialog(CLOSED)
@@ -187,6 +190,7 @@ export function KnowledgeComponentEditor({
           <KnowledgeComponentMatrix
             problems={problems}
             knowledgeComponents={rows}
+            onShowOrigin={(kcId) => setDialog({ kind: 'origin', kcId })}
             onCellClick={editable ? handleCellClick : undefined}
             onRename={editable ? (kcId) => setDialog({ kind: 'rename', kcId }) : undefined}
             onRemove={editable ? (kcId) => setDialog({ kind: 'remove', kcId }) : undefined}
@@ -195,6 +199,11 @@ export function KnowledgeComponentEditor({
           <ProblemStatementsTable problems={problems} />
         )}
       </Card>
+      <KnowledgeComponentOriginDialog
+        knowledgeComponent={dialog.kind === 'origin' ? kcOfDialog : undefined}
+        problemCount={problems.length}
+        onClose={close}
+      />
       <NewKnowledgeComponentDialog
         assignmentId={assignmentId}
         open={dialog.kind === 'new'}

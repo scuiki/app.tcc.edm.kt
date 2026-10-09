@@ -1,0 +1,100 @@
+/* O bloco nunca alarga quem o contém, e o código longo rola dentro dele */
+.code-block {
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* As abas presas ao topo do bloco, uma por arquivo */
+.code-block__tabs {
+  display: flex;
+  overflow-x: auto;
+  border: 1px solid var(--color-rule);
+  border-bottom: 0;
+  background: var(--color-surface);
+}
+
+.code-block__tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  height: 34px;
+  padding: 0 14px;
+  border: 0;
+  border-right: 1px solid var(--color-rule);
+  border-bottom: 2px solid transparent;
+  background: var(--color-surface);
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.code-block__tab svg {
+  flex-shrink: 0;
+}
+
+.code-block__tab:hover {
+  color: var(--color-text);
+}
+
+.code-block__tab[aria-selected='true'] {
+  border-bottom-color: var(--color-text);
+  background: var(--color-surface-subtle);
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+/* Dentro da rolagem o anel de foco fica para dentro, para não ser cortado */
+.code-block__tab:focus-visible,
+.code-block__code:focus-visible {
+  outline-offset: -2px;
+}
+
+/* As linhas em grade, número e texto, rolando nos dois sentidos dentro de uma altura fixa */
+.code-block__code {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(max-content, 1fr);
+  align-content: start;
+  max-height: 300px;
+  overflow: auto;
+  padding: 12px 0;
+  border: 1px solid var(--color-rule);
+  background: var(--color-surface-subtle);
+  font-family: var(--font-code);
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--color-text);
+  tab-size: 4;
+}
+
+/* A numeração fica presa à esquerda quando a linha longa rola de lado */
+.code-block__number {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  padding: 0 12px 0 14px;
+  border-right: 1px solid var(--color-rule);
+  background: var(--color-surface-subtle);
+  color: var(--color-text-disabled);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  user-select: none;
+}
+
+.code-block__line {
+  padding: 0 14px;
+  white-space: pre;
+}
+
+.code-block__number.is-highlighted,
+.code-block__line.is-highlighted {
+  background: var(--color-model-soft);
+}
+
+.code-block__number.is-highlighted {
+  color: var(--color-model-strong);
+  font-weight: 600;
+}

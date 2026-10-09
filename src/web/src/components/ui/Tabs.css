@@ -72,3 +72,22 @@
   margin-bottom: 6px;
   margin-left: auto;
 }
+
+/* A lista rola de lado e desce sobre o fio da faixa, para a rolagem não cortar o traço da ativa */
+.tabs--identifier .tabs__list {
+  overflow-x: auto;
+  overflow-y: hidden;
+  margin-bottom: -1px;
+}
+
+.tabs--identifier .tabs__tab {
+  flex-shrink: 0;
+  min-width: 40px;
+  justify-content: center;
+  margin-bottom: 0;
+}
+
+/* Dentro da lista que rola o anel de foco fica para dentro, para não ser cortado */
+.tabs--identifier .tabs__tab:focus-visible {
+  outline-offset: -2px;
+}
