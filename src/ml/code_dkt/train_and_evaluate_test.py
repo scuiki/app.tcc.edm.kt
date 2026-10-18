@@ -189,3 +189,29 @@ def test_the_path_sampling_seed_reaches_training_and_evaluation(
         device=cpu_device,
     )
     assert seeds == {(_FAST_CONFIG["R"], 7)}
+
+
+class _StopAfterSequences(Exception):
+    pass
+
+
+@pytest.mark.parametrize("config_order, expected", [(None, "time"), ("file", "file")])
+def test_attempt_order_comes_from_the_config(monkeypatch, progsnap_df, config_order, expected):
+    # O padrão é a ordem do tempo, e a ablação pede a do arquivo pelo config
+    received = []
+
+    def record_and_stop(df, progsnap_assignment_id, attempt_order):
+        received.append(attempt_order)
+        if len(received) == 2:
+            raise _StopAfterSequences
+        return []
+
+    monkeypatch.setattr("ml.code_dkt.train_and_evaluate.build_student_sequences", record_and_stop)
+    config = dict(CODE_DKT_HYPERPARAMETERS)
+    if config_order is not None:
+        config["attempt_order"] = config_order
+    with pytest.raises(_StopAfterSequences):
+        train_and_evaluate(
+            progsnap_df, config, progsnap_assignment_id=ASSIGNMENT_ID, ast_paths_by_snapshot={}
+        )
+    assert received == [expected, expected]

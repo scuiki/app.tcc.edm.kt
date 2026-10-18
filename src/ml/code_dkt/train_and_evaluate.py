@@ -52,10 +52,11 @@ def train_and_evaluate(
     max_len = config.get("max_len", 50)
     R = config.get("R", 100)
     path_sampling_seed = config.get("path_sampling_seed", 42)
+    attempt_order = config.get("attempt_order", "time")
 
     # 1. sequências completas, is_first_attempt é marcado uma vez por partição
-    train_sequences = build_student_sequences(train_df, progsnap_assignment_id)
-    test_sequences = build_student_sequences(test_df, progsnap_assignment_id)
+    train_sequences = build_student_sequences(train_df, progsnap_assignment_id, attempt_order)
+    test_sequences = build_student_sequences(test_df, progsnap_assignment_id, attempt_order)
 
     # 2. vocabulário só do treino, com todos os paths das soluções dele, sem vazamento
     token_to_idx, path_to_idx = build_train_only_vocabulary(

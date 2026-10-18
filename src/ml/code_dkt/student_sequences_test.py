@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import pandas as pd
+import pytest
+
 from ml.code_dkt.student_sequences import build_student_sequences, truncate_student_sequences
 
 
@@ -88,3 +91,36 @@ def test_short_sequence_unchanged(a439_mini):
     after = _events_for(truncated, "S1")
     assert len(after) == len(before)
     assert list(after["is_first_attempt"]) == list(before["is_first_attempt"])
+
+
+def _interleaved_runs():
+    # Um aluno com as linhas do arquivo em blocos por problema e o tempo intercalado entre eles
+    return pd.DataFrame({
+        "student_id": ["S1", "S1", "S1", "S1"],
+        "progsnap_assignment_id": [439, 439, 439, 439],
+        "problem_id": [1, 1, 2, 2],
+        "submitted_at": pd.to_datetime(
+            ["2019-01-01 10:00", "2019-01-01 10:02", "2019-01-01 10:01", "2019-01-01 10:03"]
+        ),
+        "code_snapshot_id": ["a", "b", "c", "d"],
+    })
+
+
+def test_time_order_is_the_default_and_interleaves_problems():
+    sequences = build_student_sequences(_interleaved_runs(), 439)
+    events = sequences[0]["events"]
+    assert events["code_snapshot_id"].tolist() == ["a", "c", "b", "d"]
+    assert events["is_first_attempt"].tolist() == [True, True, False, False]
+
+
+def test_file_order_keeps_the_rows_of_the_file():
+    sequences = build_student_sequences(_interleaved_runs(), 439, attempt_order="file")
+    events = sequences[0]["events"]
+    assert events["code_snapshot_id"].tolist() == ["a", "b", "c", "d"]
+    # Na ordem do arquivo, a primeira do par na sequência é o começo de cada bloco
+    assert events["is_first_attempt"].tolist() == [True, False, True, False]
+
+
+def test_unknown_attempt_order_fails():
+    with pytest.raises(ValueError):
+        build_student_sequences(_interleaved_runs(), 439, attempt_order="random")

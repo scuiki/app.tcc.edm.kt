@@ -57,9 +57,10 @@ pythonpath = ["src", "."]  # "." para tests.fixtures (ver tests/fixtures/__init_
 markers = [
     "regression: dez seeds do Code-DKT no A439, com a média do first-attempt AUC em ±0,1 ponto de 0,7278, na GPU com o CSEDM real, precisa do EDMKT_CSEDM_PATH e roda com -m regression; marca também os testes do KCGen-KT que carregam os modelos de vetores ou a extração de referência",
     "literature: comparação com as Tabelas 1 e 2 de Shi et al. (2022), cinco exercícios e dez seeds na GPU com o CSEDM real, roda com -m literature -s e grava docs/results/code_dkt_literature_comparison.json",
+    "ablation: o Code-DKT com as tentativas na ordem do arquivo, como o repositório oficial, nos exercícios da CSEDM e dez seeds na GPU, roda com -m ablation -s e grava docs/results/code_dkt_order_ablation.json",
 ]
 # importlib: dois *_test.py com o mesmo nome em pastas diferentes não colidem.
-addopts = "-m 'not regression and not literature' --import-mode=importlib"
+addopts = "-m 'not regression and not literature and not ablation' --import-mode=importlib"
 
 # A regra de dependência de docs/ARCHITECTURE.md, verificada: `lint-imports` (no container).
 [tool.importlinter]

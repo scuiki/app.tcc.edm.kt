@@ -82,8 +82,8 @@ solto, também no container:
 docker run --rm --security-opt label=disable -v "$PWD":/app -w /app edmkt-core:dev lint-imports
 ```
 
-O `addopts = -m 'not regression and not literature'` (em `pyproject.toml`) desmarca os testes de
-regressão e a comparação com o paper por padrão.
+O `addopts = -m 'not regression and not literature and not ablation'` (em `pyproject.toml`)
+desmarca os testes de regressão, a comparação com o paper e a ablação da ordem por padrão.
 
 ### Teste de regressão do Code-DKT (GPU + dataset)
 

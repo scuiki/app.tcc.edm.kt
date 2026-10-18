@@ -206,6 +206,8 @@ modelo, exceto o domínio médio dos exercícios treinados.
 | extração de referência | A extração do A439 da CSEDM, feita em 06/10/2026 numa turma própria, cujas respostas do LLM e cujo resultado ficam em `tests/data/kc` para os testes de regressão do KCGen-KT | — |
 | tolerância do teste de regressão (`TOLERANCE`) | O quanto a média do first-attempt AUC das dez seeds pode se afastar da média de referência, ±0,001 (±0,1 ponto). A média de referência (`REGRESSION_CENTER`) é 0,7278, a que o app mediu no A439 em 02/10/2026, e fora da tolerância o teste de regressão falha | — |
 | marcador `literature` | O teste que compara o app com as Tabelas 1 e 2 de Shi et al. (2022), `tests/test_literature_comparison.py`, fora da suíte padrão | — |
+| ordem das tentativas (`attempt_order`) | A ordem em que as execuções de cada aluno entram na sequência do Code-DKT. `"time"`, o padrão do app, ordena pelo `submitted_at`. `"file"` mantém a ordem das linhas do arquivo, como o repositório oficial, e na CSEDM dá um bloco por problema. Só a ablação usa o `"file"` | — |
+| marcador `ablation` | O teste que mede o Code-DKT na CSEDM com a `attempt_order` `"file"`, ao lado do app e do paper, `tests/test_code_dkt_order_ablation.py`, fora da suíte padrão | — |
 | `java_parse_rate` | A fração dos snapshots que o javalang conseguiu parsear | `parse_rate` |
 | `ModelProvenance` | O commit do código e o hash do dado que geraram um modelo | `provenance` |
 | `predict_current_state()` | O vetor do último passo do Code-DKT, a chance de acerto de cada aluno em cada problema se tentasse agora (`ml/code_dkt/prediction.py`). `predict_code_dkt()` continua sendo a previsão por tentativa, para o AUC | — |
