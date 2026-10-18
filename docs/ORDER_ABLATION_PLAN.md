@@ -90,6 +90,6 @@ Sem rebuild, com a `edmkt-core:dev` atual.
 | Etapa | Estado |
 |---|---|
 | Plano | registrado em 18/10/2026 |
-| Mudanças no código | aguardando aprovação |
-| Regressão e ablação no A439 | aguardando |
+| Mudanças no código | aprovadas em 18/10/2026, no commit `2b6dc07` |
+| Regressão e ablação no A439 | 18/10/2026. A regressão deu de novo a média de 0,7278. Na ordem do arquivo, a primeira tentativa foi 75,42 ± 1,13 e o geral 71,42 ± 0,72, contra 72,78 ± 0,81 e 69,25 ± 0,86 na ordem do tempo e 75,74 ± 0,69 e 74,31 ± 0,90 no paper. O teste tem 608 primeiras tentativas na ordem do arquivo e 618 na do tempo |
 | Outros exercícios | conforme o A439 |
