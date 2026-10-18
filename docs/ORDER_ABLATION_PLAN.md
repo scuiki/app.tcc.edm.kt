@@ -1,0 +1,95 @@
+# Plano da ablação da ordem das tentativas no Code-DKT
+
+Documento temporário. Sai do repositório quando a decisão sobre a ordem das execuções for registrada
+no `DEVELOPMENT.md`.
+
+## Objetivo
+
+Medir quanto da diferença entre o AUC do app e o de Shi et al. (2022) vem da ordem em que as
+tentativas de cada aluno entram no modelo. A ablação não muda o método do app. O padrão continua a
+ordem do tempo, e o treino pela tela e o teste de regressão ficam como estão.
+
+## A diferença medida
+
+| | Paper | Repositório | App hoje | Ablação |
+|---|---|---|---|---|
+| Ordem das tentativas | as últimas 50, "the latest" (p. 55), o que pressupõe a ordem do tempo | a do arquivo (`src/preprocessing.py:22`), que na CSEDM vem em blocos por problema | a do tempo, por `submitted_at` (`src/ml/code_dkt/student_sequences.py:12`) | a do arquivo, como o repositório |
+| Primeira tentativa | a primeira em cada problema (p. 56) | o começo de cada trecho seguido do mesmo problema, na janela de 50 (`src/evaluation.py:42`) | a primeira de cada problema na sequência inteira | a mesma do app, que na ordem do arquivo coincide com a do paper |
+
+Nas duas ordens o LSTM lê uma tentativa por vez e cada previsão usa só as anteriores da sequência. O
+que muda é a sequência. Na ordem do arquivo o aluno faz todas as tentativas de um problema e depois
+todas as do seguinte, na ordem 234, 13, 12, 232, 233, 5, 235, 236, 1 e 3 no A439. Na ordem do tempo
+as tentativas de problemas diferentes se intercalam como o aluno as fez.
+
+## O que o dado mostrou antes de medir
+
+Conferido em 18/10/2026 no `MainTable.csv` da CSEDM, só com os `Run.Program`.
+
+- Nos cinco exercícios, cada par de aluno e problema forma exatamente um trecho contíguo no
+  arquivo. No A439 são 3.686 trechos para 3.686 pares.
+- Dentro de cada trecho as tentativas estão na ordem do tempo, salvo 2 trechos no A439 e 1 no A487.
+- No A439, 86 alunos têm mais de 50 execuções, e em 79 deles a janela das últimas 50 começa no meio
+  de um trecho.
+
+Por isso, na ordem do arquivo, a primeira tentativa do app (a primeira do par na sequência inteira)
+é o começo de cada trecho, igual à do paper e à do repositório. A única diferença que sobra é do
+repositório. Quando o aluno passa de 50 execuções, ele conta como primeira a primeira previsão da
+janela, mesmo no meio de um trecho, um efeito ligado à previsão da primeira execução a partir do
+padding, que o app não faz. Fica fora desta rodada.
+
+## Variantes
+
+| Variante | Ordem | Primeira tentativa | Papel |
+|---|---|---|---|
+| V0 | tempo | a primeira do par na sequência inteira | o app de hoje, com os números do `code_dkt_literature_comparison.json` e sem treinar de novo |
+| V1 | arquivo | a primeira do par na sequência inteira | o efeito da ordem |
+
+O AUC geral não depende da definição de primeira tentativa, então a diferença entre V0 e V1 no AUC
+geral é o efeito da ordem sozinho.
+
+A expectativa registrada antes de medir é que a V1 suba o AUC geral, porque dentro de um trecho a
+próxima tentativa é sempre do mesmo problema, e que a primeira tentativa suba menos, porque é
+prevista depois do trecho inteiro do problema anterior.
+
+## Mudanças no código
+
+1. **Glossário.** Entram no `GLOSSARY.md`, antes do código, a `attempt_order` (`"time"` ou
+   `"file"`) e o marcador `ablation`.
+2. **`build_student_sequences`.** Ganha `attempt_order="time"`. Com `"time"` ordena por aluno e
+   `submitted_at`, como hoje. Com `"file"` ordena só por aluno, de forma estável, e mantém a ordem das
+   linhas dentro de cada aluno. A marca de primeira tentativa continua a mesma nas duas. O teste ao
+   lado confere as duas ordens com tentativas intercaladas e que o padrão não mudou.
+3. **`train_and_evaluate`.** Lê `config.get("attempt_order", "time")` e passa às duas chamadas de
+   `build_student_sequences`. O `CODE_DKT_HYPERPARAMETERS` e o worker de treino não mudam.
+4. **`tests/test_code_dkt_order_ablation.py`.** Com o marcador `ablation`, fora da suíte padrão
+   pelo `addopts`. Roda `evaluate_over_seeds` com `attempt_order="file"` nas dez seeds, grava em
+   `docs/results/code_dkt_order_ablation.json` no formato da comparação com o paper e imprime a V0,
+   a V1 e o paper lado a lado.
+
+## Execução
+
+Sem rebuild, com a `edmkt-core:dev` atual.
+
+1. A suíte padrão, o lint e o `import-linter` no container.
+2. `docker compose stop api`, porque o treino longo na GPU roda com a api parada. O `web` fica no ar.
+3. O teste de regressão no A439, que tem que dar de novo a média de 0,7278 e prova que o padrão não
+   mudou. Cerca de 4 minutos.
+4. A ablação só no A439 (`-k 439`), cerca de 4 minutos. Os outros quatro exercícios rodam depois,
+   se o resultado do A439 pedir.
+5. `docker compose up -d api`.
+
+## Fora do escopo
+
+- A previsão da primeira execução a partir do padding e a primeira tentativa literal do
+  repositório, candidatas a uma rodada seguinte se a V1 não explicar a diferença.
+- O dropout na avaliação, o treino pela tela, o retreino da turma e a seção 5.7 do TCC.
+- Qualquer registro no `DEVELOPMENT.md` antes da decisão.
+
+## Estado
+
+| Etapa | Estado |
+|---|---|
+| Plano | registrado em 18/10/2026 |
+| Mudanças no código | aguardando aprovação |
+| Regressão e ablação no A439 | aguardando |
+| Outros exercícios | conforme o A439 |
