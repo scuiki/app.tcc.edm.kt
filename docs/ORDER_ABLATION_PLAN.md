@@ -103,4 +103,4 @@ Sem rebuild, com a `edmkt-core:dev` atual.
 | Mudanças no código | aprovadas em 18/10/2026, no commit `2b6dc07` |
 | Regressão e ablação no A439 | 18/10/2026. A regressão deu de novo a média de 0,7278. Na ordem do arquivo, a primeira tentativa foi 75,42 ± 1,13 e o geral 71,42 ± 0,72, contra 72,78 ± 0,81 e 69,25 ± 0,86 na ordem do tempo e 75,74 ± 0,69 e 74,31 ± 0,90 no paper. O teste tem 608 primeiras tentativas na ordem do arquivo e 618 na do tempo |
 | Outros exercícios | 18/10/2026. No AUC geral, a ordem do arquivo fica abaixo da Tabela 1 nos cinco exercícios, de 0,58 a 3,03 pontos, com média de 2,32, e a ordem do tempo fica de 5,06 abaixo a 0,52 acima, com média de 2,07 abaixo. Na primeira tentativa, a troca de ordem muda a média de 2,92 pontos para baixo (A494) a 2,64 para cima (A439) |
-| V2 no A439 | aprovada em 19/10/2026, com este registro como ponto de volta |
+| V2 no A439 | aprovada em 19/10/2026, com o ponto de volta no commit `0d7d307` e o código no `8d0b517`. Nos blocos por aluno, a primeira tentativa foi 72,65 ± 0,68 e o geral 69,47 ± 0,93, perto da ordem do tempo (72,78 e 69,25) e longe da ordem do arquivo (75,42 e 71,42), como esperado |
