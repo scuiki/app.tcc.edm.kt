@@ -1,4 +1,4 @@
-# O Code-DKT com as tentativas na ordem do arquivo, como o repositório oficial, ao lado do paper.
+# O Code-DKT com as tentativas em blocos por problema, ao lado da ordem do tempo e do paper.
 
 # Fora da suíte padrão, roda com -m ablation -s, e falha só por erro ou por AUC indefinido.
 
@@ -27,20 +27,45 @@ from tests.test_literature_comparison import (
 
 RESULTS_PATH = LITERATURE_RESULTS_PATH.parent / "code_dkt_order_ablation.json"
 
-_rows: list[str] = []
+ABLATION_ORDERS = ("file", "student_blocks")
+ORDER_LABELS = {"time": "tempo, o app", "file": "arquivo", "student_blocks": "blocos por aluno"}
+
+_measured: list[int] = []
 
 
 def _percent(mean: float, std: float) -> str:
     return f"{100 * mean:.2f} ± {100 * std:.2f}"
 
 
+def _row(name: str, order: str, record: dict, paper: str) -> str:
+    return (
+        f"{name} | {ORDER_LABELS[order]} | "
+        f"{_percent(record['first_attempt_auc_mean'], record['first_attempt_auc_std'])} | "
+        f"{_percent(record['all_attempts_auc_mean'], record['all_attempts_auc_std'])} | {paper}"
+    )
+
+
 @pytest.fixture(scope="module", autouse=True)
 def print_the_ablation_table():
+    # Cada exercício medido aparece com todas as ordens já gravadas, e a do tempo vem da comparação
     yield
-    if not _rows:
+    if not _measured:
         return
+    literature = json.loads(LITERATURE_RESULTS_PATH.read_text())["assignments"]
+    ablation = json.loads(RESULTS_PATH.read_text())
+    rows = []
+    for progsnap_assignment_id in sorted(set(_measured)):
+        key = str(progsnap_assignment_id)
+        paper_name = PAPER_ASSIGNMENTS[progsnap_assignment_id]
+        name = f"A{progsnap_assignment_id} ({paper_name})"
+        paper = f"{PAPER_ALL_ATTEMPTS_AUC[paper_name]:.2f}"
+        rows.append(_row(name, "time", literature[key], paper))
+        for order in ABLATION_ORDERS:
+            record = ablation.get(order, {}).get("assignments", {}).get(key)
+            if record is not None:
+                rows.append(_row(name, order, record, paper))
     header = "exercício | ordem | 1ª tentativa | geral | geral no paper (Tabela 1)"
-    print("\n[ablation] " + header + "\n" + "\n".join(f"[ablation] {r}" for r in _rows))
+    print("\n[ablation] " + header + "\n" + "\n".join(f"[ablation] {r}" for r in rows))
     first, overall = PAPER_A1_MEAN_AND_STD["first_attempt"], PAPER_A1_MEAN_AND_STD["all_attempts"]
     print(
         f"[ablation] Tabela 2 do paper, só no A1, primeira tentativa {first[0]:.2f} ± {first[1]:.2f} "
@@ -58,37 +83,35 @@ def _count_first_attempts(test_df, progsnap_assignment_id: int, attempt_order: s
     return total
 
 
-def _save(progsnap_assignment_id: int, record: dict) -> None:
-    # Junta ao arquivo que já existe, para rodar um exercício sozinho sem apagar os outros
+def _save(attempt_order: str, progsnap_assignment_id: int, record: dict) -> None:
+    # Junta ao arquivo que já existe, para rodar um exercício ou uma ordem sem apagar os outros
     results = json.loads(RESULTS_PATH.read_text()) if RESULTS_PATH.exists() else {}
-    results.setdefault("assignments", {})[str(progsnap_assignment_id)] = record
+    by_order = results.setdefault(attempt_order, {}).setdefault("assignments", {})
+    by_order[str(progsnap_assignment_id)] = record
     RESULTS_PATH.write_text(json.dumps(results, indent=2, ensure_ascii=False, sort_keys=True) + "\n")
 
 
 @pytest.mark.ablation
+@pytest.mark.parametrize("attempt_order", ABLATION_ORDERS)
 @pytest.mark.parametrize("progsnap_assignment_id", sorted(PAPER_ASSIGNMENTS))
-def test_file_order_ablation(csedm_main_table, progsnap_assignment_id) -> None:
+def test_order_ablation(csedm_main_table, progsnap_assignment_id, attempt_order) -> None:
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     _train_df, test_df = split_students_into_train_and_test(
         csedm_main_table, progsnap_assignment_id=progsnap_assignment_id
     )
-    time_order = json.loads(LITERATURE_RESULTS_PATH.read_text())["assignments"][
-        str(progsnap_assignment_id)
-    ]
 
     started = time.time()
     evaluation = evaluate_over_seeds(
-        csedm_main_table, {**CODE_DKT_HYPERPARAMETERS, "attempt_order": "file"},
+        csedm_main_table, {**CODE_DKT_HYPERPARAMETERS, "attempt_order": attempt_order},
         progsnap_assignment_id=progsnap_assignment_id, device=device,
     )
-    paper_name = PAPER_ASSIGNMENTS[progsnap_assignment_id]
-    _save(progsnap_assignment_id, {
-        "paper_name": paper_name,
-        "attempt_order": "file",
+    _save(attempt_order, progsnap_assignment_id, {
+        "paper_name": PAPER_ASSIGNMENTS[progsnap_assignment_id],
+        "attempt_order": attempt_order,
         "seeds": list(EVALUATION_SEEDS),
         "n_first_attempts_in_test": {
             order: _count_first_attempts(test_df, progsnap_assignment_id, order)
-            for order in ("time", "file")
+            for order in ("time", attempt_order)
         },
         "first_attempt_auc_by_seed": {str(s): a for s, a in evaluation.first_attempt_auc_by_seed.items()},
         "all_attempts_auc_by_seed": {str(s): a for s, a in evaluation.all_attempts_auc_by_seed.items()},
@@ -101,15 +124,4 @@ def test_file_order_ablation(csedm_main_table, progsnap_assignment_id) -> None:
         "seconds": round(time.time() - started, 1),
         "run_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
     })
-    paper = f"{PAPER_ALL_ATTEMPTS_AUC[paper_name]:.2f}"
-    name = f"A{progsnap_assignment_id} ({paper_name})"
-    _rows.append(
-        f"{name} | tempo, o app | "
-        f"{_percent(time_order['first_attempt_auc_mean'], time_order['first_attempt_auc_std'])} | "
-        f"{_percent(time_order['all_attempts_auc_mean'], time_order['all_attempts_auc_std'])} | {paper}"
-    )
-    _rows.append(
-        f"{name} | arquivo | "
-        f"{_percent(evaluation.first_attempt_auc_mean, evaluation.first_attempt_auc_std)} | "
-        f"{_percent(evaluation.all_attempts_auc_mean, evaluation.all_attempts_auc_std)} | {paper}"
-    )
+    _measured.append(progsnap_assignment_id)

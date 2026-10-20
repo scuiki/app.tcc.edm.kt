@@ -124,3 +124,21 @@ def test_file_order_keeps_the_rows_of_the_file():
 def test_unknown_attempt_order_fails():
     with pytest.raises(ValueError):
         build_student_sequences(_interleaved_runs(), 439, attempt_order="random")
+
+
+def test_student_blocks_follow_the_order_the_student_started_each_problem():
+    # No tempo 13e, 234e, 13a, 12a, e em blocos o 13 inteiro vem antes do 234
+    runs = pd.DataFrame({
+        "student_id": ["S1"] * 4,
+        "progsnap_assignment_id": [439] * 4,
+        "problem_id": [234, 13, 13, 12],
+        "submitted_at": pd.to_datetime(
+            ["2019-01-01 10:01", "2019-01-01 10:00", "2019-01-01 10:02", "2019-01-01 10:03"]
+        ),
+        "code_snapshot_id": ["234e", "13e", "13a", "12a"],
+    })
+    sequences = build_student_sequences(runs, 439, attempt_order="student_blocks")
+    events = sequences[0]["events"]
+    assert events["code_snapshot_id"].tolist() == ["13e", "13a", "234e", "12a"]
+    assert events["is_first_attempt"].tolist() == [True, False, True, True]
+    assert "_block_start" not in events.columns

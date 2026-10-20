@@ -3,7 +3,7 @@
 import pandas as pd
 
 
-ATTEMPT_ORDERS = ("time", "file")
+ATTEMPT_ORDERS = ("time", "file", "student_blocks")
 
 
 def build_student_sequences(
@@ -17,8 +17,19 @@ def build_student_sequences(
     assign_df = df[df["progsnap_assignment_id"] == progsnap_assignment_id].copy()
 
     # Ordenar antes de marcar a primeira tentativa, e o sort estável mantém as linhas no empate
-    sort_keys = ["student_id", "submitted_at"] if attempt_order == "time" else ["student_id"]
-    assign_df = assign_df.sort_values(sort_keys, kind="stable")
+    if attempt_order == "time":
+        sort_keys = ["student_id", "submitted_at"]
+    elif attempt_order == "file":
+        sort_keys = ["student_id"]
+    else:
+        # O bloco de cada problema entra quando o aluno começou o problema
+        assign_df["_block_start"] = assign_df.groupby(
+            ["student_id", "problem_id"]
+        )["submitted_at"].transform("min")
+        sort_keys = ["student_id", "_block_start", "problem_id", "submitted_at"]
+    assign_df = assign_df.sort_values(sort_keys, kind="stable").drop(
+        columns="_block_start", errors="ignore"
+    )
 
     # is_first_attempt marca a primeira ocorrência de (aluno, problema) na sequência
     assign_df["is_first_attempt"] = ~assign_df.duplicated(
