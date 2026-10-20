@@ -43,6 +43,7 @@ padding, que o app não faz. Fica fora desta rodada.
 |---|---|---|---|
 | V0 | tempo | a primeira do par na sequência inteira | o app de hoje, com os números do `code_dkt_literature_comparison.json` e sem treinar de novo |
 | V1 | arquivo | a primeira do par na sequência inteira | o efeito da ordem |
+| V2 | blocos por aluno, na ordem em que ele começou cada problema, e o `submitted_at` dentro do bloco | a primeira do par na sequência inteira, o começo de cada bloco | os blocos sem a ordem global do arquivo, só no A439 |
 
 O AUC geral não depende da definição de primeira tentativa, então a diferença entre V0 e V1 no AUC
 geral é o efeito da ordem sozinho.
@@ -51,7 +52,13 @@ A expectativa registrada antes de medir é que a V1 suba o AUC geral, porque den
 próxima tentativa é sempre do mesmo problema, e que a primeira tentativa suba menos, porque é
 prevista depois do trecho inteiro do problema anterior.
 
+A V2 entrou em 19/10/2026, depois da decisão de seguir a ordem em blocos do repositório. Na CSEDM
+a ordem global dos blocos difere da ordem em que o aluno começou os problemas em 368 dos 386 alunos
+do A439, e 268 deles nunca voltam a um problema depois de começar outro, caso em que a V2 dá a mesma
+sequência da ordem do tempo. A expectativa registrada antes de medir é que a V2 fique perto da V0.
+
 ## Mudanças no código
+
 
 1. **Glossário.** Entram no `GLOSSARY.md`, antes do código, a `attempt_order` (`"time"` ou
    `"file"`) e o marcador `ablation`.
@@ -61,7 +68,10 @@ prevista depois do trecho inteiro do problema anterior.
    lado confere as duas ordens com tentativas intercaladas e que o padrão não mudou.
 3. **`train_and_evaluate`.** Lê `config.get("attempt_order", "time")` e passa às duas chamadas de
    `build_student_sequences`. O `CODE_DKT_HYPERPARAMETERS` e o worker de treino não mudam.
-4. **`tests/test_code_dkt_order_ablation.py`.** Com o marcador `ablation`, fora da suíte padrão
+4. **V2.** A `attempt_order` ganha o valor `"student_blocks"`, que ordena por aluno, pelo momento da
+   primeira tentativa dele em cada problema, pelo id do problema no empate e pelo `submitted_at`. O
+   teste da ablação roda por exercício e por ordem, e o JSON guarda cada ordem separada.
+5. **`tests/test_code_dkt_order_ablation.py`.** Com o marcador `ablation`, fora da suíte padrão
    pelo `addopts`. Roda `evaluate_over_seeds` com `attempt_order="file"` nas dez seeds, grava em
    `docs/results/code_dkt_order_ablation.json` no formato da comparação com o paper e imprime a V0,
    a V1 e o paper lado a lado.
@@ -93,3 +103,4 @@ Sem rebuild, com a `edmkt-core:dev` atual.
 | Mudanças no código | aprovadas em 18/10/2026, no commit `2b6dc07` |
 | Regressão e ablação no A439 | 18/10/2026. A regressão deu de novo a média de 0,7278. Na ordem do arquivo, a primeira tentativa foi 75,42 ± 1,13 e o geral 71,42 ± 0,72, contra 72,78 ± 0,81 e 69,25 ± 0,86 na ordem do tempo e 75,74 ± 0,69 e 74,31 ± 0,90 no paper. O teste tem 608 primeiras tentativas na ordem do arquivo e 618 na do tempo |
 | Outros exercícios | 18/10/2026. No AUC geral, a ordem do arquivo fica abaixo da Tabela 1 nos cinco exercícios, de 0,58 a 3,03 pontos, com média de 2,32, e a ordem do tempo fica de 5,06 abaixo a 0,52 acima, com média de 2,07 abaixo. Na primeira tentativa, a troca de ordem muda a média de 2,92 pontos para baixo (A494) a 2,64 para cima (A439) |
+| V2 no A439 | aprovada em 19/10/2026, com este registro como ponto de volta |
