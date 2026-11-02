@@ -117,10 +117,17 @@ class KcGenKtGenerator:
 
         # Etapas 3-4, os nomes únicos, na ordem dos problemas e das respostas, viram conceitos
         on_stage("cluster")
-        unique_names = list(
-            dict.fromkeys(kc["name"] for p in problem_ids for kc in candidate_kcs_by_problem[p])
+        candidate_names = [kc["name"] for p in problem_ids for kc in candidate_kcs_by_problem[p]]
+        # Nomes que diferem só em maiúsculas e minúsculas são um nome só, com a primeira grafia
+        spelling_of: dict[str, str] = {}
+        for name in candidate_names:
+            spelling_of.setdefault(name.lower(), name)
+        concept_names, concept_of_spelling = self._group_and_name(
+            list(spelling_of.values()), cache_dir, on_progress
         )
-        concept_names, concept_of_name = self._group_and_name(unique_names, cache_dir, on_progress)
+        concept_of_name = {
+            name: concept_of_spelling[spelling_of[name.lower()]] for name in candidate_names
+        }
 
         # Etapa 5, a Q-matrix binária problema × conceito.
         on_stage("qmatrix")

@@ -5,7 +5,7 @@ from __future__ import annotations
 from api.knowledge_components.presentation import dependencies
 
 
-def test_the_extraction_calls_the_sonnet_by_default(tmp_db, monkeypatch):
+def test_the_extraction_calls_the_haiku_by_default(tmp_db, monkeypatch):
     built: list[dict] = []
     monkeypatch.setattr(
         dependencies, "ClaudeCliLLMClient", lambda **kwargs: built.append(kwargs) or object()
@@ -13,4 +13,4 @@ def test_the_extraction_calls_the_sonnet_by_default(tmp_db, monkeypatch):
 
     dependencies.build_run_kc_generation_use_case(tmp_db)
 
-    assert built == [{"model": "claude-sonnet-5-5"}]
+    assert built == [{"model": "claude-haiku-4-5-20251001"}]

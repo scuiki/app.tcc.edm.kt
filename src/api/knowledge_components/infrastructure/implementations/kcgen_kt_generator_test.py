@@ -222,7 +222,7 @@ def test_each_problem_gets_its_own_statement_and_the_one_without_gets_none(data_
         for p in (1, 2)
     }
     assert set(generated.group_of_name) == {"kc do problema 1", "kc do problema 2"}
-    assert (generated.model_id, generated.prompt_version) == ("claude-sonnet-5-5", "kcgen-v2")
+    assert (generated.model_id, generated.prompt_version) == ("claude-haiku-4-5-20251001", "kcgen-v2")
 
 
 class _EmptyForProblemTwo(_EchoLLM):
@@ -323,15 +323,24 @@ def test_a_group_of_one_kc_keeps_its_name_in_lowercase_without_a_call(data_root)
     assert generated.groups_by_problem == {1: [0], 2: [1]}
 
 
+class _SameSummary(_ScriptedLLM):
+    # Toda nomeação devolve o mesmo resumo, seja qual for o grupo
+    def generate(self, system: str, prompt: str, schema=None, validate=None) -> dict:
+        if naming_answer(prompt) is not None:
+            self.naming_prompts.append(prompt)
+            return {"reasoning": "x", "representative kc": None, "summary name": "Loops"}
+        return super().generate(system, prompt, schema, validate)
+
+
 def test_groups_that_get_the_same_name_become_one_concept(data_root):
-    # Os dois grupos de laços recebem o nome "for loop", e a Q-matrix fica com uma coluna só
-    llm = _ScriptedLLM({1: ["For loop", "for loop iteration"], 2: ["FOR LOOP", "loop counter"]})
-    group_of = {"For loop": 0, "for loop iteration": 0, "FOR LOOP": 1, "loop counter": 1}
+    # Os dois grupos de laços recebem o nome "loops", e a Q-matrix fica com uma coluna só
+    llm = _SameSummary({1: ["For loop", "for loop iteration"], 2: ["While loop", "loop counter"]})
+    group_of = {"For loop": 0, "for loop iteration": 0, "While loop": 1, "loop counter": 1}
 
     generated = _generate(llm, [1, 2], group_of)
 
     assert len(llm.naming_prompts) == 2
-    assert generated.group_names == {0: "for loop"}
+    assert generated.group_names == {0: "loops"}
     assert generated.groups_by_problem == {1: [0], 2: [0]}
     assert set(generated.group_of_name.values()) == {0}
 
@@ -409,15 +418,52 @@ def test_an_invalid_naming_answer_names_its_group(data_root, monkeypatch):
         _generate(llm, [1, 2], {"For loop": 0, "While loop": 0})
 
 
-def test_names_are_deduplicated_by_the_exact_text(data_root):
-    # Só o texto idêntico entra uma vez, e a caixa ou um espaço a mais fazem outro nome
-    llm = _ScriptedLLM({1: ["Loop", "loop", "For loop"], 2: ["Loop", "Loop "]})
-    group_of = {"Loop": 0, "loop": 0, "For loop": 0, "Loop ": 1}
+def test_names_that_differ_only_in_case_are_one_name(data_root):
+    # Os sete candidatos têm cinco nomes, e o k sai dos cinco, então ficam 2 grupos e não 3
+    llm = _ScriptedLLM(
+        {
+            1: ["For loop", "While loop", "Do while loop"],
+            2: ["FOR LOOP", "String length", "string LENGTH", "Substring"],
+        }
+    )
+    # Só a primeira grafia tem vetor, então o SBERT nunca recebe as outras
+    group_of = {
+        "For loop": 0,
+        "While loop": 0,
+        "Do while loop": 0,
+        "String length": 1,
+        "Substring": 1,
+    }
 
     generated = _generate(llm, [1, 2], group_of)
 
-    assert list(generated.group_of_name) == ["Loop", "loop", "For loop", "Loop "]
-    # O grupo de um KC só guarda o nome como veio, só que em minúsculas
+    assert sorted(_listed_names(prompt) for prompt in llm.naming_prompts) == [
+        ["For loop", "While loop", "Do while loop"],
+        ["String length", "Substring"],
+    ]
+    # Cada grafia acha o conceito da primeira, porque o candidato é gravado com a grafia dele
+    of = generated.group_of_name
+    assert list(of) == [
+        "For loop",
+        "While loop",
+        "Do while loop",
+        "FOR LOOP",
+        "String length",
+        "string LENGTH",
+        "Substring",
+    ]
+    assert of["FOR LOOP"] == of["For loop"] and of["string LENGTH"] == of["String length"]
+    assert sorted(generated.group_names.values()) == ["for loop", "string length"]
+
+
+def test_names_that_differ_in_more_than_case_stay_apart(data_root):
+    # Um espaço a mais faz outro nome, e o grupo de um KC só guarda o nome em minúsculas
+    llm = _ScriptedLLM({1: ["Loop", "For loop"], 2: ["Loop ", "Loop counter"]})
+    group_of = {"Loop": 0, "For loop": 0, "Loop ": 1, "Loop counter": 1}
+
+    generated = _generate(llm, [1, 2], group_of)
+
+    assert list(generated.group_of_name) == ["Loop", "For loop", "Loop ", "Loop counter"]
     assert sorted(generated.group_names.values()) == ["loop", "loop "]
 
 

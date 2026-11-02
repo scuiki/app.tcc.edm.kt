@@ -54,11 +54,13 @@ def correct_runs() -> pd.DataFrame:
 
 
 def _unique_names(reference: dict) -> list[str]:
-    # Os nomes na ordem dos problemas e das respostas, a ordem em que entram no agrupamento
+    # Os nomes na ordem dos problemas e das respostas, sem repetir grafias, como no agrupamento
     problems = sorted(reference["candidate_kcs"], key=int)
-    return list(
-        dict.fromkeys(kc["name"] for p in problems for kc in reference["candidate_kcs"][p])
-    )
+    spelling_of: dict[str, str] = {}
+    for p in problems:
+        for kc in reference["candidate_kcs"][p]:
+            spelling_of.setdefault(kc["name"].lower(), kc["name"])
+    return list(spelling_of.values())
 
 
 @pytest.mark.regression

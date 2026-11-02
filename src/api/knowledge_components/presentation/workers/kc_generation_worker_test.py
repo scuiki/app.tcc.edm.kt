@@ -386,7 +386,7 @@ def test_the_job_records_the_model_and_the_prompt_version(tmp_db, data_root):
     _run(conn, assignment_id, job_id, _llm_ok())
 
     job = _jobs(conn).get(job_id)
-    assert (job.model_id, job.prompt_version) == ("claude-sonnet-5-5", "kcgen-v2")
+    assert (job.model_id, job.prompt_version) == ("claude-haiku-4-5-20251001", "kcgen-v2")
 
 
 def test_the_statement_saved_on_the_problem_reaches_its_own_prompt(tmp_db, data_root):
