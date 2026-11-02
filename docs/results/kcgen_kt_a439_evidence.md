@@ -10,20 +10,17 @@ execuções corretas de alunos da CSEDM, identificadas pelo `CodeStateID` do dat
 O trecho é a justificativa que o modelo escreve, e não a causa da extração. Um conceito sem trecho é
 um conceito em que o LLM apontou um código que não está na solução, e o app o descartou.
 
+
 ## Problema 1, `sortaSum`
 
 > Write a function in Java that implements the following logic: Given 2 ints, a and b, return their sum. However, sums in the range 10..19 inclusive, are forbidden, so in that case just return 20.
 
 | Conceito | Solução | Linhas | Trecho |
 |---|---|---|---|
-| Tratamento de limites inclusivos e exclusivos | 4 | 3 | `return sum >= 10 && sum < 20 ? 20 : sum;` |
-| Comparações numéricas (operadores relacionais) | 3 | 7 | `if(sum >=10 && sum <=19) {` |
-| Operações aritméticas básicas | 3 | 5 | `sum = a + b;` |
-| Instruções condicionais: if/else, encadeamento de else if e if aninhado | 1 | 3 a 5 | `if (a + b >= 10 && a + b <= 19)`<br>`return 20;`<br>`else return (a + b);` |
-| Operadores lógicos (e, ou) | 1 | 3 | `if (a + b >= 10 && a + b <= 19)` |
-| Operador condicional ternário | 4 | 3 | `return sum >= 10 && sum < 20 ? 20 : sum;` |
-| Definição de método e instruções return | 4 | 1 a 4 | `public int sortaSum(int a, int b) {`<br>`int sum = a + b;`<br>`return sum >= 10 && sum < 20 ? 20 : sum;`<br>`}` |
-| Declaração e atribuição de variáveis | 2 | 3 | `int sum = a + b;` |
+| Operações aritméticas básicas | 2 | 3 | `int sum = a + b;` |
+| Estruturas de instrução if-else | 1 | 3 a 5 | `if (a + b >= 10 && a + b <= 19)`<br>`return 20;`<br>`else return (a + b);` |
+| Operadores lógicos e condicionais | 1 | 3 | `if (a + b >= 10 && a + b <= 19)` |
+| Comparações numéricas | 1 | 3 | `if (a + b >= 10 && a + b <= 19)` |
 
 ### Solução 1, CodeStateID `1751105`
 
@@ -103,12 +100,10 @@ um conceito em que o LLM apontou um código que não está na solução, e o app
 
 | Conceito | Solução | Linhas | Trecho |
 |---|---|---|---|
-| Comparações numéricas (operadores relacionais) | 2 | 16 | `if (n >= 1 && n <= 10)` |
-| Retorno de valores boolean | 4 | 4 | `return (n <= 1 \|\| n >= 10);` |
-| Variáveis, condições e operações boolean | 3 | 3 | `if ( outsideMode == false && n >= 1 && n <= 10 )` |
-| Instruções condicionais: if/else, encadeamento de else if e if aninhado | 2 | 3 a 15 | `if (outsideMode)`<br>`{`<br>`if (n <= 1 \|\| n >= 10)`<br>`{`<br>`return true;`<br>`}`<br>`else`<br>`{`<br>`return false;`<br>`}`<br>`}`<br>`else`<br>`{` |
-| Operadores lógicos (e, ou) | 5 | 3 | `return n <= 1 \|\| n >= 10;` |
-| Definição de método e instruções return | 5 | 1 | `public boolean in1To10(int n, boolean outsideMode) {` |
+| Estruturas de instrução if-else | 2 | 5 a 12 | `if (n <= 1 \|\| n >= 10)`<br>`{`<br>`return true;`<br>`}`<br>`else`<br>`{`<br>`return false;`<br>`}` |
+| Uso do tipo de dado boolean | 2 | 1 | `public boolean in1To10(int n, boolean outsideMode)` |
+| Operadores lógicos e condicionais | 3 | 5 | `if ( outsideMode == true && ( n <= 1 \|\| n >= 10 ) )` |
+| Comparações numéricas | 4 | 4 | `return (n <= 1 \|\| n >= 10);` |
 
 ### Solução 1, CodeStateID `1744380`
 
@@ -200,15 +195,10 @@ um conceito em que o LLM apontou um código que não está na solução, e o app
 
 | Conceito | Solução | Linhas | Trecho |
 |---|---|---|---|
-| Ordem das condições e precedência das regras | 3 | 3 a 6 | `if(isAsleep)`<br>`return false;`<br>`if(isMom)`<br>`return true;` |
-| Variáveis, condições e operações boolean | 1 | 10 | `else if (isMorning && !isMom && !isAsleep)` |
-| Atribuição de variável boolean e valor padrão | 1 | 3 | `boolean answer = true;` |
-| Encadeamento de else if e condicionais de múltiplos ramos | 2 | 3 a 8 | `if (isAsleep)`<br>`return false;`<br>`else if (!isMorning \|\| isMom)`<br>`return true;`<br>`else`<br>`return false;` |
-| Instruções condicionais: if/else, encadeamento de else if e if aninhado | 5 | 7 a 17 | `else if (isMorning)`<br>`{`<br>`if (isMom)`<br>`{`<br>`return true;`<br>`}`<br>`else`<br>`{`<br>`return false;`<br>`}`<br>`}` |
-| Operadores lógicos (e, ou) | 2 | 5 | `else if (!isMorning \|\| isMom)` |
-| Operador lógico de negação | 3 | 7 | `return (!isMorning);` |
-| Instruções return e retorno antecipado | 3 | 3 a 4 | `if(isAsleep)`<br>`return false;` |
-| Definição de método e instruções return | 3 | 1 | `public boolean answerCell(boolean isMorning, boolean isMom, boolean isAsleep)` |
+| Inicialização e atribuição de variável | 1 | 3 | `boolean answer = true;` |
+| Estruturas de instrução if-else | 2 | 3 a 8 | `if (isAsleep)`<br>`return false;`<br>`else if (!isMorning \|\| isMom)`<br>`return true;`<br>`else`<br>`return false;` |
+| Instrução de retorno | 1 | 16 | `return answer;` |
+| Operadores lógicos e condicionais | 1 | 10 | `else if (isMorning && !isMom && !isAsleep)` |
 
 ### Solução 1, CodeStateID `1727816`
 
@@ -322,15 +312,10 @@ um conceito em que o LLM apontou um código que não está na solução, e o app
 
 | Conceito | Solução | Linhas | Trecho |
 |---|---|---|---|
-| Comparações numéricas (operadores relacionais) | 2 | 9 | `return (a>=60 && a<=upper);` |
-| Retorno de valores boolean | 1 | 7 | `return (true);` |
-| Variáveis, condições e operações boolean | 3 | 8 | `else if(isSummer == true)` |
-| Valor padrão com sobrescrita condicional | 5 | 3 a 4 | `int max = 90;`<br>`if(isSummer)max=100;` |
-| Instruções condicionais: if/else, encadeamento de else if e if aninhado | 1 | 3 a 13 | `if (isSummer)`<br>`{`<br>`if (temp >= 60 && temp <= 100)`<br>`{`<br>`return (true);`<br>`}`<br>`else`<br>`{`<br>`return (false);`<br>`}`<br>`}` |
-| Operadores lógicos (e, ou) | 4 | 4 | `return temp >= 60 && temp <= upperLimit;` |
-| Operador condicional ternário | 4 | 3 | `int upperLimit = isSummer ? 100 : 90;` |
-| Definição de método e instruções return | 4 | 1 a 5 | `public boolean squirrelPlay(int temp, boolean isSummer)`<br>`{`<br>`int upperLimit = isSummer ? 100 : 90;`<br>`return temp >= 60 && temp <= upperLimit;`<br>`}` |
-| Declaração e atribuição de variáveis | 5 | 3 | `int max = 90;` |
+| Inicialização e atribuição de variável | 5 | 3 a 4 | `int max = 90;`<br>`if(isSummer)max=100;` |
+| Estruturas de instrução if-else | 1 | 5 a 12 | `if (temp >= 60 && temp <= 100)`<br>`{`<br>`return (true);`<br>`}`<br>`else`<br>`{`<br>`return (false);`<br>`}` |
+| Operadores lógicos e condicionais | 3 | 3 | `if((temp>=60 && temp<=90) && !isSummer)` |
+| Comparações numéricas | 4 | 4 | `return temp >= 60 && temp <= upperLimit;` |
 
 ### Solução 1, CodeStateID `1741451`
 
@@ -426,17 +411,11 @@ um conceito em que o LLM apontou um código que não está na solução, e o app
 
 | Conceito | Solução | Linhas | Trecho |
 |---|---|---|---|
-| Comparações numéricas (operadores relacionais) | 5 | 6 | `if(speed <= 60)` |
 | Operações aritméticas básicas | 4 | 3 | `if (isBirthday) speed -= 5;` |
-| Variáveis, condições e operações boolean | 2 | 3 | `if (isBirthday)` |
-| Encadeamento de else if e condicionais de múltiplos ramos | 5 | 9 a 10 | `else if(speed <= 80)`<br>`return 1;` |
-| Instruções condicionais: if/else, encadeamento de else if e if aninhado | 2 | 5 a 16 | `if (speed <= 65)`<br>`{`<br>`return 0;`<br>`}`<br>`else if (speed >= 66 && speed <=85)`<br>`{`<br>`return 1;`<br>`}`<br>`else`<br>`{`<br>`return 2;`<br>`}` |
-| Operadores lógicos (e, ou) | 3 | 6 | `if (speed > 65 && speed <= 85)` |
-| Operador condicional ternário | 4 | 5 | `return (speed > 60 && speed <= 80) ? 1 : 2;` |
-| Instruções return e retorno antecipado | 4 | 4 | `if (speed <= 60) return 0;` |
-| Definição de método e instruções return | 3 | 1 | `public int caughtSpeeding(int speed, boolean isBirthday) {` |
-| Declaração e atribuição de variáveis | 3 | 2 | `int resultTicket = 0;` |
-| Reatribuição de parâmetros de método | 5 | 3 a 4 | `if(isBirthday)`<br>`speed -= 5;` |
+| Estruturas de instrução if-else | 5 | 6 a 13 | `if(speed <= 60)`<br>`return 0;`<br>`else if(speed <= 80)`<br>`return 1;`<br>`else`<br>`return 2;` |
+| Uso do tipo de dado boolean | 3 | 11 | `if (!isBirthday) {` |
+| Operadores lógicos e condicionais | 4 | 5 | `return (speed > 60 && speed <= 80) ? 1 : 2;` |
+| Comparações numéricas | 1 | 3 | `if ( speed > 65 && speed <= 85 && isBirthday == true )` |
 
 ### Solução 1, CodeStateID `1723208`
 
@@ -557,15 +536,10 @@ um conceito em que o LLM apontou um código que não está na solução, e o app
 
 | Conceito | Solução | Linhas | Trecho |
 |---|---|---|---|
-| Comparação numérica de igualdade e desigualdade | 2 | 8 | `else if(day == 1)` |
-| Comparações numéricas (operadores relacionais) | 4 | 5 | `if (day <= 5 && day >= 1)` |
-| Variáveis, condições e operações boolean | 1 | 3 | `if ( vacation == true && ( day == 0 \|\| day == 6 ) )` |
-| Encadeamento de else if e condicionais de múltiplos ramos | 2 | 8 a 13 | `else if(day == 1)`<br>`if(vacation)`<br>`return "10:00";`<br>`else`<br>`return "7:00";`<br>`else if(day == 2)` |
-| Instruções condicionais: if/else, encadeamento de else if e if aninhado | 4 | 3 a 13 | `if (vacation)`<br>`{`<br>`if (day <= 5 && day >= 1)`<br>`{`<br>`return "10:00";`<br>`}`<br>`else`<br>`{`<br>`return "off";`<br>`}`<br>`}` |
-| Operadores lógicos (e, ou) | 5 | 7 | `else if (day == 0 \|\| day == 6)` |
-| Retorno de valores de um método / literais String | 3 | 4 | `String k = "7:00";` |
-| Declaração e atribuição de variáveis | 3 | 6 | `String c = "10:00";` |
-| Mapeamento de valores inteiros codificados para categorias | 1 | 5 | `if ( vacation == true && ( day == 1 \|\| day == 2 \|\| day == 3 \|\| day == 4 \|\| day == 5 ) )` |
+| Estruturas de instrução if-else | 2 | 3 a 7 | `if(day == 0)`<br>`if(vacation)`<br>`return "off";`<br>`else`<br>`return "10:00";` |
+| Uso do tipo de dado boolean | 2 | 9 a 10 | `if(vacation)`<br>`return "10:00";` |
+| Operadores lógicos e condicionais | 1 | 3 | `if ( vacation == true && ( day == 0 \|\| day == 6 ) )` |
+| Comparações numéricas | 4 | 5 | `if (day <= 5 && day >= 1)` |
 
 ### Solução 1, CodeStateID `1751054`
 
@@ -713,15 +687,11 @@ um conceito em que o LLM apontou um código que não está na solução, e o app
 
 | Conceito | Solução | Linhas | Trecho |
 |---|---|---|---|
-| Comparação numérica de igualdade e desigualdade | 1 | 2 | `if(a == 6 \|\| b == 6 \|\| a + b == 6 \|\| Math.abs(a - b) == 6)` |
-| Operações aritméticas básicas | 3 | 9 | `if (a - b == 6 \|\| a + b == 6 \|\| b - a == 6)` |
-| Tratamento de casos simétricos ou independentes da ordem | sem trecho | | |
-| Retorno de valores boolean | 1 | 3 a 5 | `return true;`<br>`return false;` |
-| Instruções condicionais: if/else, encadeamento de else if e if aninhado | 2 | 7 a 13 | `else`<br>`{`<br>`if (a + b == 6)`<br>`{`<br>`return true;`<br>`}`<br>`else if (Math.abs(a - b) == 6)` |
-| Operadores lógicos (e, ou) | 1 | 2 | `if(a == 6 \|\| b == 6 \|\| a + b == 6 \|\| Math.abs(a - b) == 6)` |
-| Instruções return e retorno antecipado | 4 | 6 a 9 | `if (a == Math.abs(6))`<br>`return true;`<br>`if (b == Math.abs(6))`<br>`return true;` |
-| Declaração e atribuição de variáveis | 4 | 3 | `int sum = a + b;` |
-| Valor absoluto com math.abs | 1 | 2 | `if(a == 6 \|\| b == 6 \|\| a + b == 6 \|\| Math.abs(a - b) == 6)` |
+| Invocação de método | 1 | 2 | `if(a == 6 \|\| b == 6 \|\| a + b == 6 \|\| Math.abs(a - b) == 6)` |
+| Operações aritméticas básicas | 1 | 2 | `if(a == 6 \|\| b == 6 \|\| a + b == 6 \|\| Math.abs(a - b) == 6)` |
+| Estruturas de instrução if-else | 2 | 3 a 21 | `if (a == 6 \|\| b == 6)`<br>`{`<br>`return true;`<br>`}`<br>`else`<br>`{`<br>`if (a + b == 6)`<br>`{`<br>`return true;`<br>`}`<br>`else if (Math.abs(a - b) == 6)`<br>`{`<br>`return true;`<br>`}`<br>`else`<br>`{`<br>`return false;`<br>`}`<br>`}` |
+| Operadores lógicos e condicionais | 1 | 2 | `if(a == 6 \|\| b == 6 \|\| a + b == 6 \|\| Math.abs(a - b) == 6)` |
+| Comparações numéricas | 1 | 2 | `if(a == 6 \|\| b == 6 \|\| a + b == 6 \|\| Math.abs(a - b) == 6)` |
 
 ### Solução 1, CodeStateID `1750385`
 
@@ -845,14 +815,15 @@ um conceito em que o LLM apontou um código que não está na solução, e o app
 
 | Conceito | Solução | Linhas | Trecho |
 |---|---|---|---|
-| Comparações numéricas (operadores relacionais) | 3 | 5 | `if (cigars >= 40)` |
-| Retorno de valores boolean | 3 | 7 a 11 | `return true;`<br>`}`<br>`else`<br>`{`<br>`return false;` |
-| Variáveis, condições e operações boolean | 4 | 4 | `if (isWeekend == false)` |
-| Instruções condicionais: if/else, encadeamento de else if e if aninhado | 5 | 2 a 7 | `if(isWeekend && cigars >= 40)`<br>`return true;`<br>`else if(cigars >= 40 && cigars <=60)`<br>`return true;`<br>`else`<br>`return false;` |
-| Operadores lógicos (e, ou) | 2 | 2 | `return cigars >= 40 && (cigars <= 60 \|\| isWeekend);` |
-| Precedência de operadores e parênteses | 2 | 2 | `return cigars >= 40 && (cigars <= 60 \|\| isWeekend);` |
-| Retorno antecipado e fluxo de controle | 1 | 3 a 5 | `if(isWeekend)`<br>`return (cigars >= 40);`<br>`return (cigars >= 40 && cigars <= 60);` |
-| Definição de método e instruções return | 2 | 1 a 3 | `public boolean cigarParty(int cigars, boolean isWeekend) {`<br>`return cigars >= 40 && (cigars <= 60 \|\| isWeekend);`<br>`}` |
+| Métodos básicos de string | 5 | 168 | `if(str.substring(0,1).equals("f") && str.substring(str.length()-1,str.length()).equals("b"))` |
+| Método Math.abs() | 5 | 228 | `if(Math.abs(a - b) >= 10 \|\| Math.abs(b - c) >= 10 \|\| Math.abs(a - c) >= 10)` |
+| Operador de incremento de variável | 5 | 237 | `die1++;` |
+| Operações aritméticas básicas | 5 | 54 | `return a+b;` |
+| Operador de módulo | 5 | 95 | `if(n%11==0 \|\| n%11==1)` |
+| Estruturas de instrução if-else | 5 | 87 a 90 | `if(n>=1 && n<=10)`<br>`return true;`<br>`else`<br>`return false;` |
+| Operadores lógicos e condicionais | 2 | 2 | `return cigars >= 40 && (cigars <= 60 \|\| isWeekend);` |
+| Precedência de operador e parênteses | 2 | 2 | `return cigars >= 40 && (cigars <= 60 \|\| isWeekend);` |
+| Comparações numéricas | 2 | 2 | `return cigars >= 40 && (cigars <= 60 \|\| isWeekend);` |
 
 ### Solução 1, CodeStateID `1747897`
 
@@ -1234,14 +1205,9 @@ um conceito em que o LLM apontou um código que não está na solução, e o app
 
 | Conceito | Solução | Linhas | Trecho |
 |---|---|---|---|
-| Tratamento de limites inclusivos e exclusivos | 5 | 3 a 5 | `if (you > 7)`<br>`{`<br>`if (date > 2)` |
-| Comparações numéricas (operadores relacionais) | 2 | 3 a 4 | `if (you <= 2 \|\| date <= 2)`<br>`return 0;` |
-| Ordem das condições e precedência das regras | 2 | 3 a 7 | `if (you <= 2 \|\| date <= 2)`<br>`return 0;`<br>`if (you >= 8 \|\| date >= 8)`<br>`return 2;`<br>`return 1;` |
-| Encadeamento de else if e condicionais de múltiplos ramos | 5 | 16 a 27 | `if (date > 7)`<br>`{`<br>`return 2;`<br>`}`<br>`else if (date > 2)`<br>`{`<br>`return 1;`<br>`}`<br>`else`<br>`{`<br>`return 0;`<br>`}` |
-| Instruções condicionais: if/else, encadeamento de else if e if aninhado | 1 | 3 a 13 | `if (you >= 8 \|\| date >= 8)`<br>`{`<br>`if (you <= 2 \|\| date <= 2)`<br>`{`<br>`return 0;`<br>`}`<br>`else`<br>`{`<br>`return 2;`<br>`}`<br>`}` |
-| Operadores lógicos (e, ou) | 2 | 3 | `if (you <= 2 \|\| date <= 2)` |
-| Instruções return e retorno antecipado | 3 | 5 a 7 | `if(you >= 8 \|\| date >= 8)`<br>`return 2;`<br>`return 1;` |
-| Definição de método e instruções return | 2 | 1 a 4 | `public int dateFashion(int you, int date)`<br>`{`<br>`if (you <= 2 \|\| date <= 2)`<br>`return 0;` |
+| Estruturas de instrução if-else | 1 | 5 a 12 | `if (you <= 2 \|\| date <= 2)`<br>`{`<br>`return 0;`<br>`}`<br>`else`<br>`{`<br>`return 2;`<br>`}` |
+| Operadores lógicos e condicionais | 2 | 3 a 6 | `if (you <= 2 \|\| date <= 2)`<br>`return 0;`<br>`if (you >= 8 \|\| date >= 8)`<br>`return 2;` |
+| Comparações numéricas | 2 | 3 a 6 | `if (you <= 2 \|\| date <= 2)`<br>`return 0;`<br>`if (you >= 8 \|\| date >= 8)`<br>`return 2;` |
 
 ### Solução 1, CodeStateID `1745611`
 
@@ -1361,13 +1327,10 @@ um conceito em que o LLM apontou um código que não está na solução, e o app
 
 | Conceito | Solução | Linhas | Trecho |
 |---|---|---|---|
-| Comparação numérica de igualdade e desigualdade | 4 | 3 a 5 | `if (a != b)`<br>`{`<br>`if (a != c)` |
 | Operações aritméticas básicas | 3 | 20 | `if (( a - b == b - c) && ( a - b == a - c )){` |
-| Análise de casos e ordem das condições | 5 | 3 a 11 | `if(a == b)`<br>`{`<br>`if(b == c)`<br>`return 20;`<br>`return 10;`<br>`}`<br>`if(a == c \|\| b == c)`<br>`return 10;`<br>`return 0;` |
-| Instruções condicionais: if/else, encadeamento de else if e if aninhado | 2 | 3 a 18 | `if (a == b)`<br>`{`<br>`if (b == c)`<br>`{`<br>`return 20;`<br>`}`<br>`return 10;`<br>`}`<br>`if (a == c \|\| b == c)`<br>`{`<br>`return 10;`<br>`}`<br>`else`<br>`{`<br>`return 0;`<br>`}` |
-| Operadores lógicos (e, ou) | 5 | 9 | `if(a == c \|\| b == c)` |
-| Instruções return e retorno antecipado | 5 | 5 a 7 | `if(b == c)`<br>`return 20;`<br>`return 10;` |
-| Definição de método e instruções return | 5 | 1 a 2 | `public int greenTicket(int a, int b, int c)`<br>`{` |
+| Estruturas de instrução if-else | 2 | 11 a 18 | `if (a == c \|\| b == c)`<br>`{`<br>`return 10;`<br>`}`<br>`else`<br>`{`<br>`return 0;`<br>`}` |
+| Operadores lógicos e condicionais | 1 | 3 a 7 | `if (a == b && b == c)`<br>`{`<br>`return 20;`<br>`}`<br>`if (a == b \|\| a == c \|\| b == c)` |
+| Comparações numéricas | 1 | 3 | `if (a == b && b == c)` |
 
 ### Solução 1, CodeStateID `1727326`
 

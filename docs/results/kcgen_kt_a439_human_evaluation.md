@@ -34,40 +34,28 @@ como os KCs esperados, então os conceitos gerados dele não são independentes 
 anotado como os outros, porque estava entre os 50 problemas do paper, e o relatório mostra os
 números com ele e sem ele.
 
-São 25 conceitos e 7 tags para a interpretabilidade, 84 vínculos gerados
+São 13 conceitos e 7 tags para a interpretabilidade, 46 vínculos gerados
 e 44 vínculos de tags para a precisão, e 10 problemas para a cobertura.
 
 ## Interpretabilidade
 
-### Os 25 conceitos gerados
+### Os 13 conceitos gerados
 
 | Conceito gerado | Problemas | Interpretável |
 |---|---|---|
-| `conditional statements: if/else, else-if chaining, and nested if` | todos os 10 | |
-| `logical operators (and, or)` | todos os 10 | |
-| `method definition and return statements` | 1, 3, 5, 12, 13, 234, 235, 236 | |
-| `numerical comparisons (relational operators)` | 1, 3, 12, 13, 232, 234, 235 | |
-| `boolean variables, conditions, and operations` | 3, 5, 12, 13, 232, 234 | |
-| `return statements and early return` | 5, 13, 233, 235, 236 | |
-| `variable declaration and assignment` | 1, 12, 13, 232, 233 | |
-| `basic arithmetic operations` | 1, 13, 233, 236 | |
-| `returning boolean values` | 3, 12, 233, 234 | |
-| `else-if chains and multi-branch conditionals` | 5, 13, 232, 235 | |
-| `numerical equality and inequality comparison` | 232, 233, 236 | |
-| `ternary conditional operator` | 1, 12, 13 | |
-| `inclusive and exclusive boundary handling` | 1, 235 | |
-| `condition ordering and precedence of rules` | 5, 235 | |
-| `case analysis and ordering of conditions` | 236 | |
-| `handling symmetric or order-independent cases` | 233 | |
-| `boolean variable assignment and default value` | 5 | |
-| `default value with conditional override` | 12 | |
-| `logical not operator` | 5 | |
+| `if-else statement structures` | todos os 10 | |
+| `logical and conditional operators` | todos os 10 | |
+| `numerical comparisons` | 1, 3, 12, 13, 232, 233, 234, 235, 236 | |
+| `basic arithmetic operations` | 1, 13, 233, 234, 236 | |
+| `boolean data type usage` | 3, 13, 232 | |
+| `variable initialization and assignment` | 5, 12 | |
+| `basic string methods` | 234 | |
+| `math.abs() method` | 234 | |
+| `method invocation` | 233 | |
+| `variable increment operator` | 234 | |
+| `modulo operator` | 234 | |
+| `return statement` | 5 | |
 | `operator precedence and parentheses` | 234 | |
-| `early return and control flow` | 234 | |
-| `returning values from a method / string literals` | 232 | |
-| `reassigning method parameters` | 13 | |
-| `absolute value with math.abs` | 233 | |
-| `mapping encoded integer values to categories` | 232 | |
 
 ### As 7 tags humanas que aparecem no A439
 
@@ -91,14 +79,10 @@ As outras 12 das 18 colunas da planilha não marcam nenhum problema do A439.
 
 | Conceito gerado | Relevante |
 |---|---|
-| `conditional statements: if/else, else-if chaining, and nested if` | |
-| `logical operators (and, or)` | |
-| `method definition and return statements` | |
-| `numerical comparisons (relational operators)` | |
-| `variable declaration and assignment` | |
+| `if-else statement structures` | |
+| `logical and conditional operators` | |
+| `numerical comparisons` | |
 | `basic arithmetic operations` | |
-| `ternary conditional operator` | |
-| `inclusive and exclusive boundary handling` | |
 
 | Tag humana | Relevante |
 |---|---|
@@ -117,12 +101,10 @@ As outras 12 das 18 colunas da planilha não marcam nenhum problema do A439.
 
 | Conceito gerado | Relevante |
 |---|---|
-| `conditional statements: if/else, else-if chaining, and nested if` | |
-| `logical operators (and, or)` | |
-| `method definition and return statements` | |
-| `numerical comparisons (relational operators)` | |
-| `boolean variables, conditions, and operations` | |
-| `returning boolean values` | |
+| `if-else statement structures` | |
+| `logical and conditional operators` | |
+| `numerical comparisons` | |
+| `boolean data type usage` | |
 
 | Tag humana | Relevante |
 |---|---|
@@ -142,15 +124,10 @@ As outras 12 das 18 colunas da planilha não marcam nenhum problema do A439.
 
 | Conceito gerado | Relevante |
 |---|---|
-| `conditional statements: if/else, else-if chaining, and nested if` | |
-| `logical operators (and, or)` | |
-| `method definition and return statements` | |
-| `boolean variables, conditions, and operations` | |
-| `return statements and early return` | |
-| `else-if chains and multi-branch conditionals` | |
-| `condition ordering and precedence of rules` | |
-| `boolean variable assignment and default value` | |
-| `logical not operator` | |
+| `if-else statement structures` | |
+| `logical and conditional operators` | |
+| `variable initialization and assignment` | |
+| `return statement` | |
 
 | Tag humana | Relevante |
 |---|---|
@@ -168,15 +145,10 @@ As outras 12 das 18 colunas da planilha não marcam nenhum problema do A439.
 
 | Conceito gerado | Relevante |
 |---|---|
-| `conditional statements: if/else, else-if chaining, and nested if` | |
-| `logical operators (and, or)` | |
-| `method definition and return statements` | |
-| `numerical comparisons (relational operators)` | |
-| `boolean variables, conditions, and operations` | |
-| `variable declaration and assignment` | |
-| `returning boolean values` | |
-| `ternary conditional operator` | |
-| `default value with conditional override` | |
+| `if-else statement structures` | |
+| `logical and conditional operators` | |
+| `numerical comparisons` | |
+| `variable initialization and assignment` | |
 
 | Tag humana | Relevante |
 |---|---|
@@ -192,23 +164,15 @@ As outras 12 das 18 colunas da planilha não marcam nenhum problema do A439.
 
 ### Problema 13, `caughtSpeeding`
 
-Exemplo 2 do prompt de geração, com as tags humanas abaixo como os KCs esperados.
-
 > Write a function in Java that implements the following logic: You are driving a little too fast, and a police officer stops you. Write code to compute the result, encoded as an int value: 0=no ticket, 1=small ticket, or 2=big ticket. If speed is 60 or less, the result is 0. If speed is between 61 and 80 inclusive, the result is 1. If speed is 81 or more, the result is 2. Unless it is your birthday--on that day, your speed can be 5 higher in all cases.
 
 | Conceito gerado | Relevante |
 |---|---|
-| `conditional statements: if/else, else-if chaining, and nested if` | |
-| `logical operators (and, or)` | |
-| `method definition and return statements` | |
-| `numerical comparisons (relational operators)` | |
-| `boolean variables, conditions, and operations` | |
-| `return statements and early return` | |
-| `variable declaration and assignment` | |
+| `if-else statement structures` | |
+| `logical and conditional operators` | |
+| `numerical comparisons` | |
 | `basic arithmetic operations` | |
-| `else-if chains and multi-branch conditionals` | |
-| `ternary conditional operator` | |
-| `reassigning method parameters` | |
+| `boolean data type usage` | |
 
 | Tag humana | Relevante |
 |---|---|
@@ -229,15 +193,10 @@ Exemplo 2 do prompt de geração, com as tags humanas abaixo como os KCs esperad
 
 | Conceito gerado | Relevante |
 |---|---|
-| `conditional statements: if/else, else-if chaining, and nested if` | |
-| `logical operators (and, or)` | |
-| `numerical comparisons (relational operators)` | |
-| `boolean variables, conditions, and operations` | |
-| `variable declaration and assignment` | |
-| `else-if chains and multi-branch conditionals` | |
-| `numerical equality and inequality comparison` | |
-| `returning values from a method / string literals` | |
-| `mapping encoded integer values to categories` | |
+| `if-else statement structures` | |
+| `logical and conditional operators` | |
+| `numerical comparisons` | |
+| `boolean data type usage` | |
 
 | Tag humana | Relevante |
 |---|---|
@@ -258,15 +217,11 @@ Exemplo 2 do prompt de geração, com as tags humanas abaixo como os KCs esperad
 
 | Conceito gerado | Relevante |
 |---|---|
-| `conditional statements: if/else, else-if chaining, and nested if` | |
-| `logical operators (and, or)` | |
-| `return statements and early return` | |
-| `variable declaration and assignment` | |
+| `if-else statement structures` | |
+| `logical and conditional operators` | |
+| `numerical comparisons` | |
 | `basic arithmetic operations` | |
-| `returning boolean values` | |
-| `numerical equality and inequality comparison` | |
-| `handling symmetric or order-independent cases` | |
-| `absolute value with math.abs` | |
+| `method invocation` | |
 
 | Tag humana | Relevante |
 |---|---|
@@ -285,14 +240,15 @@ Exemplo 2 do prompt de geração, com as tags humanas abaixo como os KCs esperad
 
 | Conceito gerado | Relevante |
 |---|---|
-| `conditional statements: if/else, else-if chaining, and nested if` | |
-| `logical operators (and, or)` | |
-| `method definition and return statements` | |
-| `numerical comparisons (relational operators)` | |
-| `boolean variables, conditions, and operations` | |
-| `returning boolean values` | |
+| `if-else statement structures` | |
+| `logical and conditional operators` | |
+| `numerical comparisons` | |
+| `basic arithmetic operations` | |
+| `basic string methods` | |
+| `math.abs() method` | |
+| `variable increment operator` | |
+| `modulo operator` | |
 | `operator precedence and parentheses` | |
-| `early return and control flow` | |
 
 | Tag humana | Relevante |
 |---|---|
@@ -312,14 +268,9 @@ Exemplo 2 do prompt de geração, com as tags humanas abaixo como os KCs esperad
 
 | Conceito gerado | Relevante |
 |---|---|
-| `conditional statements: if/else, else-if chaining, and nested if` | |
-| `logical operators (and, or)` | |
-| `method definition and return statements` | |
-| `numerical comparisons (relational operators)` | |
-| `return statements and early return` | |
-| `else-if chains and multi-branch conditionals` | |
-| `inclusive and exclusive boundary handling` | |
-| `condition ordering and precedence of rules` | |
+| `if-else statement structures` | |
+| `logical and conditional operators` | |
+| `numerical comparisons` | |
 
 | Tag humana | Relevante |
 |---|---|
@@ -337,13 +288,10 @@ Exemplo 2 do prompt de geração, com as tags humanas abaixo como os KCs esperad
 
 | Conceito gerado | Relevante |
 |---|---|
-| `conditional statements: if/else, else-if chaining, and nested if` | |
-| `logical operators (and, or)` | |
-| `method definition and return statements` | |
-| `return statements and early return` | |
+| `if-else statement structures` | |
+| `logical and conditional operators` | |
+| `numerical comparisons` | |
 | `basic arithmetic operations` | |
-| `numerical equality and inequality comparison` | |
-| `case analysis and ordering of conditions` | |
 
 | Tag humana | Relevante |
 |---|---|

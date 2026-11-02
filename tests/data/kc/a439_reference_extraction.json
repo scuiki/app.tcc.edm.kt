@@ -1,6 +1,6 @@
 {
   "progsnap_assignment_id": 439,
-  "model_id": "claude-sonnet-5-5",
+  "model_id": "claude-haiku-4-5-20251001",
   "prompt_version": "kcgen-v2",
   "sampled_solutions": {
     "1": [
@@ -78,1120 +78,689 @@
     "1": [
       {
         "name": "If and else statement",
-        "reasoning": "All solutions branch on whether the sum falls in the forbidden range, using if (and optionally else) to choose between returning 20 and the sum.",
-        "translated_reasoning": "Todas as soluções se ramificam conforme a soma esteja ou não no intervalo proibido, usando if (e opcionalmente else) para escolher entre retornar 20 e retornar a soma."
-      },
-      {
-        "name": "Numerical comparisons",
-        "reasoning": "The range 10..19 is checked using comparisons such as >=, <=, <, and == against the computed sum.",
-        "translated_reasoning": "O intervalo 10..19 é verificado por meio de comparações como >=, <=, < e == com a soma calculada."
-      },
-      {
-        "name": "Logical operators",
-        "reasoning": "Combining the lower and upper bound checks (&&) or multiple equality checks (||) is required to test that the sum lies within a range.",
-        "translated_reasoning": "Combinar as verificações dos limites inferior e superior (&&) ou várias verificações de igualdade (||) é necessário para testar se a soma está dentro de um intervalo."
+        "reasoning": "All solutions use if-else statements (or ternary operators as an alternative) to conditionally return either 20 or the computed sum based on whether the sum falls within the forbidden 10-19 range.",
+        "translated_reasoning": "Todas as soluções usam instruções if-else (ou operadores ternários como alternativa) para retornar condicionalmente 20 ou a soma computada com base no fato de a soma estar dentro do intervalo proibido 10-19."
       },
       {
         "name": "Basic arithmetic operations",
-        "reasoning": "Every solution adds the two input integers to compute the sum that is compared and returned.",
-        "translated_reasoning": "Toda solução soma os dois inteiros de entrada para calcular a soma que é comparada e retornada."
+        "reasoning": "Every solution must compute the sum of two integers using the addition (+) operator to obtain the value that needs to be evaluated.",
+        "translated_reasoning": "Toda solução deve computar a soma de dois inteiros usando o operador de adição (+) para obter o valor que precisa ser avaliado."
       },
       {
-        "name": "Variable declaration and assignment",
-        "reasoning": "Solutions 2, 3, and 4 store a + b in a local variable to avoid recomputation and make the conditions more readable.",
-        "translated_reasoning": "As soluções 2, 3 e 4 armazenam a + b em uma variável local para evitar o recálculo e tornar as condições mais legíveis."
+        "name": "Numerical comparisons",
+        "reasoning": "All solutions use comparison operators (>=, <=, ==, or <) to check whether the computed sum falls within the specified 10-19 range.",
+        "translated_reasoning": "Todas as soluções usam operadores de comparação (>=, <=, ==, ou <) para verificar se a soma computada está dentro do intervalo especificado 10-19."
       },
       {
-        "name": "Return statements and method return values",
-        "reasoning": "Each solution must return either the special value 20 or the actual sum from a function with an int return type.",
-        "translated_reasoning": "Cada solução deve retornar o valor especial 20 ou a soma real a partir de uma função com tipo de retorno int."
-      },
-      {
-        "name": "Ternary conditional operator",
-        "reasoning": "Solution 4 uses the ternary operator to select between 20 and the sum in a single expression.",
-        "translated_reasoning": "A solução 4 usa o operador ternário para escolher entre 20 e a soma em uma única expressão."
-      },
-      {
-        "name": "Inclusive range boundary handling",
-        "reasoning": "Solutions 1, 4, and 5 correctly handle the inclusive/exclusive boundaries (<= 19 vs < 20) of the forbidden range.",
-        "translated_reasoning": "As soluções 1, 4 e 5 tratam corretamente os limites inclusivos/exclusivos (<= 19 versus < 20) do intervalo proibido."
+        "name": "Logical operators",
+        "reasoning": "Solutions combine multiple comparison conditions using logical operators (either && to check range bounds together or || to check individual boundary values) to determine if the sum is in the forbidden range.",
+        "translated_reasoning": "As soluções combinam múltiplas condições de comparação usando operadores lógicos (seja && para verificar os limites do intervalo juntos ou || para verificar valores de limite individuais) para determinar se a soma está no intervalo proibido."
       }
     ],
     "3": [
       {
         "name": "If and else statement",
-        "reasoning": "All solutions branch on the outsideMode flag (and on range conditions) using if statements to choose which logic to apply.",
-        "translated_reasoning": "Todas as soluções se ramificam conforme a flag outsideMode (e conforme condições de intervalo) usando instruções if para escolher qual lógica aplicar."
+        "reasoning": "All solutions use conditional branching with if statements, with both explicit and implicit else paths to handle alternative execution paths.",
+        "translated_reasoning": "Todas as soluções usam ramificação condicional com instruções if, com caminhos else explícitos e implícitos para lidar com caminhos de execução alternativos."
       },
       {
         "name": "Nested if statement",
-        "reasoning": "Solutions 1 and 2 nest a range check inside the outsideMode branch, so understanding nested conditionals and their else-pairing is needed.",
-        "translated_reasoning": "As soluções 1 e 2 aninham uma verificação de intervalo dentro do ramo de outsideMode, portanto é necessário entender condicionais aninhadas e o pareamento de seus else."
+        "reasoning": "Solutions 1 and 2 use if statements within other if statements to create hierarchical condition checking.",
+        "translated_reasoning": "As soluções 1 e 2 usam instruções if dentro de outras instruções if para criar verificação de condição hierárquica."
+      },
+      {
+        "name": "Logical AND operator",
+        "reasoning": "Multiple solutions use the && operator to combine two conditions that must both be true when checking if n is within the range [1, 10].",
+        "translated_reasoning": "Múltiplas soluções usam o operador && para combinar duas condições que devem ser ambas verdadeiras ao verificar se n está dentro do intervalo [1, 10]."
+      },
+      {
+        "name": "Logical OR operator",
+        "reasoning": "Multiple solutions use the || operator to combine conditions where either must be true in the outsideMode logic (n <= 1 || n >= 10).",
+        "translated_reasoning": "Múltiplas soluções usam o operador || para combinar condições onde qualquer uma deve ser verdadeira na lógica outsideMode (n <= 1 || n >= 10)."
       },
       {
         "name": "Numerical comparisons",
-        "reasoning": "Every solution compares n against the boundary values 1 and 10 using <=, >=, and inclusive-bound reasoning.",
-        "translated_reasoning": "Toda solução compara n com os valores limite 1 e 10 usando <=, >= e raciocínio sobre limites inclusivos."
+        "reasoning": "All solutions use relational operators (<=, >=) to compare the numeric value n against boundary values.",
+        "translated_reasoning": "Todas as soluções usam operadores relacionais (<=, >=) para comparar o valor numérico n contra valores de limite."
       },
       {
-        "name": "Logical operators",
-        "reasoning": "The solutions combine two comparisons with && for the inside-range check and || for the outside-range check.",
-        "translated_reasoning": "As soluções combinam duas comparações com && para a verificação de dentro do intervalo e com || para a verificação de fora do intervalo."
+        "name": "Boolean return",
+        "reasoning": "All solutions return boolean values (true or false) based on evaluated conditional expressions.",
+        "translated_reasoning": "Todas as soluções retornam valores boolean (true ou false) com base em expressões condicionais avaliadas."
       },
       {
-        "name": "Boolean variables as conditions",
-        "reasoning": "The boolean parameter outsideMode is used directly as a condition (or compared with == true/false) to select between behaviors.",
-        "translated_reasoning": "O parâmetro boolean outsideMode é usado diretamente como condição (ou comparado com == true/false) para escolher entre comportamentos."
-      },
-      {
-        "name": "Returning boolean expressions directly",
-        "reasoning": "Solutions 4 and 5 return the value of a boolean expression directly rather than wrapping it in if/else returning true or false.",
-        "translated_reasoning": "As soluções 4 e 5 retornam diretamente o valor de uma expressão boolean, em vez de envolvê-la em um if/else que retorna true ou false."
-      },
-      {
-        "name": "Method definition and return statements",
-        "reasoning": "All solutions must return a boolean value from a method with specified parameters and a boolean return type, including early returns and a fall-through return.",
-        "translated_reasoning": "Todas as soluções devem retornar um valor boolean a partir de um método com parâmetros especificados e tipo de retorno boolean, incluindo retornos antecipados e um retorno final de saída natural do fluxo."
+        "name": "Boolean equality comparison",
+        "reasoning": "Solution 3 uses explicit boolean equality comparisons (outsideMode == false/true) as an alternative approach to evaluating boolean conditions.",
+        "translated_reasoning": "A solução 3 usa comparações explícitas de igualdade boolean (outsideMode == false/true) como uma abordagem alternativa para avaliar condições boolean."
       }
     ],
     "5": [
       {
         "name": "If and else statement",
-        "reasoning": "Every solution uses if statements to decide whether the phone should be answered based on the boolean conditions.",
-        "translated_reasoning": "Toda solução usa instruções if para decidir se o telefone deve ser atendido com base nas condições boolean."
-      },
-      {
-        "name": "Else-if chaining",
-        "reasoning": "Solutions 1 and 2 chain conditions with else if so that later checks run only when earlier ones fail.",
-        "translated_reasoning": "As soluções 1 e 2 encadeiam condições com else if de modo que as verificações seguintes só sejam executadas quando as anteriores falham."
+        "reasoning": "All solutions require conditional statements to branch execution based on the input boolean conditions to determine whether to answer the phone.",
+        "translated_reasoning": "Todas as soluções requerem instruções condicionais para ramificar a execução com base nas condições boolean de entrada para determinar se deve atender o telefone."
       },
       {
         "name": "Nested if statement",
-        "reasoning": "Solutions 4 and 5 place if/else blocks inside other branches to test isMom or isMorning only after earlier conditions are resolved.",
-        "translated_reasoning": "As soluções 4 e 5 colocam blocos if/else dentro de outros ramos para testar isMom ou isMorning somente depois que as condições anteriores forem resolvidas."
+        "reasoning": "Solutions 4 and 5 require nested conditionals to express dependencies between multiple boolean conditions in a hierarchical structure.",
+        "translated_reasoning": "As soluções 4 e 5 requerem condicionais aninhadas para expressar dependências entre múltiplas condições boolean em uma estrutura hierárquica."
       },
       {
-        "name": "Logical NOT operator",
-        "reasoning": "Solutions 1, 2 and 3 negate boolean values with the NOT operator (e.g., !isMom, !isMorning) to express the conditions.",
-        "translated_reasoning": "As soluções 1, 2 e 3 negam valores boolean com o operador NOT (por exemplo, !isMom, !isMorning) para expressar as condições."
+        "name": "Logical operators",
+        "reasoning": "Solutions 1, 2, and 3 require logical operators to combine multiple boolean conditions into complex expressions for decision-making.",
+        "translated_reasoning": "As soluções 1, 2, e 3 requerem operadores lógicos para combinar múltiplas condições boolean em expressões complexas para tomada de decisão."
       },
       {
-        "name": "Logical AND/OR operators",
-        "reasoning": "Solutions 1 and 2 combine multiple boolean conditions with && and || to express the morning/mom rule in one condition.",
-        "translated_reasoning": "As soluções 1 e 2 combinam várias condições boolean com && e || para expressar a regra da manhã/mãe em uma única condição."
+        "name": "Return statement",
+        "reasoning": "All solutions require return statements to exit the method and provide the boolean result to the caller.",
+        "translated_reasoning": "Todas as soluções requerem instruções de retorno para sair do método e fornecer o resultado boolean ao chamador."
       },
       {
-        "name": "Boolean variables as conditions",
-        "reasoning": "All solutions take boolean parameters and use them directly as conditions without comparing them to true or false.",
-        "translated_reasoning": "Todas as soluções recebem parâmetros boolean e os usam diretamente como condições, sem compará-los com true ou false."
-      },
-      {
-        "name": "Boolean return statements and early return",
-        "reasoning": "Solutions 2-5 return true or false directly from within branches, ending the method early, and solution 3 returns a boolean expression directly.",
-        "translated_reasoning": "As soluções 2 a 5 retornam true ou false diretamente de dentro dos ramos, encerrando o método antecipadamente, e a solução 3 retorna diretamente uma expressão boolean."
-      },
-      {
-        "name": "Boolean variable assignment and default value",
-        "reasoning": "Solution 1 initializes a boolean result variable to a default value and overwrites it in conditional branches before returning it.",
-        "translated_reasoning": "A solução 1 inicializa uma variável boolean de resultado com um valor padrão e a sobrescreve nos ramos condicionais antes de retorná-la."
-      },
-      {
-        "name": "Condition ordering and precedence of rules",
-        "reasoning": "All solutions give isAsleep the highest priority by checking it first, so ordering of conditions must reflect the problem's precedence rules.",
-        "translated_reasoning": "Todas as soluções dão a maior prioridade a isAsleep verificando-a primeiro, de modo que a ordem das condições deve refletir as regras de precedência do problema."
-      },
-      {
-        "name": "Method definition with parameters and return type",
-        "reasoning": "All solutions define a public method with a boolean return type and multiple boolean parameters.",
-        "translated_reasoning": "Todas as soluções definem um método public com tipo de retorno boolean e vários parâmetros boolean."
+        "name": "Variable initialization and assignment",
+        "reasoning": "Solution 1 requires variable initialization and assignment to store and update the boolean result based on conditions before returning it.",
+        "translated_reasoning": "A solução 1 requer inicialização e atribuição de variável para armazenar e atualizar o resultado boolean com base em condições antes de retorná-lo."
       }
     ],
     "12": [
       {
         "name": "If and else statement",
-        "reasoning": "All solutions use if/else statements to choose between the summer and non-summer temperature limits or to decide the returned value.",
-        "translated_reasoning": "Todas as soluções usam instruções if/else para escolher entre os limites de temperatura de verão e de não verão ou para decidir o valor retornado."
+        "reasoning": "All solutions require conditional branching to distinguish between summer and non-summer cases and implement the different logic for each.",
+        "translated_reasoning": "Todas as soluções requerem ramificação condicional para distinguir entre casos de verão e não-verão e implementar a lógica diferente para cada."
       },
       {
         "name": "Nested if statement",
-        "reasoning": "Solutions 1 and 3 place a range check inside a branch on isSummer, which requires nested conditionals.",
-        "translated_reasoning": "As soluções 1 e 3 colocam uma verificação de intervalo dentro de um ramo de isSummer, o que exige condicionais aninhadas."
+        "reasoning": "Solutions 1 and 3 use if statements inside other if blocks to hierarchically check the season first, then verify the appropriate temperature range.",
+        "translated_reasoning": "As soluções 1 e 3 usam instruções if dentro de outros blocos if para verificar hierarquicamente a estação primeiro e depois verificar o intervalo de temperatura apropriado."
+      },
+      {
+        "name": "Logical AND operator",
+        "reasoning": "All solutions require combining the lower and upper temperature boundary checks using && to form complete range conditions.",
+        "translated_reasoning": "Todas as soluções requerem combinar as verificações de limite de temperatura inferior e superior usando && para formar condições de intervalo completo."
+      },
+      {
+        "name": "Logical NOT operator",
+        "reasoning": "Solution 3 uses the ! operator to negate the isSummer condition for concise expression of when the non-summer temperature range applies.",
+        "translated_reasoning": "A solução 3 usa o operador ! para negar a condição isSummer para expressão concisa de quando o intervalo de temperatura não-verão se aplica."
       },
       {
         "name": "Numerical comparisons",
-        "reasoning": "Every solution compares the temperature against numeric bounds with >= and <= operators.",
-        "translated_reasoning": "Toda solução compara a temperatura com limites numéricos usando os operadores >= e <=."
+        "reasoning": "All solutions must compare the temperature parameter against threshold values (60 for lower bound, 90 or 100 for upper bound) using >= and <= operators.",
+        "translated_reasoning": "Todas as soluções devem comparar o parâmetro de temperatura contra valores de limite (60 para limite inferior, 90 ou 100 para limite superior) usando operadores >= e <=."
       },
       {
-        "name": "Logical operators",
-        "reasoning": "Every solution combines the lower-bound and upper-bound checks with && to test an inclusive range.",
-        "translated_reasoning": "Toda solução combina as verificações dos limites inferior e superior com && para testar um intervalo inclusivo."
+        "name": "Ternary operator",
+        "reasoning": "Solution 4 uses the conditional operator (? :) to elegantly assign the upper temperature limit based on the season in a single expression.",
+        "translated_reasoning": "A solução 4 usa o operador condicional (? :) para atribuir elegantemente o limite de temperatura superior com base na estação em uma única expressão."
       },
       {
-        "name": "Boolean operations",
-        "reasoning": "Solution 3 negates a boolean parameter with ! and tests it with == true, and all solutions use the boolean isSummer directly as a condition.",
-        "translated_reasoning": "A solução 3 nega um parâmetro boolean com ! e o testa com == true, e todas as soluções usam o boolean isSummer diretamente como condição."
+        "name": "Variable initialization",
+        "reasoning": "Solutions 2, 4, and 5 declare and initialize a variable to store the temperature upper limit, enabling reuse in a single final range check.",
+        "translated_reasoning": "As soluções 2, 4, e 5 declaram e inicializam uma variável para armazenar o limite superior de temperatura, possibilitando reutilização em uma única verificação de intervalo final."
       },
       {
-        "name": "Variable declaration and assignment",
-        "reasoning": "Solutions 2, 4 and 5 store the temperature upper limit in an int variable that is set to a default and possibly changed.",
-        "translated_reasoning": "As soluções 2, 4 e 5 armazenam o limite superior de temperatura em uma variável int que recebe um valor padrão e possivelmente é alterada."
-      },
-      {
-        "name": "Returning boolean expressions directly",
-        "reasoning": "Solutions 2, 4 and 5 return the result of a boolean expression directly instead of branching to return true or false.",
-        "translated_reasoning": "As soluções 2, 4 e 5 retornam diretamente o resultado de uma expressão boolean, em vez de se ramificarem para retornar true ou false."
-      },
-      {
-        "name": "Ternary conditional operator",
-        "reasoning": "Solution 4 uses the ternary conditional operator to select the upper limit based on a boolean.",
-        "translated_reasoning": "A solução 4 usa o operador condicional ternário para selecionar o limite superior com base em um boolean."
-      },
-      {
-        "name": "Default value with conditional override",
-        "reasoning": "Solutions 2 and 5 first assign a default value to a variable and then override it conditionally, so the special case is handled without a separate else branch.",
-        "translated_reasoning": "As soluções 2 e 5 primeiro atribuem um valor padrão a uma variável e depois o sobrescrevem condicionalmente, de modo que o caso especial é tratado sem um ramo else separado."
-      },
-      {
-        "name": "Method definition with parameters and return type",
-        "reasoning": "All solutions define a method with a specific signature, parameter types (int, boolean), and a boolean return type.",
-        "translated_reasoning": "Todas as soluções definem um método com assinatura específica, tipos de parâmetros (int, boolean) e tipo de retorno boolean."
+        "name": "Variable assignment",
+        "reasoning": "Solutions 2 and 5 reassign the upper limit variable conditionally based on whether it is summer, modifying state within the control flow.",
+        "translated_reasoning": "As soluções 2 e 5 reatribuem a variável de limite superior condicionalmente com base no fato de ser verão, modificando o estado dentro do fluxo de controle."
       }
     ],
     "13": [
       {
         "name": "If and else statement",
-        "reasoning": "All solutions use if statements, and several use else to select the ticket result based on conditions.",
-        "translated_reasoning": "Todas as soluções usam instruções if, e várias usam else, para selecionar o resultado da multa com base em condições."
-      },
-      {
-        "name": "Else-if chains",
-        "reasoning": "Solutions 2, 3, and 5 chain else-if branches so that only the first matching speed range is applied.",
-        "translated_reasoning": "As soluções 2, 3 e 5 encadeiam ramos else if de modo que apenas a primeira faixa de velocidade correspondente seja aplicada."
+        "reasoning": "Every solution uses if-else statements to branch execution based on speed and birthday status.",
+        "translated_reasoning": "Toda solução usa instruções if-else para ramificar a execução com base na velocidade e status de aniversário."
       },
       {
         "name": "Nested if statement",
-        "reasoning": "Solutions 2 and 3 place speed-range checks inside an outer isBirthday check, creating two separate threshold sets.",
-        "translated_reasoning": "As soluções 2 e 3 colocam as verificações de faixas de velocidade dentro de uma verificação externa de isBirthday, criando dois conjuntos separados de limites."
-      },
-      {
-        "name": "Numerical comparisons",
-        "reasoning": "Every solution compares speed against thresholds such as 60, 65, 80, and 85 using relational operators, including inclusive and exclusive boundaries.",
-        "translated_reasoning": "Toda solução compara a velocidade com limites como 60, 65, 80 e 85 usando operadores relacionais, incluindo limites inclusivos e exclusivos."
+        "reasoning": "Solution 2 demonstrates nested if structure where an inner if-else chain for speed ranges is contained within an outer if checking birthday status.",
+        "translated_reasoning": "A solução 2 demonstra estrutura if aninhada onde uma cadeia if-else interna para intervalos de velocidade está contida dentro de um if externo verificando o status de aniversário."
       },
       {
         "name": "Logical operators",
-        "reasoning": "Solutions 1, 2, and 3 combine two range conditions with && to test that speed lies within an inclusive interval.",
-        "translated_reasoning": "As soluções 1, 2 e 3 combinam duas condições de intervalo com && para testar que a velocidade está dentro de um intervalo inclusivo."
+        "reasoning": "Solutions 1 and 2 use the logical && operator to combine multiple conditions when checking if speed falls within specific ranges.",
+        "translated_reasoning": "As soluções 1 e 2 usam o operador lógico && para combinar múltiplas condições ao verificar se a velocidade está dentro de intervalos específicos."
       },
       {
-        "name": "Boolean variables and conditions",
-        "reasoning": "The boolean parameter isBirthday is used directly as a condition, negated with !, or compared with == true to switch behavior.",
-        "translated_reasoning": "O parâmetro boolean isBirthday é usado diretamente como condição, negado com ! ou comparado com == true para alternar o comportamento."
+        "name": "Numerical comparisons",
+        "reasoning": "All solutions use comparison operators (<, <=, >, >=) to evaluate speed against threshold values for determining ticket levels.",
+        "translated_reasoning": "Todas as soluções usam operadores de comparação (<, <=, >, >=) para avaliar a velocidade contra valores de limite para determinar níveis de multa."
       },
       {
-        "name": "Basic arithmetic and compound assignment",
-        "reasoning": "Solutions 4 and 5 subtract 5 from speed with a compound assignment so a single set of thresholds covers the birthday case.",
-        "translated_reasoning": "As soluções 4 e 5 subtraem 5 da velocidade com uma atribuição composta, de modo que um único conjunto de limites cubra o caso do aniversário."
+        "name": "Boolean operations",
+        "reasoning": "All solutions evaluate the boolean isBirthday parameter to determine which speed thresholds apply for ticket assignment.",
+        "translated_reasoning": "Todas as soluções avaliam o parâmetro boolean isBirthday para determinar quais limites de velocidade se aplicam para atribuição de multa."
       },
       {
-        "name": "Reassigning method parameters",
-        "reasoning": "Solutions 4 and 5 modify the speed parameter in place, then reuse it in later comparisons.",
-        "translated_reasoning": "As soluções 4 e 5 modificam o parâmetro speed diretamente e depois o reutilizam em comparações posteriores."
-      },
-      {
-        "name": "Return statements and early return",
-        "reasoning": "Solutions 1, 2, 4, and 5 return an int directly from multiple branches, using early exit to end the method.",
-        "translated_reasoning": "As soluções 1, 2, 4 e 5 retornam um int diretamente a partir de vários ramos, usando saída antecipada para encerrar o método."
-      },
-      {
-        "name": "Variable declaration and assignment",
-        "reasoning": "Solution 3 declares an int variable with a default value, assigns it in branches, and returns it at the end.",
-        "translated_reasoning": "A solução 3 declara uma variável int com um valor padrão, atribui a ela nos ramos e a retorna no final."
-      },
-      {
-        "name": "Ternary conditional operator",
-        "reasoning": "Solution 4 uses the conditional (ternary) operator to choose between return values inline.",
-        "translated_reasoning": "A solução 4 usa o operador condicional (ternário) para escolher entre valores de retorno na própria linha."
-      },
-      {
-        "name": "Method definition with parameters and return type",
-        "reasoning": "All solutions define a method with a specific signature, typed parameters, and an int return type.",
-        "translated_reasoning": "Todas as soluções definem um método com assinatura específica, parâmetros tipados e tipo de retorno int."
+        "name": "Basic arithmetic operations",
+        "reasoning": "Solutions 4 and 5 use the -= arithmetic operator to adjust the speed value before comparing against standard thresholds.",
+        "translated_reasoning": "As soluções 4 e 5 usam o operador aritmético -= para ajustar o valor de velocidade antes de comparar contra limites padrão."
       }
     ],
     "232": [
       {
         "name": "If and else statement",
-        "reasoning": "Every solution uses if/else statements to choose between the alarm outputs depending on the day and vacation status.",
-        "translated_reasoning": "Toda solução usa instruções if/else para escolher entre as saídas do alarme dependendo do dia e da situação de férias."
+        "reasoning": "Essential for branching between different alarm times based on vacation status and day of week conditions.",
+        "translated_reasoning": "Essencial para ramificar entre diferentes horários de alarme com base no status de férias e condições de dia da semana."
       },
       {
         "name": "Nested if statement",
-        "reasoning": "Solutions 2, 4 and 5 nest an if on vacation inside a branch on the day (or the reverse) to separate the weekday/weekend and vacation cases.",
-        "translated_reasoning": "As soluções 2, 4 e 5 aninham um if sobre vacation dentro de um ramo sobre o dia (ou o inverso) para separar os casos de dia útil/fim de semana e de férias."
-      },
-      {
-        "name": "Else-if chains",
-        "reasoning": "Solutions 2 and 5 chain else-if branches so that only one of several mutually exclusive conditions is executed.",
-        "translated_reasoning": "As soluções 2 e 5 encadeiam ramos else if de modo que apenas uma de várias condições mutuamente exclusivas seja executada."
-      },
-      {
-        "name": "Numerical equality comparison",
-        "reasoning": "The solutions compare the integer day against specific values (day == 0, day == 6) to identify particular days such as the weekend.",
-        "translated_reasoning": "As soluções comparam o dia inteiro com valores específicos (day == 0, day == 6) para identificar dias particulares, como o fim de semana."
-      },
-      {
-        "name": "Numerical comparisons (relational operators)",
-        "reasoning": "Solutions 3, 4 and 5 use relational operators such as <, >, <= and >= to test whether the day falls in the weekday range 1 to 5.",
-        "translated_reasoning": "As soluções 3, 4 e 5 usam operadores relacionais como <, >, <= e >= para testar se o dia está na faixa de dias úteis de 1 a 5."
+        "reasoning": "Required for checking multiple conditions hierarchically to handle combinations of vacation status and specific days.",
+        "translated_reasoning": "Necessário para verificar múltiplas condições hierarquicamente para lidar com combinações de status de férias e dias específicos."
       },
       {
         "name": "Logical operators",
-        "reasoning": "The solutions combine conditions with && and || (e.g., vacation && (day == 0 || day == 6), day > 0 && day < 6) to express compound rules.",
-        "translated_reasoning": "As soluções combinam condições com && e || (por exemplo, vacation && (day == 0 || day == 6), day > 0 && day < 6) para expressar regras compostas."
+        "reasoning": "Necessary for combining multiple conditions (such as vacation AND specific days) into single boolean expressions using &&, ||, and ! operators.",
+        "translated_reasoning": "Necessário para combinar múltiplas condições (como férias E dias específicos) em expressões boolean únicas usando operadores &&, ||, e !."
       },
       {
-        "name": "Boolean variables and conditions",
-        "reasoning": "The boolean vacation parameter is used directly as a condition (if(vacation)), negated with !, or compared with == true/false to drive decisions.",
-        "translated_reasoning": "O parâmetro boolean vacation é usado diretamente como condição (if(vacation)), negado com ! ou comparado com == true/false para conduzir as decisões."
+        "name": "Numerical comparisons",
+        "reasoning": "Essential for distinguishing between weekdays and weekends by comparing integer day values using operators like ==, >, <, >=, and <=.",
+        "translated_reasoning": "Essencial para distinguir entre dias da semana e fins de semana comparando valores de dia inteiro usando operadores como ==, >, <, >=, e <=."
       },
       {
-        "name": "Returning values from a method / String literals",
-        "reasoning": "Each solution must return the correct String literal (\"7:00\", \"10:00\", \"off\") from a method with a String return type, often via multiple return statements.",
-        "translated_reasoning": "Cada solução deve retornar o literal String correto (\"7:00\", \"10:00\", \"off\") a partir de um método com tipo de retorno String, frequentemente por meio de várias instruções return."
-      },
-      {
-        "name": "Variable declaration and reassignment",
-        "reasoning": "Solution 3 stores the candidate weekday and weekend alarm strings in variables and overrides them if on vacation, then returns the appropriate one.",
-        "translated_reasoning": "A solução 3 armazena em variáveis as strings candidatas de alarme para dia útil e fim de semana, sobrescreve-as se estiver de férias e então retorna a apropriada."
-      },
-      {
-        "name": "Mapping encoded integer values to categories",
-        "reasoning": "Solutions must encode the day as an integer range (0 and 6 as weekend, 1-5 as weekdays) and map the encoding to the correct category of day.",
-        "translated_reasoning": "As soluções devem codificar o dia como uma faixa de inteiros (0 e 6 como fim de semana, 1 a 5 como dias úteis) e mapear a codificação para a categoria de dia correta."
+        "name": "Boolean variable usage",
+        "reasoning": "Required for incorporating the boolean vacation parameter into conditional logic to determine whether to modify the alarm time.",
+        "translated_reasoning": "Necessário para incorporar o parâmetro boolean vacation na lógica condicional para determinar se deve modificar o horário do alarme."
       }
     ],
     "233": [
       {
         "name": "If and else statement",
-        "reasoning": "Every solution uses an if statement to test conditions and choose a return path, and several add else branches for the remaining cases.",
-        "translated_reasoning": "Toda solução usa uma instrução if para testar condições e escolher um caminho de retorno, e várias adicionam ramos else para os demais casos."
+        "reasoning": "All solutions use if-else structures for conditional branching to return true or false based on different conditions.",
+        "translated_reasoning": "Todas as soluções usam estruturas if-else para ramificação condicional para retornar true ou false com base em diferentes condições."
       },
       {
-        "name": "Else-if chaining and nested if statements",
-        "reasoning": "Solutions 2, 3, and 5 chain else-if branches or nest an if inside an else to check multiple alternative conditions in sequence.",
-        "translated_reasoning": "As soluções 2, 3 e 5 encadeiam ramos else if ou aninham um if dentro de um else para verificar várias condições alternativas em sequência."
+        "name": "Logical operators",
+        "reasoning": "Most solutions use the OR (||) operator to combine multiple conditions within single if statements for more concise code.",
+        "translated_reasoning": "A maioria das soluções usa o operador OR (||) para combinar múltiplas condições dentro de únicas instruções if para código mais conciso."
       },
       {
-        "name": "Numerical equality comparison",
-        "reasoning": "Each solution compares values to the target number 6 using the equality operator, for example a == 6 or a + b == 6.",
-        "translated_reasoning": "Cada solução compara valores com o número alvo 6 usando o operador de igualdade, por exemplo a == 6 ou a + b == 6."
-      },
-      {
-        "name": "Logical OR operator",
-        "reasoning": "Solutions 1, 2, 3, and 5 combine several conditions with the logical OR operator so that any one true condition triggers the result.",
-        "translated_reasoning": "As soluções 1, 2, 3 e 5 combinam várias condições com o operador lógico OR de modo que qualquer condição verdadeira desencadeie o resultado."
+        "name": "Numerical comparisons",
+        "reasoning": "All solutions use the equality operator (==) to compare integer values against 6 and other computed values.",
+        "translated_reasoning": "Todas as soluções usam o operador de igualdade (==) para comparar valores inteiros contra 6 e outros valores computados."
       },
       {
         "name": "Basic arithmetic operations",
-        "reasoning": "The problem requires computing the sum and difference of the two inputs with + and - before comparing them to 6.",
-        "translated_reasoning": "O problema exige calcular a soma e a diferença das duas entradas com + e - antes de compará-las com 6."
+        "reasoning": "All solutions use addition and subtraction operations to compute the sum and difference of the two input integers.",
+        "translated_reasoning": "Todas as soluções usam operações de adição e subtração para computar a soma e a diferença dos dois inteiros de entrada."
       },
       {
-        "name": "Absolute value with Math.abs",
-        "reasoning": "Solution 1 uses Math.abs(a - b) to handle the difference in either direction, and the others emulate this by checking both a - b and b - a.",
-        "translated_reasoning": "A solução 1 usa Math.abs(a - b) para tratar a diferença em qualquer direção, e as outras emulam isso verificando tanto a - b quanto b - a."
+        "name": "Nested if statement",
+        "reasoning": "Multiple solutions use nested if statements within else blocks to hierarchically evaluate related conditions in sequence.",
+        "translated_reasoning": "Múltiplas soluções usam instruções if aninhadas dentro de blocos else para avaliar hierarquicamente condições relacionadas em sequência."
       },
       {
-        "name": "Boolean return values",
-        "reasoning": "The method must have a boolean return type and return true or false literals based on the evaluated conditions.",
-        "translated_reasoning": "O método deve ter tipo de retorno boolean e retornar os literais true ou false com base nas condições avaliadas."
-      },
-      {
-        "name": "Early return and default return",
-        "reasoning": "Solutions 1 and 4 use a default return false after the if checks, relying on early return to exit the method once a condition is met.",
-        "translated_reasoning": "As soluções 1 e 4 usam um return false padrão após as verificações com if, contando com o retorno antecipado para sair do método assim que uma condição for satisfeita."
-      },
-      {
-        "name": "Local variable declaration and assignment",
-        "reasoning": "Solution 4 stores the sum and differences in int variables before comparing them, which makes the code clearer and avoids recomputation.",
-        "translated_reasoning": "A solução 4 armazena a soma e as diferenças em variáveis int antes de compará-las, o que deixa o código mais claro e evita o recálculo."
-      },
-      {
-        "name": "Handling symmetric or order-independent cases",
-        "reasoning": "Because the difference can be negative, solutions need to recognize that a - b and b - a differ in sign and that both orderings must be considered.",
-        "translated_reasoning": "Como a diferença pode ser negativa, as soluções precisam reconhecer que a - b e b - a diferem em sinal e que ambas as ordens devem ser consideradas."
+        "name": "Method invocation",
+        "reasoning": "Several solutions call the Math.abs() method to compute absolute values, requiring knowledge of built-in method invocation.",
+        "translated_reasoning": "Várias soluções chamam o método Math.abs() para computar valores absolutos, requerendo conhecimento de invocação de método embutido."
       }
     ],
     "234": [
       {
         "name": "If and else statement",
-        "reasoning": "Every solution uses if/else branching to choose between the weekend and weekday success rules and to return true or false.",
-        "translated_reasoning": "Toda solução usa ramificação if/else para escolher entre as regras de sucesso de fim de semana e de dia útil e para retornar true ou false."
+        "reasoning": "All solutions require basic conditional branching to evaluate conditions and make decisions based on input values.",
+        "translated_reasoning": "Todas as soluções requerem ramificação condicional básica para avaliar condições e tomar decisões com base em valores de entrada."
       },
       {
         "name": "Nested if statement",
-        "reasoning": "Solutions 3 and 4 nest a cigar-count check inside the weekend/non-weekend branch, so the second condition is only evaluated after the first is decided.",
-        "translated_reasoning": "As soluções 3 e 4 aninham uma verificação da quantidade de charutos dentro do ramo de fim de semana/não fim de semana, de modo que a segunda condição só é avaliada depois que a primeira é decidida."
+        "reasoning": "Multiple solutions use hierarchically nested conditions where inner conditions depend on outer condition results for complex decision logic.",
+        "translated_reasoning": "Múltiplas soluções usam condições aninhadas hierarquicamente onde condições internas dependem de resultados de condições externas para lógica de decisão complexa."
+      },
+      {
+        "name": "If-else if-else chain",
+        "reasoning": "Several solutions use this pattern to handle multiple mutually exclusive conditions efficiently without deeply nested if statements.",
+        "translated_reasoning": "Várias soluções usam este padrão para lidar com múltiplas condições mutuamente exclusivas eficientemente sem instruções if profundamente aninhadas."
       },
       {
         "name": "Numerical comparisons",
-        "reasoning": "The cigar count must be compared with the bounds 40 and 60, using >= and <= so that both ends are inclusive.",
-        "translated_reasoning": "A quantidade de charutos deve ser comparada com os limites 40 e 60, usando >= e <= para que ambas as extremidades sejam inclusivas."
+        "reasoning": "All solutions require comparing numeric values using operators like <, >, <=, >=, ==, and != to establish boolean conditions.",
+        "translated_reasoning": "Todas as soluções requerem comparar valores numéricos usando operadores como <, >, <=, >=, ==, e != para estabelecer condições boolean."
       },
       {
-        "name": "Logical operators",
-        "reasoning": "The weekday rule needs both bounds to hold at once (&&), and solution 2 combines || with && to express the weekend exception.",
-        "translated_reasoning": "A regra de dia útil precisa que ambos os limites valham ao mesmo tempo (&&), e a solução 2 combina || com && para expressar a exceção do fim de semana."
+        "name": "Logical AND operator",
+        "reasoning": "Most solutions require combining multiple conditions where all conditions must simultaneously evaluate to true using the && operator.",
+        "translated_reasoning": "A maioria das soluções requer combinar múltiplas condições onde todas as condições devem simultaneamente avaliar como verdadeiras usando o operador &&."
       },
       {
-        "name": "Boolean variables as conditions",
-        "reasoning": "The boolean parameter isWeekend is used directly as a condition (or compared with == false) to switch between rule sets.",
-        "translated_reasoning": "O parâmetro boolean isWeekend é usado diretamente como condição (ou comparado com == false) para alternar entre os conjuntos de regras."
+        "name": "Logical OR operator",
+        "reasoning": "Many solutions require combining conditions where at least one condition must evaluate to true using the || operator.",
+        "translated_reasoning": "Muitas soluções requerem combinar condições onde pelo menos uma condição deve avaliar como verdadeira usando o operador ||."
       },
       {
-        "name": "Returning boolean values",
-        "reasoning": "Solutions 1 and 2 return the value of a boolean expression directly, and the other solutions return the literals true and false from if/else branches.",
-        "translated_reasoning": "As soluções 1 e 2 retornam diretamente o valor de uma expressão boolean, e as demais soluções retornam os literais true e false a partir de ramos if/else."
+        "name": "Logical NOT operator",
+        "reasoning": "Several solutions require negating or inverting boolean values and expressions using the ! operator to test contrary conditions.",
+        "translated_reasoning": "Várias soluções requerem negar ou inverter valores boolean e expressões usando o operador ! para testar condições contrárias."
+      },
+      {
+        "name": "Basic arithmetic operations",
+        "reasoning": "Multiple solutions require performing mathematical calculations including addition, subtraction, and multiplication in conditions and logic.",
+        "translated_reasoning": "Múltiplas soluções requerem executar cálculos matemáticos incluindo adição, subtração, e multiplicação em condições e lógica."
+      },
+      {
+        "name": "Modulo operator",
+        "reasoning": "Multiple solutions require checking divisibility and finding remainders using the % operator to establish special conditions.",
+        "translated_reasoning": "Múltiplas soluções requerem verificar divisibilidade e encontrar restos usando o operador % para estabelecer condições especiais."
+      },
+      {
+        "name": "String.substring() method",
+        "reasoning": "String-based solutions require extracting specific portions of strings by index range to evaluate character conditions.",
+        "translated_reasoning": "Soluções baseadas em string requerem extrair porções específicas de strings por intervalo de índice para avaliar condições de caractere."
+      },
+      {
+        "name": "String.equals() method",
+        "reasoning": "String-based solutions require comparing strings for equality to establish conditions rather than using == operator.",
+        "translated_reasoning": "Soluções baseadas em string requerem comparar strings para igualdade para estabelecer condições em vez de usar o operador ==."
+      },
+      {
+        "name": "Math.abs() method",
+        "reasoning": "Multiple solutions require calculating absolute values of differences between numbers to evaluate distance-based conditions.",
+        "translated_reasoning": "Múltiplas soluções requerem calcular valores absolutos de diferenças entre números para avaliar condições baseadas em distância."
+      },
+      {
+        "name": "Variable increment operator",
+        "reasoning": "Some solutions require incrementing variable values using the ++ operator to modify state during conditional logic.",
+        "translated_reasoning": "Algumas soluções requerem incrementar valores de variável usando o operador ++ para modificar o estado durante lógica condicional."
       },
       {
         "name": "Operator precedence and parentheses",
-        "reasoning": "Solution 2 uses parentheses to group (cigars <= 60 || isWeekend) before combining it with &&, so operator precedence and grouping decide whether the logic is correct.",
-        "translated_reasoning": "A solução 2 usa parênteses para agrupar (cigars <= 60 || isWeekend) antes de combiná-lo com &&, de modo que a precedência de operadores e o agrupamento determinam se a lógica está correta."
-      },
-      {
-        "name": "Early return and control flow",
-        "reasoning": "Solution 1 returns early from inside the if block, so the following return statement runs only when the weekend condition is false.",
-        "translated_reasoning": "A solução 1 retorna antecipadamente de dentro do bloco if, de modo que a instrução return seguinte só é executada quando a condição de fim de semana é falsa."
-      },
-      {
-        "name": "Method definition with parameters and return type",
-        "reasoning": "Each solution implements the logic as a method with a boolean return type and int and boolean parameters.",
-        "translated_reasoning": "Cada solução implementa a lógica como um método com tipo de retorno boolean e parâmetros int e boolean."
+        "reasoning": "Complex expressions require understanding how operators are evaluated and using parentheses to control evaluation order explicitly.",
+        "translated_reasoning": "Expressões complexas requerem entender como os operadores são avaliados e usar parênteses para controlar explicitamente a ordem de avaliação."
       }
     ],
     "235": [
       {
         "name": "If and else statement",
-        "reasoning": "Every solution uses if statements to choose among the three possible outcomes (0, 1, 2) depending on the style values.",
-        "translated_reasoning": "Toda solução usa instruções if para escolher entre os três resultados possíveis (0, 1, 2) dependendo dos valores de estilo."
-      },
-      {
-        "name": "Nested if statement",
-        "reasoning": "Solutions 1 and 5 place if/else blocks inside other if/else blocks to refine the result after an initial condition is checked.",
-        "translated_reasoning": "As soluções 1 e 5 colocam blocos if/else dentro de outros blocos if/else para refinar o resultado depois que uma condição inicial é verificada."
-      },
-      {
-        "name": "Else-if chains and multi-branch conditionals",
-        "reasoning": "Solutions 1, 2, 3 and 4 chain 'else if' or sequential if statements so that only one branch determines the outcome.",
-        "translated_reasoning": "As soluções 1, 2, 3 e 4 encadeiam 'else if' ou instruções if sequenciais de modo que apenas um ramo determine o resultado."
-      },
-      {
-        "name": "Logical operators",
-        "reasoning": "Conditions such as 'you >= 8 || date >= 8' require the logical OR operator to express that either person meeting a condition is enough.",
-        "translated_reasoning": "Condições como 'you >= 8 || date >= 8' exigem o operador lógico OR para expressar que basta uma das pessoas satisfazer uma condição."
+        "reasoning": "All solutions use if and else statements to branch logic based on different style value combinations and determine the restaurant table outcome.",
+        "translated_reasoning": "Todas as soluções usam instruções if e else para ramificar lógica com base em diferentes combinações de valor de estilo e determinar o resultado da mesa do restaurante."
       },
       {
         "name": "Numerical comparisons",
-        "reasoning": "All solutions compare the integer style values against thresholds (e.g., <= 2, >= 8, > 7) using relational operators.",
-        "translated_reasoning": "Todas as soluções comparam os valores inteiros de estilo com limites (por exemplo, <= 2, >= 8, > 7) usando operadores relacionais."
+        "reasoning": "All solutions use numerical comparison operators (<=, >=, <, >) to check whether style values meet the critical thresholds of 2 or 8 that determine the result.",
+        "translated_reasoning": "Todas as soluções usam operadores de comparação numérica (<=, >=, <, >) para verificar se os valores de estilo atendem aos limites críticos de 2 ou 8 que determinam o resultado."
       },
       {
-        "name": "Inclusive and exclusive boundary handling",
-        "reasoning": "The solutions must choose the correct boundary operator and constant (e.g., >= 8 versus > 7) so inclusive thresholds are handled accurately.",
-        "translated_reasoning": "As soluções devem escolher o operador de limite e a constante corretos (por exemplo, >= 8 versus > 7) para que os limites inclusivos sejam tratados com precisão."
+        "name": "Logical operators",
+        "reasoning": "Most solutions use the logical OR operator (||) to combine multiple conditions into single if statements, checking whether either person is unstylish or stylish.",
+        "translated_reasoning": "A maioria das soluções usa o operador OR lógico (||) para combinar múltiplas condições em únicas instruções if, verificando se qualquer pessoa é não estilosa ou estilosa."
       },
       {
-        "name": "Condition ordering and precedence of rules",
-        "reasoning": "Solutions 2, 3 and 4 check the 'no' condition (style <= 2) first so it overrides the 'yes' condition, which requires understanding that the order of checks determines precedence.",
-        "translated_reasoning": "As soluções 2, 3 e 4 verificam primeiro a condição 'não' (style <= 2) para que ela se sobreponha à condição 'sim', o que exige entender que a ordem das verificações determina a precedência."
-      },
-      {
-        "name": "Return statements and early exit",
-        "reasoning": "Every solution uses return statements to give back an int result from the method, and solutions 2 and 3 use early returns that end execution before later checks.",
-        "translated_reasoning": "Toda solução usa instruções return para devolver um resultado int do método, e as soluções 2 e 3 usam retornos antecipados que encerram a execução antes das verificações seguintes."
-      },
-      {
-        "name": "Method definition with parameters and return type",
-        "reasoning": "The method is declared with a return type of int and two int parameters, which is needed to accept the inputs and encode the result as an integer code.",
-        "translated_reasoning": "O método é declarado com tipo de retorno int e dois parâmetros int, o que é necessário para receber as entradas e codificar o resultado como um código inteiro."
+        "name": "Nested if statement",
+        "reasoning": "Some solutions use nested if statements to handle hierarchical conditions, providing an alternative approach to organizing logic without relying on explicit logical operators.",
+        "translated_reasoning": "Algumas soluções usam instruções if aninhadas para lidar com condições hierárquicas, fornecendo uma abordagem alternativa para organizar lógica sem depender de operadores lógicos explícitos."
       }
     ],
     "236": [
       {
-        "name": "If, else if, and else statements",
-        "reasoning": "All solutions branch on the relationship between the three numbers using if, else if, and else to select among the three possible outcomes.",
-        "translated_reasoning": "Todas as soluções se ramificam conforme a relação entre os três números usando if, else if e else para selecionar entre os três resultados possíveis."
+        "name": "If and else statement",
+        "reasoning": "Needed to branch execution based on different integer equality conditions.",
+        "translated_reasoning": "Necessário para ramificar a execução com base em diferentes condições de igualdade inteira."
       },
       {
-        "name": "Nested if statements",
-        "reasoning": "Solutions 2, 4, and 5 place an if inside another if (e.g., checking b == c after a == b) to refine the result once a first condition holds.",
-        "translated_reasoning": "As soluções 2, 4 e 5 colocam um if dentro de outro if (por exemplo, verificando b == c após a == b) para refinar o resultado quando uma primeira condição é satisfeita."
+        "name": "Nested if statement",
+        "reasoning": "Needed to progressively refine conditions through sequential nested checks.",
+        "translated_reasoning": "Necessário para refinar progressivamente condições através de verificações aninhadas sequenciais."
       },
       {
-        "name": "Numerical equality and inequality comparison",
-        "reasoning": "Every solution tests whether pairs of ints are equal or unequal using == and != to detect matching values.",
-        "translated_reasoning": "Toda solução testa se pares de ints são iguais ou diferentes usando == e != para detectar valores coincidentes."
+        "name": "Else if statement",
+        "reasoning": "Needed to efficiently handle multiple mutually exclusive conditions.",
+        "translated_reasoning": "Necessário para lidar eficientemente com múltiplas condições mutuamente exclusivas."
       },
       {
-        "name": "Logical operators (AND, OR)",
-        "reasoning": "Solutions 1, 2, 3, and 5 combine several comparisons with && and || to express conditions like all-equal or any-pair-equal in a single test.",
-        "translated_reasoning": "As soluções 1, 2, 3 e 5 combinam várias comparações com && e || para expressar condições como todos iguais ou algum par igual em um único teste."
+        "name": "Numerical comparisons",
+        "reasoning": "Needed to determine whether integer values are equal or different from each other.",
+        "translated_reasoning": "Necessário para determinar se valores inteiros são iguais ou diferentes um do outro."
       },
       {
-        "name": "Return statements with early exit",
-        "reasoning": "Each solution returns a different int value (0, 10, or 20) from the method depending on which case applies, often returning early to skip the remaining checks.",
-        "translated_reasoning": "Cada solução retorna um valor int diferente (0, 10 ou 20) do método dependendo de qual caso se aplica, frequentemente retornando antecipadamente para pular as verificações restantes."
+        "name": "Logical operators",
+        "reasoning": "Needed to combine multiple integer comparisons using logical AND and OR operators.",
+        "translated_reasoning": "Necessário para combinar múltiplas comparações inteiras usando operadores lógicos AND e OR."
       },
       {
-        "name": "Case analysis and ordering of conditions",
-        "reasoning": "The solution must correctly handle the exhaustive cases (all same, exactly two same, all different), including recognizing that checking all-same first makes the two-same check valid.",
-        "translated_reasoning": "A solução deve tratar corretamente os casos exaustivos (todos iguais, exatamente dois iguais, todos diferentes), incluindo reconhecer que verificar primeiro o caso de todos iguais torna válida a verificação de dois iguais."
-      },
-      {
-        "name": "Basic arithmetic operations in conditions",
-        "reasoning": "Solution 3 uses subtraction of the variables (a - b == b - c) as part of its comparison logic, requiring arithmetic expressions inside conditions.",
-        "translated_reasoning": "A solução 3 usa a subtração das variáveis (a - b == b - c) como parte de sua lógica de comparação, exigindo expressões aritméticas dentro de condições."
-      },
-      {
-        "name": "Method definition with parameters and return type",
-        "reasoning": "The method is defined with int parameters and an int return type, which every solution needs in order to accept a, b, c and produce the result.",
-        "translated_reasoning": "O método é definido com parâmetros int e tipo de retorno int, o que toda solução precisa para receber a, b, c e produzir o resultado."
+        "name": "Basic arithmetic operations",
+        "reasoning": "Needed for alternative comparison approaches that use arithmetic differences between integers.",
+        "translated_reasoning": "Necessário para abordagens de comparação alternativas que usam diferenças aritméticas entre inteiros."
       }
     ]
   },
   "group_of_name": {
-    "If and else statement": 12,
-    "Numerical comparisons": 2,
-    "Logical operators": 13,
-    "Basic arithmetic operations": 3,
-    "Variable declaration and assignment": 21,
-    "Return statements and method return values": 19,
-    "Ternary conditional operator": 15,
-    "Inclusive range boundary handling": 0,
-    "Nested if statement": 12,
-    "Boolean variables as conditions": 8,
-    "Returning boolean expressions directly": 7,
-    "Method definition and return statements": 19,
-    "Else-if chaining": 11,
-    "Logical NOT operator": 14,
-    "Logical AND/OR operators": 13,
-    "Boolean return statements and early return": 17,
-    "Boolean variable assignment and default value": 9,
-    "Condition ordering and precedence of rules": 4,
-    "Method definition with parameters and return type": 19,
-    "Boolean operations": 8,
-    "Default value with conditional override": 10,
-    "Else-if chains": 11,
-    "Boolean variables and conditions": 8,
-    "Basic arithmetic and compound assignment": 3,
-    "Reassigning method parameters": 22,
-    "Return statements and early return": 17,
-    "Numerical equality comparison": 1,
-    "Numerical comparisons (relational operators)": 2,
-    "Returning values from a method / String literals": 20,
-    "Variable declaration and reassignment": 21,
-    "Mapping encoded integer values to categories": 24,
-    "Else-if chaining and nested if statements": 12,
-    "Logical OR operator": 13,
-    "Absolute value with Math.abs": 23,
-    "Boolean return values": 7,
-    "Early return and default return": 17,
-    "Local variable declaration and assignment": 21,
-    "Handling symmetric or order-independent cases": 6,
-    "Returning boolean values": 7,
-    "Operator precedence and parentheses": 16,
-    "Early return and control flow": 18,
-    "Else-if chains and multi-branch conditionals": 11,
-    "Inclusive and exclusive boundary handling": 0,
-    "Return statements and early exit": 17,
-    "If, else if, and else statements": 12,
-    "Nested if statements": 12,
-    "Numerical equality and inequality comparison": 1,
-    "Logical operators (AND, OR)": 13,
-    "Return statements with early exit": 17,
-    "Case analysis and ordering of conditions": 5,
-    "Basic arithmetic operations in conditions": 3
+    "If and else statement": 7,
+    "Basic arithmetic operations": 5,
+    "Numerical comparisons": 12,
+    "Logical operators": 10,
+    "Nested if statement": 7,
+    "Logical AND operator": 10,
+    "Logical OR operator": 10,
+    "Boolean return": 9,
+    "Boolean equality comparison": 9,
+    "Return statement": 8,
+    "Variable initialization and assignment": 3,
+    "Logical NOT operator": 10,
+    "Ternary operator": 10,
+    "Variable initialization": 3,
+    "Variable assignment": 3,
+    "Boolean operations": 9,
+    "Boolean variable usage": 9,
+    "Method invocation": 2,
+    "If-else if-else chain": 7,
+    "Modulo operator": 6,
+    "String.substring() method": 0,
+    "String.equals() method": 0,
+    "Math.abs() method": 1,
+    "Variable increment operator": 4,
+    "Operator precedence and parentheses": 11,
+    "Else if statement": 7
   },
   "concepts": {
     "0": {
-      "generated_name": "inclusive and exclusive boundary handling",
-      "name": "Tratamento de limites inclusivos e exclusivos"
+      "generated_name": "basic string methods",
+      "name": "Métodos básicos de string"
     },
     "1": {
-      "generated_name": "numerical equality and inequality comparison",
-      "name": "Comparação numérica de igualdade e desigualdade"
+      "generated_name": "math.abs() method",
+      "name": "Método Math.abs()"
     },
     "2": {
-      "generated_name": "numerical comparisons (relational operators)",
-      "name": "Comparações numéricas (operadores relacionais)"
+      "generated_name": "method invocation",
+      "name": "Invocação de método"
     },
     "3": {
+      "generated_name": "variable initialization and assignment",
+      "name": "Inicialização e atribuição de variável"
+    },
+    "4": {
+      "generated_name": "variable increment operator",
+      "name": "Operador de incremento de variável"
+    },
+    "5": {
       "generated_name": "basic arithmetic operations",
       "name": "Operações aritméticas básicas"
     },
-    "4": {
-      "generated_name": "condition ordering and precedence of rules",
-      "name": "Ordem das condições e precedência das regras"
-    },
-    "5": {
-      "generated_name": "case analysis and ordering of conditions",
-      "name": "Análise de casos e ordem das condições"
-    },
     "6": {
-      "generated_name": "handling symmetric or order-independent cases",
-      "name": "Tratamento de casos simétricos ou independentes da ordem"
+      "generated_name": "modulo operator",
+      "name": "Operador de módulo"
     },
     "7": {
-      "generated_name": "returning boolean values",
-      "name": "Retorno de valores boolean"
+      "generated_name": "if-else statement structures",
+      "name": "Estruturas de instrução if-else"
     },
     "8": {
-      "generated_name": "boolean variables, conditions, and operations",
-      "name": "Variáveis, condições e operações boolean"
+      "generated_name": "return statement",
+      "name": "Instrução de retorno"
     },
     "9": {
-      "generated_name": "boolean variable assignment and default value",
-      "name": "Atribuição de variável boolean e valor padrão"
+      "generated_name": "boolean data type usage",
+      "name": "Uso do tipo de dado boolean"
     },
     "10": {
-      "generated_name": "default value with conditional override",
-      "name": "Valor padrão com sobrescrita condicional"
+      "generated_name": "logical and conditional operators",
+      "name": "Operadores lógicos e condicionais"
     },
     "11": {
-      "generated_name": "else-if chains and multi-branch conditionals",
-      "name": "Encadeamento de else if e condicionais de múltiplos ramos"
+      "generated_name": "operator precedence and parentheses",
+      "name": "Precedência de operador e parênteses"
     },
     "12": {
-      "generated_name": "conditional statements: if/else, else-if chaining, and nested if",
-      "name": "Instruções condicionais: if/else, encadeamento de else if e if aninhado"
-    },
-    "13": {
-      "generated_name": "logical operators (and, or)",
-      "name": "Operadores lógicos (e, ou)"
-    },
-    "14": {
-      "generated_name": "logical not operator",
-      "name": "Operador lógico de negação"
-    },
-    "15": {
-      "generated_name": "ternary conditional operator",
-      "name": "Operador condicional ternário"
-    },
-    "16": {
-      "generated_name": "operator precedence and parentheses",
-      "name": "Precedência de operadores e parênteses"
-    },
-    "17": {
-      "generated_name": "return statements and early return",
-      "name": "Instruções return e retorno antecipado"
-    },
-    "18": {
-      "generated_name": "early return and control flow",
-      "name": "Retorno antecipado e fluxo de controle"
-    },
-    "19": {
-      "generated_name": "method definition and return statements",
-      "name": "Definição de método e instruções return"
-    },
-    "20": {
-      "generated_name": "returning values from a method / string literals",
-      "name": "Retorno de valores de um método / literais String"
-    },
-    "21": {
-      "generated_name": "variable declaration and assignment",
-      "name": "Declaração e atribuição de variáveis"
-    },
-    "22": {
-      "generated_name": "reassigning method parameters",
-      "name": "Reatribuição de parâmetros de método"
-    },
-    "23": {
-      "generated_name": "absolute value with math.abs",
-      "name": "Valor absoluto com math.abs"
-    },
-    "24": {
-      "generated_name": "mapping encoded integer values to categories",
-      "name": "Mapeamento de valores inteiros codificados para categorias"
+      "generated_name": "numerical comparisons",
+      "name": "Comparações numéricas"
     }
   },
   "groups_by_problem": {
     "1": [
-      0,
-      2,
-      3,
-      12,
-      13,
-      15,
-      19,
-      21
+      5,
+      7,
+      10,
+      12
     ],
     "3": [
-      2,
       7,
-      8,
-      12,
-      13,
-      19
+      9,
+      10,
+      12
     ],
     "5": [
-      4,
+      3,
+      7,
       8,
-      9,
-      11,
-      12,
-      13,
-      14,
-      17,
-      19
+      10
     ],
     "12": [
-      2,
+      3,
       7,
-      8,
       10,
-      12,
-      13,
-      15,
-      19,
-      21
+      12
     ],
     "13": [
-      2,
-      3,
-      8,
-      11,
-      12,
-      13,
-      15,
-      17,
-      19,
-      21,
-      22
+      5,
+      7,
+      9,
+      10,
+      12
     ],
     "232": [
-      1,
-      2,
-      8,
-      11,
-      12,
-      13,
-      20,
-      21,
-      24
+      7,
+      9,
+      10,
+      12
     ],
     "233": [
-      1,
-      3,
-      6,
+      2,
+      5,
       7,
-      12,
-      13,
-      17,
-      21,
-      23
+      10,
+      12
     ],
     "234": [
-      2,
+      0,
+      1,
+      4,
+      5,
+      6,
       7,
-      8,
-      12,
-      13,
-      16,
-      18,
-      19
+      10,
+      11,
+      12
     ],
     "235": [
-      0,
-      2,
-      4,
-      11,
-      12,
-      13,
-      17,
-      19
+      7,
+      10,
+      12
     ],
     "236": [
-      1,
-      3,
       5,
-      12,
-      13,
-      17,
-      19
+      7,
+      10,
+      12
     ]
   },
   "evidence": {
     "1": [
       {
-        "group": 0,
-        "position": 4,
+        "group": 5,
+        "position": 2,
         "first_line": 3,
         "last_line": 3
       },
       {
-        "group": 2,
-        "position": 3,
-        "first_line": 7,
-        "last_line": 7
+        "group": 7,
+        "position": 1,
+        "first_line": 3,
+        "last_line": 5
       },
       {
-        "group": 3,
-        "position": 3,
-        "first_line": 5,
-        "last_line": 5
+        "group": 10,
+        "position": 1,
+        "first_line": 3,
+        "last_line": 3
       },
       {
         "group": 12,
         "position": 1,
-        "first_line": 3,
-        "last_line": 5
-      },
-      {
-        "group": 13,
-        "position": 1,
-        "first_line": 3,
-        "last_line": 3
-      },
-      {
-        "group": 15,
-        "position": 4,
-        "first_line": 3,
-        "last_line": 3
-      },
-      {
-        "group": 19,
-        "position": 4,
-        "first_line": 1,
-        "last_line": 4
-      },
-      {
-        "group": 21,
-        "position": 2,
         "first_line": 3,
         "last_line": 3
       }
     ],
     "3": [
       {
-        "group": 2,
-        "position": 2,
-        "first_line": 16,
-        "last_line": 16
-      },
-      {
         "group": 7,
-        "position": 4,
-        "first_line": 4,
-        "last_line": 4
+        "position": 2,
+        "first_line": 5,
+        "last_line": 12
       },
       {
-        "group": 8,
+        "group": 9,
+        "position": 2,
+        "first_line": 1,
+        "last_line": 1
+      },
+      {
+        "group": 10,
         "position": 3,
-        "first_line": 3,
-        "last_line": 3
+        "first_line": 5,
+        "last_line": 5
       },
       {
         "group": 12,
-        "position": 2,
-        "first_line": 3,
-        "last_line": 15
-      },
-      {
-        "group": 13,
-        "position": 5,
-        "first_line": 3,
-        "last_line": 3
-      },
-      {
-        "group": 19,
-        "position": 5,
-        "first_line": 1,
-        "last_line": 1
+        "position": 4,
+        "first_line": 4,
+        "last_line": 4
       }
     ],
     "5": [
       {
-        "group": 4,
-        "position": 3,
-        "first_line": 3,
-        "last_line": 6
-      },
-      {
-        "group": 8,
-        "position": 1,
-        "first_line": 10,
-        "last_line": 10
-      },
-      {
-        "group": 9,
+        "group": 3,
         "position": 1,
         "first_line": 3,
         "last_line": 3
       },
       {
-        "group": 11,
+        "group": 7,
         "position": 2,
         "first_line": 3,
         "last_line": 8
       },
       {
-        "group": 12,
-        "position": 5,
-        "first_line": 7,
-        "last_line": 17
+        "group": 8,
+        "position": 1,
+        "first_line": 16,
+        "last_line": 16
       },
       {
-        "group": 13,
-        "position": 2,
-        "first_line": 5,
-        "last_line": 5
-      },
-      {
-        "group": 14,
-        "position": 3,
-        "first_line": 7,
-        "last_line": 7
-      },
-      {
-        "group": 17,
-        "position": 3,
-        "first_line": 3,
-        "last_line": 4
-      },
-      {
-        "group": 19,
-        "position": 3,
-        "first_line": 1,
-        "last_line": 1
+        "group": 10,
+        "position": 1,
+        "first_line": 10,
+        "last_line": 10
       }
     ],
     "12": [
       {
-        "group": 2,
-        "position": 2,
-        "first_line": 9,
-        "last_line": 9
+        "group": 3,
+        "position": 5,
+        "first_line": 3,
+        "last_line": 4
       },
       {
         "group": 7,
         "position": 1,
-        "first_line": 7,
-        "last_line": 7
-      },
-      {
-        "group": 8,
-        "position": 3,
-        "first_line": 8,
-        "last_line": 8
+        "first_line": 5,
+        "last_line": 12
       },
       {
         "group": 10,
-        "position": 5,
+        "position": 3,
         "first_line": 3,
-        "last_line": 4
+        "last_line": 3
       },
       {
         "group": 12,
-        "position": 1,
-        "first_line": 3,
-        "last_line": 13
-      },
-      {
-        "group": 13,
         "position": 4,
         "first_line": 4,
         "last_line": 4
-      },
-      {
-        "group": 15,
-        "position": 4,
-        "first_line": 3,
-        "last_line": 3
-      },
-      {
-        "group": 19,
-        "position": 4,
-        "first_line": 1,
-        "last_line": 5
-      },
-      {
-        "group": 21,
-        "position": 5,
-        "first_line": 3,
-        "last_line": 3
       }
     ],
     "13": [
       {
-        "group": 2,
-        "position": 5,
-        "first_line": 6,
-        "last_line": 6
-      },
-      {
-        "group": 3,
+        "group": 5,
         "position": 4,
         "first_line": 3,
         "last_line": 3
       },
       {
-        "group": 8,
-        "position": 2,
-        "first_line": 3,
-        "last_line": 3
-      },
-      {
-        "group": 11,
+        "group": 7,
         "position": 5,
-        "first_line": 9,
-        "last_line": 10
-      },
-      {
-        "group": 12,
-        "position": 2,
-        "first_line": 5,
-        "last_line": 16
-      },
-      {
-        "group": 13,
-        "position": 3,
         "first_line": 6,
-        "last_line": 6
+        "last_line": 13
       },
       {
-        "group": 15,
+        "group": 9,
+        "position": 3,
+        "first_line": 11,
+        "last_line": 11
+      },
+      {
+        "group": 10,
         "position": 4,
         "first_line": 5,
         "last_line": 5
       },
       {
-        "group": 17,
-        "position": 4,
-        "first_line": 4,
-        "last_line": 4
-      },
-      {
-        "group": 19,
-        "position": 3,
-        "first_line": 1,
-        "last_line": 1
-      },
-      {
-        "group": 21,
-        "position": 3,
-        "first_line": 2,
-        "last_line": 2
-      },
-      {
-        "group": 22,
-        "position": 5,
+        "group": 12,
+        "position": 1,
         "first_line": 3,
-        "last_line": 4
+        "last_line": 3
       }
     ],
     "232": [
       {
-        "group": 1,
+        "group": 7,
         "position": 2,
-        "first_line": 8,
-        "last_line": 8
+        "first_line": 3,
+        "last_line": 7
       },
       {
-        "group": 2,
-        "position": 4,
-        "first_line": 5,
-        "last_line": 5
+        "group": 9,
+        "position": 2,
+        "first_line": 9,
+        "last_line": 10
       },
       {
-        "group": 8,
+        "group": 10,
         "position": 1,
         "first_line": 3,
         "last_line": 3
       },
       {
-        "group": 11,
-        "position": 2,
-        "first_line": 8,
-        "last_line": 13
-      },
-      {
         "group": 12,
         "position": 4,
-        "first_line": 3,
-        "last_line": 13
-      },
-      {
-        "group": 13,
-        "position": 5,
-        "first_line": 7,
-        "last_line": 7
-      },
-      {
-        "group": 20,
-        "position": 3,
-        "first_line": 4,
-        "last_line": 4
-      },
-      {
-        "group": 21,
-        "position": 3,
-        "first_line": 6,
-        "last_line": 6
-      },
-      {
-        "group": 24,
-        "position": 1,
         "first_line": 5,
         "last_line": 5
       }
     ],
     "233": [
       {
-        "group": 1,
+        "group": 2,
         "position": 1,
         "first_line": 2,
         "last_line": 2
       },
       {
-        "group": 3,
-        "position": 3,
-        "first_line": 9,
-        "last_line": 9
+        "group": 5,
+        "position": 1,
+        "first_line": 2,
+        "last_line": 2
       },
       {
         "group": 7,
-        "position": 1,
-        "first_line": 3,
-        "last_line": 5
-      },
-      {
-        "group": 12,
         "position": 2,
-        "first_line": 7,
-        "last_line": 13
+        "first_line": 3,
+        "last_line": 21
       },
       {
-        "group": 13,
+        "group": 10,
         "position": 1,
         "first_line": 2,
         "last_line": 2
       },
       {
-        "group": 17,
-        "position": 4,
-        "first_line": 6,
-        "last_line": 9
-      },
-      {
-        "group": 21,
-        "position": 4,
-        "first_line": 3,
-        "last_line": 3
-      },
-      {
-        "group": 23,
+        "group": 12,
         "position": 1,
         "first_line": 2,
         "last_line": 2
@@ -1199,146 +768,104 @@
     ],
     "234": [
       {
-        "group": 2,
-        "position": 3,
-        "first_line": 5,
-        "last_line": 5
+        "group": 0,
+        "position": 5,
+        "first_line": 168,
+        "last_line": 168
+      },
+      {
+        "group": 1,
+        "position": 5,
+        "first_line": 228,
+        "last_line": 228
+      },
+      {
+        "group": 4,
+        "position": 5,
+        "first_line": 237,
+        "last_line": 237
+      },
+      {
+        "group": 5,
+        "position": 5,
+        "first_line": 54,
+        "last_line": 54
+      },
+      {
+        "group": 6,
+        "position": 5,
+        "first_line": 95,
+        "last_line": 95
       },
       {
         "group": 7,
-        "position": 3,
-        "first_line": 7,
-        "last_line": 11
+        "position": 5,
+        "first_line": 87,
+        "last_line": 90
       },
       {
-        "group": 8,
-        "position": 4,
-        "first_line": 4,
-        "last_line": 4
+        "group": 10,
+        "position": 2,
+        "first_line": 2,
+        "last_line": 2
+      },
+      {
+        "group": 11,
+        "position": 2,
+        "first_line": 2,
+        "last_line": 2
       },
       {
         "group": 12,
-        "position": 5,
-        "first_line": 2,
-        "last_line": 7
-      },
-      {
-        "group": 13,
         "position": 2,
         "first_line": 2,
         "last_line": 2
-      },
-      {
-        "group": 16,
-        "position": 2,
-        "first_line": 2,
-        "last_line": 2
-      },
-      {
-        "group": 18,
-        "position": 1,
-        "first_line": 3,
-        "last_line": 5
-      },
-      {
-        "group": 19,
-        "position": 2,
-        "first_line": 1,
-        "last_line": 3
       }
     ],
     "235": [
       {
-        "group": 0,
-        "position": 5,
-        "first_line": 3,
-        "last_line": 5
+        "group": 7,
+        "position": 1,
+        "first_line": 5,
+        "last_line": 12
       },
       {
-        "group": 2,
+        "group": 10,
         "position": 2,
         "first_line": 3,
-        "last_line": 4
-      },
-      {
-        "group": 4,
-        "position": 2,
-        "first_line": 3,
-        "last_line": 7
-      },
-      {
-        "group": 11,
-        "position": 5,
-        "first_line": 16,
-        "last_line": 27
+        "last_line": 6
       },
       {
         "group": 12,
-        "position": 1,
-        "first_line": 3,
-        "last_line": 13
-      },
-      {
-        "group": 13,
         "position": 2,
         "first_line": 3,
-        "last_line": 3
-      },
-      {
-        "group": 17,
-        "position": 3,
-        "first_line": 5,
-        "last_line": 7
-      },
-      {
-        "group": 19,
-        "position": 2,
-        "first_line": 1,
-        "last_line": 4
+        "last_line": 6
       }
     ],
     "236": [
       {
-        "group": 1,
-        "position": 4,
-        "first_line": 3,
-        "last_line": 5
-      },
-      {
-        "group": 3,
+        "group": 5,
         "position": 3,
         "first_line": 20,
         "last_line": 20
       },
       {
-        "group": 5,
-        "position": 5,
-        "first_line": 3,
-        "last_line": 11
-      },
-      {
-        "group": 12,
+        "group": 7,
         "position": 2,
-        "first_line": 3,
+        "first_line": 11,
         "last_line": 18
       },
       {
-        "group": 13,
-        "position": 5,
-        "first_line": 9,
-        "last_line": 9
-      },
-      {
-        "group": 17,
-        "position": 5,
-        "first_line": 5,
+        "group": 10,
+        "position": 1,
+        "first_line": 3,
         "last_line": 7
       },
       {
-        "group": 19,
-        "position": 5,
-        "first_line": 1,
-        "last_line": 2
+        "group": 12,
+        "position": 1,
+        "first_line": 3,
+        "last_line": 3
       }
     ]
   }
