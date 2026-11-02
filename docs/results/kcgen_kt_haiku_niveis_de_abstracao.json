@@ -1,0 +1,3488 @@
+{
+ "generated_candidates": [
+  {
+   "source": "haiku-4-5",
+   "assignment": "A439",
+   "run": 1,
+   "statement": true,
+   "candidates": {
+    "1": [
+     "Basic arithmetic operations",
+     "Numerical comparisons",
+     "If and else statement",
+     "Logical AND operator",
+     "Logical OR operator",
+     "Ternary operator",
+     "Variable assignment"
+    ],
+    "3": [
+     "If and else statement",
+     "Logical operators",
+     "Numerical comparisons",
+     "Nested if statement"
+    ],
+    "5": [
+     "If and else statement",
+     "Nested if statement",
+     "Logical AND operator",
+     "Logical OR operator",
+     "Logical NOT operator",
+     "Return statement"
+    ],
+    "12": [
+     "If and else statement",
+     "Nested if statement",
+     "Numerical comparisons",
+     "Logical AND operator",
+     "Conditional variable assignment",
+     "Boolean return values",
+     "Ternary operator"
+    ],
+    "13": [
+     "If and else statement",
+     "Nested if statement",
+     "Basic arithmetic operations",
+     "Logical operators",
+     "Numerical comparisons",
+     "Boolean operations"
+    ],
+    "232": [
+     "If and else statement",
+     "Nested if statement",
+     "Numerical comparisons",
+     "Logical AND operator",
+     "Logical OR operator",
+     "Logical NOT operator"
+    ],
+    "233": [
+     "If and else statement",
+     "Logical operators",
+     "Numerical comparisons",
+     "Basic arithmetic operations",
+     "Nested if statement",
+     "Else-if statement",
+     "Math.abs() function",
+     "Variable declaration and assignment"
+    ],
+    "234": [
+     "If and else statement",
+     "Else if statement",
+     "Nested if statement",
+     "Numerical comparisons",
+     "Logical operators",
+     "Boolean operations",
+     "Modulo operator",
+     "Basic arithmetic operations",
+     "String substring method",
+     "String equality comparison",
+     "String concatenation",
+     "Math.abs() method",
+     "Increment operators",
+     "Parentheses for controlling expression order"
+    ],
+    "235": [
+     "If and else statement",
+     "Nested if statement",
+     "Logical operators",
+     "Numerical comparisons"
+    ],
+    "236": [
+     "If and else statement",
+     "Nested if statement",
+     "Numerical comparisons",
+     "Logical operators",
+     "Return statement"
+    ]
+   },
+   "model": "claude-haiku-4-5-20251001"
+  },
+  {
+   "source": "haiku-4-5",
+   "assignment": "A439",
+   "run": 2,
+   "statement": true,
+   "candidates": {
+    "1": [
+     "Basic arithmetic operations",
+     "If and else statement",
+     "Numerical comparisons",
+     "Logical operators",
+     "Variable assignment",
+     "Ternary operator"
+    ],
+    "3": [
+     "If and else statement",
+     "Nested if statement",
+     "Logical AND operator",
+     "Logical OR operator",
+     "Numerical comparisons",
+     "Boolean equality comparison"
+    ],
+    "5": [
+     "If and else statement",
+     "Nested if statement",
+     "Logical AND operator",
+     "Logical OR operator",
+     "Logical NOT operator",
+     "Early return statement",
+     "Boolean variable assignment"
+    ],
+    "12": [
+     "Numerical comparisons",
+     "If and else statement",
+     "Boolean operations",
+     "Logical operators",
+     "Ternary operator",
+     "Nested if statement",
+     "Variable assignment"
+    ],
+    "13": [
+     "If and else statement",
+     "Nested if statement",
+     "Else-if statement",
+     "Numerical comparisons",
+     "Logical operators",
+     "Boolean operations",
+     "Arithmetic operations",
+     "Compound assignment operators",
+     "Ternary operator",
+     "Variable assignment"
+    ],
+    "232": [
+     "If and else statement",
+     "Nested if statement",
+     "Numerical comparisons",
+     "Logical operators",
+     "Boolean operations"
+    ],
+    "233": [
+     "If and else statement",
+     "Logical operators",
+     "Numerical comparisons",
+     "Basic arithmetic operations",
+     "Nested if statement",
+     "Math.abs() function"
+    ],
+    "234": [
+     "If and else statement",
+     "Nested if statement",
+     "If-else-if chain",
+     "Logical operators",
+     "Numerical comparisons",
+     "Modulo operator",
+     "Basic arithmetic operations",
+     "Boolean values",
+     "Operator precedence",
+     "String equality comparison",
+     "String substring",
+     "Math functions"
+    ],
+    "235": [
+     "If and else statement",
+     "Nested if statement",
+     "Numerical comparisons",
+     "Logical operators"
+    ],
+    "236": [
+     "If and else statement",
+     "Nested if statement",
+     "Numerical comparisons",
+     "Logical operators"
+    ]
+   },
+   "model": "claude-haiku-4-5-20251001"
+  },
+  {
+   "source": "haiku-4-5",
+   "assignment": "A502",
+   "run": 1,
+   "statement": false,
+   "candidates": {
+    "45": [
+     "For Loop",
+     "Array Indexing",
+     "If-else Statement",
+     "Nested If Statement",
+     "Numerical Comparisons",
+     "Boolean Variables",
+     "Compound Assignment Operators",
+     "While Loop",
+     "Logical Operators",
+     "Loop Index Manipulation",
+     "Array Length Property"
+    ],
+    "48": [
+     "Array declaration and initialization",
+     "Array indexing",
+     "Array element assignment",
+     "For loop",
+     "While loop",
+     "If statement",
+     "Numerical comparisons",
+     "Array length property",
+     "Increment operators",
+     "Nested loops",
+     "Logical AND operator"
+    ],
+    "51": [
+     "For loop",
+     "While loop",
+     "If statement",
+     "Else if statement",
+     "Modulo operator",
+     "Array indexing",
+     "Array element assignment",
+     "Numerical comparisons",
+     "Logical operators",
+     "Nested loops",
+     "Break statement",
+     "Sentinel value pattern"
+    ],
+    "56": [
+     "For loop",
+     "Array indexing",
+     "Numerical comparisons",
+     "If and else statement",
+     "Basic arithmetic operations",
+     "Array length property",
+     "Else-if statement",
+     "Logical operators",
+     "Nested loops",
+     "Array creation and initialization"
+    ],
+    "57": [
+     "Array declaration and initialization",
+     "For loop",
+     "Array indexing",
+     "Numerical comparison",
+     "Method declaration",
+     "Return statement",
+     "Conditional statements (if-else)",
+     "Logical operators",
+     "Boolean data type"
+    ],
+    "64": [
+     "Array declaration and instantiation",
+     "For loop",
+     "Basic arithmetic operations",
+     "Modulo operator",
+     "Numerical comparisons",
+     "If and else statement",
+     "Logical operators",
+     "Array indexing",
+     "String conversion from integer"
+    ],
+    "70": [
+     "For loop",
+     "Array indexing",
+     "If and else statement",
+     "Numerical comparisons",
+     "Array length property",
+     "Nested if statements",
+     "Logical operators",
+     "Array bounds checking",
+     "Counter variable"
+    ],
+    "71": [
+     "For loop",
+     "While loop",
+     "Nested loops",
+     "Array indexing",
+     "Array length property",
+     "Variable initialization",
+     "Accumulation with addition operator",
+     "Subtraction operation",
+     "Numerical comparison",
+     "If statement",
+     "Boolean return values",
+     "Early return from method",
+     "Boolean variable for state tracking"
+    ],
+    "112": [
+     "Array instantiation",
+     "Array indexing",
+     "For loop",
+     "Nested for loops",
+     "Arithmetic operations",
+     "Numerical comparisons",
+     "If and else statements"
+    ],
+    "118": [
+     "Array indexing",
+     "Array length property",
+     "For loop",
+     "If and else statement",
+     "Numerical comparisons",
+     "Variable assignment",
+     "Temporary variable usage",
+     "Array element modification",
+     "Arithmetic operations in expressions"
+    ]
+   },
+   "model": "claude-haiku-4-5-20251001"
+  },
+  {
+   "source": "haiku-4-5",
+   "assignment": "A502",
+   "run": 2,
+   "statement": false,
+   "candidates": {
+    "45": [
+     "For loop",
+     "Array indexing",
+     "If and else statement",
+     "Nested if statement",
+     "Boolean variables",
+     "Numerical comparisons",
+     "Logical operators",
+     "Arithmetic and assignment operators",
+     "While loop",
+     "Loop counter modification",
+     "Array length property"
+    ],
+    "48": [
+     "Array instantiation",
+     "Array length property",
+     "Array indexing",
+     "For loop",
+     "If statement",
+     "Numerical comparisons",
+     "Variable assignment",
+     "Variable increment",
+     "While loop",
+     "Nested if statement",
+     "Nested loops",
+     "Logical operators",
+     "Arithmetic operations"
+    ],
+    "51": [
+     "For loop",
+     "While loop",
+     "If statement",
+     "Else statement",
+     "Else-if statement",
+     "Modulo operator",
+     "Array indexing",
+     "Array length property",
+     "Numerical comparisons",
+     "Variable assignment",
+     "Logical operators",
+     "Break statement",
+     "Nested loops"
+    ],
+    "56": [
+     "Array Indexing",
+     "For Loops",
+     "Nested Loops",
+     "Numerical Comparisons",
+     "If and Else Statements",
+     "Else-If Statements",
+     "Arithmetic Operations",
+     "Array Length Property",
+     "Min/Max Tracking",
+     "Integer Division",
+     "Array Sorting"
+    ],
+    "57": [
+     "Array declaration",
+     "For loop",
+     "Array indexing",
+     "Numerical comparisons",
+     "Return statement",
+     "If and else statement",
+     "Logical operators",
+     "Array length property"
+    ],
+    "64": [
+     "Array instantiation",
+     "For loop",
+     "Modulo operator",
+     "If and else statement",
+     "Logical operators",
+     "Numerical comparisons",
+     "Integer to String conversion",
+     "Array indexing",
+     "Arithmetic operations"
+    ],
+    "70": [
+     "For loop",
+     "Array indexing",
+     "Array length property",
+     "Equality comparison",
+     "Inequality comparison",
+     "If and else statement",
+     "Nested if statement",
+     "Logical AND operator",
+     "Logical OR operator",
+     "Counter/accumulator variable",
+     "Boolean variable"
+    ],
+    "71": [
+     "For loop",
+     "Nested loops",
+     "While loop",
+     "If statement",
+     "Array indexing",
+     "Array length property",
+     "Variable initialization and assignment",
+     "Numerical comparisons",
+     "Arithmetic operations",
+     "Compound assignment operators",
+     "Logical operators",
+     "Return statement"
+    ],
+    "112": [
+     "Array instantiation",
+     "Array indexing and element assignment",
+     "For loop",
+     "Nested for loops",
+     "Arithmetic operations",
+     "Comparison operators",
+     "Post-increment operator",
+     "Variable initialization and assignment",
+     "Return statement",
+     "If/else statement"
+    ],
+    "118": [
+     "For loop",
+     "If and else statement",
+     "Basic arithmetic operations",
+     "Array instantiation",
+     "Array indexing",
+     "Array length property",
+     "Numerical comparisons",
+     "Variable declaration and assignment",
+     "Return statement"
+    ]
+   },
+   "model": "claude-haiku-4-5-20251001"
+  },
+  {
+   "source": "haiku-4-5",
+   "assignment": "A487",
+   "run": 1,
+   "statement": true,
+   "candidates": {
+    "17": [
+     "If and else statement",
+     "Nested if statement",
+     "Logical AND operator",
+     "Equality comparison",
+     "Inequality comparison",
+     "Array declaration and initialization",
+     "Array indexing",
+     "For loop"
+    ],
+    "20": [
+     "If and else statement",
+     "Nested if statement",
+     "Equality comparison",
+     "Logical operators",
+     "Arithmetic operations",
+     "Variable assignment"
+    ],
+    "21": [
+     "If and else statement",
+     "Nested if statement",
+     "Numerical comparisons",
+     "Basic arithmetic operations"
+    ],
+    "22": [
+     "Method definition",
+     "Method invocation",
+     "If and else statement",
+     "Logical operators",
+     "Numerical comparisons",
+     "Basic arithmetic operations",
+     "Method decomposition"
+    ],
+    "24": [
+     "If and else statement",
+     "Numerical comparisons",
+     "Logical operators",
+     "Nested if statement",
+     "else if statement"
+    ],
+    "25": [
+     "If and else statement",
+     "Nested if statement",
+     "Logical AND operator",
+     "Logical OR operator",
+     "Numerical comparison operators",
+     "Equality operator",
+     "Inequality operator",
+     "Arithmetic subtraction",
+     "Absolute value function",
+     "Variable assignment",
+     "Variable swapping"
+    ],
+    "28": [
+     "If and else statement",
+     "Numerical comparisons",
+     "String length",
+     "String substring",
+     "String concatenation",
+     "While loop",
+     "String character access"
+    ],
+    "100": [
+     "Modulo operator",
+     "Numerical comparisons",
+     "If and else statement",
+     "Basic arithmetic operations",
+     "Integer division",
+     "Method definition",
+     "Method invocation"
+    ],
+    "101": [
+     "If and else statement",
+     "Arithmetic operations",
+     "Numerical comparisons",
+     "Logical operators",
+     "Integer division",
+     "Modulo operator",
+     "While loop",
+     "For loop",
+     "Compound assignment operators",
+     "Nested if statement",
+     "Break statement"
+    ],
+    "102": [
+     "String length",
+     "String substring",
+     "String equality comparison",
+     "If and else statement",
+     "Numerical comparison",
+     "Nested if statement",
+     "Logical operators",
+     "Ternary operator"
+    ]
+   },
+   "model": "claude-haiku-4-5-20251001"
+  },
+  {
+   "source": "haiku-4-5",
+   "assignment": "A492",
+   "run": 1,
+   "statement": true,
+   "candidates": {
+    "31": [
+     "For loop",
+     "String length",
+     "String indexing",
+     "String concatenation",
+     "Arithmetic operations",
+     "Numerical comparisons",
+     "If and else statement",
+     "StringBuilder"
+    ],
+    "32": [
+     "For loop",
+     "While loop",
+     "If and else statement",
+     "Numerical comparisons",
+     "String length",
+     "String indexing",
+     "String equality comparison",
+     "String concatenation",
+     "String indexOf",
+     "StringBuilder"
+    ],
+    "33": [
+     "String indexing",
+     "String length",
+     "For loop",
+     "While loop",
+     "Numerical comparisons",
+     "If and else statement",
+     "String concatenation",
+     "Logical operators",
+     "String substring",
+     "StringBuilder",
+     "Nested if statement"
+    ],
+    "34": [
+     "If and else statement",
+     "Nested if statement",
+     "For loop",
+     "While loop",
+     "Numerical comparisons",
+     "Logical operators",
+     "String indexing",
+     "String length",
+     "Character comparison",
+     "String concatenation",
+     "String equality comparison",
+     "String substring",
+     "Loop index manipulation",
+     "Character-to-string conversion",
+     "String reassignment",
+     "String replacement with regular expressions"
+    ],
+    "36": [
+     "For Loop",
+     "While Loop",
+     "String.length() Method",
+     "String.charAt() Method",
+     "String.substring() Method",
+     "If and Else If Statements",
+     "Logical AND Operator (&&)",
+     "Character Comparison",
+     "String.equals() Method",
+     "String.compareTo() Method",
+     "Counter Variable",
+     "Loop Boundary Calculation",
+     "Guard Clause and Early Return",
+     "Conditional Loop Increment",
+     "Index Arithmetic"
+    ],
+    "37": [
+     "String case conversion",
+     "String length",
+     "If and else statement",
+     "Numerical comparisons",
+     "String substring extraction",
+     "String endsWith method",
+     "String equality comparison",
+     "Logical OR operator",
+     "For loops",
+     "String indexing"
+    ],
+    "38": [
+     "If and else statement",
+     "Logical operators",
+     "Numerical comparisons",
+     "String length",
+     "String character indexing",
+     "String equality comparison",
+     "For loop",
+     "Basic arithmetic operations",
+     "Nested if statement",
+     "String substring extraction",
+     "String contains method",
+     "String indexOf method",
+     "Recursion"
+    ],
+    "39": [
+     "For loop",
+     "If and else statement",
+     "Nested if statement",
+     "Numerical comparisons",
+     "Character comparison",
+     "Logical operators",
+     "String indexing",
+     "String length",
+     "String indexOf()",
+     "String lastIndexOf()",
+     "Boolean variables"
+    ],
+    "40": [
+     "String indexOf method",
+     "String lastIndexOf method",
+     "String substring method",
+     "For loop",
+     "String equality comparison",
+     "If and else statement",
+     "Numerical comparisons",
+     "Logical operators",
+     "String length",
+     "Break statement"
+    ],
+    "128": [
+     "If and else statement",
+     "For loop",
+     "Logical AND operator",
+     "Logical OR operator",
+     "Nested if statement",
+     "Numerical comparisons",
+     "String length",
+     "String indexing",
+     "String substring",
+     "String equality comparison",
+     "String indexOf",
+     "String lastIndexOf",
+     "String contains",
+     "Character equality comparison",
+     "Regular expressions",
+     "String matches",
+     "String replaceAll",
+     "Boolean variable assignment"
+    ]
+   },
+   "model": "claude-haiku-4-5-20251001"
+  },
+  {
+   "source": "haiku-4-5",
+   "assignment": "A494",
+   "run": 1,
+   "statement": true,
+   "candidates": {
+    "41": [
+     "Array indexing",
+     "Basic arithmetic operations",
+     "Variable declaration and assignment",
+     "For-each loop",
+     "Traditional for loop",
+     "Array length property",
+     "Compound assignment operators",
+     "If and else statement",
+     "Numerical comparisons",
+     "Increment operator"
+    ],
+    "43": [
+     "If and else statement",
+     "Numerical comparisons",
+     "Array instantiation",
+     "Array indexing",
+     "Array length"
+    ],
+    "44": [
+     "For loop",
+     "Array indexing",
+     "Array length property",
+     "Modulo operator",
+     "Numerical comparison",
+     "If statement",
+     "Arithmetic operations"
+    ],
+    "46": [
+     "For loop",
+     "While loop",
+     "Array indexing",
+     "Array length property",
+     "Numerical comparisons",
+     "Logical operators",
+     "If and else statement",
+     "Nested if statement",
+     "Boolean variables",
+     "Loop variable modification",
+     "Basic arithmetic operations",
+     "Boundary checking"
+    ],
+    "49": [
+     "For loop",
+     "Array indexing",
+     "Array length",
+     "If and else statement",
+     "Numerical comparisons",
+     "Basic arithmetic operations",
+     "Variable initialization",
+     "Logical operators",
+     "Loop variable modification"
+    ],
+    "67": [
+     "For Loop",
+     "While Loop",
+     "Array Indexing",
+     "Array Length",
+     "Numerical Comparisons",
+     "Logical Operators",
+     "If and Else Statement",
+     "Nested If Statement",
+     "Early Return",
+     "Arithmetic Operations",
+     "Boolean State Variable"
+    ],
+    "104": [
+     "For Loop",
+     "Nested For Loop",
+     "If Statement",
+     "Array Indexing",
+     "Array Length Property",
+     "Numerical Comparisons",
+     "Modulo Operator",
+     "Logical and operator",
+     "Array Element Assignment"
+    ],
+    "106": [
+     "For Loop",
+     "Array Indexing",
+     "Numerical Comparison",
+     "If and else statement",
+     "Return Statement",
+     "Array Length Property",
+     "Basic Arithmetic Operations",
+     "Variable Assignment",
+     "Logical Operators",
+     "Increment Operator"
+    ],
+    "107": [
+     "For loop",
+     "While loop",
+     "Nested loops",
+     "Array indexing",
+     "Array length",
+     "Equality comparison",
+     "Inequality comparison",
+     "If and else statement",
+     "Nested if statement",
+     "Boolean variable",
+     "Boolean negation",
+     "Logical AND operator",
+     "Counter increment",
+     "Numerical comparison"
+    ],
+    "108": [
+     "Nested loops",
+     "Array indexing",
+     "Array length property",
+     "If statement",
+     "Logical operators",
+     "Numerical comparisons",
+     "For loop",
+     "While loop",
+     "Increment operator",
+     "Variable assignment",
+     "Array element modification",
+     "Element swapping",
+     "Temporary variable for swapping"
+    ]
+   },
+   "model": "claude-haiku-4-5-20251001"
+  },
+  {
+   "source": "haiku-4-5",
+   "assignment": "A502",
+   "run": 3,
+   "statement": true,
+   "candidates": {
+    "45": [
+     "For loop with array iteration",
+     "Array indexing",
+     "If and else statement",
+     "Numerical comparisons",
+     "Arithmetic operations",
+     "Boolean variable for state tracking",
+     "Nested if statement",
+     "Loop counter modification",
+     "Logical operators",
+     "While loop",
+     "Array length"
+    ],
+    "48": [
+     "If Statement",
+     "For Loop",
+     "While Loop",
+     "Array Creation",
+     "Array Indexing",
+     "Array Length Property",
+     "Numerical Comparison Operators",
+     "Logical Operators",
+     "Arithmetic Operations",
+     "Nested Control Structures",
+     "Counter/Index Management Pattern"
+    ],
+    "51": [
+     "For loop",
+     "While loop",
+     "If and else statement",
+     "Array indexing",
+     "Array element assignment",
+     "Modulo operator",
+     "Numerical comparisons",
+     "Logical operators",
+     "Nested loops",
+     "Break statement"
+    ],
+    "56": [
+     "For Loop",
+     "If Statement",
+     "Comparison Operators",
+     "Arithmetic Operators",
+     "Array Indexing",
+     "Array Length Property",
+     "Variable Assignment",
+     "Integer Division",
+     "Else-if Statement",
+     "Logical Operators",
+     "Nested Loops",
+     "Sorting Algorithm",
+     "Array Element Swapping"
+    ],
+    "57": [
+     "Array Declaration and Initialization",
+     "Array Indexing",
+     "For Loop",
+     "Numerical Comparisons",
+     "Increment Operator",
+     "Return Statement",
+     "If and Else Statement",
+     "Array Length Property"
+    ],
+    "64": [
+     "Array instantiation",
+     "For loop",
+     "Modulo operator",
+     "Numerical comparison",
+     "If and else statement",
+     "Logical AND operator",
+     "Array indexing",
+     "String type conversion",
+     "Variable increment"
+    ],
+    "70": [
+     "For Loop",
+     "Array Indexing",
+     "Array Length Property",
+     "Equality Comparison",
+     "Numerical Comparisons",
+     "If and Else Statement",
+     "Logical Operators"
+    ],
+    "71": [
+     "For Loop",
+     "While Loop",
+     "Nested Loops",
+     "Array Indexing",
+     "Array Length Property",
+     "If and Else Statement",
+     "Numerical Comparison",
+     "Arithmetic Operations",
+     "Accumulation Pattern"
+    ],
+    "112": [
+     "Array Declaration and Initialization",
+     "Array Indexing and Assignment",
+     "For Loop",
+     "Nested For Loops",
+     "Arithmetic Operations",
+     "Comparison Operators",
+     "Increment Operators",
+     "Variable Declaration and Assignment",
+     "Return Statement",
+     "Conditional Statements (if/else)",
+     "Array Length Property",
+     "Method Definition"
+    ],
+    "118": [
+     "For loop",
+     "Array indexing",
+     "Array assignment",
+     "If statement",
+     "Numerical comparisons",
+     "Variable assignment",
+     "Array length property",
+     "Arithmetic operations",
+     "Array creation",
+     "Return statement"
+    ]
+   },
+   "model": "claude-haiku-4-5-20251001"
+  }
+ ],
+ "levels": [
+  {
+   "source": "haiku-4-5",
+   "assignment": "A439",
+   "run": 1,
+   "statement": true,
+   "candidates_per_problem": [
+    7,
+    4,
+    6,
+    7,
+    6,
+    6,
+    8,
+    14,
+    4,
+    5
+   ],
+   "unique_raw": 25,
+   "unique": 25,
+   "single_problem": 14,
+   "levels": [
+    {
+     "level": 100,
+     "k": 24,
+     "per_problem": [
+      7,
+      4,
+      6,
+      7,
+      6,
+      6,
+      8,
+      14,
+      4,
+      5
+     ],
+     "same_pairs": 23,
+     "worst": 0.02
+    },
+    {
+     "level": 75,
+     "k": 18,
+     "per_problem": [
+      6,
+      3,
+      4,
+      6,
+      5,
+      4,
+      6,
+      12,
+      3,
+      4
+     ],
+     "same_pairs": 17,
+     "worst": 0.22
+    },
+    {
+     "level": 50,
+     "k": 12,
+     "per_problem": [
+      5,
+      3,
+      2,
+      5,
+      5,
+      3,
+      6,
+      11,
+      3,
+      3
+     ],
+     "same_pairs": 11,
+     "worst": 0.52
+    },
+    {
+     "level": 20,
+     "k": 5,
+     "per_problem": [
+      3,
+      2,
+      1,
+      2,
+      3,
+      2,
+      4,
+      5,
+      2,
+      2
+     ],
+     "same_pairs": 0,
+     "worst": 0.79
+    },
+    {
+     "level": 10,
+     "k": 2,
+     "per_problem": [
+      2,
+      2,
+      1,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2
+     ],
+     "same_pairs": 0,
+     "worst": 0.92
+    }
+   ],
+   "watch": {
+    "sortaSum": {
+     "candidates": [
+      "Basic arithmetic operations",
+      "Numerical comparisons",
+      "If and else statement",
+      "Logical AND operator",
+      "Logical OR operator",
+      "Ternary operator",
+      "Variable assignment"
+     ],
+     "levels": {
+      "100": [
+       [
+        "Basic arithmetic operations"
+       ],
+       [
+        "Numerical comparisons"
+       ],
+       [
+        "If and else statement"
+       ],
+       [
+        "Logical AND operator"
+       ],
+       [
+        "Logical OR operator"
+       ],
+       [
+        "Ternary operator"
+       ],
+       [
+        "Variable assignment"
+       ]
+      ],
+      "75": [
+       [
+        "Basic arithmetic operations"
+       ],
+       [
+        "Numerical comparisons"
+       ],
+       [
+        "If and else statement"
+       ],
+       [
+        "Logical AND operator",
+        "Logical OR operator"
+       ],
+       [
+        "Ternary operator"
+       ],
+       [
+        "Variable assignment"
+       ]
+      ],
+      "50": [
+       [
+        "Basic arithmetic operations"
+       ],
+       [
+        "Numerical comparisons"
+       ],
+       [
+        "If and else statement"
+       ],
+       [
+        "Logical AND operator",
+        "Logical OR operator",
+        "Ternary operator"
+       ],
+       [
+        "Variable assignment"
+       ]
+      ],
+      "20": [
+       [
+        "Basic arithmetic operations"
+       ],
+       [
+        "Numerical comparisons"
+       ],
+       [
+        "If and else statement",
+        "Logical AND operator",
+        "Logical OR operator",
+        "Ternary operator",
+        "Variable assignment"
+       ]
+      ],
+      "10": [
+       [
+        "Basic arithmetic operations",
+        "If and else statement",
+        "Logical AND operator",
+        "Logical OR operator",
+        "Ternary operator",
+        "Variable assignment"
+       ],
+       [
+        "Numerical comparisons"
+       ]
+      ]
+     }
+    },
+    "love6": {
+     "candidates": [
+      "If and else statement",
+      "Logical operators",
+      "Numerical comparisons",
+      "Basic arithmetic operations",
+      "Nested if statement",
+      "Else-if statement",
+      "Math.abs() function",
+      "Variable declaration and assignment"
+     ],
+     "levels": {
+      "100": [
+       [
+        "If and else statement"
+       ],
+       [
+        "Logical operators"
+       ],
+       [
+        "Numerical comparisons"
+       ],
+       [
+        "Basic arithmetic operations"
+       ],
+       [
+        "Nested if statement"
+       ],
+       [
+        "Else-if statement"
+       ],
+       [
+        "Math.abs() function"
+       ],
+       [
+        "Variable declaration and assignment"
+       ]
+      ],
+      "75": [
+       [
+        "If and else statement",
+        "Nested if statement",
+        "Else-if statement"
+       ],
+       [
+        "Logical operators"
+       ],
+       [
+        "Numerical comparisons"
+       ],
+       [
+        "Basic arithmetic operations"
+       ],
+       [
+        "Math.abs() function"
+       ],
+       [
+        "Variable declaration and assignment"
+       ]
+      ],
+      "50": [
+       [
+        "If and else statement",
+        "Nested if statement",
+        "Else-if statement"
+       ],
+       [
+        "Logical operators"
+       ],
+       [
+        "Numerical comparisons"
+       ],
+       [
+        "Basic arithmetic operations"
+       ],
+       [
+        "Math.abs() function"
+       ],
+       [
+        "Variable declaration and assignment"
+       ]
+      ],
+      "20": [
+       [
+        "If and else statement",
+        "Logical operators",
+        "Nested if statement",
+        "Else-if statement",
+        "Variable declaration and assignment"
+       ],
+       [
+        "Numerical comparisons"
+       ],
+       [
+        "Basic arithmetic operations"
+       ],
+       [
+        "Math.abs() function"
+       ]
+      ],
+      "10": [
+       [
+        "If and else statement",
+        "Logical operators",
+        "Basic arithmetic operations",
+        "Nested if statement",
+        "Else-if statement",
+        "Variable declaration and assignment"
+       ],
+       [
+        "Numerical comparisons",
+        "Math.abs() function"
+       ]
+      ]
+     }
+    }
+   }
+  },
+  {
+   "source": "haiku-4-5",
+   "assignment": "A439",
+   "run": 2,
+   "statement": true,
+   "candidates_per_problem": [
+    6,
+    6,
+    7,
+    7,
+    10,
+    5,
+    6,
+    12,
+    4,
+    4
+   ],
+   "unique_raw": 25,
+   "unique": 25,
+   "single_problem": 15,
+   "levels": [
+    {
+     "level": 100,
+     "k": 24,
+     "per_problem": [
+      6,
+      6,
+      7,
+      7,
+      10,
+      5,
+      6,
+      12,
+      4,
+      4
+     ],
+     "same_pairs": 27,
+     "worst": 0.03
+    },
+    {
+     "level": 75,
+     "k": 18,
+     "per_problem": [
+      6,
+      4,
+      5,
+      6,
+      8,
+      4,
+      5,
+      11,
+      3,
+      3
+     ],
+     "same_pairs": 18,
+     "worst": 0.25
+    },
+    {
+     "level": 50,
+     "k": 12,
+     "per_problem": [
+      5,
+      4,
+      4,
+      5,
+      6,
+      4,
+      5,
+      9,
+      3,
+      3
+     ],
+     "same_pairs": 7,
+     "worst": 0.48
+    },
+    {
+     "level": 20,
+     "k": 5,
+     "per_problem": [
+      3,
+      2,
+      2,
+      2,
+      3,
+      2,
+      3,
+      4,
+      2,
+      2
+     ],
+     "same_pairs": 0,
+     "worst": 0.79
+    },
+    {
+     "level": 10,
+     "k": 2,
+     "per_problem": [
+      1,
+      1,
+      2,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+     ],
+     "same_pairs": 0,
+     "worst": 0.96
+    }
+   ],
+   "watch": {
+    "sortaSum": {
+     "candidates": [
+      "Basic arithmetic operations",
+      "If and else statement",
+      "Numerical comparisons",
+      "Logical operators",
+      "Variable assignment",
+      "Ternary operator"
+     ],
+     "levels": {
+      "100": [
+       [
+        "Basic arithmetic operations"
+       ],
+       [
+        "If and else statement"
+       ],
+       [
+        "Numerical comparisons"
+       ],
+       [
+        "Logical operators"
+       ],
+       [
+        "Variable assignment"
+       ],
+       [
+        "Ternary operator"
+       ]
+      ],
+      "75": [
+       [
+        "Basic arithmetic operations"
+       ],
+       [
+        "If and else statement"
+       ],
+       [
+        "Numerical comparisons"
+       ],
+       [
+        "Logical operators"
+       ],
+       [
+        "Variable assignment"
+       ],
+       [
+        "Ternary operator"
+       ]
+      ],
+      "50": [
+       [
+        "Basic arithmetic operations"
+       ],
+       [
+        "If and else statement"
+       ],
+       [
+        "Numerical comparisons"
+       ],
+       [
+        "Logical operators",
+        "Ternary operator"
+       ],
+       [
+        "Variable assignment"
+       ]
+      ],
+      "20": [
+       [
+        "Basic arithmetic operations"
+       ],
+       [
+        "If and else statement",
+        "Logical operators",
+        "Variable assignment",
+        "Ternary operator"
+       ],
+       [
+        "Numerical comparisons"
+       ]
+      ],
+      "10": [
+       [
+        "Basic arithmetic operations",
+        "If and else statement",
+        "Numerical comparisons",
+        "Logical operators",
+        "Variable assignment",
+        "Ternary operator"
+       ]
+      ]
+     }
+    },
+    "love6": {
+     "candidates": [
+      "If and else statement",
+      "Logical operators",
+      "Numerical comparisons",
+      "Basic arithmetic operations",
+      "Nested if statement",
+      "Math.abs() function"
+     ],
+     "levels": {
+      "100": [
+       [
+        "If and else statement"
+       ],
+       [
+        "Logical operators"
+       ],
+       [
+        "Numerical comparisons"
+       ],
+       [
+        "Basic arithmetic operations"
+       ],
+       [
+        "Nested if statement"
+       ],
+       [
+        "Math.abs() function"
+       ]
+      ],
+      "75": [
+       [
+        "If and else statement",
+        "Nested if statement"
+       ],
+       [
+        "Logical operators"
+       ],
+       [
+        "Numerical comparisons"
+       ],
+       [
+        "Basic arithmetic operations"
+       ],
+       [
+        "Math.abs() function"
+       ]
+      ],
+      "50": [
+       [
+        "If and else statement",
+        "Nested if statement"
+       ],
+       [
+        "Logical operators"
+       ],
+       [
+        "Numerical comparisons"
+       ],
+       [
+        "Basic arithmetic operations"
+       ],
+       [
+        "Math.abs() function"
+       ]
+      ],
+      "20": [
+       [
+        "If and else statement",
+        "Logical operators",
+        "Nested if statement"
+       ],
+       [
+        "Numerical comparisons"
+       ],
+       [
+        "Basic arithmetic operations",
+        "Math.abs() function"
+       ]
+      ],
+      "10": [
+       [
+        "If and else statement",
+        "Logical operators",
+        "Numerical comparisons",
+        "Basic arithmetic operations",
+        "Nested if statement",
+        "Math.abs() function"
+       ]
+      ]
+     }
+    }
+   }
+  },
+  {
+   "source": "haiku-4-5",
+   "assignment": "A502",
+   "run": 1,
+   "statement": false,
+   "candidates_per_problem": [
+    11,
+    11,
+    12,
+    10,
+    9,
+    9,
+    9,
+    13,
+    7,
+    9
+   ],
+   "unique_raw": 55,
+   "unique": 49,
+   "single_problem": 35,
+   "levels": [
+    {
+     "level": 100,
+     "k": 48,
+     "per_problem": [
+      11,
+      11,
+      12,
+      10,
+      9,
+      9,
+      9,
+      13,
+      7,
+      9
+     ],
+     "same_pairs": 50,
+     "worst": 0.02
+    },
+    {
+     "level": 75,
+     "k": 36,
+     "per_problem": [
+      11,
+      11,
+      12,
+      9,
+      9,
+      9,
+      9,
+      13,
+      7,
+      9
+     ],
+     "same_pairs": 29,
+     "worst": 0.17
+    },
+    {
+     "level": 50,
+     "k": 24,
+     "per_problem": [
+      8,
+      9,
+      9,
+      8,
+      9,
+      9,
+      8,
+      11,
+      6,
+      9
+     ],
+     "same_pairs": 10,
+     "worst": 0.45
+    },
+    {
+     "level": 20,
+     "k": 10,
+     "per_problem": [
+      5,
+      5,
+      6,
+      5,
+      7,
+      6,
+      6,
+      7,
+      5,
+      6
+     ],
+     "same_pairs": 10,
+     "worst": 0.84
+    },
+    {
+     "level": 10,
+     "k": 5,
+     "per_problem": [
+      4,
+      4,
+      5,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4
+     ],
+     "same_pairs": 6,
+     "worst": 0.94
+    }
+   ],
+   "watch": {}
+  },
+  {
+   "source": "haiku-4-5",
+   "assignment": "A502",
+   "run": 2,
+   "statement": false,
+   "candidates_per_problem": [
+    11,
+    13,
+    13,
+    11,
+    8,
+    9,
+    11,
+    12,
+    10,
+    9
+   ],
+   "unique_raw": 50,
+   "unique": 45,
+   "single_problem": 29,
+   "levels": [
+    {
+     "level": 100,
+     "k": 44,
+     "per_problem": [
+      11,
+      13,
+      13,
+      11,
+      8,
+      9,
+      11,
+      12,
+      10,
+      9
+     ],
+     "same_pairs": 40,
+     "worst": 0.02
+    },
+    {
+     "level": 75,
+     "k": 33,
+     "per_problem": [
+      11,
+      13,
+      12,
+      10,
+      8,
+      9,
+      10,
+      12,
+      10,
+      9
+     ],
+     "same_pairs": 12,
+     "worst": 0.18
+    },
+    {
+     "level": 50,
+     "k": 22,
+     "per_problem": [
+      9,
+      11,
+      10,
+      9,
+      8,
+      9,
+      8,
+      11,
+      9,
+      9
+     ],
+     "same_pairs": 6,
+     "worst": 0.41
+    },
+    {
+     "level": 20,
+     "k": 9,
+     "per_problem": [
+      5,
+      7,
+      6,
+      6,
+      5,
+      7,
+      6,
+      6,
+      7,
+      6
+     ],
+     "same_pairs": 6,
+     "worst": 0.81
+    },
+    {
+     "level": 10,
+     "k": 4,
+     "per_problem": [
+      2,
+      3,
+      3,
+      4,
+      2,
+      3,
+      2,
+      3,
+      3,
+      3
+     ],
+     "same_pairs": 1,
+     "worst": 0.96
+    }
+   ],
+   "watch": {}
+  },
+  {
+   "source": "haiku-4-5",
+   "assignment": "A487",
+   "run": 1,
+   "statement": true,
+   "candidates_per_problem": [
+    8,
+    6,
+    4,
+    7,
+    5,
+    11,
+    7,
+    7,
+    11,
+    8
+   ],
+   "unique_raw": 36,
+   "unique": 36,
+   "single_problem": 19,
+   "levels": [
+    {
+     "level": 100,
+     "k": 35,
+     "per_problem": [
+      8,
+      6,
+      4,
+      7,
+      5,
+      11,
+      7,
+      7,
+      11,
+      8
+     ],
+     "same_pairs": 32,
+     "worst": 0.03
+    },
+    {
+     "level": 75,
+     "k": 26,
+     "per_problem": [
+      7,
+      5,
+      3,
+      6,
+      3,
+      9,
+      7,
+      6,
+      10,
+      7
+     ],
+     "same_pairs": 13,
+     "worst": 0.25
+    },
+    {
+     "level": 50,
+     "k": 17,
+     "per_problem": [
+      6,
+      5,
+      3,
+      5,
+      3,
+      7,
+      5,
+      5,
+      8,
+      5
+     ],
+     "same_pairs": 3,
+     "worst": 0.46
+    },
+    {
+     "level": 20,
+     "k": 7,
+     "per_problem": [
+      3,
+      3,
+      3,
+      4,
+      2,
+      3,
+      3,
+      4,
+      4,
+      3
+     ],
+     "same_pairs": 1,
+     "worst": 0.86
+    },
+    {
+     "level": 10,
+     "k": 3,
+     "per_problem": [
+      1,
+      1,
+      1,
+      2,
+      1,
+      1,
+      2,
+      2,
+      1,
+      2
+     ],
+     "same_pairs": 0,
+     "worst": 1.03
+    }
+   ],
+   "watch": {}
+  },
+  {
+   "source": "haiku-4-5",
+   "assignment": "A492",
+   "run": 1,
+   "statement": true,
+   "candidates_per_problem": [
+    8,
+    10,
+    11,
+    16,
+    15,
+    10,
+    13,
+    11,
+    10,
+    18
+   ],
+   "unique_raw": 58,
+   "unique": 55,
+   "single_problem": 38,
+   "levels": [
+    {
+     "level": 100,
+     "k": 53,
+     "per_problem": [
+      8,
+      10,
+      11,
+      16,
+      15,
+      10,
+      13,
+      11,
+      10,
+      18
+     ],
+     "same_pairs": 106,
+     "worst": 0.03
+    },
+    {
+     "level": 75,
+     "k": 40,
+     "per_problem": [
+      8,
+      10,
+      11,
+      16,
+      15,
+      10,
+      13,
+      11,
+      10,
+      17
+     ],
+     "same_pairs": 57,
+     "worst": 0.14
+    },
+    {
+     "level": 50,
+     "k": 27,
+     "per_problem": [
+      8,
+      8,
+      9,
+      14,
+      13,
+      10,
+      11,
+      8,
+      9,
+      13
+     ],
+     "same_pairs": 14,
+     "worst": 0.51
+    },
+    {
+     "level": 20,
+     "k": 11,
+     "per_problem": [
+      6,
+      5,
+      5,
+      7,
+      6,
+      5,
+      6,
+      5,
+      5,
+      6
+     ],
+     "same_pairs": 3,
+     "worst": 0.75
+    },
+    {
+     "level": 10,
+     "k": 5,
+     "per_problem": [
+      4,
+      4,
+      4,
+      4,
+      5,
+      4,
+      4,
+      4,
+      4,
+      4
+     ],
+     "same_pairs": 6,
+     "worst": 0.86
+    }
+   ],
+   "watch": {}
+  },
+  {
+   "source": "haiku-4-5",
+   "assignment": "A494",
+   "run": 1,
+   "statement": true,
+   "candidates_per_problem": [
+    10,
+    5,
+    7,
+    12,
+    9,
+    11,
+    9,
+    10,
+    14,
+    13
+   ],
+   "unique_raw": 57,
+   "unique": 40,
+   "single_problem": 21,
+   "levels": [
+    {
+     "level": 100,
+     "k": 39,
+     "per_problem": [
+      10,
+      5,
+      7,
+      12,
+      9,
+      11,
+      9,
+      10,
+      14,
+      13
+     ],
+     "same_pairs": 17,
+     "worst": 0.03
+    },
+    {
+     "level": 75,
+     "k": 29,
+     "per_problem": [
+      10,
+      5,
+      7,
+      11,
+      9,
+      10,
+      9,
+      10,
+      13,
+      13
+     ],
+     "same_pairs": 17,
+     "worst": 0.22
+    },
+    {
+     "level": 50,
+     "k": 19,
+     "per_problem": [
+      9,
+      5,
+      7,
+      9,
+      8,
+      9,
+      7,
+      10,
+      9,
+      10
+     ],
+     "same_pairs": 7,
+     "worst": 0.49
+    },
+    {
+     "level": 20,
+     "k": 8,
+     "per_problem": [
+      5,
+      3,
+      5,
+      6,
+      5,
+      6,
+      5,
+      5,
+      5,
+      6
+     ],
+     "same_pairs": 4,
+     "worst": 0.92
+    },
+    {
+     "level": 10,
+     "k": 4,
+     "per_problem": [
+      2,
+      2,
+      2,
+      2,
+      2,
+      3,
+      2,
+      2,
+      2,
+      3
+     ],
+     "same_pairs": 1,
+     "worst": 0.97
+    }
+   ],
+   "watch": {
+    "has77": {
+     "candidates": [
+      "For loop",
+      "While loop",
+      "Array indexing",
+      "Array length",
+      "Numerical comparisons",
+      "Logical operators",
+      "If and else statement",
+      "Nested if statement",
+      "Early Return",
+      "Arithmetic operations",
+      "Boolean State Variable"
+     ],
+     "levels": {
+      "100": [
+       [
+        "For loop"
+       ],
+       [
+        "While loop"
+       ],
+       [
+        "Array indexing"
+       ],
+       [
+        "Array length"
+       ],
+       [
+        "Numerical comparisons"
+       ],
+       [
+        "Logical operators"
+       ],
+       [
+        "If and else statement"
+       ],
+       [
+        "Nested if statement"
+       ],
+       [
+        "Early Return"
+       ],
+       [
+        "Arithmetic operations"
+       ],
+       [
+        "Boolean State Variable"
+       ]
+      ],
+      "75": [
+       [
+        "For loop"
+       ],
+       [
+        "While loop"
+       ],
+       [
+        "Array indexing"
+       ],
+       [
+        "Array length"
+       ],
+       [
+        "Numerical comparisons"
+       ],
+       [
+        "Logical operators"
+       ],
+       [
+        "If and else statement",
+        "Nested if statement"
+       ],
+       [
+        "Early Return"
+       ],
+       [
+        "Arithmetic operations"
+       ],
+       [
+        "Boolean State Variable"
+       ]
+      ],
+      "50": [
+       [
+        "For loop",
+        "While loop"
+       ],
+       [
+        "Array indexing"
+       ],
+       [
+        "Array length"
+       ],
+       [
+        "Numerical comparisons"
+       ],
+       [
+        "Logical operators"
+       ],
+       [
+        "If and else statement",
+        "Nested if statement"
+       ],
+       [
+        "Early Return"
+       ],
+       [
+        "Arithmetic operations"
+       ],
+       [
+        "Boolean State Variable"
+       ]
+      ],
+      "20": [
+       [
+        "For loop",
+        "While loop"
+       ],
+       [
+        "Array indexing",
+        "Array length"
+       ],
+       [
+        "Numerical comparisons"
+       ],
+       [
+        "Logical operators",
+        "Arithmetic operations"
+       ],
+       [
+        "If and else statement",
+        "Nested if statement",
+        "Boolean State Variable"
+       ],
+       [
+        "Early Return"
+       ]
+      ],
+      "10": [
+       [
+        "For loop",
+        "While loop",
+        "Array indexing",
+        "Array length",
+        "Logical operators",
+        "If and else statement",
+        "Nested if statement",
+        "Arithmetic operations",
+        "Boolean State Variable"
+       ],
+       [
+        "Numerical comparisons"
+       ],
+       [
+        "Early Return"
+       ]
+      ]
+     }
+    }
+   }
+  },
+  {
+   "source": "haiku-4-5",
+   "assignment": "A502",
+   "run": 3,
+   "statement": true,
+   "candidates_per_problem": [
+    11,
+    11,
+    10,
+    13,
+    8,
+    9,
+    7,
+    9,
+    12,
+    10
+   ],
+   "unique_raw": 60,
+   "unique": 46,
+   "single_problem": 29,
+   "levels": [
+    {
+     "level": 100,
+     "k": 45,
+     "per_problem": [
+      11,
+      11,
+      10,
+      13,
+      8,
+      9,
+      7,
+      9,
+      12,
+      10
+     ],
+     "same_pairs": 41,
+     "worst": 0.04
+    },
+    {
+     "level": 75,
+     "k": 33,
+     "per_problem": [
+      11,
+      11,
+      10,
+      13,
+      8,
+      9,
+      7,
+      9,
+      12,
+      10
+     ],
+     "same_pairs": 12,
+     "worst": 0.19
+    },
+    {
+     "level": 50,
+     "k": 22,
+     "per_problem": [
+      8,
+      9,
+      7,
+      11,
+      7,
+      8,
+      7,
+      7,
+      10,
+      8
+     ],
+     "same_pairs": 10,
+     "worst": 0.5
+    },
+    {
+     "level": 20,
+     "k": 9,
+     "per_problem": [
+      5,
+      6,
+      4,
+      5,
+      3,
+      5,
+      4,
+      5,
+      5,
+      4
+     ],
+     "same_pairs": 3,
+     "worst": 0.89
+    },
+    {
+     "level": 10,
+     "k": 4,
+     "per_problem": [
+      2,
+      3,
+      1,
+      1,
+      1,
+      1,
+      1,
+      2,
+      2,
+      1
+     ],
+     "same_pairs": 0,
+     "worst": 0.98
+    }
+   ],
+   "watch": {}
+  },
+  {
+   "source": "sonnet-5-5",
+   "assignment": "A439",
+   "run": 1,
+   "statement": true,
+   "candidates_per_problem": [
+    8,
+    7,
+    10,
+    10,
+    12,
+    10,
+    10,
+    9,
+    9,
+    8
+   ],
+   "unique_raw": 51,
+   "unique": 51,
+   "single_problem": 37,
+   "levels": [
+    {
+     "level": 100,
+     "k": 50,
+     "per_problem": [
+      8,
+      7,
+      10,
+      10,
+      12,
+      10,
+      10,
+      9,
+      9,
+      8
+     ],
+     "same_pairs": 65,
+     "worst": 0.02
+    },
+    {
+     "level": 75,
+     "k": 37,
+     "per_problem": [
+      8,
+      7,
+      10,
+      10,
+      12,
+      10,
+      10,
+      9,
+      9,
+      8
+     ],
+     "same_pairs": 16,
+     "worst": 0.14
+    },
+    {
+     "level": 50,
+     "k": 25,
+     "per_problem": [
+      8,
+      6,
+      9,
+      9,
+      11,
+      9,
+      9,
+      8,
+      8,
+      7
+     ],
+     "same_pairs": 5,
+     "worst": 0.31
+    },
+    {
+     "level": 20,
+     "k": 10,
+     "per_problem": [
+      6,
+      3,
+      3,
+      4,
+      6,
+      5,
+      7,
+      3,
+      5,
+      5
+     ],
+     "same_pairs": 1,
+     "worst": 0.87
+    },
+    {
+     "level": 10,
+     "k": 5,
+     "per_problem": [
+      3,
+      2,
+      2,
+      2,
+      2,
+      3,
+      3,
+      2,
+      3,
+      2
+     ],
+     "same_pairs": 1,
+     "worst": 0.94
+    }
+   ],
+   "watch": {
+    "sortaSum": {
+     "candidates": [
+      "If and else statement",
+      "Numerical comparisons",
+      "Logical operators",
+      "Basic arithmetic operations",
+      "Variable declaration and assignment",
+      "Return statements and method return values",
+      "Ternary conditional operator",
+      "Inclusive range boundary handling"
+     ],
+     "levels": {
+      "100": [
+       [
+        "If and else statement"
+       ],
+       [
+        "Numerical comparisons"
+       ],
+       [
+        "Logical operators"
+       ],
+       [
+        "Basic arithmetic operations"
+       ],
+       [
+        "Variable declaration and assignment"
+       ],
+       [
+        "Return statements and method return values"
+       ],
+       [
+        "Ternary conditional operator"
+       ],
+       [
+        "Inclusive range boundary handling"
+       ]
+      ],
+      "75": [
+       [
+        "If and else statement"
+       ],
+       [
+        "Numerical comparisons"
+       ],
+       [
+        "Logical operators"
+       ],
+       [
+        "Basic arithmetic operations"
+       ],
+       [
+        "Variable declaration and assignment"
+       ],
+       [
+        "Return statements and method return values"
+       ],
+       [
+        "Ternary conditional operator"
+       ],
+       [
+        "Inclusive range boundary handling"
+       ]
+      ],
+      "50": [
+       [
+        "If and else statement"
+       ],
+       [
+        "Numerical comparisons"
+       ],
+       [
+        "Logical operators"
+       ],
+       [
+        "Basic arithmetic operations"
+       ],
+       [
+        "Variable declaration and assignment"
+       ],
+       [
+        "Return statements and method return values"
+       ],
+       [
+        "Ternary conditional operator"
+       ],
+       [
+        "Inclusive range boundary handling"
+       ]
+      ],
+      "20": [
+       [
+        "If and else statement",
+        "Logical operators",
+        "Ternary conditional operator"
+       ],
+       [
+        "Numerical comparisons"
+       ],
+       [
+        "Basic arithmetic operations"
+       ],
+       [
+        "Variable declaration and assignment"
+       ],
+       [
+        "Return statements and method return values"
+       ],
+       [
+        "Inclusive range boundary handling"
+       ]
+      ],
+      "10": [
+       [
+        "If and else statement",
+        "Numerical comparisons",
+        "Logical operators",
+        "Basic arithmetic operations",
+        "Ternary conditional operator"
+       ],
+       [
+        "Variable declaration and assignment",
+        "Return statements and method return values"
+       ],
+       [
+        "Inclusive range boundary handling"
+       ]
+      ]
+     }
+    },
+    "love6": {
+     "candidates": [
+      "If and else statement",
+      "Else-if chaining and nested if statements",
+      "Numerical equality comparison",
+      "Logical OR operator",
+      "Basic arithmetic operations",
+      "Absolute value with Math.abs",
+      "Boolean return values",
+      "Early return and default return",
+      "Local variable declaration and assignment",
+      "Handling symmetric or order-independent cases"
+     ],
+     "levels": {
+      "100": [
+       [
+        "If and else statement"
+       ],
+       [
+        "Else-if chaining and nested if statements"
+       ],
+       [
+        "Numerical equality comparison"
+       ],
+       [
+        "Logical OR operator"
+       ],
+       [
+        "Basic arithmetic operations"
+       ],
+       [
+        "Absolute value with Math.abs"
+       ],
+       [
+        "Boolean return values"
+       ],
+       [
+        "Early return and default return"
+       ],
+       [
+        "Local variable declaration and assignment"
+       ],
+       [
+        "Handling symmetric or order-independent cases"
+       ]
+      ],
+      "75": [
+       [
+        "If and else statement"
+       ],
+       [
+        "Else-if chaining and nested if statements"
+       ],
+       [
+        "Numerical equality comparison"
+       ],
+       [
+        "Logical OR operator"
+       ],
+       [
+        "Basic arithmetic operations"
+       ],
+       [
+        "Absolute value with Math.abs"
+       ],
+       [
+        "Boolean return values"
+       ],
+       [
+        "Early return and default return"
+       ],
+       [
+        "Local variable declaration and assignment"
+       ],
+       [
+        "Handling symmetric or order-independent cases"
+       ]
+      ],
+      "50": [
+       [
+        "If and else statement",
+        "Else-if chaining and nested if statements"
+       ],
+       [
+        "Numerical equality comparison"
+       ],
+       [
+        "Logical OR operator"
+       ],
+       [
+        "Basic arithmetic operations"
+       ],
+       [
+        "Absolute value with Math.abs"
+       ],
+       [
+        "Boolean return values"
+       ],
+       [
+        "Early return and default return"
+       ],
+       [
+        "Local variable declaration and assignment"
+       ],
+       [
+        "Handling symmetric or order-independent cases"
+       ]
+      ],
+      "20": [
+       [
+        "If and else statement",
+        "Else-if chaining and nested if statements",
+        "Logical OR operator",
+        "Boolean return values"
+       ],
+       [
+        "Numerical equality comparison"
+       ],
+       [
+        "Basic arithmetic operations"
+       ],
+       [
+        "Absolute value with Math.abs"
+       ],
+       [
+        "Early return and default return"
+       ],
+       [
+        "Local variable declaration and assignment"
+       ],
+       [
+        "Handling symmetric or order-independent cases"
+       ]
+      ],
+      "10": [
+       [
+        "If and else statement",
+        "Else-if chaining and nested if statements",
+        "Numerical equality comparison",
+        "Logical OR operator",
+        "Basic arithmetic operations",
+        "Boolean return values",
+        "Handling symmetric or order-independent cases"
+       ],
+       [
+        "Absolute value with Math.abs"
+       ],
+       [
+        "Early return and default return",
+        "Local variable declaration and assignment"
+       ]
+      ]
+     }
+    }
+   }
+  },
+  {
+   "source": "sonnet-5-5",
+   "assignment": "A439",
+   "run": 2,
+   "statement": true,
+   "candidates_per_problem": [
+    10,
+    9,
+    9,
+    9,
+    10,
+    13,
+    9,
+    9,
+    8,
+    9
+   ],
+   "unique_raw": 50,
+   "unique": 50,
+   "single_problem": 36,
+   "levels": [
+    {
+     "level": 100,
+     "k": 49,
+     "per_problem": [
+      10,
+      9,
+      9,
+      9,
+      10,
+      13,
+      9,
+      9,
+      8,
+      9
+     ],
+     "same_pairs": 54,
+     "worst": 0.03
+    },
+    {
+     "level": 75,
+     "k": 36,
+     "per_problem": [
+      10,
+      8,
+      9,
+      9,
+      10,
+      12,
+      9,
+      9,
+      8,
+      8
+     ],
+     "same_pairs": 11,
+     "worst": 0.17
+    },
+    {
+     "level": 50,
+     "k": 24,
+     "per_problem": [
+      8,
+      7,
+      8,
+      8,
+      9,
+      9,
+      8,
+      8,
+      7,
+      7
+     ],
+     "same_pairs": 4,
+     "worst": 0.46
+    },
+    {
+     "level": 20,
+     "k": 10,
+     "per_problem": [
+      6,
+      4,
+      3,
+      4,
+      6,
+      6,
+      6,
+      4,
+      5,
+      5
+     ],
+     "same_pairs": 0,
+     "worst": 0.73
+    },
+    {
+     "level": 10,
+     "k": 5,
+     "per_problem": [
+      4,
+      4,
+      2,
+      2,
+      3,
+      4,
+      2,
+      3,
+      4,
+      3
+     ],
+     "same_pairs": 0,
+     "worst": 0.96
+    }
+   ],
+   "watch": {
+    "sortaSum": {
+     "candidates": [
+      "If and else statement",
+      "Basic arithmetic operations",
+      "Numerical comparisons",
+      "Logical operators",
+      "Local variable declaration and assignment",
+      "Return statements with values",
+      "Numerical equality comparison",
+      "Ternary conditional operator",
+      "Variable reassignment",
+      "Range checking with inclusive boundaries"
+     ],
+     "levels": {
+      "100": [
+       [
+        "If and else statement"
+       ],
+       [
+        "Basic arithmetic operations"
+       ],
+       [
+        "Numerical comparisons"
+       ],
+       [
+        "Logical operators"
+       ],
+       [
+        "Local variable declaration and assignment"
+       ],
+       [
+        "Return statements with values"
+       ],
+       [
+        "Numerical equality comparison"
+       ],
+       [
+        "Ternary conditional operator"
+       ],
+       [
+        "Variable reassignment"
+       ],
+       [
+        "Range checking with inclusive boundaries"
+       ]
+      ],
+      "75": [
+       [
+        "If and else statement"
+       ],
+       [
+        "Basic arithmetic operations"
+       ],
+       [
+        "Numerical comparisons"
+       ],
+       [
+        "Logical operators"
+       ],
+       [
+        "Local variable declaration and assignment"
+       ],
+       [
+        "Return statements with values"
+       ],
+       [
+        "Numerical equality comparison"
+       ],
+       [
+        "Ternary conditional operator"
+       ],
+       [
+        "Variable reassignment"
+       ],
+       [
+        "Range checking with inclusive boundaries"
+       ]
+      ],
+      "50": [
+       [
+        "If and else statement"
+       ],
+       [
+        "Basic arithmetic operations"
+       ],
+       [
+        "Numerical comparisons",
+        "Numerical equality comparison"
+       ],
+       [
+        "Logical operators"
+       ],
+       [
+        "Local variable declaration and assignment",
+        "Variable reassignment"
+       ],
+       [
+        "Return statements with values"
+       ],
+       [
+        "Ternary conditional operator"
+       ],
+       [
+        "Range checking with inclusive boundaries"
+       ]
+      ],
+      "20": [
+       [
+        "If and else statement",
+        "Logical operators",
+        "Ternary conditional operator"
+       ],
+       [
+        "Basic arithmetic operations"
+       ],
+       [
+        "Numerical comparisons",
+        "Numerical equality comparison"
+       ],
+       [
+        "Local variable declaration and assignment",
+        "Variable reassignment"
+       ],
+       [
+        "Return statements with values"
+       ],
+       [
+        "Range checking with inclusive boundaries"
+       ]
+      ],
+      "10": [
+       [
+        "If and else statement",
+        "Logical operators",
+        "Local variable declaration and assignment",
+        "Ternary conditional operator",
+        "Variable reassignment"
+       ],
+       [
+        "Basic arithmetic operations",
+        "Numerical comparisons",
+        "Numerical equality comparison"
+       ],
+       [
+        "Return statements with values"
+       ],
+       [
+        "Range checking with inclusive boundaries"
+       ]
+      ]
+     }
+    },
+    "love6": {
+     "candidates": [
+      "If and else statement",
+      "Else-if chaining and nested if statements",
+      "Numerical equality comparison",
+      "Logical operators (OR)",
+      "Basic arithmetic operations",
+      "Using Math.abs for absolute value",
+      "Boolean return values",
+      "Local variable declaration and assignment",
+      "Handling symmetric cases by checking both orderings"
+     ],
+     "levels": {
+      "100": [
+       [
+        "If and else statement"
+       ],
+       [
+        "Else-if chaining and nested if statements"
+       ],
+       [
+        "Numerical equality comparison"
+       ],
+       [
+        "Logical operators (OR)"
+       ],
+       [
+        "Basic arithmetic operations"
+       ],
+       [
+        "Using Math.abs for absolute value"
+       ],
+       [
+        "Boolean return values"
+       ],
+       [
+        "Local variable declaration and assignment"
+       ],
+       [
+        "Handling symmetric cases by checking both orderings"
+       ]
+      ],
+      "75": [
+       [
+        "If and else statement"
+       ],
+       [
+        "Else-if chaining and nested if statements"
+       ],
+       [
+        "Numerical equality comparison"
+       ],
+       [
+        "Logical operators (OR)"
+       ],
+       [
+        "Basic arithmetic operations"
+       ],
+       [
+        "Using Math.abs for absolute value"
+       ],
+       [
+        "Boolean return values"
+       ],
+       [
+        "Local variable declaration and assignment"
+       ],
+       [
+        "Handling symmetric cases by checking both orderings"
+       ]
+      ],
+      "50": [
+       [
+        "If and else statement",
+        "Else-if chaining and nested if statements"
+       ],
+       [
+        "Numerical equality comparison"
+       ],
+       [
+        "Logical operators (OR)"
+       ],
+       [
+        "Basic arithmetic operations"
+       ],
+       [
+        "Using Math.abs for absolute value"
+       ],
+       [
+        "Boolean return values"
+       ],
+       [
+        "Local variable declaration and assignment"
+       ],
+       [
+        "Handling symmetric cases by checking both orderings"
+       ]
+      ],
+      "20": [
+       [
+        "If and else statement",
+        "Else-if chaining and nested if statements",
+        "Logical operators (OR)",
+        "Boolean return values"
+       ],
+       [
+        "Numerical equality comparison"
+       ],
+       [
+        "Basic arithmetic operations"
+       ],
+       [
+        "Using Math.abs for absolute value"
+       ],
+       [
+        "Local variable declaration and assignment"
+       ],
+       [
+        "Handling symmetric cases by checking both orderings"
+       ]
+      ],
+      "10": [
+       [
+        "If and else statement",
+        "Else-if chaining and nested if statements",
+        "Logical operators (OR)",
+        "Boolean return values",
+        "Local variable declaration and assignment",
+        "Handling symmetric cases by checking both orderings"
+       ],
+       [
+        "Numerical equality comparison",
+        "Basic arithmetic operations",
+        "Using Math.abs for absolute value"
+       ]
+      ]
+     }
+    }
+   }
+  },
+  {
+   "source": "sonnet-5-5",
+   "assignment": "A502",
+   "run": 1,
+   "statement": false,
+   "candidates_per_problem": [
+    12,
+    15,
+    13,
+    14,
+    12,
+    13,
+    14,
+    16,
+    13,
+    11
+   ],
+   "unique_raw": 90,
+   "unique": 90,
+   "single_problem": 74,
+   "levels": [
+    {
+     "level": 100,
+     "k": 87,
+     "per_problem": [
+      12,
+      15,
+      13,
+      14,
+      12,
+      13,
+      14,
+      16,
+      13,
+      11
+     ],
+     "same_pairs": 215,
+     "worst": 0.04
+    },
+    {
+     "level": 75,
+     "k": 66,
+     "per_problem": [
+      12,
+      15,
+      13,
+      14,
+      12,
+      13,
+      14,
+      16,
+      13,
+      11
+     ],
+     "same_pairs": 96,
+     "worst": 0.25
+    },
+    {
+     "level": 50,
+     "k": 44,
+     "per_problem": [
+      11,
+      15,
+      13,
+      14,
+      11,
+      13,
+      13,
+      16,
+      13,
+      11
+     ],
+     "same_pairs": 26,
+     "worst": 0.54
+    },
+    {
+     "level": 20,
+     "k": 17,
+     "per_problem": [
+      6,
+      9,
+      8,
+      8,
+      7,
+      8,
+      9,
+      8,
+      6,
+      8
+     ],
+     "same_pairs": 6,
+     "worst": 0.83
+    },
+    {
+     "level": 10,
+     "k": 9,
+     "per_problem": [
+      3,
+      6,
+      5,
+      5,
+      4,
+      5,
+      4,
+      4,
+      3,
+      5
+     ],
+     "same_pairs": 3,
+     "worst": 1.06
+    }
+   ],
+   "watch": {}
+  },
+  {
+   "source": "sonnet-5-5",
+   "assignment": "A502",
+   "run": 2,
+   "statement": false,
+   "candidates_per_problem": [
+    13,
+    15,
+    13,
+    16,
+    14,
+    16,
+    15,
+    16,
+    13,
+    14
+   ],
+   "unique_raw": 104,
+   "unique": 104,
+   "single_problem": 86,
+   "levels": [
+    {
+     "level": 100,
+     "k": 101,
+     "per_problem": [
+      13,
+      15,
+      13,
+      16,
+      14,
+      15,
+      15,
+      16,
+      13,
+      14
+     ],
+     "same_pairs": 324,
+     "worst": 0.01
+    },
+    {
+     "level": 75,
+     "k": 76,
+     "per_problem": [
+      13,
+      15,
+      13,
+      16,
+      13,
+      15,
+      15,
+      16,
+      13,
+      14
+     ],
+     "same_pairs": 137,
+     "worst": 0.2
+    },
+    {
+     "level": 50,
+     "k": 50,
+     "per_problem": [
+      12,
+      14,
+      11,
+      15,
+      13,
+      15,
+      14,
+      15,
+      12,
+      14
+     ],
+     "same_pairs": 37,
+     "worst": 0.44
+    },
+    {
+     "level": 20,
+     "k": 20,
+     "per_problem": [
+      7,
+      9,
+      7,
+      9,
+      7,
+      9,
+      9,
+      9,
+      8,
+      10
+     ],
+     "same_pairs": 7,
+     "worst": 0.78
+    },
+    {
+     "level": 10,
+     "k": 10,
+     "per_problem": [
+      7,
+      6,
+      6,
+      9,
+      6,
+      8,
+      5,
+      7,
+      7,
+      7
+     ],
+     "same_pairs": 6,
+     "worst": 0.99
+    }
+   ],
+   "watch": {}
+  }
+ ]
+}
