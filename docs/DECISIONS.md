@@ -151,10 +151,9 @@ dentro de uma resposta, porque na resposta da geração a ordem das chaves é a 
 texto o "KC 10" viria antes do "KC 2".
 
 **O LLM é chamado pela CLI `claude`.** A autenticação é o OAuth da assinatura, que só a CLI resolve.
-O modelo é sempre passado por quem chama, o Claude Sonnet 5.5 (`claude-sonnet-5-5`), um modelo
-forte, a adaptação mais próxima do GPT-4o do paper (o LLM, na linha 9 do KCGen-KT no
-`DEVELOPMENT.md`). Ele não tem versão datada, então o job
-grava o modelo e a versão do prompt de cada extração. Os prompts do Duan pedem o JSON no próprio
+O modelo é sempre passado por quem chama, o Claude Haiku 4.5 (`claude-haiku-4-5-20251001`), que
+com o prompt do paper gera KCs no nível de detalhe dos do GPT-4o (o LLM, na linha 9 do KCGen-KT no
+`DEVELOPMENT.md`). O job grava o modelo e a versão do prompt de cada extração. Os prompts do Duan pedem o JSON no próprio
 texto, então a chamada vai sem schema, e a resposta é lida do texto e validada pelo app. A leitura
 fica com o último objeto JSON não vazio do texto, com ou sem cerca de código, porque sem o modo
 JSON o modelo pode escrever uma análise antes dele, com chaves de código Java no meio. A CLI roda

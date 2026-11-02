@@ -243,7 +243,7 @@ modelo, exceto o domínio médio dos exercícios treinados.
 | — | `CachedLLMClient` | O LLM com o cache das respostas, guardadas por hash, para não pagar duas vezes. Uma resposta só entra no cache depois de validada | `LLMResponseCache`, `kc_cache` |
 | — | `LLMClient` | A interface do LLM que o `ml/` declara e a `api/` implementa | `ports.LLMClient` |
 | — | `InvalidLLMResponseError` | Uma resposta do LLM vazia, que não é JSON ou fora do formato pedido. É pedida até 3 vezes ao todo, como o erro transitório | `EmptyContentError` |
-| — | `KC_GENERATION_MODEL_ID` / `PROMPT_VERSION` | O modelo de linguagem da extração, `claude-sonnet-5-5`, e a versão dos prompts, os dois na chave do cache e gravados no job | — |
+| — | `KC_GENERATION_MODEL_ID` / `PROMPT_VERSION` | O modelo de linguagem da extração, `claude-haiku-4-5-20251001`, e a versão dos prompts, os dois na chave do cache e gravados no job | — |
 | — | `SBERT_MODEL` / `CODEBERT_MODEL` | Os modelos de vetores, `all-MiniLM-L6-v2` para os nomes de KC e `microsoft/codebert-base` para as soluções, em `ml/kc_generation/embedding_models.py`, com a revisão do Hugging Face fixada em `SBERT_REVISION` e `CODEBERT_REVISION` | — |
 | — | `download_embedding_models()` | Põe os dois modelos de vetores no cache do Hugging Face, chamada só no build da imagem base | — |
 | — | `SOLUTIONS_PER_PROBLEM` / `SOLUTION_EMBEDDING_BATCH_SIZE` | As 5 soluções por problema do experimento principal do paper, e as 32 soluções que entram de cada vez no CodeBERT, fixas porque os vetores mudam um pouco com o tamanho do lote | — |

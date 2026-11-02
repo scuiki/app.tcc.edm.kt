@@ -673,7 +673,7 @@ essa (critério 5).
 
 | # | Item | Paper | Repositório | TCC 1 | App antes | App depois | Origem |
 |---|---|---|---|---|---|---|---|
-| 9 | LLM | GPT-4o (p. 33406) | `gpt-4o` | `claude-haiku-4-5-20251001` | `claude-haiku-4-5-20251001` | `claude-sonnet-5-5`, na geração e na nomeação | app, critério 4 |
+| 9 | LLM | GPT-4o (p. 33406) | `gpt-4o` | `claude-haiku-4-5-20251001` | `claude-haiku-4-5-20251001` | `claude-haiku-4-5-20251001`, na geração e na nomeação, depois de um mês com o `claude-sonnet-5-5` | app, critério 4 |
 | 10 | Temperatura | não trata | 0 | a padrão | a padrão | a padrão | app, critério 4 |
 | 11 | Descrição do problema na resposta | não tem | não tem | o LLM deduz uma descrição do problema pelo código e a devolve | igual ao TCC 1, mostrada na lista de problemas e prevista na origem do conceito | não tem | Duan (paper) |
 | 12 | Texto do prompt | Tabela 9 (p. 33421) | o mesmo texto de sistema da Tabela 9 | próprio | igual ao TCC 1 | o do Duan, mudado só onde o dado da turma obriga | Duan (paper) |
@@ -686,17 +686,24 @@ essa (critério 5).
 **9. LLM.** O paper usa o GPT-4o, "an advanced proprietary LLM with strong reasoning and programming
 abilities" (p. 33406 (PDF 2)), na geração e na nomeação dos grupos, e o repositório também
 (`KC_gen.py:100` e `646`). O app chama o Claude pela CLI `claude`, na assinatura, e não chama a API
-da OpenAI, então o GPT-4o não é possível (critério 4). A adaptação mais próxima é um modelo forte da
-família, o Claude Sonnet 5.5 (`claude-sonnet-5-5`), e não o Claude Haiku 4.5 do TCC 1, escolhido
-"por razões de custo" (`docs/METODOLOGIA_FERRAMENTAS.md:401` do TCC 1). O Sonnet 5.5 não tem versão
-datada como a do Haiku 4.5, então a extração grava o ID do modelo e a versão do prompt, e a data já
-fica no job. Nenhuma das duas versões do paper compara LLMs na geração de KCs, então os números do
-paper valem para o GPT-4o, e a equivalência com qualquer outro modelo não foi testada. A mesma linha
-da metodologia do TCC 1 diz que o paper documenta robustez à troca de LLM, o que não está no paper.
+da OpenAI, então o GPT-4o não é possível (critério 4). A revisão de 03/10/2026 escolheu um modelo
+forte da família, o Claude Sonnet 5.5 (`claude-sonnet-5-5`), no lugar do Claude Haiku 4.5 do TCC 1,
+que o TCC 1 escolhera "por razões de custo" (`docs/METODOLOGIA_FERRAMENTAS.md:401` do TCC 1). Com o
+prompt do Duan, o Sonnet 5.5 gerou KCs mais finos que os do paper, a maioria presa a um problema só,
+e muitas paráfrases. No A439 foram 51 nomes únicos e 25 conceitos, e no A502 de 90 a 104 nomes e de
+44 a 50 conceitos. No estudo de 02/11/2026 (`docs/results/kcgen_kt_haiku_niveis_de_abstracao.md`),
+o Claude Haiku 4.5 (`claude-haiku-4-5-20251001`) gerou com o mesmo prompt KCs no nível de detalhe dos
+que o paper publica. No love6, os cinco KCs gerados da Tabela 1 (p. 33406 (PDF 2)) têm um
+correspondente entre os seis conceitos do Haiku 4.5. Nos 50 problemas da CodeWorkout, ele deu 125
+nomes únicos, contra 103 do paper, e no nível 50 da linha 19 a metade dos conceitos do Sonnet 5.5,
+12 no A439 e 22 no A502. O app passa a usar o Haiku 4.5, que tem versão datada (critério 4). A
+extração grava o ID do modelo e a versão do prompt, e a data fica no job. Nenhuma das duas versões do
+paper compara LLMs na geração de KCs, então os números do paper valem para o GPT-4o, e a equivalência
+com qualquer outro modelo não foi testada. A mesma linha da metodologia do TCC 1 diz que o paper
+documenta robustez à troca de LLM, o que não está no paper.
 
-**10. Temperatura.** O repositório usa temperatura 0 (`KC_gen.py:646`). O Sonnet 5.5 recusa
-temperatura diferente da padrão, e a CLI não tem opção para ela, então o app usa a padrão
-(critério 4). Temperatura 0 também não garantia respostas idênticas. O que torna a extração
+**10. Temperatura.** O repositório usa temperatura 0 (`KC_gen.py:646`). A CLI não tem opção para
+ela, então o app usa a padrão (critério 4). Temperatura 0 também não garantia respostas idênticas. O que torna a extração
 repetível no app é o cache das respostas do LLM, com chave no modelo, na versão do prompt, no texto
 de sistema, no schema e no prompt (`llm_response_cache.py:24-41` do app). Uma extração nova com o
 cache vazio pode dar outros KCs.
@@ -827,9 +834,13 @@ CodeWorkout, que é Java como o app, com k igual a 50/103 dos nomes únicos do e
 para o inteiro mais próximo. O paper mediu essa proporção sobre os 50 problemas juntos, em que nomes
 iguais de problemas diferentes se fundem antes do agrupamento. Por exercício, com 10 problemas, deve
 sobrar mais nome por problema e sair mais conceito por exercício do que no paper, e o número de
-conceitos por exercício é conferido depois da extração nova. A escolha do nível pelo professor, que o
-paper apoia ao dizer que a abstração serve a "different pedagogical or analytical goals depending on
-the downstream application" (p. 33407 (PDF 3)), fica para depois.
+conceitos por exercício é conferido depois da extração nova. A conferência, com o Haiku 4.5 da linha
+9 nos cinco exercícios, está em `docs/results/kcgen_kt_haiku_niveis_de_abstracao.md`. O nível 50 deu
+de 12 a 27 conceitos por exercício, contra 7 a 13 tags humanas, e o nível 20 juntou construções
+diferentes no mesmo grupo. Níveis intermediários, que o paper não testa, ficam mais perto das tags
+humanas, e o app fica com o nível 50 por ser o que o paper escolheu. A escolha do nível pelo
+professor, que o paper apoia ao dizer que a abstração serve a "different pedagogical or analytical
+goals depending on the downstream application" (p. 33407 (PDF 3)), fica para depois.
 
 **20. Poucos nomes.** O app tinha um caminho à parte para menos de 10 nomes, em que cada nome vira um
 grupo (`kcgen_kt_generator.py:101` do app). Com exatamente 10 nomes, nenhum candidato ficava abaixo
