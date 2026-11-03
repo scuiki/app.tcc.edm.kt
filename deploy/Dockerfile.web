@@ -1,6 +1,6 @@
 # Dev/test/build toolchain image for the EDM·KT React SPA (src/web/).
 # FIXED TAG (no `latest`) — pinned to the host Node (22.22.2) for parity, following the
-# project's reproducibility-anchor discipline (see ./Dockerfile and deploy/Dockerfile.app).
+# project's reproducibility-anchor discipline (see ./Dockerfile).
 # node_modules is BAKED into this image layer via `npm ci`, so it never lands on the host:
 # docker-compose masks /app/src/web/node_modules with a named volume seeded from here, and
 # the repo bind-mount only carries the (node_modules-free) source tree.

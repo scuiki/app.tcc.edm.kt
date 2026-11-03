@@ -1,5 +1,5 @@
-# Imagem de teste do EDM·KT e base da do app, com a base fixada pelo digest, que guarda o torch e o numpy
-FROM pytorch/pytorch:2.7.1-cuda12.8-cudnn9-runtime@sha256:c16f4c749e2d9e96878875cdf6cc45cddda1d1a36fddd371dd6f2360f1b6e2a2
+# A imagem de teste, com a base fixada pelo digest, que guarda o torch e o numpy
+FROM pytorch/pytorch:2.7.1-cuda12.8-cudnn9-runtime@sha256:c16f4c749e2d9e96878875cdf6cc45cddda1d1a36fddd371dd6f2360f1b6e2a2 AS core
 
 # A ordem dos modificadores Java nos AST paths sai de um set e depende do hash, que o app fixa em 0
 ENV PYTHONHASHSEED=0
@@ -20,3 +20,13 @@ RUN PYTHONPATH=/app/src python -c "from ml.kc_generation.embedding_models import
 
 # Roda a suíte rápida, sem os testes regression e literature, que pedem a GPU e o EDMKT_CSEDM_PATH
 CMD ["python", "-m", "pytest", "-q"]
+
+# A imagem do app, que herda o PYTHONHASHSEED=0 e os modelos de vetores da de teste
+FROM core AS app
+
+# O ml/ e o api/ são importados de src/, porque a instalação editável é anterior ao bind mount
+ENV PYTHONPATH=/app/src
+
+# O 0.0.0.0 é de dentro do container, e a api não publica porta no compose
+EXPOSE 8099
+CMD ["uvicorn", "api.main:create_app", "--factory", "--host", "0.0.0.0", "--port", "8099", "--workers", "1"]

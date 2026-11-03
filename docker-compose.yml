@@ -5,14 +5,14 @@
 # explicit IP via ${EDMKT_BIND_IP} (default loopback). `docker compose run --rm web sh -c "..."`
 # still drives the gates: `run` overrides the `command:` below and publishes no port.
 services:
-  # FastAPI app + KC pipeline (mirrors deploy/run-app.sh). Internal-only: NO published port — the
+  # FastAPI app + KC pipeline. Internal-only: NO published port — the
   # browser never reaches it directly; the Vite dev server proxies same-origin to `http://api:8099`.
-  # --host 0.0.0.0 here is CONTAINER-internal (the network gate is the absence of a host publish),
-  # not a host bind (contrast app.py / run-app.sh: a host publish must always carry an explicit IP).
+  # --host 0.0.0.0 here is CONTAINER-internal (the network gate is the absence of a host publish).
   api:
+    # O estágio app do Dockerfile, que deriva do core, e o compose constrói os dois
     build:
       context: .
-      dockerfile: deploy/Dockerfile.app
+      target: app
     image: edmkt-app:dev
     # GPU for the Code-DKT training and the KCGen-KT embeddings (CodeBERT and SBERT); the NVIDIA
     # Container Toolkit is installed on nitro.
@@ -23,7 +23,7 @@ services:
             - driver: nvidia
               count: all
               capabilities: [gpu]
-    # Required to read /srv bind mounts under SELinux (mirrors deploy/run-app.sh).
+    # Required to read /srv bind mounts under SELinux.
     security_opt:
       - label=disable
     volumes:
@@ -69,7 +69,7 @@ services:
     volumes:
       - ./:/app
       - edmkt_web_node_modules:/app/src/web/node_modules
-    # Required to read /srv bind mounts under SELinux (mirrors deploy/run-app.sh).
+    # Required to read /srv bind mounts under SELinux.
     security_opt:
       - label=disable
     environment:
