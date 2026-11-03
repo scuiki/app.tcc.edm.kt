@@ -104,11 +104,12 @@ Orientadora: Profa. Ma. Talita dos Reis Lopes Berbel.
 
 <img src="docs/assets/conaiduc.png" alt="CONAIDUC" height="60">
 
-**Resumo expandido.** OLIVEIRA, L. K.; VIANA, E. M.; BORBA, V. S.; BERBEL, T. R. L. *Identificação
-de padrões de aprendizagem em programação por meio da análise de códigos de estudantes e da
-mineração de dados educacionais*. I Congresso Nacional de Inovação em Educação, Ciência e
-Tecnologia (CONAIDUC), on-line, 6 a 9 de julho de 2026. ISBN 9786588884621. DOI
-[10.51189/conaiduc/83301](https://doi.org/10.51189/conaiduc/83301).
+**Resumo expandido.** OLIVEIRA, Leonardo Kuntz; VIANA, Erick Miranda; BORBA, Victor Santos; BERBEL,
+Talita dos Reis Lopes. Identificação de padrões de aprendizagem em programação por meio da análise
+de códigos de estudantes e da mineração de dados educacionais. In: CONGRESSO NACIONAL DE INOVAÇÃO
+EM EDUCAÇÃO, CIÊNCIA E TECNOLOGIA, 1., 2026, On-line. Anais [...]. [S. l.]: Editora Integrar, 2026.
+DOI: 10.51189/conaiduc/83301. Disponível em:
+<https://doi.org/10.51189/conaiduc/83301>. Acesso em: 4 ago. 2026.
 
 <details>
   <summary><em>English version</em></summary>
@@ -118,11 +119,12 @@ Tecnologia (CONAIDUC), on-line, 6 a 9 de julho de 2026. ISBN 9786588884621. DOI
 programação utilizando mineração de dados educacionais. Undergraduate thesis (Computer
 Engineering), UniFacens, Sorocaba, 2026. 103 p. Advisor: Profa. Ma. Talita dos Reis Lopes Berbel.*
 
-***Extended abstract.*** *OLIVEIRA, L. K.; VIANA, E. M.; BORBA, V. S.; BERBEL, T. R. L.
-Identificação de padrões de aprendizagem em programação por meio da análise de códigos de
-estudantes e da mineração de dados educacionais. 1st National Congress on Innovation in
-Education, Science and Technology (CONAIDUC), online, July 6 to 9, 2026. ISBN 9786588884621. DOI
-[10.51189/conaiduc/83301](https://doi.org/10.51189/conaiduc/83301).*
+***Extended abstract.*** *OLIVEIRA, Leonardo Kuntz; VIANA, Erick Miranda; BORBA, Victor Santos; BERBEL,
+Talita dos Reis Lopes. Identificação de padrões de aprendizagem em programação por meio da análise
+de códigos de estudantes e da mineração de dados educacionais. In: CONGRESSO NACIONAL DE INOVAÇÃO
+EM EDUCAÇÃO, CIÊNCIA E TECNOLOGIA, 1., 2026, On-line. Anais [...]. [S. l.]: Editora Integrar, 2026.
+DOI: 10.51189/conaiduc/83301. Disponível em:
+<https://doi.org/10.51189/conaiduc/83301>. Acesso em: 4 ago. 2026.*
 
 </details>
 
