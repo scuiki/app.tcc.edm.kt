@@ -109,7 +109,7 @@ Talita dos Reis Lopes. Identificação de padrões de aprendizagem em programaç
 de códigos de estudantes e da mineração de dados educacionais. In: CONGRESSO NACIONAL DE INOVAÇÃO
 EM EDUCAÇÃO, CIÊNCIA E TECNOLOGIA, 1., 2026, On-line. Anais [...]. [S. l.]: Editora Integrar, 2026.
 DOI: 10.51189/conaiduc/83301. Disponível em:
-<https://doi.org/10.51189/conaiduc/83301>. Acesso em: 4 ago. 2026.
+<https://doi.org/10.51189/conaiduc/83301>.
 
 <details>
   <summary><em>English version</em></summary>
@@ -124,7 +124,7 @@ Talita dos Reis Lopes. Identificação de padrões de aprendizagem em programaç
 de códigos de estudantes e da mineração de dados educacionais. In: CONGRESSO NACIONAL DE INOVAÇÃO
 EM EDUCAÇÃO, CIÊNCIA E TECNOLOGIA, 1., 2026, On-line. Anais [...]. [S. l.]: Editora Integrar, 2026.
 DOI: 10.51189/conaiduc/83301. Disponível em:
-<https://doi.org/10.51189/conaiduc/83301>. Acesso em: 4 ago. 2026.*
+<https://doi.org/10.51189/conaiduc/83301>.*
 
 </details>
 
