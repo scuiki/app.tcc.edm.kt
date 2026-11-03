@@ -6,66 +6,6 @@
   <img src="https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black" alt="React 19">
 </p>
 
-<details>
-  <summary><strong>English version</strong></summary>
-
-## About the project
-
-A web tool that shows introductory programming instructors, during the course, which concepts
-their class has not mastered yet, based on the class's own code submissions.
-
-- **ProgSnap2 import**: the class's Java submissions, in a `.zip`.
-- **Concepts by LLM**: KCGen-KT (Duan et al., 2026) extracts the concepts of each exercise, and the
-  instructor reviews them.
-- **Code-DKT per class**: the model by Shi et al. (2022) is trained on the class's data, on GPU or
-  CPU.
-- **Mastery per concept**: each student's mastery of each concept, next to the runs per problem.
-- **Reproducible**: regression tests lock the results of both methods.
-
-## Installation
-
-### Requirements
-
-- Docker with Compose (`amd64` image, about 15 GB)
-- A Claude credential, either a subscription token (`claude setup-token`) or an API key
-- An NVIDIA GPU with the [NVIDIA Container
-  Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html),
-  optional
-
-### Running
-
-```bash
-git clone https://github.com/scuiki/app.tcc.edm.kt.git
-cd app.tcc.edm.kt
-cp .env.example .env    # the credential and, with a GPU, COMPOSE_FILE
-docker compose up -d --build
-```
-
-The app opens at <http://127.0.0.1:5173>.
-
-- **Input**: a ProgSnap2 `.zip` with `MainTable.csv` and `CodeStates.csv`.
-- **Example data**: CSEDM, CodeWorkout variant (Spring 2019), from the 2nd CSEDM Data Challenge, on
-  [PSLC DataShop](https://pslcdatashop.web.cmu.edu/DatasetInfo?datasetId=3458) (free sign-up).
-
-## Publications
-
-<img src="docs/assets/unifacens.png" alt="UniFacens" height="40">
-
-**Monograph.** VIANA, E. M.; OLIVEIRA, L. K.; BORBA, V. S. *Análise do aprendizado de programação
-utilizando mineração de dados educacionais*. Trabalho de Conclusão de Curso (Engenharia de
-Computação), UniFacens, Coordenadoria de Engenharia da Computação, Sorocaba, 2026. 103 f.
-Advisor: Profa. Ma. Talita dos Reis Lopes Berbel.
-
-<img src="docs/assets/conaiduc.png" alt="CONAIDUC" height="60">
-
-**Extended abstract.** OLIVEIRA, L. K.; VIANA, E. M.; BORBA, V. S.; BERBEL, T. R. L.
-*Identificação de padrões de aprendizagem em programação por meio da análise de códigos de
-estudantes e da mineração de dados educacionais*. I Congresso Nacional de Inovação em Educação,
-Ciência e Tecnologia (CONAIDUC), on-line, 6 a 9 de julho de 2026. ISBN 9786588884621. DOI
-[10.51189/conaiduc/83301](https://doi.org/10.51189/conaiduc/83301).
-
-</details>
-
 ## Sobre o projeto
 
 Ferramenta web para o professor de programação introdutória ver, durante a disciplina, quais
@@ -79,6 +19,24 @@ conceitos a turma ainda não domina, a partir dos envios de código da própria 
 - **Domínio por conceito**: o domínio de cada aluno em cada conceito, ao lado das execuções por
   problema.
 - **Reprodutível**: testes de regressão travam o resultado dos dois métodos.
+
+<details>
+  <summary><em>English version</em></summary>
+  <br>
+
+*A web tool that shows introductory programming instructors, during the course, which concepts
+their class has not mastered yet, based on the class's own code submissions.*
+
+- ***ProgSnap2 import:*** *the class's Java submissions, in a `.zip`.*
+- ***Concepts by LLM:*** *KCGen-KT (Duan et al., 2026) extracts the concepts of each exercise, and
+  the instructor reviews them.*
+- ***Code-DKT per class:*** *the model by Shi et al. (2022) is trained on the class's data, on GPU
+  or CPU.*
+- ***Mastery per concept:*** *each student's mastery of each concept, next to the runs per
+  problem.*
+- ***Reproducible:*** *regression tests lock the results of both methods.*
+
+</details>
 
 ## Instalação
 
@@ -111,6 +69,37 @@ O app abre em <http://127.0.0.1:5173>.
 
 </details>
 
+<details>
+  <summary><em>English version</em></summary>
+  <br>
+
+***Requirements***
+
+- *Docker with Compose (`amd64` image, about 15 GB)*
+- *A Claude credential, either a subscription token (`claude setup-token`) or an API key*
+- *An NVIDIA GPU with the [NVIDIA Container
+  Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html),
+  optional*
+
+***Running***
+
+```bash
+git clone https://github.com/scuiki/app.tcc.edm.kt.git
+cd app.tcc.edm.kt
+cp .env.example .env    # the credential and, with a GPU, COMPOSE_FILE
+docker compose up -d --build
+```
+
+*The app opens at <http://127.0.0.1:5173>.*
+
+***Input data***
+
+- ***Format:*** *a ProgSnap2 `.zip` with `MainTable.csv` and `CodeStates.csv`.*
+- ***Example:*** *CSEDM, CodeWorkout variant (Spring 2019), from the 2nd CSEDM Data Challenge, on
+  [PSLC DataShop](https://pslcdatashop.web.cmu.edu/DatasetInfo?datasetId=3458) (free sign-up).*
+
+</details>
+
 ## Publicações
 
 <img src="docs/assets/unifacens.png" alt="UniFacens" height="40">
@@ -128,6 +117,22 @@ mineração de dados educacionais*. I Congresso Nacional de Inovação em Educa�
 Tecnologia (CONAIDUC), on-line, 6 a 9 de julho de 2026. ISBN 9786588884621. DOI
 [10.51189/conaiduc/83301](https://doi.org/10.51189/conaiduc/83301).
 
+<details>
+  <summary><em>English version</em></summary>
+  <br>
+
+***Monograph.*** *VIANA, E. M.; OLIVEIRA, L. K.; BORBA, V. S. Análise do aprendizado de
+programação utilizando mineração de dados educacionais. Undergraduate thesis (Computer
+Engineering), UniFacens, Sorocaba, 2026. 103 p. Advisor: Profa. Ma. Talita dos Reis Lopes Berbel.*
+
+***Extended abstract.*** *OLIVEIRA, L. K.; VIANA, E. M.; BORBA, V. S.; BERBEL, T. R. L.
+Identificação de padrões de aprendizagem em programação por meio da análise de códigos de
+estudantes e da mineração de dados educacionais. 1st National Congress on Innovation in
+Education, Science and Technology (CONAIDUC), online, July 6 to 9, 2026. ISBN 9786588884621. DOI
+[10.51189/conaiduc/83301](https://doi.org/10.51189/conaiduc/83301).*
+
+</details>
+
 ## Estrutura
 
 ```
@@ -140,6 +145,30 @@ docs/          arquitetura, decisões, desenvolvimento dos métodos e resultados
 deploy/        a imagem da interface
 ```
 
+<details>
+  <summary><em>English version</em></summary>
+  <br>
+
+```
+src/ml/        Code-DKT and KCGen-KT, in PyTorch, independent of the app
+src/api/       the FastAPI and SQLite API, organized by feature
+src/web/       the React and TypeScript interface
+tests/         regression tests, comparison with the paper and test data
+experiments/   BKT and DKT under the same protocol as Code-DKT
+docs/          architecture, decisions, method development and results
+deploy/        the interface image
+```
+
+</details>
+
 ## Licença
 
 A definir.
+
+<details>
+  <summary><em>English version</em></summary>
+  <br>
+
+*To be defined.*
+
+</details>
