@@ -5,17 +5,15 @@
 
 ## Sobre o projeto
 
-Uma ferramenta web que apoia o professor de programação no acompanhamento da aprendizagem de sua
-turma. A partir dos códigos submetidos pelos estudantes, ao resolver exercícios, estima-se quais
-conceitos a turma já domina e quais ainda não, a tempo de ajustar as aulas ao decorrer da disciplina.
+Uma ferramenta web que auxilia o professor de programação a acompanhar o processo de aprendizagem
+de sua turma, a partir dos códigos submetidos por seus estudantes.
 
 <details>
   <summary><em>English version</em></summary>
   <br>
 
-*A web tool that supports programming instructors in following their class's learning. From the
-code students submit while solving exercises, it estimates which concepts the class has already
-mastered and which it has not, in time to adjust lessons as the course goes on.*
+*A web tool that helps programming instructors follow the learning process of their class, based on
+the code submitted by their students.*
 
 </details>
 
