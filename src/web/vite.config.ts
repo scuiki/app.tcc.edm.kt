@@ -2,10 +2,10 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// Nunca em todas as interfaces, o padrão é o loopback e o Tailscale entra por VITE_HOST
+// Nunca em todas as interfaces, o padrão é o loopback e outra interface entra por VITE_HOST
 const host = process.env.VITE_HOST ?? '127.0.0.1'
 
-// O Vite recusa um Host desconhecido, e o nome do Tailscale entra por VITE_ALLOWED_HOSTS
+// O Vite recusa um Host desconhecido, e outro nome entra por VITE_ALLOWED_HOSTS
 const allowedHosts = (process.env.VITE_ALLOWED_HOSTS ?? '')
   .split(',')
   .map((h) => h.trim())

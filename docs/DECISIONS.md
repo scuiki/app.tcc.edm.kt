@@ -814,7 +814,7 @@ e a soma contaria o mesmo aluno duas vezes.
 
 **No Linux, o Arial das tabelas cai na Liberation Sans.** O Fedora não tem o Arial, e a licença não
 permite servi-lo pela web. A Liberation Sans tem as mesmas medidas, então o layout não muda, só o
-desenho de alguns caracteres. Capturas feitas no nitro saem nela.
+desenho de alguns caracteres. Capturas feitas num Linux sem o Arial saem nela.
 
 **A tela Conceitos é uma matriz problema × conceito.** As duas vistas que a tela tinha, os conceitos
 de cada problema e a lista de conceitos, eram a mesma informação desenhada duas vezes, numa página
