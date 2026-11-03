@@ -158,4 +158,10 @@ deploy/        the interface image
 
 ## Licença
 
-A definir.
+Copyright © 2026 Leonardo Kuntz Oliveira, Erick Miranda Viana, Victor Santos Borba e Talita dos
+Reis Lopes Berbel. Todos os direitos reservados.
+
+Este repositório é disponibilizado para consulta e para a reprodução dos resultados publicados.
+Cópia, modificação, redistribuição ou outros usos dependem de autorização prévia.
+
+Contribuições vindas de terceiros seguem as próprias condições, descritas no [`NOTICE`](NOTICE).

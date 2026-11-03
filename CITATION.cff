@@ -6,6 +6,12 @@ type: software
 authors:
   - family-names: Oliveira
     given-names: Leonardo Kuntz
+  - family-names: Viana
+    given-names: Erick Miranda
+  - family-names: Borba
+    given-names: Victor Santos
+  - family-names: Berbel
+    given-names: Talita dos Reis Lopes
 repository-code: "https://github.com/scuiki/app.tcc.edm.kt"
 keywords:
   - knowledge tracing
