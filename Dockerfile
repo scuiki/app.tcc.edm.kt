@@ -27,6 +27,12 @@ FROM core AS app
 # O ml/ e o api/ são importados de src/, porque a instalação editável é anterior ao bind mount
 ENV PYTHONPATH=/app/src
 
+# O CLI do Claude da geração de KCs, na versão fixada e conferido pelo checksum do manifesto oficial
+ADD --checksum=sha256:eb224419e344575faa4a1f39b290b649425a10cd5ee2ef1d003480cd9ae57eb0 --chmod=755 https://downloads.claude.ai/claude-code-releases/2.1.317/linux-x64/claude /usr/local/bin/claude
+
+# Sem atualização automática, para o CLI ficar na versão fixada
+ENV DISABLE_AUTOUPDATER=1
+
 # O 0.0.0.0 é de dentro do container, e a api não publica porta no compose
 EXPOSE 8099
 CMD ["uvicorn", "api.main:create_app", "--factory", "--host", "0.0.0.0", "--port", "8099", "--workers", "1"]

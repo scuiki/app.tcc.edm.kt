@@ -28,20 +28,15 @@ services:
       - label=disable
     volumes:
       - ./:/app
-      # Subscription transport (D-01): the host's claude CLI + the two OAuth credential files are
-      # mounted READ-ONLY — never baked into the image, never via env (threat model: no secret in
-      # the web service, T-06.1-14; credential only on the api). ~/.local/bin/claude is the link the
-      # CLI keeps pointing at its current version, resolved when the container starts: an update
-      # that deletes an old version no longer leaves an empty directory in its place.
-      - /home/leokuntz/.local/bin/claude:/usr/local/bin/claude:ro
-      - /home/leokuntz/.claude/.credentials.json:/root/.claude/.credentials.json:ro
-      - /home/leokuntz/.claude.json:/root/.claude.json:ro
     environment:
       # O código vem do bind mount em /app; src/ no path torna importáveis ml/ e api/.
       PYTHONPATH: /app/src
       EDMKT_KC_CWD: /tmp
       HF_HUB_OFFLINE: "1"
       TRANSFORMERS_OFFLINE: "1"
+      # A credencial do CLI do Claude vem do .env e só a api a recebe, e sem ela só a geração de KCs falha
+      CLAUDE_CODE_OAUTH_TOKEN:
+      ANTHROPIC_API_KEY:
     command:
       - uvicorn
       - api.main:create_app

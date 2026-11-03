@@ -159,7 +159,8 @@ recusa é pedida de novo e trocada. O arquivo do cache ordena só as entradas, e
 dentro de uma resposta, porque na resposta da geração a ordem das chaves é a ordem dos KCs, e como
 texto o "KC 10" viria antes do "KC 2".
 
-**O LLM é chamado pela CLI `claude`.** A autenticação é o OAuth da assinatura, que só a CLI resolve.
+**O LLM é chamado pela CLI `claude`.** A autenticação é o token da assinatura, que só a CLI resolve,
+ou uma chave da API.
 O modelo é sempre passado por quem chama, o Claude Haiku 4.5 (`claude-haiku-4-5-20251001`), que
 com o prompt do paper gera KCs no nível de detalhe dos do GPT-4o (o LLM, na linha 9 do KCGen-KT no
 `DEVELOPMENT.md`). O job grava o modelo e a versão do prompt de cada extração. Os prompts do Duan pedem o JSON no próprio
@@ -469,11 +470,17 @@ reusar a mesma thread, e com duas em paralelo o `sqlite3` recusava a conexão e 
 É seguro porque cada requisição tem a própria conexão e a usa em sequência, nunca em duas threads
 ao mesmo tempo, e o escritor continua único.
 
-**O CLI do Claude é montado pelo link `~/.local/bin/claude`.** A montagem antiga apontava para uma
-versão fixa em `~/.local/share/claude/versions/`. Quando o CLI se atualizou e apagou aquela versão,
-o Docker criou uma pasta vazia no lugar, e toda geração de KCs passou a falhar com `Permission
-denied`. O link é o que o próprio CLI mantém apontando para a versão atual, e o Docker o resolve ao
-subir o container.
+**O CLI do Claude vem na imagem, e a credencial vem do `.env`.** Antes o compose montava o binário
+e os arquivos de login do CLI da máquina de desenvolvimento, por caminhos absolutos que não existem
+em outra máquina, e o binário de Linux nem serviria a quem roda num Mac. A montagem ainda quebrava
+de dois jeitos. Uma atualização do CLI apagava a versão montada e deixava uma pasta vazia no lugar,
+e uma renovação do login trocava o arquivo da credencial por outro, enquanto o container seguia
+vendo o antigo, já revogado. Agora a imagem baixa o binário da versão fixada e confere o checksum do
+manifesto oficial, com a atualização automática desligada, e cada pessoa põe no próprio `.env` o
+token da assinatura (`claude setup-token`) ou uma chave da API. Isso revê a decisão antiga de nunca
+passar a credencial por variável de ambiente. O risco fica contido porque só a `api` recebe a
+variável, o `.env` é ignorado pelo git e o token do `setup-token` serve só para o CLI e pode ser
+revogado na conta. Sem credencial, só a geração automática de KCs falha.
 
 **O `vocab.pkl` é lido com `pickle` sem restrição.** Por isso o diretório da versão, que vem do
 banco, é confinado ao `models/` da turma antes de abrir o arquivo. Um diretório adulterado viraria
