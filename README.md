@@ -5,9 +5,9 @@
 
 ## Sobre o projeto
 
-Uma ferramenta web que apoia o professor de programação no acompanhamento da aprendizagem da turma.
-A partir dos códigos submetidos pelos estudantes, ao resolver exercícios, estima-se quais conceitos
-a turma já domina e quais ainda não, a tempo de ajustar as aulas ao decorrer da disciplina.
+Uma ferramenta web que apoia o professor de programação no acompanhamento da aprendizagem de sua
+turma. A partir dos códigos submetidos pelos estudantes, ao resolver exercícios, estima-se quais
+conceitos a turma já domina e quais ainda não, a tempo de ajustar as aulas ao decorrer da disciplina.
 
 <details>
   <summary><em>English version</em></summary>
