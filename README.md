@@ -1,6 +1,7 @@
 <p align="center">
   <a href="https://github.com/scuiki/app.tcc.edm.kt/actions/workflows/testes.yml"><img src="https://github.com/scuiki/app.tcc.edm.kt/actions/workflows/testes.yml/badge.svg" alt="Tests"></a>
   <a href="https://doi.org/10.51189/conaiduc/83301"><img src="https://img.shields.io/badge/DOI-10.51189%2Fconaiduc%2F83301-blue" alt="DOI 10.51189/conaiduc/83301"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-all%20rights%20reserved-lightgrey" alt="License: all rights reserved"></a>
 </p>
 
 ## Sobre o projeto
@@ -158,10 +159,4 @@ deploy/        the interface image
 
 ## Licença
 
-Copyright © 2026 Leonardo Kuntz Oliveira, Erick Miranda Viana, Victor Santos Borba e Talita dos
-Reis Lopes Berbel. Todos os direitos reservados.
-
-Este repositório é disponibilizado para consulta e para a reprodução dos resultados publicados.
-Cópia, modificação, redistribuição ou outros usos dependem de autorização prévia.
-
-Contribuições vindas de terceiros seguem as próprias condições, descritas no [`NOTICE`](NOTICE).
+Todos os direitos reservados. Veja o [`LICENSE`](LICENSE).
