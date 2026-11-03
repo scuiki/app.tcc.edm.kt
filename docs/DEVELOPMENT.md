@@ -1070,6 +1070,97 @@ prompt (linha 15). Com um anotador só, não há a medida de concordância que o
 | 27 e 28 | Decididas em 03/10/2026, implementadas em 07/10/2026 no commit `653b1a2`, só no A439, como o Leo decidiu em 07/10/2026. A extração de referência, refeita com o Haiku 4.5 em 02/11/2026, tem o cache das respostas e os artefatos em `tests/data/kc`, e o resumo em `docs/results/kcgen_kt_a439_reference_extraction.md` |
 | 29 | Decidida em 03/10/2026, a fazer pela etapa 9 do `KCGEN_KT_PLAN.md`, com a anotação do A439 pelo Leo |
 
+## Testes e reprodução
+
+Os testes rodam só no container, na imagem de teste, que é o estágio `core` do `Dockerfile`. O
+`--security-opt label=disable` deixa o container ler o repositório em hosts com SELinux.
+
+```bash
+docker build --target core -t edmkt-core:dev .
+```
+
+### A suíte rápida
+
+Roda na CPU, sem o dataset, e inclui o `import-linter`, que confere a regra de dependência entre as
+camadas (`src/api/import_contracts_test.py`). O `addopts` do `pyproject.toml` deixa de fora os
+testes marcados como `regression`, `literature` e `ablation`.
+
+```bash
+docker run --rm --security-opt label=disable -v "$PWD":/app -w /app edmkt-core:dev python -m pytest -q
+docker run --rm --security-opt label=disable -v "$PWD":/app -w /app edmkt-core:dev lint-imports
+```
+
+### O dataset CSEDM
+
+Os testes de regressão, a comparação com o paper e a ablação leem a CSEDM real, variante
+CodeWorkout, pela variável `EDMKT_CSEDM_PATH`. O dataset fica em `datasets/CSEDM/`, ignorado pelo
+git, no layout do ProgSnap2.
+
+```
+datasets/CSEDM/
+├── MainTable.csv               # eventos ProgSnap2 (Run.Program, Compile.Error, Score)
+├── CodeStates/CodeStates.csv   # CodeStateID e o código Java de cada envio
+└── LinkTables/Subject.csv      # SubjectID e X-Grade
+```
+
+Sem a variável, esses testes pulam com o motivo.
+
+### O teste de regressão do Code-DKT
+
+Retreina o Code-DKT no A439 com as dez seeds de 42 a 51 e exige que a média do first-attempt AUC
+fique a ±0,001 de 0,7278, de 0,7268 a 0,7288 (a linha 19 do Code-DKT, acima). Pega mudança de
+comportamento do código, das dependências ou do ambiente, e não serve de valor de referência
+científico. A média foi medida na GPU, e sem ela o teste falha. Leva cerca de 4 minutos numa
+RTX 4050, e o `-s` mostra a média e o AUC de cada seed. Roda também a conferência da partição do
+A439 contra o repositório oficial (386 alunos, 78 no teste), que não treina.
+
+```bash
+docker run --rm --gpus all --security-opt label=disable -v "$PWD":/app -w /app \
+  -v "$PWD/datasets/CSEDM":/data/CSEDM:ro -e EDMKT_CSEDM_PATH=/data/CSEDM \
+  edmkt-core:dev python -m pytest tests/test_regression_a439.py -m regression -q -s
+```
+
+A repetição bit a bit depende do `PYTHONHASHSEED=0`, que a imagem fixa, da partição por exercício,
+da amostragem dos R=100 paths com a `path_sampling_seed` 42 e do cuDNN determinístico. O fixture da
+CSEDM falha, em vez de pular, quando o `PYTHONHASHSEED` não é 0.
+
+### O teste de regressão do KCGen-KT
+
+Compara com a extração de referência do A439, em `tests/data/kc`, sem chamar o LLM. Refaz o sorteio
+das soluções pelo CodeBERT, o agrupamento dos nomes pelo SBERT e a extração inteira a partir do
+cache gravado das respostas, com um LLM que falha em toda pergunta. Uma mudança no prompt, no
+modelo de linguagem ou nos vetores que mude o sorteio ou os grupos deixa o teste vermelho. Leva
+cerca de um minuto e meio numa RTX 4050.
+
+```bash
+docker run --rm --gpus all --security-opt label=disable -v "$PWD":/app -w /app \
+  -v "$PWD/datasets/CSEDM":/data/CSEDM:ro -e EDMKT_CSEDM_PATH=/data/CSEDM \
+  edmkt-core:dev python -m pytest tests/test_regression_kcgen_kt_a439.py -m regression -q
+```
+
+### A comparação com o paper
+
+Treina os cinco exercícios da CSEDM com as dez seeds, em cerca de 19 minutos numa RTX 4050, e
+imprime a média e o desvio ao lado das Tabelas 1 e 2 de Shi et al. (2022), sem asserção contra
+elas. O AUC de cada seed vai para `docs/results/code_dkt_literature_comparison.json`, e o `--user`
+faz o arquivo sair com o seu usuário. Com `-k 439`, roda e atualiza só um exercício.
+
+```bash
+docker run --rm --gpus all --security-opt label=disable \
+  --user "$(id -u):$(id -g)" -e HOME=/tmp -v "$PWD":/app -w /app \
+  -v "$PWD/datasets/CSEDM":/data/CSEDM:ro -e EDMKT_CSEDM_PATH=/data/CSEDM \
+  edmkt-core:dev python -m pytest tests/test_literature_comparison.py -m literature -q -s
+```
+
+### As dependências travadas
+
+A base é a `pytorch/pytorch:2.7.1-cuda12.8-cudnn9-runtime`, fixada pelo digest no `Dockerfile`, e
+traz o `torch==2.7.1+cu128` e o `numpy==2.2.6` do conda dela. O `requirements.lock` fixa os 47
+pacotes da camada pip, e o `pip install -c` os impõe. Uma troca de versão que mude o resultado tira
+a média da tolerância e deixa o teste de regressão vermelho. Para atualizar uma dependência, mude o
+`pyproject.toml`, refaça a imagem sem o `-c`, rode as duas regressões e recapture o lock com
+`pip list --format=freeze`, sem o próprio `edmkt` e sem os pacotes que já vêm na base.
+
 ## Referências
 
 ALON, U.; ZILBERSTEIN, M.; LEVY, O.; YAHAV, E. code2vec: learning distributed representations of
