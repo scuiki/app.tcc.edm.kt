@@ -1,9 +1,6 @@
 <p align="center">
   <a href="https://github.com/scuiki/app.tcc.edm.kt/actions/workflows/testes.yml"><img src="https://github.com/scuiki/app.tcc.edm.kt/actions/workflows/testes.yml/badge.svg" alt="Testes"></a>
   <a href="https://doi.org/10.51189/conaiduc/83301"><img src="https://img.shields.io/badge/DOI-10.51189%2Fconaiduc%2F83301-blue" alt="DOI 10.51189/conaiduc/83301"></a>
-  <img src="https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white" alt="Python 3.11">
-  <img src="https://img.shields.io/badge/PyTorch-2.7.1-EE4C2C?logo=pytorch&logoColor=white" alt="PyTorch 2.7.1">
-  <img src="https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black" alt="React 19">
 </p>
 
 ## Sobre o projeto
@@ -12,9 +9,9 @@ Ferramenta web para o professor de programação introdutória ver, durante a di
 conceitos a turma ainda não domina, a partir dos envios de código da própria turma.
 
 - **Importação ProgSnap2**: os envios de código Java da turma, num `.zip`.
-- **Conceitos por LLM**: o KCGen-KT (Duan et al., 2026) extrai os conceitos de cada exercício, e o
+- **Conceitos por LLM**: o KCGen-KT (Duan *et al.*, 2026) extrai os conceitos de cada exercício, e o
   professor os revisa.
-- **Code-DKT por turma**: o modelo de Shi et al. (2022) é treinado nos dados da turma, na GPU ou na
+- **Code-DKT por turma**: o modelo de Shi *et al.* (2022) é treinado nos dados da turma, na GPU ou na
   CPU.
 - **Domínio por conceito**: o domínio de cada aluno em cada conceito, ao lado das execuções por
   problema.
@@ -37,6 +34,20 @@ their class has not mastered yet, based on the class's own code submissions.*
 - ***Reproducible:*** *regression tests lock the results of both methods.*
 
 </details>
+
+## Stack
+
+<p>
+  <img src="https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python 3.11">
+  <img src="https://img.shields.io/badge/PyTorch-2.7.1-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white" alt="PyTorch 2.7.1">
+  <img src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI">
+  <img src="https://img.shields.io/badge/SQLite-003B57?style=for-the-badge&logo=sqlite&logoColor=white" alt="SQLite">
+  <img src="https://img.shields.io/badge/Claude-Haiku_4.5-D97757?style=for-the-badge&logo=claude&logoColor=white" alt="Claude Haiku 4.5">
+  <img src="https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="React 19">
+  <img src="https://img.shields.io/badge/TypeScript-6-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript 6">
+  <img src="https://img.shields.io/badge/Vite-8-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite 8">
+  <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker">
+</p>
 
 ## Instalação
 
@@ -164,11 +175,3 @@ deploy/        the interface image
 ## Licença
 
 A definir.
-
-<details>
-  <summary><em>English version</em></summary>
-  <br>
-
-*To be defined.*
-
-</details>
