@@ -15,7 +15,6 @@ export function outcomeOf(report: ClassroomImportReport): ImportOutcome {
 
 // O título em pt-BR de cada código, e a mensagem do backend vem embaixo como veio
 const CHECK_TITLES: Record<string, string> = {
-  dedup_compile: 'Compilações repetidas descartadas',
   orphan_codestate: 'Eventos sem código descartados',
   score_coercion: 'Notas não numéricas ignoradas',
   few_problems: 'Poucos problemas num exercício',
@@ -37,7 +36,10 @@ export function fatalChecksOf(report: ClassroomImportReport): ImportCheck[] {
 
 // Os avisos não impedem a importação, só registram o que o sistema ajustou ou recomenda cautela
 export function warningsOf(report: ClassroomImportReport): ImportCheck[] {
-  return report.checks.filter((check) => check.severity !== 'fatal')
+  // O Compile repetido junto do Run.Program é o formato do ProgSnap2, então não vira aviso
+  return report.checks.filter(
+    (check) => check.severity !== 'fatal' && check.check !== 'dedup_compile',
+  )
 }
 
 // O caminho dentro do pacote, sem a pasta do servidor onde ele foi extraído

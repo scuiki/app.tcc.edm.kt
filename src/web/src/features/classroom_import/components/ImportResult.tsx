@@ -97,26 +97,26 @@ function ImportedDetailsCard({ report, classroomName, fileName, mainTable }: Imp
           <dt>Tabela usada</dt>
           <dd className="num">{mainTable}</dd>
         </dl>
-        <div className="import-card__rule" />
-        <span className="import-card__section-title">Avisos do processamento</span>
-        {warnings.length === 0 ? (
-          <p className="pending-intro">Nenhum aviso. O sistema não precisou ajustar nada.</p>
-        ) : (
-          <ul className="import-warnings">
-            {warnings.map((warning) => (
-              <li key={`${warning.check}-${warning.message}`} className="import-warnings__item">
-                <CircleAlert className="import-warnings__icon" size={17} aria-hidden="true" />
-                <div className="import-warnings__text">
-                  <span className="import-warnings__title">{checkTitle(warning)}</span>
-                  <span>{warning.message}</span>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-        <p className="pending-intro">
-          Avisos não impedem a importação. Eles registram o que o sistema ajustou sozinho.
-        </p>
+        {warnings.length > 0 ? (
+          <>
+            <div className="import-card__rule" />
+            <span className="import-card__section-title">Avisos do processamento</span>
+            <ul className="import-warnings">
+              {warnings.map((warning) => (
+                <li key={`${warning.check}-${warning.message}`} className="import-warnings__item">
+                  <CircleAlert className="import-warnings__icon" size={17} aria-hidden="true" />
+                  <div className="import-warnings__text">
+                    <span className="import-warnings__title">{checkTitle(warning)}</span>
+                    <span>{warning.message}</span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+            <p className="pending-intro">
+              Avisos não impedem a importação. Eles registram o que o sistema ajustou sozinho.
+            </p>
+          </>
+        ) : null}
       </div>
     </Card>
   )

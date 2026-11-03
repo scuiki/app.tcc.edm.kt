@@ -49,6 +49,18 @@ const IMPORTED: ClassroomImportReport = {
   ],
 }
 
+const IMPORTED_WITH_WARNING: ClassroomImportReport = {
+  ...IMPORTED,
+  checks: [
+    ...IMPORTED.checks,
+    {
+      check: 'orphan_codestate',
+      severity: 'warning',
+      message: '12 evento(s) com CodeStateID órfão descartado(s), sem snapshot em CodeStates.',
+    },
+  ],
+}
+
 const REFUSED: ClassroomImportReport = {
   has_fatal: true,
   checks: [
@@ -227,7 +239,7 @@ describe('ClassroomImportPage, choosing the classroom and the file', () => {
 })
 
 describe('ClassroomImportPage, processing', () => {
-  it('shows the summary, the exercises and the warnings after importing', async () => {
+  it('shows the summary and the exercises after importing, the repeated compile without a warning', async () => {
     fakeApi()
     renderWithClient(<ClassroomImportPage />)
     await pickFile()
@@ -244,13 +256,26 @@ describe('ClassroomImportPage, processing', () => {
     expect(rows.find((row) => row.textContent?.includes('Assignment 487'))).toHaveTextContent(
       'Só estatísticas',
     )
-    expect(screen.getByText('Compilações repetidas descartadas')).toBeInTheDocument()
-    expect(screen.getByText(/69627 evento\(s\) Compile plain/)).toBeInTheDocument()
+    expect(screen.queryByText('Avisos do processamento')).not.toBeInTheDocument()
+    expect(screen.queryByText(/Compile plain/)).not.toBeInTheDocument()
     expect(currentStep()).toHaveTextContent('Conferir')
 
     fireEvent.click(screen.getByRole('button', { name: 'Ver os exercícios' }))
     expect(window.location.hash).toBe('#/classrooms/1')
     window.location.hash = ''
+  })
+
+  it('lists the warnings when the system adjusted the data', async () => {
+    fakeApi({ reports: [IMPORTED_WITH_WARNING] })
+    renderWithClient(<ClassroomImportPage />)
+    await pickFile()
+    await screen.findByText('pacote.zip')
+    fireEvent.click(processButton())
+
+    expect(await screen.findByText('Avisos do processamento')).toBeInTheDocument()
+    expect(screen.getByText('Eventos sem código descartados')).toBeInTheDocument()
+    expect(screen.getByText(/12 evento\(s\) com CodeStateID órfão/)).toBeInTheDocument()
+    expect(screen.queryByText(/Compile plain/)).not.toBeInTheDocument()
   })
 
   it('keeps the choices and lists the failed check when the package is refused', async () => {

@@ -46,8 +46,8 @@ describe('outcomeOf', () => {
 
 describe('checkTitle', () => {
   it('names a known check in pt-BR', () => {
-    expect(checkTitle({ check: 'dedup_compile', severity: 'warning', message: '' })).toBe(
-      'Compilações repetidas descartadas',
+    expect(checkTitle({ check: 'orphan_codestate', severity: 'warning', message: '' })).toBe(
+      'Eventos sem código descartados',
     )
   })
 
@@ -65,14 +65,19 @@ describe('fatalChecksOf and warningsOf', () => {
   it('split the checks by severity, viability counting as a warning', () => {
     const checks = [
       { check: 'encoding', severity: 'fatal', message: '' },
-      { check: 'dedup_compile', severity: 'warning', message: '' },
+      { check: 'orphan_codestate', severity: 'warning', message: '' },
       { check: 'few_problems', severity: 'viability', message: '' },
     ]
     expect(fatalChecksOf(report({ checks })).map((c) => c.check)).toEqual(['encoding'])
     expect(warningsOf(report({ checks })).map((c) => c.check)).toEqual([
-      'dedup_compile',
+      'orphan_codestate',
       'few_problems',
     ])
+  })
+
+  it('leaves out the repeated compile, which is the ProgSnap2 format', () => {
+    const checks = [{ check: 'dedup_compile', severity: 'warning', message: '' }]
+    expect(warningsOf(report({ checks }))).toEqual([])
   })
 })
 
