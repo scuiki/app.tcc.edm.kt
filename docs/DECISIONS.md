@@ -24,6 +24,15 @@ detecta essa mudança, e não serve de valor de referência científico contra o
 paper. Falha sem GPU, porque a média de referência foi medida nela. A decisão está na linha 19 do
 `DEVELOPMENT.md`, a regressão e a comparação com o paper.
 
+**A camada pip segue o `requirements.lock`, e a base fica fixada pelo digest.** O Dockerfile
+instalava só pelo `pyproject.toml`, que fixa as bibliotecas diretas, e 30 dos 47 pacotes da camada
+pip (joblib, pydantic, starlette e outros) saíam na versão mais nova do dia em que a imagem fosse
+refeita. O lock agora traz os 47 pacotes, capturados da imagem em que a regressão deu 0,7278, e o
+`pip install -c` os impõe. A tag `pytorch/pytorch:2.7.1-cuda12.8-cudnn9-runtime` pode ser
+republicada, o digest não, e os 118 pacotes da base, o torch e o numpy entre eles, ficam fixados
+por ele. Com o repositório público, quem montar a imagem chega às mesmas versões. A imagem refeita
+assim deu o mesmo `pip list` da validada e a mesma média, 0,7278, com cada seed igual.
+
 **O dado do teste de regressão.** É o CSEDM real, variante CodeWorkout, Spring 2019, A439, só com
 `Run.Program`, que é o filtro do TCC 1. O rótulo é `Score == 1.0`. A partição treino/teste é a do
 repositório oficial, a mesma do treino real, com `random_state=1` e não a seed 42 do treino

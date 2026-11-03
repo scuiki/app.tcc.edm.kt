@@ -1,47 +1,55 @@
-# Pins do EDM·KT validados pelo teste de regressão (tests/test_regression_a439.py).
+# As versões da camada pip da imagem edmkt-core, capturadas da imagem em que o teste de regressão deu 0,7278
 
-# São as versões exatas da imagem `edmkt-core:dev` quando as dez seeds do A439 deram a média 0,7278.
+# O Dockerfile instala com pip install -c requirements.lock, e nenhum pacote dessa camada fica sem versão
 
-# Essa média do first-attempt AUC tem de ficar na faixa de ±0,1 ponto, de 0,7268 a 0,7288.
+# O torch 2.7.1+cu128 e o numpy 2.2.6 vêm do conda da imagem base, que o Dockerfile fixa pelo digest
 
-# O teste pega mudança no código ou nas versões, e não compara com o TCC 1 nem com o paper.
+# Para atualizar, refaça a imagem, rode o teste de regressão e recapture com pip list --format=freeze
 
-# Versão que tire a média da faixa deixa o teste vermelho, e o pin só muda com ele verde de novo.
-#
-# REPRODUCIBILITY ANCHOR — the real freeze is the Docker image, not this file:
-#   torch and numpy ship from the conda env of the pinned base image
-#   (pytorch/pytorch:2.7.1-cuda12.8-cudnn9-runtime, see Dockerfile) and are NOT pip-installable
-#   from PyPI as plain `torch==2.7.1+cu128`. To reproduce the numerics, build from that exact
-#   image tag; this lockfile records the resolved versions that tag yields so any drift shows.
-#
-# Validated environment (captured from `docker run edmkt-core:dev python -m pip freeze`,
-# regression test green on the nitro RTX 4050 / CUDA 12.8 GPU):
-#   Python  3.11.13
-#   CUDA    12.8 (torch.version.cuda)
-#   PYTHONHASHSEED  0 (ENV do Dockerfile, e a ordem dos AST paths depende dele)
-
-# --- Provided by the pinned base image conda env (do NOT pip-install over the image) ---
-# torch==2.7.1+cu128      # base image; cu128 wheel, sm_89 (RTX 4050), the numerics anchor
-# numpy==2.2.6            # base image conda build
-
-# --- Science / data deps (pip-installed in the image RUN layer; pinned exact) ---
-pandas==2.3.3
-javalang==0.13.0
+annotated-doc==0.0.5
+annotated-types==0.8.0
+anyio==4.15.1
 anytree==2.13.0
+click==8.5.0
+cloudpickle==3.1.2
+fastapi==0.138.0
+grimp==3.17
+h11==0.16.0
+hf-xet==1.6.0
+httpcore==1.0.9
+httptools==0.8.0
+httpx==0.28.1
+huggingface_hub==1.33.0
+import-linter==2.15
+iniconfig==2.3.0
+javalang==0.13.0
+joblib==1.6.0
+markdown-it-py==4.2.0
+mdurl==0.1.2
+narwhals==2.26.0
+pandas==2.3.3
+pydantic==2.13.5
+pydantic_core==2.46.5
+pytest==9.1.1
+python-dateutil==2.9.0.post0
+python-dotenv==1.2.4
+python-multipart==0.0.32
+regex==2026.9.29
+rich==15.0.0
+safetensors==0.8.0
 scikit-learn==1.9.0
 scipy==1.17.1
-sentence-transformers==5.4.1  # SBERT dos nomes de KC no KCGen-KT, fora da numérica do Code-DKT
-transformers==5.18.0          # CodeBERT das soluções no KCGen-KT, fora da numérica do Code-DKT
+sentence-transformers==5.4.1
+shellingham==1.5.4
+starlette==1.7.0
+threadpoolctl==3.7.0
 tokenizers==0.23.2
-huggingface_hub==1.33.0
-safetensors==0.8.0
-
-# --- HTTP/I/O stack (camada de transporte; não toca a numérica do teste de regressão) ---
-fastapi==0.138.0
-uvicorn[standard]==0.49.0
-python-multipart==0.0.32
-
-# --- Test runner ---
-pytest==9.1.1
-httpx==0.28.1            # transport do TestClient (dev)
-import-linter==2.15      # verifica a regra de dependência (dev)
+transformers==5.18.0
+typer==0.27.2
+typing_extensions==4.16.0
+typing-inspection==0.4.4
+tzdata==2026.5
+uvicorn==0.49.0
+uvloop==0.23.0
+watchfiles==1.3.0
+websockets==17.2
