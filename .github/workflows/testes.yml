@@ -1,6 +1,6 @@
 # A suíte rápida da api e o gate da interface, nas mesmas imagens do Dockerfile, a cada push e pull request
 # As regressões, a comparação com o paper e a ablação ficam de fora, porque pedem a GPU e a CSEDM
-name: Testes
+name: Tests
 
 on:
   push:
