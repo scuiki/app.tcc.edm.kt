@@ -1,42 +1,29 @@
-# EDM·KT container toolchain + dashboard stack (D-04).
-# nitro-env: never publish a bare port — every published port MUST bind an explicit IP
-# (127.0.0.1 = local only, 100.96.0.53 = tailnet). The `api` service publishes NOTHING (reachable only
-# as the compose service name `api`, which the Vite proxy targets); the `web` dev-server binds an
-# explicit IP via ${EDMKT_BIND_IP} (default loopback). `docker compose run --rm web sh -c "..."`
-# still drives the gates: `run` overrides the `command:` below and publishes no port.
+# O EDM·KT em dois serviços, a api FastAPI e o web com o dev server do Vite
+# A GPU NVIDIA é opcional e entra pelo docker-compose.gpu.yml, ligado pelo COMPOSE_FILE do .env
 services:
-  # FastAPI app + KC pipeline. Internal-only: NO published port — the
-  # browser never reaches it directly; the Vite dev server proxies same-origin to `http://api:8099`.
-  # --host 0.0.0.0 here is CONTAINER-internal (the network gate is the absence of a host publish).
+  # A api não publica porta, e o navegador só a alcança pelo proxy same-origin do Vite
   api:
     # O estágio app do Dockerfile, que deriva do core, e o compose constrói os dois
     build:
       context: .
       target: app
     image: edmkt-app:dev
-    # GPU for the Code-DKT training and the KCGen-KT embeddings (CodeBERT and SBERT); the NVIDIA
-    # Container Toolkit is installed on nitro.
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: all
-              capabilities: [gpu]
-    # Required to read /srv bind mounts under SELinux.
+    # Sem rótulo do SELinux, para o container ler o bind mount do repositório em hosts que o usam
     security_opt:
       - label=disable
     volumes:
       - ./:/app
     environment:
-      # O código vem do bind mount em /app; src/ no path torna importáveis ml/ e api/.
+      # O código vem do bind mount em /app, e src/ no path torna importáveis o ml/ e o api/
       PYTHONPATH: /app/src
+      # O CLI roda fora do repositório, para o CLAUDE.md do projeto não entrar em cada chamada
       EDMKT_KC_CWD: /tmp
       HF_HUB_OFFLINE: "1"
       TRANSFORMERS_OFFLINE: "1"
       # A credencial do CLI do Claude vem do .env e só a api a recebe, e sem ela só a geração de KCs falha
       CLAUDE_CODE_OAUTH_TOKEN:
       ANTHROPIC_API_KEY:
+    # O 0.0.0.0 é de dentro do container, e um worker só, porque o SQLite tem escritor único e a GPU é uma
     command:
       - uvicorn
       - api.main:create_app
@@ -48,9 +35,7 @@ services:
       - --workers
       - "1"
 
-  # Vite dev server (D-01: the dev server serves in dev AND "production") + the JS gate runner. The
-  # `command:` runs the dev server for `docker compose up`; a `docker compose run` overrides it (and
-  # publishes nothing) so the typecheck/test gates keep working from the same image.
+  # O dev server do Vite, que serve a SPA, e o docker compose run deste serviço roda os testes do front
   web:
     build:
       context: .
@@ -59,20 +44,16 @@ services:
     working_dir: /app/src/web
     depends_on:
       - api
-    # Bind the repo so edited source is visible inside the container; mask node_modules with a
-    # named volume seeded from the image layer so dependencies NEVER touch the host tree.
+    # O node_modules vem da imagem por um volume nomeado e nunca é gravado no repositório
     volumes:
       - ./:/app
       - edmkt_web_node_modules:/app/src/web/node_modules
-    # Required to read /srv bind mounts under SELinux.
     security_opt:
       - label=disable
     environment:
-      # Vite validates the Host header and refuses unknown hosts (Pitfall 3): list the Tailscale
-      # hostname(s) at deploy time. Loopback dev needs no entry.
+      # O Vite recusa um Host desconhecido, e outros nomes além do localhost entram pelo .env
       VITE_ALLOWED_HOSTS: ${EDMKT_ALLOWED_HOSTS:-}
-    # ONLY the web service publishes a port, on an EXPLICIT bind IP — 127.0.0.1 local-only by default,
-    # set EDMKT_BIND_IP=100.96.0.53 for Tailscale. NEVER 0.0.0.0, never a bare port (nitro-env / app.py).
+    # A porta sai sempre com IP explícito, e o padrão 127.0.0.1 deixa o app só nesta máquina
     ports:
       - "${EDMKT_BIND_IP:-127.0.0.1}:5173:5173"
     command: ["npm", "run", "dev", "--", "--host"]

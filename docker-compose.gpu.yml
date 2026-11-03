@@ -1,0 +1,11 @@
+# A GPU NVIDIA para o treino do Code-DKT e os vetores do KCGen-KT, que sem ela rodam na CPU
+# Pede o NVIDIA Container Toolkit no host, e o COMPOSE_FILE do .env a liga
+services:
+  api:
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
