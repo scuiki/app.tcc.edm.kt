@@ -1,0 +1,43 @@
+# A suíte rápida da api e o gate da interface, nas mesmas imagens do Dockerfile, a cada push e pull request
+# As regressões, a comparação com o paper e a ablação ficam de fora, porque pedem a GPU e a CSEDM
+name: Testes
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  api:
+    runs-on: ubuntu-latest
+    steps:
+      # A imagem de teste tem cerca de 14 GB, e o runner só cabe com as ferramentas pré-instaladas apagadas
+      - name: Liberar disco
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /usr/local/.ghcup /opt/hostedtoolcache/CodeQL
+          docker image prune -af
+          df -h /
+
+      - uses: actions/checkout@v4
+
+      - name: Construir a imagem de teste
+        run: docker build --target core -t edmkt-core:ci .
+
+      # Inclui o import-linter, que confere a regra de dependência entre as camadas
+      - name: Suíte rápida
+        run: docker run --rm -v "$PWD":/app -w /app edmkt-core:ci python -m pytest -q -p no:cacheprovider
+
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Construir a imagem da interface
+        run: docker build -f deploy/Dockerfile.web -t edmkt-web:ci .
+
+      # O volume anônimo entrega o node_modules da imagem por baixo do repositório montado
+      - name: Tipos, lint, formatação e testes
+        run: >-
+          docker run --rm -v "$PWD":/app -v /app/src/web/node_modules -w /app/src/web edmkt-web:ci
+          sh -c "npx tsc -b && npx eslint . && npx prettier --check . && npx vitest run"

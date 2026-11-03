@@ -1073,7 +1073,8 @@ prompt (linha 15). Com um anotador só, não há a medida de concordância que o
 ## Testes e reprodução
 
 Os testes rodam só no container, na imagem de teste, que é o estágio `core` do `Dockerfile`. O
-`--security-opt label=disable` deixa o container ler o repositório em hosts com SELinux.
+`--security-opt label=disable` deixa o container ler o repositório em hosts com SELinux. O workflow
+`.github/workflows/testes.yml` roda a suíte rápida e o gate da interface a cada push na `main`.
 
 ```bash
 docker build --target core -t edmkt-core:dev .

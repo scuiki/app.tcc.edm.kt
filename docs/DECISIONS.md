@@ -509,7 +509,7 @@ diz os valores que o teste confere, e o resto fica no padrão (`'T'`, `'A'`, `'t
 migration fica de fora, porque grava o SQL de cada versão do schema, e um helper que acompanha o
 schema atual mudaria o que ele testa.
 
-**O `import-linter` roda dentro da suíte.** O projeto não tem CI, e o comando solto só rodava quando
+**O `import-linter` roda dentro da suíte.** O projeto não tinha CI, e o comando solto só rodava quando
 alguém lembrava. Uma violação ficou doze dias sem ser vista, de 25/09 a 07/10. O teste chama a API
 do linter sem cache, para não gravar nada no repositório e rodar com qualquer usuário, e mostra o
 relatório do linter quando falha.
