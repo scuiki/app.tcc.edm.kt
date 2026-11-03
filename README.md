@@ -5,33 +5,17 @@
 
 ## Sobre o projeto
 
-Ferramenta web para o professor de programação introdutória ver, durante a disciplina, quais
-conceitos a turma ainda não domina, a partir dos envios de código da própria turma.
-
-- **Importação ProgSnap2**: os envios de código Java da turma, num `.zip`.
-- **Conceitos por LLM**: o KCGen-KT (Duan *et al.*, 2026) extrai os conceitos de cada exercício, e o
-  professor os revisa.
-- **Code-DKT por turma**: o modelo de Shi *et al.* (2022) é treinado nos dados da turma, na GPU ou na
-  CPU.
-- **Domínio por conceito**: o domínio de cada aluno em cada conceito, ao lado das execuções por
-  problema.
-- **Reprodutível**: testes de regressão travam o resultado dos dois métodos.
+Ferramenta web que apoia o professor de programação no acompanhamento da aprendizagem da turma. A
+partir dos códigos submetidos pelos estudantes, ao resolver exercícios, estima-se quais conceitos a
+turma já domina e quais ainda não, a tempo de ajustar as aulas ao decorrer da disciplina.
 
 <details>
   <summary><em>English version</em></summary>
   <br>
 
-*A web tool that shows introductory programming instructors, during the course, which concepts
-their class has not mastered yet, based on the class's own code submissions.*
-
-- ***ProgSnap2 import:*** *the class's Java submissions, in a `.zip`.*
-- ***Concepts by LLM:*** *KCGen-KT (Duan et al., 2026) extracts the concepts of each exercise, and
-  the instructor reviews them.*
-- ***Code-DKT per class:*** *the model by Shi et al. (2022) is trained on the class's data, on GPU
-  or CPU.*
-- ***Mastery per concept:*** *each student's mastery of each concept, next to the runs per
-  problem.*
-- ***Reproducible:*** *regression tests lock the results of both methods.*
+*A web tool that supports programming instructors in following their class's learning. From the
+code students submit while solving exercises, it estimates which concepts the class has already
+mastered and which it has not, in time to adjust lessons as the course goes on.*
 
 </details>
 
