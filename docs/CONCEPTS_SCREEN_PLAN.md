@@ -302,7 +302,7 @@ As de A a H já estavam decididas no desenho e só faltava implementar. As de I 
   5a, 5b e 6), e nunca editado à mão. O `npm run types` lê `http://api:8099/openapi.json`
   (`src/web/package.json`), e a api só serve o contrato novo depois de recriada, o que aplica as
   migrações ao `app.db` (`src/api/main.py:31-41`). O `create_app().openapi()` não roda o lifespan e
-  não abre banco nenhum, e o arquivo gerado assim no `1446a21` saiu igual, byte a byte, ao
+  não abre banco nenhum, e o arquivo gerado assim no `7646619` saiu igual, byte a byte, ao
   versionado. Os comandos estão em Verificação.
 
 ## Mudanças por camada
@@ -501,7 +501,7 @@ torna falso é corrigido em qualquer arquivo de `src/` e `tests/`, pela busca do
 - `IMPLEMENTATION_PLAN.md`. O B1 (`:92-93`), o B2 (`:95-99`) e a parte da Conceitos do B8
   (`:127-130`) apontam para este plano. Na seção 6, a pendência do desenho da Conceitos
   (`:193-198`) aponta para o plano, e a do import-linter quebrado (`:199-203`) sai, porque o
-  `002c2ef` corrigiu o teste e o `1ea6299` pôs o linter na suíte. Entram o 409 de modelo antigo para
+  `6870674` corrigiu o teste e o `382874d` pôs o linter na suíte. Entram o 409 de modelo antigo para
   a tela Análise (R, `AnalysisCard.tsx:39`, `:60`, `:74`) e a ressalva das turmas antigas (K e X). A
   seção 9 (`:255-257`) registra que o Leo decidiu apagar a turma CSEDM Spring 2019 e a turma 5.
 - `GLOSSARY.md`. Entram no backend o `updated_at` do `kc`, `is_generated_by_llm`,
@@ -997,7 +997,7 @@ a 9b o jeito de criar um conceito e a 9c a aba Problemas.
   não aparece (`:1025-1033`) e o commit na linha "9 e 11 a 17" (`:1049`). Nada disso muda o
   método.
 - `DESIGN.md`. O Estado (`:10-14`) diz que a Conceitos está concluída por este plano, como o
-  fechamento da base fez (`abe83c1`).
+  fechamento da base fez (`cfa8606`).
 - A linha v6 da tabela de Versões do `DESIGN.md` e a do `IMPLEMENTATION_PLAN.md:15-21` citam
   commits que já existem, conferidos pelo `git log`.
 - `GLOSSARY.md` com a conferência final. O `CLAUDE.md` do projeto não fica falso, e a conferência
@@ -1019,7 +1019,7 @@ docker run --rm --security-opt label=disable --user "$(id -u):$(id -g)" -e HOME=
   -v "$PWD":/app -w /app edmkt-core:dev python -m pytest -q
 ```
 
-O relatório do import-linter sai sem gravar nada. No `1446a21` ele dá 12 contratos mantidos e
+O relatório do import-linter sai sem gravar nada. No `7646619` ele dá 12 contratos mantidos e
 nenhum quebrado, então o contrato quebrado anterior não existe mais, e qualquer violação nova
 reprova a suíte.
 
@@ -1170,21 +1170,21 @@ aceitar.
 
 | Etapa | Situação |
 |---|---|
-| 0 | Concluída, commit `311dfbb` |
+| 0 | Concluída, commit `3b32bba` |
 | 1 | Concluída, sem commit. O balão do `InfoHint` e do `GeneratedByML` nasce por baixo do diálogo do aluno, filho do `body` e encoberto pelo `<dialog>` modal |
-| 2 | Concluída, commit `e574571` |
-| 3 | Concluída, commit `04c8824` |
-| 4 | Concluída, commit `6d31cc7` |
-| 5a | Concluída, commit `83af401` |
-| 5b | Concluída, commit `23f3130` |
-| 6 | Concluída, commit `b37cb13` |
+| 2 | Concluída, commit `5691233` |
+| 3 | Concluída, commit `52529ce` |
+| 4 | Concluída, commit `c8b93de` |
+| 5a | Concluída, commit `51bccf8` |
+| 5b | Concluída, commit `a923c44` |
+| 6 | Concluída, commit `b9d656e` |
 | Recriação da api | Concluída em 08/10/2026, a pedido do Leo, depois da etapa 6, com a cópia de segurança e o ensaio das migrações (banco na versão 22) |
-| 7 | Concluída, commit `77b7635` |
-| 8 | Concluída, commit `e210085` |
-| 9a | Concluída, commit `b4e7e79` |
-| 9b | Concluída, commit `49dadd7` |
-| 9c | Concluída, commit `4ad1127` |
-| 10 | Concluída, commit `f502404` |
-| 11 | Concluída, commit `78401d0` |
+| 7 | Concluída, commit `ffd3e23` |
+| 8 | Concluída, commit `c8ba0eb` |
+| 9a | Concluída, commit `f442000` |
+| 9b | Concluída, commit `7931eb1` |
+| 9c | Concluída, commit `f9a3d4e` |
+| 10 | Concluída, commit `f96d567` |
+| 11 | Concluída, commit `307847d` |
 | 12 | Concluída, no commit desta etapa |
 | Revisão independente da tela | Concluída, com a correção no commit seguinte ao da etapa 12 (a origem sai do cache a cada edição) |

@@ -231,16 +231,16 @@ som só toca se houver problema.
 
 | Etapa | Situação |
 |---|---|
-| 0 | Concluída, commit `7c4fb56` |
+| 0 | Concluída, commit `264147d` |
 | 1 | Concluída, sem commit |
-| 2 | Concluída, commit `736bfb0` |
-| 3 | Concluída, commit `3f1eea1`, conferida pelo Leo |
-| 4 | Concluída, commit `1a83ebf` |
-| 5 | Concluída, commit `cfd03d0` |
-| 6 | Concluída, commit `94b2a85` |
-| 7 | Concluída, commit `f420730` |
-| 8 | Concluída, commit `628e153` |
-| 9 | Concluída, commit `a96ccb5` |
-| 10 | Concluída, commit `46237dc` |
-| 11 | Concluída, commit `abe83c1` |
+| 2 | Concluída, commit `dae2a1d` |
+| 3 | Concluída, commit `0db0c26`, conferida pelo Leo |
+| 4 | Concluída, commit `b5518d6` |
+| 5 | Concluída, commit `e352e5a` |
+| 6 | Concluída, commit `cd0f222` |
+| 7 | Concluída, commit `5863347` |
+| 8 | Concluída, commit `14bb77f` |
+| 9 | Concluída, commit `b57ca05` |
+| 10 | Concluída, commit `93206b1` |
+| 11 | Concluída, commit `cfa8606` |
 | Revisão independente da base | Concluída, com as correções no commit seguinte ao da etapa 11 |

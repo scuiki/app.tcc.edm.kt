@@ -2,7 +2,7 @@
 
 Os artefatos que os testes de regressão do KCGen-KT comparam. Saíram da extração do A439 na turma
 "CSEDM CodeWorkout Haiku", feita em 02/11/2026 pelas rotas da API, com o código do commit
-`847c0d6`, o modelo `claude-haiku-4-5-20251001` e a versão `kcgen-v2` dos prompts. O resultado está
+`3286761`, o modelo `claude-haiku-4-5-20251001` e a versão `kcgen-v2` dos prompts. O resultado está
 em `docs/results/kcgen_kt_a439_reference_extraction.md`. A regressão fica só no A439, como o Leo
 decidiu em 07/10/2026.
 

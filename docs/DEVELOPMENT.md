@@ -14,7 +14,7 @@ método. As decisões de engenharia continuam no `DECISIONS.md`.
 - **Repositório oficial.** [YangAzure/Code-DKT](https://github.com/YangAzure/Code-DKT), commit
   `8ddd13e`. Os arquivos e as linhas citados são desse commit. Um caminho `src/` sem indicação é
   desse repositório, e os do TCC 1, do app e do code2vec vêm marcados.
-- **App.** As linhas do app citadas, marcadas como "do app", são do commit `eb95fa0`, de antes da
+- **App.** As linhas do app citadas, marcadas como "do app", são do commit `c406dee`, de antes da
   implementação. O plano que leva as decisões ao código está no `CODE_DKT_PLAN.md`.
 - **Padrões citados pelo paper.** Para o que não especifica, o paper diz "All other parameters were
   defaulted as the original settings of code2vec and DKT" (p. 55 (PDF 6)). O code2vec é Alon et al.
@@ -464,27 +464,27 @@ para mostrar ao professor o domínio de cada aluno, e isso não está no paper.
 
 | # | Estado |
 |---|---|
-| 1 | Decidida em 30/09/2026, implementada em 01/10/2026 no commit `fb90a7f`. O TCC 1 mediu 2,2 GB de VRAM com R=50. Com R=100, o lote de 128 inteiro não coube na GPU. A alocação falhou com 5.289 de 6.141 MiB em uso no `nvidia-smi`, contando a tela, por fragmentação, e sem ela o lote ocupou 5.345 MiB. Com acumulação de gradiente em batches de 64 (linha 14), o treino do A439 teve pico de 3.187 MiB |
-| 2 | Decidida em 30/09/2026, implementada em 01/10/2026 no commit `68b3cea`. Com `PYTHONHASHSEED=0`, o teste de regressão como estava antes da implementação, no commit `eb95fa0`, na partição do TCC 1 com 410 alunos, uma seed, `strict=False` e na GPU, deu 0,7595 |
-| 3 | Decidida em 30/09/2026, implementada em 01/10/2026 no commit `fb90a7f` |
+| 1 | Decidida em 30/09/2026, implementada em 01/10/2026 no commit `6405a96`. O TCC 1 mediu 2,2 GB de VRAM com R=50. Com R=100, o lote de 128 inteiro não coube na GPU. A alocação falhou com 5.289 de 6.141 MiB em uso no `nvidia-smi`, contando a tela, por fragmentação, e sem ela o lote ocupou 5.345 MiB. Com acumulação de gradiente em batches de 64 (linha 14), o treino do A439 teve pico de 3.187 MiB |
+| 2 | Decidida em 30/09/2026, implementada em 01/10/2026 no commit `425597d`. Com `PYTHONHASHSEED=0`, o teste de regressão como estava antes da implementação, no commit `c406dee`, na partição do TCC 1 com 410 alunos, uma seed, `strict=False` e na GPU, deu 0,7595 |
+| 3 | Decidida em 30/09/2026, implementada em 01/10/2026 no commit `6405a96` |
 | 4 | Decidida em 30/09/2026, sem mudança no código |
 | 5 | Decidida em 30/09/2026, sem mudança no código |
-| 6 | Decidida em 30/09/2026, implementada em 01/10/2026 no commit `277403c` |
-| 7 | Decidida em 30/09/2026, implementada em 01/10/2026 no commit `277403c` |
+| 6 | Decidida em 30/09/2026, implementada em 01/10/2026 no commit `b82bf1d` |
+| 7 | Decidida em 30/09/2026, implementada em 01/10/2026 no commit `b82bf1d` |
 | 8 | Decidida em 30/09/2026, sem mudança no código |
-| 9 | Decidida em 30/09/2026, implementada em 01/10/2026 no commit `4cf7131`. No A439 entram os 386 alunos com `Run.Program` |
+| 9 | Decidida em 30/09/2026, implementada em 01/10/2026 no commit `2d45fb0`. No A439 entram os 386 alunos com `Run.Program` |
 | 10 | Decidida em 30/09/2026, sem mudança no código |
 | 11 | Decidida em 01/10/2026, sem mudança no código |
 | 12 | Decidida em 01/10/2026, sem mudança no código |
-| 13 | Decidida em 01/10/2026, implementada em 01/10/2026 no commit `4cf7131`. A importação preserva a ordem do arquivo, conferida por teste, e no A439 o app separa os mesmos 78 alunos de teste do procedimento do repositório |
-| 14 | Decidida em 01/10/2026, sem mudança na dimensão do estado oculto (hidden size) nem no tamanho do lote (batch size). A acumulação de gradiente em batches de 64, decisão do app pelo critério 5, foi implementada em 01/10/2026 no commit `fb90a7f` |
-| 15 | Decidida em 01/10/2026, implementada em 01/10/2026 no commit `277403c` |
-| 16 | Decidida em 01/10/2026, implementada em 01/10/2026 no commit `277403c` |
-| 17 | Decidida em 30/09/2026, implementada em 01/10/2026 no commit `277403c`. Em 02/10/2026, no commit `c7dfa3a`, as dez seeds do A439 deram os mesmos valores de primeira tentativa e geral, bit a bit, em quatro processos diferentes |
-| 18 | Decidida em 30/09/2026, implementada em 02/10/2026 no commit `c7dfa3a`, no `evaluate_over_seeds`, que o teste de regressão e a comparação com o paper usam |
-| 19 | Decidida em 30/09/2026, implementada em 02/10/2026 no commit `c7dfa3a`. A tolerância do teste de regressão é de ±0,1 ponto em torno da média de referência, 0,7278, e a comparação com o paper está na justificativa 19 |
+| 13 | Decidida em 01/10/2026, implementada em 01/10/2026 no commit `2d45fb0`. A importação preserva a ordem do arquivo, conferida por teste, e no A439 o app separa os mesmos 78 alunos de teste do procedimento do repositório |
+| 14 | Decidida em 01/10/2026, sem mudança na dimensão do estado oculto (hidden size) nem no tamanho do lote (batch size). A acumulação de gradiente em batches de 64, decisão do app pelo critério 5, foi implementada em 01/10/2026 no commit `6405a96` |
+| 15 | Decidida em 01/10/2026, implementada em 01/10/2026 no commit `b82bf1d` |
+| 16 | Decidida em 01/10/2026, implementada em 01/10/2026 no commit `b82bf1d` |
+| 17 | Decidida em 30/09/2026, implementada em 01/10/2026 no commit `b82bf1d`. Em 02/10/2026, no commit `9bca9b5`, as dez seeds do A439 deram os mesmos valores de primeira tentativa e geral, bit a bit, em quatro processos diferentes |
+| 18 | Decidida em 30/09/2026, implementada em 02/10/2026 no commit `9bca9b5`, no `evaluate_over_seeds`, que o teste de regressão e a comparação com o paper usam |
+| 19 | Decidida em 30/09/2026, implementada em 02/10/2026 no commit `9bca9b5`. A tolerância do teste de regressão é de ±0,1 ponto em torno da média de referência, 0,7278, e a comparação com o paper está na justificativa 19 |
 | 20 | Decidida em 01/10/2026, sem mudança no código |
-| 21 | Decidida em 01/10/2026, implementada em 01/10/2026 no commit `fb90a7f`. O vocabulário do A439 tem 553 nós e 38.179 paths, e 4,1% dos paths do teste ficam fora do vocabulário, contra 6,0% no TCC 1 |
+| 21 | Decidida em 01/10/2026, implementada em 01/10/2026 no commit `6405a96`. O vocabulário do A439 tem 553 nós e 38.179 paths, e 4,1% dos paths do teste ficam fora do vocabulário, contra 6,0% no TCC 1 |
 
 ## KCGen-KT
 
@@ -511,7 +511,7 @@ para mostrar ao professor o domínio de cada aluno, e isso não está no paper.
   be taken as ground truth". O `data/prompt_concept.csv` do repositório tem o mesmo conteúdo da
   planilha, casado por `AssignmentID` e `ProblemID` e conferido em 03/10/2026, com uma coluna a mais,
   `Test Case Status`, e as linhas em outra ordem.
-- **App.** As linhas do app citadas, marcadas como "do app", são do commit `855d69d`, de antes da
+- **App.** As linhas do app citadas, marcadas como "do app", são do commit `54d31a5`, de antes da
   implementação.
 - **TCC 1.** [scuiki/tcc.edm.kt](https://github.com/scuiki/tcc.edm.kt), commit `0e8807c`, com o
   notebook `notebooks/03b_kc_generation.ipynb`, de onde o código do app foi portado antes desta
@@ -713,8 +713,8 @@ cache vazio pode dar outros KCs.
 descrição de uma a duas frases deduzida das soluções e a recebia na resposta (notebook 03b, célula
 8). O app a gravava e a mostrava na lista de problemas da tela Conceitos, e o desenho da origem do
 conceito também a previa. É uma etapa que o paper não tem, e a adaptação do critério 4 não cria
-etapa nova. A descrição saiu da resposta (commit `c38eade`) e, com a tela Conceitos, da tela, das
-rotas e do banco (commit `23f3130`), e o enunciado, quando o pacote o traz, ocupa o lugar dela.
+etapa nova. A descrição saiu da resposta (commit `d4d5594`) e, com a tela Conceitos, da tela, das
+rotas e do banco (commit `a923c44`), e o enunciado, quando o pacote o traz, ocupa o lugar dela.
 
 **12. Texto do prompt.** O paper mostra o prompt da geração na Tabela 9 (Apêndice G.1, p. 33421
 (PDF 17)), e o repositório executa o mesmo texto de sistema (`KC_gen.py:100-170`). O TCC 1 escreveu
@@ -1018,7 +1018,7 @@ prompt (linha 15). Com um anotador só, não há a medida de concordância que o
   deployment in real educational settings" (p. 33414 (PDF 10)), sem dizer como. No app, o exercício
   fica em rascunho até o professor aprovar os conceitos, e só a aprovação libera o treino
   (`approve_knowledge_components_use_case.py:63` e `start_training_use_case.py:41` do app). A
-  aprovação é recusada enquanto um problema estiver sem conceito (commit `6d31cc7`). A v3 não tem
+  aprovação é recusada enquanto um problema estiver sem conceito (commit `c8b93de`). A v3 não tem
   essa recomendação.
 - **Onde cada conceito aparece nas soluções.** Depois do agrupamento, na mesma extração, uma segunda
   chamada ao mesmo modelo recebe, para cada problema, as soluções que o LLM leu e os conceitos
@@ -1030,8 +1030,8 @@ prompt (linha 15). Com um anotador só, não há a medida de concordância que o
   aparece. A justificativa de uma frase que o prompt do Duan pede para cada KC, "a one-sentence
   reasoning explaining why this KC is necessary based on the provided solutions" (Tabela 9, p. 33421
   (PDF 17)), também passa a ser guardada e mostrada. Decidido em 03/10/2026, implementado em
-  06/10/2026 no commit `b5278ac`. A tela Conceitos o mostra desde o commit `78401d0`, pela rota da
-  origem do conceito do commit `b37cb13`. Na validação de 04/10/2026, no problema 1 do A439, os 7
+  06/10/2026 no commit `900cc5b`. A tela Conceitos o mostra desde o commit `307847d`, pela rota da
+  origem do conceito do commit `b9d656e`. Na validação de 04/10/2026, no problema 1 do A439, os 7
   conceitos ganharam um trecho, e os 7 trechos estavam nas soluções. No problema 232 do A439, com
   aspas em todas as soluções (`return "off";`), a geração, os trechos e a tradução vieram em JSON
   válido, com as aspas escapadas, e os 11 trechos estavam nas soluções.
@@ -1042,7 +1042,7 @@ prompt (linha 15). Com um anotador só, não há a medida de concordância que o
   justificativas de cada KC que a origem do conceito mostra. O app guarda o nome em inglês, que é o
   resultado do método, e o nome em português, que a tela mostra e o professor pode renomear. O nome
   em inglês não aparece em lugar nenhum da tela, nem na origem do conceito, e a api não o devolve.
-  Decidido em 03/10/2026, implementado em 06/10/2026 no commit `b5278ac`. Na validação de
+  Decidido em 03/10/2026, implementado em 06/10/2026 no commit `900cc5b`. Na validação de
   04/10/2026, a tradução de 7 nomes e 18 justificativas do problema 1 do A439 manteve os termos de
   Java, como em "Instrução return".
 - **Os problemas sem conceito.** Um problema sem nenhuma execução correta não tem solução para o LLM
@@ -1052,22 +1052,22 @@ prompt (linha 15). Com um anotador só, não há a medida de concordância que o
   (`knowledge_component_generator.py:33-41` do app). Durante a disciplina, é o caso do problema que
   ninguém acertou ainda. A extração passa a gerar os conceitos dos outros problemas e a listar para
   o professor os que ficaram sem conceito, com o motivo. Decidido em 03/10/2026. Desde o commit
-  `b5278ac` a extração segue sem eles. A lista para o professor entrou com a tela Conceitos, na
-  linha de fatos do cabeçalho (commit `77b7635`) e na matriz, com o motivo no balão do número
-  (commit `b4e7e79`), e o motivo sai da contagem de execuções corretas que a rota da tela devolve
-  (commit `83af401`). A aprovação é recusada enquanto houver um problema sem conceito (commit
-  `6d31cc7`).
+  `900cc5b` a extração segue sem eles. A lista para o professor entrou com a tela Conceitos, na
+  linha de fatos do cabeçalho (commit `ffd3e23`) e na matriz, com o motivo no balão do número
+  (commit `f442000`), e o motivo sai da contagem de execuções corretas que a rota da tela devolve
+  (commit `51bccf8`). A aprovação é recusada enquanto houver um problema sem conceito (commit
+  `c8b93de`).
 
 ### Estado
 
 | # | Estado |
 |---|---|
-| 1 e 4 a 8 | Decididas em 03/10/2026, implementadas em 04/10/2026 no commit `af49b24`. Na extração de referência, cada um dos 10 problemas do A439 deu 5 soluções de 5 alunos distintos, e a regressão do commit `653b1a2` refaz o sorteio |
-| 2 e 3 | Decididas em 03/10/2026. O `microsoft/codebert-base`, na revisão `3b0952f`, entrou na imagem base em 04/10/2026 no commit `7dfae7a`, e o vetor de cada solução no commit `af49b24`. Medido em 04/10/2026 na GPU, o cálculo dos vetores das 3.821 execuções corretas do A439, em lotes de 32 soluções, levou 44,6 segundos, com pico de 1.069 MiB alocados pelo PyTorch (1.858 MiB reservados). Com o mesmo tamanho de lote, duas execuções deram os mesmos vetores, bit a bit, e lotes de 16 e de 32 diferem em até 3e-5 |
-| 9 e 11 a 17 | Decididas em 03/10/2026, implementadas em 04/10/2026 no commit `c38eade`. O enunciado da linha 14 entra pela importação desde o commit `0aac582`, e na turma de referência os 50 problemas da CSEDM têm enunciado. A troca da descrição pelo enunciado na tela e no desenho, das linhas 11 e 14, entrou com a tela Conceitos, pelo `CONCEPTS_SCREEN_PLAN.md`. A rota da tela passou a devolver o enunciado no commit `83af401`, a descrição saiu do banco, das rotas e da tela no `23f3130`, e a aba Problemas mostra o enunciado desde o `4ad1127`. O LLM da linha 9 passou do Sonnet 5.5 ao Haiku 4.5 em 02/11/2026, no commit `847c0d6` |
+| 1 e 4 a 8 | Decididas em 03/10/2026, implementadas em 04/10/2026 no commit `e5ab6a1`. Na extração de referência, cada um dos 10 problemas do A439 deu 5 soluções de 5 alunos distintos, e a regressão do commit `39b291e` refaz o sorteio |
+| 2 e 3 | Decididas em 03/10/2026. O `microsoft/codebert-base`, na revisão `3b0952f`, entrou na imagem base em 04/10/2026 no commit `43d62eb`, e o vetor de cada solução no commit `e5ab6a1`. Medido em 04/10/2026 na GPU, o cálculo dos vetores das 3.821 execuções corretas do A439, em lotes de 32 soluções, levou 44,6 segundos, com pico de 1.069 MiB alocados pelo PyTorch (1.858 MiB reservados). Com o mesmo tamanho de lote, duas execuções deram os mesmos vetores, bit a bit, e lotes de 16 e de 32 diferem em até 3e-5 |
+| 9 e 11 a 17 | Decididas em 03/10/2026, implementadas em 04/10/2026 no commit `d4d5594`. O enunciado da linha 14 entra pela importação desde o commit `595b4ea`, e na turma de referência os 50 problemas da CSEDM têm enunciado. A troca da descrição pelo enunciado na tela e no desenho, das linhas 11 e 14, entrou com a tela Conceitos, pelo `CONCEPTS_SCREEN_PLAN.md`. A rota da tela passou a devolver o enunciado no commit `51bccf8`, a descrição saiu do banco, das rotas e da tela no `a923c44`, e a aba Problemas mostra o enunciado desde o `f9a3d4e`. O LLM da linha 9 passou do Sonnet 5.5 ao Haiku 4.5 em 02/11/2026, no commit `3286761` |
 | 10 e 18 | Decididas em 03/10/2026, sem mudança no código |
-| 19 a 26 | Decididas em 03/10/2026, implementadas em 04/10/2026 no commit `11aea49`. Na extração de referência do A439, de 02/11/2026, os 26 nomes únicos deram 13 grupos e 13 conceitos, sem fusão por nome. Com o Sonnet 5.5, em 06/10/2026, foram 51 nomes e 25 conceitos, e o TCC 1 tinha 15 conceitos no A439 |
-| 27 e 28 | Decididas em 03/10/2026, implementadas em 07/10/2026 no commit `653b1a2`, só no A439, como o Leo decidiu em 07/10/2026. A extração de referência, refeita com o Haiku 4.5 em 02/11/2026, tem o cache das respostas e os artefatos em `tests/data/kc`, e o resumo em `docs/results/kcgen_kt_a439_reference_extraction.md` |
+| 19 a 26 | Decididas em 03/10/2026, implementadas em 04/10/2026 no commit `b565625`. Na extração de referência do A439, de 02/11/2026, os 26 nomes únicos deram 13 grupos e 13 conceitos, sem fusão por nome. Com o Sonnet 5.5, em 06/10/2026, foram 51 nomes e 25 conceitos, e o TCC 1 tinha 15 conceitos no A439 |
+| 27 e 28 | Decididas em 03/10/2026, implementadas em 07/10/2026 no commit `39b291e`, só no A439, como o Leo decidiu em 07/10/2026. A extração de referência, refeita com o Haiku 4.5 em 02/11/2026, tem o cache das respostas e os artefatos em `tests/data/kc`, e o resumo em `docs/results/kcgen_kt_a439_reference_extraction.md` |
 | 29 | Decidida em 03/10/2026, a fazer pela etapa 9 do `KCGEN_KT_PLAN.md`, com a anotação do A439 pelo Leo |
 
 ## Testes e reprodução

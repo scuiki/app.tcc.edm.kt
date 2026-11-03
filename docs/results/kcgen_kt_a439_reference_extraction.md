@@ -1,8 +1,8 @@
 # Extração de referência do KCGen-KT no A439
 
 A extração do exercício A439 na turma "CSEDM CodeWorkout Haiku", feita em 02/11/2026 pelas rotas da
-API que a tela usa, com o código do commit `847c0d6`. Ela substitui a extração de referência de
-06/10/2026, feita com o Sonnet 5.5, que continua no histórico do git (commit `653b1a2`). A troca do
+API que a tela usa, com o código do commit `3286761`. Ela substitui a extração de referência de
+06/10/2026, feita com o Sonnet 5.5, que continua no histórico do git (commit `39b291e`). A troca do
 modelo e o estudo que a motivou estão na linha 9 do KCGen-KT no `DEVELOPMENT.md` e em
 [kcgen_kt_haiku_niveis_de_abstracao.md](kcgen_kt_haiku_niveis_de_abstracao.md).
 

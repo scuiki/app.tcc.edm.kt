@@ -57,7 +57,7 @@ Cada etapa é um commit, com uma revisão independente do diff contra as decisõ
   justificativa 6, o B e a posição do `code_vector_layer` no `__init__`, depois das camadas da atenção
   e antes do LSTM, que muda o consumo do RNG na inicialização. Na justificativa 16, o detalhe da
   perda, sem tocar no texto da linha 12. Em Fontes, uma frase dizendo que as linhas do app citadas
-  são do commit `eb95fa0`.
+  são do commit `c406dee`.
 - `DECISIONS.md`. O porquê de C, D, F e G.
 - `CLAUDE.md` e a regra de trabalho do `IMPLEMENTATION_PLAN.md`. A restrição do Code-DKT passa a
   apontar para o `DEVELOPMENT.md`, com as decisões em implementação por este plano.
@@ -77,7 +77,7 @@ Cada etapa é um commit, com uma revisão independente do diff contra as decisõ
 - Rodar o teste de regressão anterior às mudanças deste plano uma vez. Com a partição do TCC 1
   (`min_attempts=3`, 410 alunos, `random_state=1`), `strict=False`, na GPU e com `PYTHONHASHSEED=0`,
   ele deu 0,7595 em 24/09/2026, segundo uma anotação dessa data fora do repositório. O commit
-  `d3cc9f8` só registra a alternância entre 0,7595 e 0,7608. Se der 0,7608, o ENV não chegou ao
+  `b98ae0e` só registra a alternância entre 0,7595 e 0,7608. Se der 0,7608, o ENV não chegou ao
   processo. Se der outro valor, comparar o `pip freeze` das duas imagens com o `requirements.lock`
   antes de seguir. Registrar o valor na linha 2 do `DEVELOPMENT.md` e capturar o `pip freeze` novo.
 

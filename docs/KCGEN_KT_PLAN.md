@@ -265,14 +265,14 @@ Cada etapa é um commit, com uma revisão independente do diff contra as decisõ
 
 | Etapa | Estado |
 |---|---|
-| 0 | Concluída, commit `29636e9` |
-| 1 | Concluída, commit `7dfae7a` |
-| 2 | Concluída, commit `0aac582` |
-| 3 | Concluída, commit `af49b24` |
-| 4 | Concluída, commit `c38eade` |
-| 5 | Concluída, commit `11aea49` |
-| 6 | Concluída, commit `b5278ac`. Os dois prompts foram aprovados pelo Leo em 06/10/2026, e ele autorizou as chamadas de validação antes disso, em 04/10/2026 |
-| 7 | Concluída em 06/10/2026, só com o A439, commits `dbe8fad` e `4edcb3e` (resultado e trechos) |
-| 8 | Concluída, commit `653b1a2` |
+| 0 | Concluída, commit `4b77fff` |
+| 1 | Concluída, commit `43d62eb` |
+| 2 | Concluída, commit `595b4ea` |
+| 3 | Concluída, commit `e5ab6a1` |
+| 4 | Concluída, commit `d4d5594` |
+| 5 | Concluída, commit `b565625` |
+| 6 | Concluída, commit `900cc5b`. Os dois prompts foram aprovados pelo Leo em 06/10/2026, e ele autorizou as chamadas de validação antes disso, em 04/10/2026 |
+| 7 | Concluída em 06/10/2026, só com o A439, commits `1fa46fd` e `fc2b63d` (resultado e trechos) |
+| 8 | Concluída, commit `39b291e` |
 | 9 | Planilha em `docs/results/kcgen_kt_a439_human_evaluation.md`, aguardando a anotação do Leo |
 | 10 | Concluída |

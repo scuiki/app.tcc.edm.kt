@@ -15,12 +15,12 @@ Entre 29/09 e 08/10/2026 o design do app foi refeito em seis versões, todas no 
 
 | Versão | Commit | O que definiu |
 |---|---|---|
-| v1 | `bd96300` | A linguagem formal. Interface em cinza, raio 0, sombra só em cartão e diálogo, Public Sans na interface e Arial nos dados, componentes no estilo Carbon |
-| v2 | `91ec267` | A organização da Análise, com a linha de fatos, as abas com Conceitos primeiro e a curva de aprendizagem |
-| v3 | `129959a` | Turmas e Turma, com a tabela de exercícios, os alunos da turma paginados e as execuções por dia |
-| v4 | `8da55ed` | Conceitos, com a matriz problema × conceito e a origem do conceito, e os marcadores de modelo |
-| v5 | `fdaaadc` | Importar dados, com os requisitos do pacote, e o fim da barra fixa no app |
-| v6 | `e574571` | A tela Conceitos, com a matriz problema × conceito, o enunciado, o aviso de reabrir a aprovação e a origem do conceito empilhada |
+| v1 | `f92ac2f` | A linguagem formal. Interface em cinza, raio 0, sombra só em cartão e diálogo, Public Sans na interface e Arial nos dados, componentes no estilo Carbon |
+| v2 | `71814c9` | A organização da Análise, com a linha de fatos, as abas com Conceitos primeiro e a curva de aprendizagem |
+| v3 | `ecd81e2` | Turmas e Turma, com a tabela de exercícios, os alunos da turma paginados e as execuções por dia |
+| v4 | `57a6d87` | Conceitos, com a matriz problema × conceito e a origem do conceito, e os marcadores de modelo |
+| v5 | `876e740` | Importar dados, com os requisitos do pacote, e o fim da barra fixa no app |
+| v6 | `5691233` | A tela Conceitos, com a matriz problema × conceito, o enunciado, o aviso de reabrir a aprovação e a origem do conceito empilhada |
 
 A fonte da verdade são quatro arquivos, e este documento não repete o que eles dizem.
 
