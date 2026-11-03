@@ -1,151 +1,92 @@
-# EDM·KT — Ferramenta Docente (TCC 2)
+# EDM·KT
 
-Aplicação web docente que aplica *knowledge tracing* (Code-DKT) a dados de programação
-introdutória em formato ProgSnap2, mostrando ao professor o estágio de domínio da turma
-por *Knowledge Component* (KC). Esta é a fase de **Implantação** do processo EDM iniciado
-no TCC 1 (`../tcc.edm.kt`), que elegeu o Code-DKT como modelo base.
+Ferramenta web para o professor de programação introdutória ver, durante a disciplina, quais
+conceitos a turma ainda não domina. O professor importa os envios de código da turma no formato
+ProgSnap2, o app extrai os conceitos (*knowledge components*) de cada exercício com o KCGen-KT
+(Duan et al., 2026), o professor revisa esses conceitos, e o app treina o Code-DKT (Shi et al., 2022)
+sobre os dados da própria turma para estimar o domínio de cada aluno em cada conceito.
 
-O código vive em `src/`, em três partes:
+> **English.** EDM·KT is a web tool that shows introductory programming instructors, during the
+> course, which concepts their class has not mastered yet. It extracts knowledge components from
+> students' Java submissions (ProgSnap2) with KCGen-KT and trains a Code-DKT knowledge tracing
+> model on the class's own data.
 
-- `src/ml/` — a ciência: o Code-DKT, que segue Shi et al. (2022), e o KCGen-KT, que segue Duan et
-  al. (2026), os dois pelas decisões de [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) e blindados
-  por testes de regressão. Não conhece a aplicação.
-- `src/api/` — a aplicação FastAPI, organizada por funcionalidade, cada uma com as camadas
-  `domain/`, `application/`, `infrastructure/` e `presentation/`.
-- `src/web/` — a SPA em React (Vite + TypeScript) que o professor usa no navegador.
+## Publicações
 
-Os nomes estão em [`docs/GLOSSARY.md`](docs/GLOSSARY.md) e as camadas e a regra de dependência
-em [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md). Cada teste fica ao lado do arquivo que testa
-(`<arquivo>_test.py`); `tests/` guarda só os testes de regressão, a comparação com o paper, as
-fixtures e os dados de exemplo.
+- **Monografia.** VIANA, E. M.; OLIVEIRA, L. K.; BORBA, V. S. *Análise do aprendizado de
+  programação utilizando mineração de dados educacionais*. Trabalho de Conclusão de Curso
+  (Engenharia de Computação), UniFacens, Coordenadoria de Engenharia da Computação, Sorocaba, 2026.
+  103 f. Orientadora: Profa. Ma. Talita dos Reis Lopes Berbel.
+- **Resumo expandido.** OLIVEIRA, L. K.; VIANA, E. M.; BORBA, V. S.; BERBEL, T. R. L.
+  *Identificação de padrões de aprendizagem em programação por meio da análise de códigos de
+  estudantes e da mineração de dados educacionais*. I Congresso Nacional de Inovação em Educação,
+  Ciência e Tecnologia (CONAIDUC), on-line, 6 a 9 de julho de 2026. ISBN 9786588884621.
+  DOI [10.51189/conaiduc/83301](https://doi.org/10.51189/conaiduc/83301).
 
-## Reprodutibilidade científica
+O resumo expandido apresenta a modelagem e propõe, como trabalho futuro, uma ferramenta de apoio ao
+professor. Este repositório é essa ferramenta. Para citar, use o botão *Cite this repository*.
 
-O Code-DKT segue Shi et al. (2022) pelas decisões registradas em
-[`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md). O resultado numérico é travado por um **teste de
-regressão** (`tests/test_regression_a439.py`) que retreina o Code-DKT no CSEDM real (Spring 2019,
-AssignmentID 439) com as dez seeds de 42 a 51 e exige que a **média do first-attempt AUC** fique
-dentro da **tolerância** de **±0,001** (±0,1 ponto) em torno da **média de referência 0,7278**, ou
-seja, em **[0,7268, 0,7288]**. Fora da tolerância o teste **falha alto**, e qualquer mudança de
-código, dependência, seed ou ordem de operações que mova a média fica vermelha.
+<p>
+  <img src="docs/assets/unifacens.png" alt="UniFacens" height="28">
+  &nbsp;&nbsp;
+  <img src="docs/assets/conaiduc.png" alt="CONAIDUC" height="40">
+</p>
 
-O teste detecta mudança de comportamento do código. Ele **não serve** de valor de referência
-científico, nem contra o TCC 1 nem contra o paper. O 0,7278 é a média que o app mediu no A439 em
-02/10/2026, e a tolerância é estreita porque as dez seeds se repetem bit a bit em processos
-diferentes, o que deixa só o ruído de float do ambiente. Uma troca de driver, de GPU ou de
-dependência que tire a média da tolerância pede uma nova medição da média de referência, registrada
-em `docs/DEVELOPMENT.md`.
+## Requisitos
 
-Com as dez seeds, o A439 deu **72,78 ± 0,81** na primeira tentativa e **69,25 ± 0,86** no geral
-(média e desvio amostral, em porcentagem), e a seed 42 sozinha dá 0,7228. A comparação com o paper
-está mais abaixo.
+- **Docker com o Compose.** As imagens ocupam cerca de 15 GB, e a do app é `amd64` (x86-64).
+- **Credencial do Claude.** A geração dos conceitos usa o Claude Haiku 4.5 pelo CLI `claude`, que
+  já vem na imagem. Serve o token de uma assinatura do Claude (`claude setup-token`) ou uma chave da
+  API da Anthropic. Sem ela, o exercício não chega ao treino.
+- **GPU NVIDIA, opcional.** Com o [NVIDIA Container
+  Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html),
+  o treino usa a GPU. Sem ela, roda na CPU, mais devagar.
 
-A repetição bit a bit depende do `PYTHONHASHSEED=0`, que a imagem fixa, da partição por exercício
-do repositório oficial (386 alunos no A439, 78 no teste), da amostragem aleatória de R=100 paths
-com a `path_sampling_seed` 42 e do cuDNN determinístico. O fixture do CSEDM falha, em vez de pular,
-quando o `PYTHONHASHSEED` não é 0.
-
-### Pré-requisito: `EDMKT_CSEDM_PATH`
-
-Os testes de regressão leem o dataset CSEDM real a partir da variável de ambiente
-`EDMKT_CSEDM_PATH`, que aponta para o dataset provisionado em `datasets/CSEDM/` (ignorado pelo git,
-grande demais para ser versionado):
-
-```
-$EDMKT_CSEDM_PATH/
-├── MainTable.csv               # eventos ProgSnap2 (Run.Program / Compile.Error, Score)
-├── CodeStates/CodeStates.csv   # CodeStateID -> snapshot de código Java
-└── LinkTables/Subject.csv      # SubjectID -> X-Grade
-```
-
-Quando `EDMKT_CSEDM_PATH` não está setada, os testes de regressão **pulam com motivo claro** — a
-suíte rápida continua verde em máquinas sem o dataset (a suíte padrão não depende dele).
-
-## Rodando os testes (somente via Docker — host limpo)
-
-Todas as dependências de ML vivem **apenas** dentro da imagem `edmkt-core:dev` (nunca no host
-nitro, nunca em venv de host). `--security-opt label=disable` é obrigatório em todo `docker run`
-para ler os bind mounts de `/srv` sem relabel SELinux.
-
-### Suite rápido (padrão — testes de regressão desmarcados, CPU)
+## Como rodar
 
 ```bash
-docker run --rm --security-opt label=disable -v "$PWD":/app -w /app \
-  edmkt-core:dev python -m pytest -q
+git clone https://github.com/scuiki/app.tcc.edm.kt.git
+cd app.tcc.edm.kt
+cp .env.example .env
 ```
 
-A regra de dependência entre camadas é verificada pelo `import-linter`, que roda dentro da suíte
-rápida (`src/api/import_contracts_test.py`). O relatório completo dos contratos sai do comando
-solto, também no container:
+No `.env`, preencha a credencial do Claude e, se tiver GPU, descomente o `COMPOSE_FILE`. Depois
 
 ```bash
-docker run --rm --security-opt label=disable -v "$PWD":/app -w /app edmkt-core:dev lint-imports
+docker compose up -d --build
 ```
 
-O `addopts = -m 'not regression and not literature and not ablation'` (em `pyproject.toml`)
-desmarca os testes de regressão, a comparação com o paper e a ablação da ordem por padrão.
+O primeiro build baixa a imagem do PyTorch, as dependências e os modelos de vetores, e leva alguns
+minutos. O app abre em <http://127.0.0.1:5173>, só nesta máquina. Para abrir de outra, veja o
+`EDMKT_BIND_IP` no `.env.example`.
 
-### Teste de regressão do Code-DKT (GPU + dataset)
+No app, crie uma turma, importe um `.zip` ProgSnap2 com o `MainTable.csv` e o `CodeStates.csv`, gere
+e revise os conceitos de cada exercício, treine o modelo e abra a análise.
 
-```bash
-docker run --rm --gpus all --security-opt label=disable \
-  -v "$PWD":/app -w /app \
-  -v "$PWD/datasets/CSEDM":/data/CSEDM:ro \
-  -e EDMKT_CSEDM_PATH=/data/CSEDM \
-  edmkt-core:dev python -m pytest tests/test_regression_a439.py -m regression -q -s
+Os testes de regressão e os resultados em `docs/results` usam a CSEDM, variante CodeWorkout de
+Spring 2019, do 2nd CSEDM Data Challenge, que não vem no repositório. Ela está no
+[PSLC DataShop](https://pslcdatashop.web.cmu.edu/DatasetInfo?datasetId=3458), com cadastro
+gratuito, e serve também para experimentar o app.
+
+Os dados da turma ficam em `data/` e no `app.db`, na pasta do repositório. Para parar, use
+`docker compose down`.
+
+## Estrutura
+
+```
+src/ml/        o Code-DKT e o KCGen-KT, em PyTorch, sem depender do app
+src/api/       a API em FastAPI e SQLite, organizada por funcionalidade
+src/web/       a interface em React e TypeScript
+tests/         testes de regressão, comparação com o paper e dados de teste
+experiments/   BKT e DKT no mesmo protocolo do Code-DKT
+docs/          arquitetura, decisões, desenvolvimento dos métodos e resultados
+deploy/        a imagem da interface
 ```
 
-São dez treinos de 40 épocas no A439, um por seed, e levam cerca de 4 minutos na RTX 4050. A média
-de referência foi medida na GPU, então `torch.cuda.is_available()` tem de ser `True` na imagem, e
-sem GPU o teste falha. O comando roda também a conferência da partição do A439 contra o
-procedimento do repositório oficial (386 alunos, 78 no teste), que não treina. O `-s` mostra a
-média e o AUC de cada seed.
+Os testes unitários ficam ao lado do código que testam. Para ir além, veja o
+[`ARCHITECTURE.md`](docs/ARCHITECTURE.md), o [`DEVELOPMENT.md`](docs/DEVELOPMENT.md), com a
+fidelidade aos dois métodos, os testes e a reprodução, e o [`DECISIONS.md`](docs/DECISIONS.md).
 
-### Teste de regressão do KCGen-KT (GPU + dataset)
+## Licença
 
-```bash
-docker run --rm --gpus all --security-opt label=disable \
-  -v "$PWD":/app -w /app \
-  -v "$PWD/datasets/CSEDM":/data/CSEDM:ro \
-  -e EDMKT_CSEDM_PATH=/data/CSEDM \
-  edmkt-core:dev python -m pytest tests/test_regression_kcgen_kt_a439.py -m regression -q
-```
-
-Compara com a extração de referência do A439, gravada em `tests/data/kc`, sem chamar o LLM. Refaz o
-sorteio das soluções pelo CodeBERT, o agrupamento dos nomes pelo SBERT e a extração inteira, lendo o
-cache gravado das respostas, com um LLM que falha em toda pergunta. Uma mudança no prompt, no modelo
-de linguagem ou em vetores que mudem o sorteio ou os grupos deixa o teste vermelho. Leva cerca de um
-minuto e meio na RTX 4050.
-
-### Comparação com o paper (sob demanda, com a api parada)
-
-```bash
-docker run --rm --gpus all --security-opt label=disable \
-  --user "$(id -u):$(id -g)" -e HOME=/tmp \
-  -v "$PWD":/app -w /app \
-  -v "$PWD/datasets/CSEDM":/data/CSEDM:ro \
-  -e EDMKT_CSEDM_PATH=/data/CSEDM \
-  edmkt-core:dev python -m pytest tests/test_literature_comparison.py -m literature -q -s
-```
-
-Treina os cinco exercícios da CSEDM com as dez seeds de 42 a 51, em cerca de 19 minutos na
-RTX 4050, e imprime a média e o desvio ao lado das Tabelas 1 e 2 de Shi et al. (2022), sem asserção
-contra elas. A tabela medida e a leitura dela estão em `docs/DEVELOPMENT.md`. O AUC de cada seed fica em
-`docs/results/code_dkt_literature_comparison.json`, que é versionado, e o `--user` faz o arquivo
-sair com o seu usuário, e não com o root do container. Rodar um exercício só (`-k 439`) atualiza
-só a parte dele no arquivo.
-
-## Dependências travadas
-
-`requirements.lock` fixa as versões exatas do ambiente em que o teste de regressão mediu o 0,7278,
-e uma troca de versão que mude o resultado numérico tira a média da tolerância de ±0,1 ponto (teste
-vermelho). A âncora real de reprodutibilidade é a **tag fixa da imagem Docker**
-(`pytorch/pytorch:2.7.1-cuda12.8-cudnn9-runtime`, em `Dockerfile`), cujo ambiente conda fornece
-`torch==2.7.1+cu128` e `numpy==2.2.6`, que não se instalam como pin simples de PyPI. O `Dockerfile`
-também fixa `PYTHONHASHSEED=0`, porque a ordem dos modificadores Java nos AST paths sai de um set e
-depende dessa semente. A imagem do app (`deploy/Dockerfile.app`) deriva dela e herda a variável.
-Construa a partir dessa tag para reproduzir os resultados numéricos.
-
-As versões das bibliotecas que definem o resultado numérico na imagem atual são torch 2.7.1+cu128,
-numpy 2.2.6, pandas 2.3.3, javalang 0.13.0, anytree 2.13.0, scikit-learn 1.9.0 e scipy 1.17.1. As
-demais estão no `requirements.lock`.
+A definir.
