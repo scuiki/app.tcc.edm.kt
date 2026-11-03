@@ -8,7 +8,6 @@ import { ApiError } from '../../../http/client'
 import { formatPercent } from '../../../lib/format'
 import { epochProgress, stageStateOf, TRAINING_STAGES } from '../trainingStages'
 import type { Training } from '../useTraining'
-import { LossChart } from './LossChart'
 import './TrainingDialog.css'
 
 interface TrainingDialogProps {
@@ -17,7 +16,7 @@ interface TrainingDialogProps {
 }
 
 export function TrainingDialog({ training, assignmentName }: TrainingDialogProps) {
-  const { isDialogOpen, isRunning, start, job, epochs, begin, close } = training
+  const { isDialogOpen, isRunning, start, job, begin, close } = training
   useWarnBeforeLeaving(isRunning)
   const view = viewOf(training)
 
@@ -35,9 +34,6 @@ export function TrainingDialog({ training, assignmentName }: TrainingDialogProps
                 progress: stage === 'training' ? epochProgress(job) : null,
               }))}
             />
-            {epochs.length > 0 ? (
-              <LossChart epochs={epochs} totalEpochs={job?.total_epochs ?? null} />
-            ) : null}
             <p className="training__note">
               Leva alguns minutos. Não feche esta página. Enquanto o treino roda, nenhuma extração
               ou outro treino começa.
@@ -50,9 +46,6 @@ export function TrainingDialog({ training, assignmentName }: TrainingDialogProps
               O modelo foi treinado e publicado. A Análise agora mostra o domínio estimado por
               problema, conceito e aluno.
             </p>
-            {epochs.length > 0 ? (
-              <LossChart epochs={epochs} totalEpochs={job?.total_epochs ?? null} />
-            ) : null}
             {job?.java_parse_rate != null ? (
               <p className="training__fact">
                 Código dos alunos lido pelo parser Java{' '}

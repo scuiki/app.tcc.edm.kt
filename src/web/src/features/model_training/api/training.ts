@@ -4,12 +4,10 @@ import { getJson, sendJson } from '../../../http/client'
 import type { Schema } from '../../../http/types'
 
 export type TrainingJob = Schema<'TrainingJobDTO'>
-export type TrainingLossHistory = Schema<'TrainingLossHistoryDTO'>
 type StartedTrainingJob = Schema<'StartedTrainingJobDTO'>
 
 export const trainingKeys = {
   job: (jobId: number) => ['training-job', jobId] as const,
-  lossHistory: (jobId: number) => ['training-loss-history', jobId] as const,
 }
 
 export function isTrainingFinished(job: TrainingJob | undefined) {
@@ -34,15 +32,5 @@ export function useTrainingJob(jobId: number | null, onFinished: () => void) {
     },
     enabled: jobId != null,
     refetchInterval: (query) => (isTrainingFinished(query.state.data) ? false : 2000),
-  })
-}
-
-// A curva de loss acompanha o job e para de ser consultada quando ele termina
-export function useLossHistory(jobId: number | null, isRunning: boolean) {
-  return useQuery({
-    queryKey: trainingKeys.lossHistory(jobId ?? 0),
-    queryFn: () => getJson<TrainingLossHistory>(`/training-jobs/${jobId}/loss-history`),
-    enabled: jobId != null,
-    refetchInterval: isRunning ? 2000 : false,
   })
 }

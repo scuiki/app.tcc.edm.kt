@@ -157,11 +157,6 @@ function trainingJob(overrides: Partial<TrainingJob>): TrainingJob {
   }
 }
 
-const EPOCHS = [
-  { epoch: 1, train_loss: 0.693, recorded_at: '2026-09-27T12:00:00+00:00' },
-  { epoch: 2, train_loss: 0.61, recorded_at: '2026-09-27T12:00:02+00:00' },
-]
-
 interface FakeApiOptions {
   job?: TrainingJob
   refuseStart?: boolean
@@ -184,7 +179,6 @@ function fakeApi({ job, refuseStart = false }: FakeApiOptions = {}) {
       if (job?.status === 'done') assignments[1] = { ...assignments[1], status: 'trained' }
       return jsonResponse(job)
     }
-    if (path === '/training-jobs/9/loss-history') return jsonResponse({ job_id: 9, epochs: EPOCHS })
     const match = path.match(/^\/mastery-dashboard\/(\d+)\/(.+)$/)
     if (match) {
       const id = Number(match[1])
@@ -362,7 +356,7 @@ describe('MasteryDashboardPage, what the model estimates', () => {
 })
 
 describe('MasteryDashboardPage, training', () => {
-  it('shows the stages, the epoch and the loss so far, and does not let the dialog close', async () => {
+  it('shows the stages and the epoch, without a loss chart, and does not let the dialog close', async () => {
     renderAssignment(2, { job: trainingJob({ current_epoch: 2, train_loss: 0.61 }) })
     fireEvent.click(await screen.findByRole('button', { name: 'Treinar modelo' }))
 
@@ -370,8 +364,7 @@ describe('MasteryDashboardPage, training', () => {
     const current = await within(dialog).findByText('Treinando o modelo')
     expect(current.closest('li')).toHaveAttribute('aria-current', 'step')
     expect(current.closest('li')).toHaveTextContent('época 2 de 40')
-    const chart = await within(dialog).findByRole('figure', { name: 'Perda de treino por época' })
-    expect(within(chart).getByRole('row', { name: /Época 2/ })).toHaveTextContent('0,61')
+    expect(within(dialog).queryByRole('figure')).not.toBeInTheDocument()
     expect(within(dialog).queryByRole('button')).not.toBeInTheDocument()
 
     const cancel = new Event('cancel', { cancelable: true })
