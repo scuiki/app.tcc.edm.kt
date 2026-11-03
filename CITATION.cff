@@ -1,0 +1,56 @@
+cff-version: 1.2.0
+message: "Se usar este software, cite a monografia abaixo."
+title: "EDM·KT"
+abstract: "Ferramenta web que aplica knowledge tracing (Code-DKT) e a extração de componentes de conhecimento (KCGen-KT) a dados de programação introdutória em ProgSnap2, para o professor ver o domínio da turma por conceito durante a disciplina."
+type: software
+authors:
+  - family-names: Oliveira
+    given-names: Leonardo Kuntz
+repository-code: "https://github.com/scuiki/app.tcc.edm.kt"
+keywords:
+  - knowledge tracing
+  - educational data mining
+  - Code-DKT
+  - KCGen-KT
+  - ProgSnap2
+preferred-citation:
+  type: thesis
+  thesis-type: "Trabalho de Conclusão de Curso (Graduação em Engenharia de Computação)"
+  title: "Análise do aprendizado de programação utilizando mineração de dados educacionais"
+  authors:
+    - family-names: Viana
+      given-names: Erick Miranda
+    - family-names: Oliveira
+      given-names: Leonardo Kuntz
+    - family-names: Borba
+      given-names: Victor Santos
+  institution:
+    name: "UniFacens, Coordenadoria de Engenharia da Computação"
+    city: Sorocaba
+    region: SP
+    country: BR
+  year: 2026
+  pages: 103
+  languages:
+    - pt
+references:
+  - type: conference-paper
+    title: "Identificação de padrões de aprendizagem em programação por meio da análise de códigos de estudantes e da mineração de dados educacionais"
+    authors:
+      - family-names: Oliveira
+        given-names: Leonardo Kuntz
+      - family-names: Viana
+        given-names: Erick Miranda
+      - family-names: Borba
+        given-names: Victor Santos
+      - family-names: Berbel
+        given-names: Talita dos Reis Lopes
+    conference:
+      name: "I Congresso Nacional de Inovação em Educação, Ciência e Tecnologia (CONAIDUC)"
+      date-start: 2026-07-06
+      date-end: 2026-07-09
+    year: 2026
+    isbn: "9786588884621"
+    doi: 10.51189/conaiduc/83301
+    languages:
+      - pt
