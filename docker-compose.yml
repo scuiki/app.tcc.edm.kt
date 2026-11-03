@@ -20,7 +20,7 @@ services:
       EDMKT_KC_CWD: /tmp
       HF_HUB_OFFLINE: "1"
       TRANSFORMERS_OFFLINE: "1"
-      # A credencial do CLI do Claude vem do .env e só a api a recebe, e sem ela só a geração de KCs falha
+      # A credencial do CLI do Claude vem do .env e só a api a recebe, e sem ela a geração de KCs falha
       CLAUDE_CODE_OAUTH_TOKEN:
       ANTHROPIC_API_KEY:
     # O 0.0.0.0 é de dentro do container, e um worker só, porque o SQLite tem escritor único e a GPU é uma

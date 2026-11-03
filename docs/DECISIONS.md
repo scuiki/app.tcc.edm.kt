@@ -480,7 +480,8 @@ manifesto oficial, com a atualização automática desligada, e cada pessoa põe
 token da assinatura (`claude setup-token`) ou uma chave da API. Isso revê a decisão antiga de nunca
 passar a credencial por variável de ambiente. O risco fica contido porque só a `api` recebe a
 variável, o `.env` é ignorado pelo git e o token do `setup-token` serve só para o CLI e pode ser
-revogado na conta. Sem credencial, só a geração automática de KCs falha.
+revogado na conta. Sem credencial a geração de KCs falha, e o exercício não chega ao treino, porque
+os KCs nascem da geração e o professor os edita depois.
 
 **O `vocab.pkl` é lido com `pickle` sem restrição.** Por isso o diretório da versão, que vem do
 banco, é confinado ao `models/` da turma antes de abrir o arquivo. Um diretório adulterado viraria
