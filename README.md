@@ -156,7 +156,3 @@ deploy/        the interface image
 ```
 
 </details>
-
-## Licença
-
-Todos os direitos reservados. Veja o [`LICENSE`](LICENSE).
