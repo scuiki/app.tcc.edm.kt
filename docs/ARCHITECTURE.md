@@ -293,11 +293,10 @@ Aqui fica só como o CSS é escrito.
 
 CSS puro, com os tokens de `styles/tokens.css` e um `.css` ao lado de cada componente. Nenhuma cor
 é escrita no ponto de uso. Cada variante tem a sua situação de uso, escolhida por uma prop
-`variant` que troca a classe, e uma variante sem uso não nasce. Barras e histogramas são CSS, e o
-Chart.js desenha só a curva de perda do treino, lendo a cor do token na hora. As tabelas usam a
-`DataTable`, e a largura mínima fica com quem a usa. As dicas de hover
-usam o `Tooltip`, nunca o `title` nativo. A janela não rola, só o conteúdo, então a barra superior
-e o menu ficam parados.
+`variant` que troca a classe, e uma variante sem uso não nasce. Barras e histogramas são CSS, sem
+biblioteca de gráficos. As tabelas usam a `DataTable`, e a largura mínima fica com quem a usa. As
+dicas de hover usam o `Tooltip`, nunca o `title` nativo. A janela não rola, só o conteúdo, então a
+barra superior e o menu ficam parados.
 
 ### Verificação
 

@@ -39,7 +39,7 @@ Regras gerais:
 | `TrainedModel` | Uma versão treinada do Code-DKT: arquivos em disco + métricas no banco | `ModelArtifact` |
 | `published_model_id` | A versão de modelo que o dashboard usa | `current_version_id` |
 | `TrainingJob` | Um treino em andamento ou concluído | — |
-| `TrainingEpochMetric` | A perda de uma época de um treino, mostrada como a perda média por aluno, a soma da época dividida pelos alunos com ao menos uma previsão válida (a curva de perda é a lista delas) | `training_metric` |
+| `TrainingEpochMetric` | A perda de uma época de um treino, gravada como a perda média por aluno, a soma da época dividida pelos alunos com ao menos uma previsão válida | `training_metric` |
 | `KnowledgeComponentGenerationJob` | Uma geração de KCs em andamento ou concluída | `KCJob` |
 | `StudentMastery` | A chance prevista de um aluno acertar um problema se tentasse agora, lida do último passo do modelo. Uma por aluno × problema, por versão de modelo | `MasteryPrediction` |
 
@@ -284,7 +284,7 @@ As peças de `src/web/src/components/` que levam um nome próprio do desenho.
 | `POST /knowledge-components/approve` | Aprova os KCs do assignment, recusada com 409 enquanto houver problema sem KC | `POST /knowledge-components/approve-qmatrix` |
 | `POST /training-jobs` | Dispara o treino | `POST /training` |
 | `GET /training-jobs/{job_id}` | Progresso do treino | `GET /training/{job_id}` |
-| `GET /training-jobs/{job_id}/loss-history` | A curva de loss por época | `GET /training/{job_id}/metrics` |
+| `GET /training-jobs/{job_id}/loss-history` | A perda de cada época do treino, sem uso na tela | `GET /training/{job_id}/metrics` |
 | `GET /mastery-dashboard/{assignment_id}/mastery` | O bloco "o que o modelo prevê": conceitos e problemas por domínio previsto, com a distribuição dos alunos e o modelo | `GET /dashboard/mastery/{id}`, `/recommendations` |
 | `GET /mastery-dashboard/{assignment_id}/students` | Uma linha leve por aluno, todos de uma vez; a ordenação é do front | — |
 | `GET /mastery-dashboard/{assignment_id}/students/{student_id}` | O detalhe de um aluno para o diálogo | — |

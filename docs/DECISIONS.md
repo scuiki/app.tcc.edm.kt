@@ -73,10 +73,10 @@ nenhum, com o token desconhecido caindo num token real. A recusa troca as duas f
 mensagem. A matriz de domínio já gravada de um modelo antigo continua servindo o painel, porque não
 recarrega o modelo.
 
-**A curva de perda mostra a perda média por aluno.** O treino soma, em cada lote, a perda média de
+**A perda gravada é a perda média por aluno.** O treino soma, em cada lote, a perda média de
 cada aluno, como o repositório do Code-DKT, e esse número cresce com o tamanho do lote e da turma.
 Cada `TrainingEpochMetric` guarda a soma da época dividida pelos alunos que entraram na perda, os que
-têm ao menos uma previsão válida, e a curva fica na mesma escala para qualquer turma. O treino não
+têm ao menos uma previsão válida, e a perda fica na mesma escala para qualquer turma. O treino não
 muda (a agregação da perda é a da linha 16 do `DEVELOPMENT.md`).
 
 **O treino usa acumulação de gradiente em batches de 64 alunos.** Com R=100, o bloco de atenção do
@@ -545,6 +545,13 @@ na tela, antes de enviar.
 DTO descarta o `count` e o `location`, então a tela dá um título em pt-BR a cada código conhecido e
 mostra a mensagem como veio. Por isso um aviso de viabilidade ainda não diz de qual exercício é.
 
+**A compilação repetida não é aviso da importação.** O ProgSnap2 grava um `Compile` no mesmo
+instante de cada `Run.Program`, e o backend descarta esses eventos e manda o `dedup_compile` no
+relatório. Isso é o formato esperado do pacote, não um ajuste no dado do professor, então a tela não
+o mostra. A seção de avisos só aparece quando sobra algum, e na base CSEDM ela não aparece. O
+backend segue mandando o código, e a tela é quem o deixa de fora. Como era antes está em
+`docs/REMOVED_FEATURES.md`.
+
 **Um segundo envio para a mesma turma segue, com aviso.** O backend cria exercícios novos em vez de
 substituir, e a tela avisa isso antes de processar, sem impedir.
 
@@ -700,16 +707,15 @@ pediria a barra sticky também. A tabela oculta do histograma, que dá os númer
 fica dentro de um `div` escondido, porque uma tabela ignora o `clip` do `visually-hidden` e esticava
 a página centenas de pixels.
 
-**O Chart.js desenha só a curva de perda.** As barras e os histogramas das tabelas são CSS, porque
-são dezenas por tela e um canvas para cada seria pesado sem ganho. No teste, o `react-chartjs-2` é
-trocado por um componente vazio, porque o jsdom não tem canvas, e o teste lê a tabela oculta ao lado
-do gráfico.
+**O diálogo de treino não mostra a curva de perda.** O professor não decide nada pela perda, e a
+lista de estágios com a época atual já mostra que o treino anda. A perda de cada época continua
+gravada no `TrainingEpochMetric` e servida pelo endpoint do histórico, que fica sem uso na tela.
+Com a curva saiu o Chart.js, a única biblioteca de gráficos do front, e as barras e os histogramas
+das tabelas seguem em CSS. O que existia e como voltar está em `docs/REMOVED_FEATURES.md`.
 
 **O diálogo de treino repete o da extração, e a lista de estágios virou um componente.** Três
-estágios, a época atual e a curva de perda ao vivo, sem fechar enquanto o job roda. Ao terminar, a
-curva é buscada uma última vez, porque as épocas finais caem depois da última consulta. O AUC não
-aparece, pela decisão do dashboard, e a fração do código lida pelo parser Java aparece como um dado
-da qualidade do treino.
+estágios e a época atual, sem fechar enquanto o job roda. O AUC não aparece, pela decisão do
+dashboard, e a fração do código lida pelo parser Java aparece como um dado da qualidade do treino.
 
 **A nota do rodapé da Análise só explica o marcador.** Fonte e versão do modelo saíram, e a nota
 diz em uma frase que o cérebro marca os dados estimados pelo modelo. Ela só aparece com modelo

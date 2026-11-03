@@ -50,7 +50,7 @@ de uso.
 | | `--color-primary` e `--color-primary-hover` | Botão primário |
 | | `--color-focus` | Anel de foco |
 | | `--color-text-inverse` | Texto sobre o preenchido, no botão primário e no destrutivo, no passo atual e no balão |
-| Modelo | `--color-model` | Domínio, distribuição, curva de perda, ponto de treinado, estágios da extração e do treino |
+| Modelo | `--color-model` | Domínio, distribuição, ponto de treinado, estágios da extração e do treino |
 | | `--color-model-strong` | Hover das marcas do modelo, texto sobre o azul claro |
 | | `--color-model-soft` e `--color-model-soft-border` | Etiqueta Treinado, fundo dos marcadores de modelo, linhas do trecho no bloco de código |
 | Observado | `--color-observed` | Taxa de acerto e toda barra do que aconteceu |
@@ -331,9 +331,9 @@ situação no lugar do ícone de etapa, para a lista longa ficar discreta.
   leva a cor e o título da sua série, e a legenda diz qual eixo é de qual.
 - Grade em `--color-rule`, eixo em `--color-text`, rótulos em `--color-text-muted` e o valor
   destacado em `--color-text`.
-- Toda marca mostra o valor no hover. A curva de perda marca o último valor.
-- O Chart.js desenha as curvas, a de perda e a de aprendizagem. Barras e histogramas das tabelas
-  são CSS.
+- Toda marca mostra o valor no hover.
+- Barras e histogramas das tabelas são CSS. A tela não tem curva, e a biblioteca que desenhar a
+  curva de aprendizagem entra com uma decisão própria.
 
 **Curva de aprendizagem.** A taxa de erro em cada oportunidade de praticar um conceito, em
 `--color-observed`, com os alunos que chegaram a cada oportunidade em barras atrás, em

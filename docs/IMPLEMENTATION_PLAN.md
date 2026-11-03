@@ -174,8 +174,9 @@ todas as tabelas, histograma sem eixo e barras quadradas, tudo em `--font-data`.
 backend.
 
 **F4. Gráficos.**
-A curva de aprendizagem com dois eixos (Chart.js, linha e barras) e a figura de execuções por dia. A
-curva de perda do treino passa às cores e à fonte novas. Dependem de B3 e de B6.
+A curva de aprendizagem com dois eixos (linha e barras) e a figura de execuções por dia. Dependem
+de B3 e de B6. O Chart.js saiu em 03/11/2026 junto com a curva de perda do treino, então a
+biblioteca destas figuras volta com uma decisão nova (`docs/REMOVED_FEATURES.md`).
 
 **F5. As telas.**
 
