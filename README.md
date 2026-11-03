@@ -58,7 +58,7 @@ O app abre em <http://127.0.0.1:5173>.
 
 - **Formato**: `.zip` ProgSnap2 com `MainTable.csv` e `CodeStates.csv`.
 - **Exemplo**: CSEDM, variante CodeWorkout (Spring 2019), do 2nd CSEDM Data Challenge, no
-  [PSLC DataShop](https://pslcdatashop.web.cmu.edu/DatasetInfo?datasetId=3458) (cadastro gratuito).
+  [PSLC DataShop](https://pslcdatashop.web.cmu.edu/DatasetInfo?datasetId=3458).
 
 </details>
 
@@ -89,7 +89,7 @@ docker compose up -d --build
 
 - ***Format:*** *a ProgSnap2 `.zip` with `MainTable.csv` and `CodeStates.csv`.*
 - ***Example:*** *CSEDM, CodeWorkout variant (Spring 2019), from the 2nd CSEDM Data Challenge, on
-  [PSLC DataShop](https://pslcdatashop.web.cmu.edu/DatasetInfo?datasetId=3458) (free sign-up).*
+  [PSLC DataShop](https://pslcdatashop.web.cmu.edu/DatasetInfo?datasetId=3458).*
 
 </details>
 
